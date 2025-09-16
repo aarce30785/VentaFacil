@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36429.23 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VentaFacil.web", "VentaFacil.web\VentaFacil.web.csproj", "{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {45FD0B9D-E11C-4ECF-9BBB-3332ADCC17AE}
+	EndGlobalSection
+EndGlobal
