@@ -1,19 +1,27 @@
 services:
   sqlserver:
+    container_name: ventafacil-db
+    hostname: mssql-db
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: ventafacil-sqlserver
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=VentaFacilDb123!
-      - MSSQL_PID=Express
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
+      MSSQL_DATA_DIR: /var/opt/mssql/data
+      MSSQL_PID: 'Developer'
+      MSSQL_TCP_PORT: 1433 
     ports:
-      - "1433:1433"
+      - "1455:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
-    restart: unless-stopped
+      - ./log:/var/opt/mssql/log
+      - ./secrets:/var/opt/mssql/secrets
+    networks:
+      default:
+        aliases:
+          - sqlserver
 
   ventafacil.web:
-    image: ${DOCKER_REGISTRY-}ventafacilweb
+    image: ventafacil.web
     build:
       context: .
       dockerfile: VentaFacil.web/Dockerfile
@@ -31,3 +39,7 @@ services:
 
 volumes:
   sqlserver_data:
+  
+networks:
+  default:
+    driver: bridge
