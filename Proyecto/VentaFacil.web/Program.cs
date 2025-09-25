@@ -6,15 +6,17 @@ namespace VentaFacil.web
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            if (IsRunningInContainer())
+            {
+                builder.Configuration.AddJsonFile("appsettings.Docker.json", optional: true, reloadOnChange: true);
+            }
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
 
-            // Deshabilitar HTTPS redirection en contenedores
-            if (IsRunningInContainer())
-            {
-                builder.WebHost.UseUrls("http://*:8080");
-            }
+
+     
 
             var app = builder.Build();
 
@@ -26,16 +28,10 @@ namespace VentaFacil.web
                 app.UseHsts();
             }
 
-            if (!IsRunningInContainer())
-            {
-                app.UseHttpsRedirection();
-            }
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.MapControllerRoute(
