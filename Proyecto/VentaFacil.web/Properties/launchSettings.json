@@ -26,16 +26,26 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "Docker": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:8080",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Docker",
+        "ASPNETCORE_URLS": "http://+:8080"
+      }
+    },
     "Container (Dockerfile)": {
       "commandName": "Docker",
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "publishAllPorts": true,
-      "useSSL": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Docker",
-        "ASPNETCORE_URLS": "https://+:8081;http://+:8080"
-      }
+        "ASPNETCORE_URLS": "http://+:8080"
+      },
+      "DockerfileRunArguments": "--network=\"${localenv:DOCKER_NETWORK:-bridge}\""
     }
   },
   "iisSettings": {
