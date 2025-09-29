@@ -34,8 +34,6 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_RUNNING_IN_CONTAINER=true
       - ASPNETCORE_URLS=http://+:8080
-      - DataProtection__KeysDirectory=/app/keys
-      - DataProtection__ApplicationName=VentaFacil
     ports:
       - "8080:8080"
       - "8081:8081"

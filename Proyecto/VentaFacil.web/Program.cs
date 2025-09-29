@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
+using VentaFacil.web.Services;
 
 namespace VentaFacil.web
 {
@@ -24,34 +28,104 @@ namespace VentaFacil.web
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            if (isRunningInContainer)
+            {
+                // En Docker, usar un directorio persistente para las claves
+                builder.Services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+                    .SetApplicationName("VentaFacil")
+                    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
+            }
+            else
+            {
+                // En desarrollo local, usar el directorio por defecto
+                builder.Services.AddDataProtection()
+                    .SetApplicationName("VentaFacil");
+            }
+
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
+            // Configurar sesión
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            // Configurar autenticación con cookies
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+               .AddCookie(options =>
+               {
+                   options.LoginPath = "/Login/InicioSesion";
+                   options.AccessDeniedPath = "/Login/AccessDenied";
+                   options.LogoutPath = "/Login/Logout";
+                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                   options.SlidingExpiration = true;
+                   options.Cookie.Name = "VentaFacil.Auth";
+                   options.Cookie.HttpOnly = true;
+                   options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                   options.Cookie.SameSite = SameSiteMode.Strict;
+               });
+
+            // Configurar antiforgery tokens
+            builder.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-CSRF-TOKEN";
+                options.Cookie.Name = "VentaFacil.Csrf";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
+            // Configurar autorización
+            builder.Services.AddAuthorization();
+
             var app = builder.Build();
 
-            InitializeDatabase(builder.Configuration);
+            if (isRunningInContainer)
+            {
+                var keysDirectory = "/app/keys";
+                if (!Directory.Exists(keysDirectory))
+                {
+                    Directory.CreateDirectory(keysDirectory);
+                    Console.WriteLine($"=== DIRECTORIO DE CLAVES CREADO: {keysDirectory} ===");
+                }
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
+                InitializeDatabase(builder.Configuration);
                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+            }
+            else
+            {
+                app.UseDeveloperExceptionPage();
+                
+                InitializeDatabase(builder.Configuration);
             }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.Run();
-        }
-
-        private static bool IsRunningInContainer()
-        {
-            return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
         }
 
         private static void InitializeDatabase(IConfiguration configuration)
