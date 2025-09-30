@@ -1,7 +1,0 @@
-Para generar certificados autofirmados
-
-mkdir $env:USERPROFILE\.aspnet\https
-
-dotnet dev-certs https -ep $env:USERPROFILE\.aspnet\https\ventafacil.pfx -p Ventafacil123
-
-dotnet dev-certs https --trust
