@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 using VentaFacil.web.Models;
+using VentaFacil.web.Models.Dto;
 
 namespace VentaFacil.web.Data
 {
@@ -17,6 +18,8 @@ namespace VentaFacil.web.Data
 
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Rol> Rol { get; set; }
+        public DbSet<Categoria> Categoria { get; set; }
+        public DbSet<Producto> Producto { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,6 +60,7 @@ namespace VentaFacil.web.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }
+        public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
 
         
     }
