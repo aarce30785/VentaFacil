@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VentaFacil.web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7d2bbf358161a350f5e8186405cdc57ded1e9de3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+061b8faf8e5d67227a9ee7b03eab49e1a6683ad9")]
 [assembly: System.Reflection.AssemblyProductAttribute("VentaFacil.web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VentaFacil.web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

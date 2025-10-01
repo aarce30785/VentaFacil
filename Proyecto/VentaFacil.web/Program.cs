@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
 using VentaFacil.web.Services;
+using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Producto;
 
 namespace VentaFacil.web
@@ -64,6 +65,7 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IRegisterProductoService, RegisterProductoService>();
             builder.Services.AddScoped<IListProductoService, ListProductoService>();
             builder.Services.AddScoped<IEditProductoService, EditProductoService>();
+            builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 
             // Configurar sesión
             builder.Services.AddSession(options =>
