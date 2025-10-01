@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - VentaFacil.web</title>
+    
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/VentaFacil.web.styles.css" asp-append-version="true" />
+    
+    <!-- ========== All CSS files linkup ========= -->
+    <link rel="stylesheet" href=~/Plantilla/css/bootstrap.min.css" />
+    <link rel="stylesheet" href=~/Plantilla/css/lineicons.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href=~/Plantilla/css/materialdesignicons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href=~/Plantilla/css/fullcalendar.css" />
+    <link rel="stylesheet" href=~/Plantilla/css/fullcalendar.css" />
+    <link rel="stylesheet" href=~/Plantilla/css/main.css" />
+
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar Dinámico -->
+        @if (User.Identity.IsAuthenticated)
+        {
+            @Html.Partial("_TopBar")
+            @Html.Partial("_SideBar")
+        }
+
+        <div class="main-panel">
+            
+            <!-- Contenido Principal -->
+            <div class="content pt-5">
+                @RenderBody()
+            </div>
+
+        </div>
+    </div>
+    
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - VentaFacil.web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/Plantilla/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Plantilla/js/Chart.min.js"></script>
+    <script src="~/Plantilla/js/dynamic-pie-chart.js"></script>
+    <script src="~/Plantilla/js/moment.min.js"></script>
+    <script src="~/Plantilla/js/fullcalendar.js"></script>
+    <script src="~/Plantilla/js/jvectormap.min.js"></script>
+    <script src="~/Plantilla/js/world-merc.js"></script>
+    <script src="~/Plantilla/js/polyfill.js"></script>
+    <script src="~/Plantilla/js/main.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
