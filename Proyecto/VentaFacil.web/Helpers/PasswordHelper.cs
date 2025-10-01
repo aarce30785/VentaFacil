@@ -10,5 +10,12 @@ namespace VentaFacil.web.Helpers
             return hasher.HashPassword(null, password);
     
         }
+
+        public static bool VerifyPassword(string hashedPassword, string providedPassword)
+        {
+            var hasher = new PasswordHasher<string>();
+            var result = hasher.VerifyHashedPassword(null, hashedPassword, providedPassword);
+            return result == PasswordVerificationResult.Success;
+        }
     }
 }

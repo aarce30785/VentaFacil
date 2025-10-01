@@ -1,0 +1,395 @@
+﻿<div class="modal fade" id="usuarioModal" tabindex="-1" aria-labelledby="usuarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="usuarioModalLabel">Gestión de Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="usuarioForm">
+                    <!-- Campo ID (solo visible en edición) -->
+                    <div class="row mb-3" id="idField" style="display: none;">
+                        <div class="col-12">
+                            <div class="input-style-1">
+                                <label for="Id_Usr">ID Usuario</label>
+                                <input type="text" id="Id_Usr" name="Id_Usr" readonly class="bg-light">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="Nombre">Nombre <span class="text-danger">*</span></label>
+                                <input type="text" id="Nombre" name="Nombre" placeholder="Ingrese el nombre completo" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="Correo">Correo Electrónico <span class="text-danger">*</span></label>
+                                <input type="email" id="Correo" name="Correo" placeholder="ejemplo@correo.com" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="Contrasena">Contraseña <span class="text-danger">*</span></label>
+                                <input type="password" id="Contrasena" name="Contrasena" placeholder="Ingrese la contraseña" required>
+                                <small class="form-text text-muted">Mínimo 6 caracteres</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="ConfirmarContrasena">Confirmar Contraseña <span class="text-danger">*</span></label>
+                                <input type="password" id="ConfirmarContrasena" name="ConfirmarContrasena" placeholder="Confirme la contraseña" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="select-style-1">
+                                <label for="Rol">Rol <span class="text-danger">*</span></label>
+                                <div class="select-position">
+                                    <select id="Rol" name="Rol" required>
+                                        <option value="">Seleccione un rol</option>
+                                        <option value="1">Administrador</option>
+                                        <option value="2">Vendedor</option>
+                                        <option value="3">Cliente</option>
+                                        <option value="4">Invitado</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label>Estado</label>
+                                <div class="form-check form-switch toggle-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="Estado" name="Estado" checked>
+                                    <label class="form-check-label" for="Estado">Usuario Activo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4" id="auditFields" style="display: none;">
+                        <div class="col-12">
+                            <div class="card-style mb-3">
+                                <h6 class="mb-3">Información de Auditoría</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-style-1">
+                                            <label for="FechaCreacion">Fecha de Creación</label>
+                                            <input type="text" id="FechaCreacion" name="FechaCreacion" readonly class="bg-light">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-style-1">
+                                            <label for="UltimaActualizacion">Última Actualización</label>
+                                            <input type="text" id="UltimaActualizacion" name="UltimaActualizacion" readonly class="bg-light">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsuario">Guardar</button>
+                <button type="button" class="btn btn-warning" id="btnEditarUsuario" style="display: none;">Editar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales - SOLO UNA VEZ
+    let modoActual = 'crear';
+    let usuarioActualId = 0;
+
+    // Función para obtener el token
+    function getAntiForgeryToken() {
+        return document.querySelector('input[name="__RequestVerificationToken"]').value;
+    }
+
+    // Función para mostrar modal
+    function mostrarModal() {
+        const modalElement = document.getElementById('usuarioModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+    }
+
+    // Función para abrir modal en modo creación
+    function abrirModalCrear() {
+        console.log('➕ Abriendo modal crear');
+        modoActual = 'crear';
+        usuarioActualId = 0;
+        resetForm();
+        configurarModal('Crear Usuario', 'crear');
+        mostrarModal();
+    }
+
+    // Función para abrir modal en modo edición
+    function abrirModalEditar(usuario) {
+        console.log('✏️ Abriendo modal editar', usuario);
+        modoActual = 'editar';
+        usuarioActualId = usuario.Id_Usr;
+        resetForm();
+        cargarDatosUsuario(usuario);
+        configurarModal('Editar Usuario', 'editar');
+        mostrarModal();
+    }
+
+    // Función para abrir modal en modo visualización
+    function abrirModalVer(usuario) {
+        console.log('👁️ Abriendo modal ver', usuario);
+        modoActual = 'ver';
+        usuarioActualId = usuario.Id_Usr;
+        resetForm();
+        cargarDatosUsuario(usuario);
+        configurarModal('Detalles del Usuario', 'ver');
+        mostrarModal();
+    }
+
+    // Función para resetear el formulario
+    function resetForm() {
+        const form = document.getElementById('usuarioForm');
+        if (form) form.reset();
+
+        // Usar JavaScript vanilla en lugar de jQuery para evitar conflictos
+        const idField = document.getElementById('idField');
+        const auditFields = document.getElementById('auditFields');
+        if (idField) idField.style.display = 'none';
+        if (auditFields) auditFields.style.display = 'none';
+
+        // Mostrar campos de contraseña por defecto
+        const contrasenaFields = document.querySelectorAll('#Contrasena, #ConfirmarContrasena');
+        contrasenaFields.forEach(field => {
+            field.required = true;
+            const parent = field.closest('.input-style-1');
+            if (parent) parent.style.display = 'block';
+        });
+    }
+
+    // Función para configurar el modal según el modo
+    function configurarModal(titulo, modo) {
+        const titleElement = document.getElementById('usuarioModalLabel');
+        if (titleElement) titleElement.textContent = titulo;
+
+        const btnGuardar = document.getElementById('btnGuardarUsuario');
+        const btnEditar = document.getElementById('btnEditarUsuario');
+        const idField = document.getElementById('idField');
+        const auditFields = document.getElementById('auditFields');
+        const contrasena = document.getElementById('Contrasena');
+        const confirmarContrasena = document.getElementById('ConfirmarContrasena');
+
+        switch(modo) {
+            case 'crear':
+                if (btnGuardar) btnGuardar.style.display = 'block';
+                if (btnEditar) btnEditar.style.display = 'none';
+                if (contrasena) contrasena.required = true;
+                if (confirmarContrasena) confirmarContrasena.required = true;
+                break;
+            case 'editar':
+                if (btnGuardar) btnGuardar.style.display = 'block';
+                if (btnEditar) btnEditar.style.display = 'none';
+                if (idField) idField.style.display = 'block';
+                if (contrasena) contrasena.required = false;
+                if (confirmarContrasena) confirmarContrasena.required = false;
+                // Ocultar campos de contraseña en edición
+                if (contrasena) contrasena.closest('.input-style-1').style.display = 'none';
+                if (confirmarContrasena) confirmarContrasena.closest('.input-style-1').style.display = 'none';
+                break;
+            case 'ver':
+                if (btnGuardar) btnGuardar.style.display = 'none';
+                if (btnEditar) btnEditar.style.display = 'block';
+                if (idField) idField.style.display = 'block';
+                if (auditFields) auditFields.style.display = 'block';
+                // Ocultar campos de contraseña en visualización
+                if (contrasena) contrasena.closest('.input-style-1').style.display = 'none';
+                if (confirmarContrasena) confirmarContrasena.closest('.input-style-1').style.display = 'none';
+                break;
+        }
+    }
+
+    // Función para cargar datos del usuario en el formulario
+    function cargarDatosUsuario(usuario) {
+        document.getElementById('Id_Usr').value = usuario.Id_Usr || '';
+        document.getElementById('Nombre').value = usuario.Nombre || '';
+        document.getElementById('Correo').value = usuario.Correo || '';
+        document.getElementById('Rol').value = usuario.Rol || '';
+        document.getElementById('Estado').checked = usuario.Estado !== false;
+    }
+
+    // Función para validar el formulario
+    function validarFormulario() {
+        const form = document.getElementById('usuarioForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return false;
+        }
+
+        if (modoActual === 'crear') {
+            const contrasena = document.getElementById('Contrasena').value;
+            const confirmarContrasena = document.getElementById('ConfirmarContrasena').value;
+
+            if (contrasena !== confirmarContrasena) {
+                alert('Las contraseñas no coinciden');
+                return false;
+            }
+
+            if (contrasena.length < 6) {
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Función para obtener datos del formulario
+    function obtenerDatosFormulario() {
+        const data = {
+            Id_Usr: usuarioActualId,
+            Nombre: document.getElementById('Nombre').value,
+            Correo: document.getElementById('Correo').value,
+            Contrasena: document.getElementById('Contrasena').value,
+            ConfirmarContrasena: document.getElementById('ConfirmarContrasena').value,
+            Rol: document.getElementById('Rol').value,
+            Estado: document.getElementById('Estado').checked
+        };
+
+        // En edición, si no se cambió la contraseña, enviar vacío
+        if (modoActual === 'editar' && data.Contrasena === '') {
+            data.Contrasena = null;
+            data.ConfirmarContrasena = null;
+        }
+
+        return data;
+    }
+
+    // Función para confirmar eliminación
+    function confirmarEliminacion(id, nombre) {
+        if (confirm(`¿Está seguro de que desea eliminar al usuario "${nombre}"?`)) {
+            eliminarUsuario(id);
+        }
+    }
+
+    // Función para eliminar usuario via AJAX
+    async function eliminarUsuario(id) {
+        try {
+            const response = await fetch(`/Admin/EliminarUsuario/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Usuario eliminado correctamente');
+                location.reload();
+            } else {
+                alert(result.message || 'Error al eliminar el usuario');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al eliminar el usuario');
+        }
+    }
+
+    // Función para guardar/editar usuario via AJAX
+    async function guardarUsuario(usuarioData) {
+        try {
+            console.log('🔵 Intentando guardar usuario...', usuarioData);
+
+            const url = modoActual === 'crear' ? '/Admin/CrearUsuario' : '/Admin/EditarUsuario';
+            const token = getAntiForgeryToken();
+
+            console.log('📤 Enviando a:', url);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify(usuarioData)
+            });
+
+            console.log('📥 Respuesta recibida. Status:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Resultado del servidor:', result);
+
+            if (result.success) {
+                alert('✅ ' + (modoActual === 'crear' ? 'Usuario creado exitosamente' : 'Usuario actualizado exitosamente'));
+
+                // Cerrar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
+                if (modal) modal.hide();
+
+                // Recargar página
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert('❌ ' + (result.message || 'Error al guardar el usuario'));
+            }
+
+        } catch (error) {
+            console.error('💥 Error completo:', error);
+            alert('❌ Error de conexión: ' + error.message);
+        }
+    }
+
+    // Inicialización cuando el documento está listo
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ Modal de usuarios inicializado');
+
+        // Guardar usuario
+        const btnGuardar = document.getElementById('btnGuardarUsuario');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', function() {
+                if (validarFormulario()) {
+                    const usuarioData = obtenerDatosFormulario();
+                    guardarUsuario(usuarioData);
+                }
+            });
+        }
+
+        // Botón editar en modo visualización
+        const btnEditar = document.getElementById('btnEditarUsuario');
+        if (btnEditar) {
+            btnEditar.addEventListener('click', function() {
+                modoActual = 'editar';
+                configurarModal('Editar Usuario', 'editar');
+            });
+        }
+
+        // Validación en tiempo real de contraseñas
+        const confirmarContrasena = document.getElementById('ConfirmarContrasena');
+        if (confirmarContrasena) {
+            confirmarContrasena.addEventListener('input', function() {
+                const contrasena = document.getElementById('Contrasena').value;
+                const confirmar = this.value;
+
+                if (contrasena !== confirmar && confirmar !== '') {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+    });
+</script>
