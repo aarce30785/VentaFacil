@@ -15,6 +15,7 @@ services:
       - sqlserver_data:/var/opt/mssql
       - ./log:/var/opt/mssql/log
       - ./secrets:/var/opt/mssql/secrets
+      - ./init:/app/init
     networks:
       default:
         aliases:
@@ -27,19 +28,23 @@ services:
       dockerfile: VentaFacil.web/Dockerfile
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+      - ConnectionStrings__MasterConnection=Server=sqlserver,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_RUNNING_IN_CONTAINER=true
       - ASPNETCORE_URLS=http://+:8080
     ports:
       - "8080:8080"
       - "8081:8081"
+    volumes:
+      - ./dataprotection_keys:/app/keys
+      - ./uploads:/wwwroot/uploads
     depends_on:
       - sqlserver
     restart: unless-stopped
 
 volumes:
   sqlserver_data:
-  
+
 networks:
   default:
     driver: bridge
