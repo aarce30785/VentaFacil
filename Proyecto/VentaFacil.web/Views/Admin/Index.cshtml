@@ -78,18 +78,10 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th class="lead-name">
-                                                    <h6>Nombre</h6>
-                                                </th>
-                                                <th class="lead-email">
-                                                    <h6>Email</h6>
-                                                </th>
-                                                <th class="lead-role">
-                                                    <h6>Rol</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Acción</h6>
-                                                </th>
+                                                <th class="lead-name"><h6>Nombre</h6></th>
+                                                <th class="lead-email"><h6>Email</h6></th>
+                                                <th class="lead-role"><h6>Rol</h6></th>
+                                                <th><h6>Acción</h6></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -104,7 +96,7 @@
                                                                     <img src="assets/images/lead/lead-1.png" alt="" />
                                                                 </div>
                                                                 <div class="lead-text">
-                                                                    <p><a href="#0">@usuario.Nombre</a></p>
+                                                                    <p>@usuario.Nombre</p>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -114,7 +106,7 @@
                                                                     <img src="assets/images/lead/lead-1.png" alt="" />
                                                                 </div>
                                                                 <div class="lead-text">
-                                                                    <p><a href="#0">@usuario.Correo</a></p>
+                                                                    <p>@usuario.Correo</p>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -123,18 +115,19 @@
                                                         </td>
                                                         <td>
                                                             <div class="action d-flex gap-2">
+                                                                <!-- CORREGIDO: Pasar datos individualmente -->
                                                                 <a class="text-primary" href="javascript:void(0);"
-                                                                   onclick="abrirModalVer(@Json.Serialize(new { usuario.Id_Usr, usuario.Nombre, usuario.Correo, usuario.Rol, usuario.Estado }))"
+                                                                   onclick="abrirModalVer(@usuario.Id_Usr, '@usuario.Nombre', '@usuario.Correo', '@usuario.Rol', @usuario.Estado.ToString().ToLower())"
                                                                    title="Ver">
                                                                     <i class="lni lni-eye"></i>
                                                                 </a>
                                                                 <a class="text-warning" href="javascript:void(0);"
-                                                                   onclick="abrirModalEditar(@Json.Serialize(new { usuario.Id_Usr, usuario.Nombre, usuario.Correo, usuario.Rol, usuario.Estado }))"
+                                                                   onclick="abrirModalEditar(@usuario.Id_Usr, '@usuario.Nombre', '@usuario.Correo', '@usuario.Rol', @usuario.Estado.ToString().ToLower())"
                                                                    title="Editar">
                                                                     <i class="lni lni-pencil"></i>
                                                                 </a>
                                                                 <a class="text-danger" href="javascript:void(0);"
-                                                                   onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre')"
+                                                                   onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
                                                                    title="Eliminar">
                                                                     <i class="lni lni-trash-can"></i>
                                                                 </a>
@@ -146,20 +139,13 @@
                                             else
                                             {
                                                 <tr>
-                                                    <td colspan="4" class="text-center">No se encontraron usuarios</td> <!-- Corregido colspan -->
+                                                    <td colspan="4" class="text-center">No se encontraron usuarios</td>
                                                 </tr>
                                             }
                                         </tbody>
                                     </table>
-                                </div> 
-                                <partial name="_UsuarioModal" />
+                                </div>
 
-                                <!-- Para debug -->
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        console.log('Modal element exists:', document.getElementById('usuarioModal') !== null);
-                                    });
-                                </script><!-- Cerrar table-wrapper aquí -->
                                 <!-- Menú de Paginación -->
                                 <div class="pagination-wrapper mt-4">
                                     <nav aria-label="Page navigation">
@@ -186,7 +172,6 @@
                                         </ul>
                                     </nav>
 
-                                    <!-- Información de página -->
                                     <div class="pagination-info text-center mt-2">
                                         @{
                                             var inicio = (Model.PaginaActual - 1) * 10 + 1;
@@ -195,10 +180,9 @@
                                         <p class="text-sm text-muted">Mostrando @inicio-@fin de @Model.TotalUsuarios registros</p>
                                     </div>
                                 </div>
-
-                                <!-- Modal fuera de cualquier contenedor problemático -->
-                                
                             </div>
+                            <partial name="_UsuarioModal" />
+
 
                             <!-- Tab de Productos -->
                             <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
@@ -660,7 +644,7 @@
 <!-- ========== table components end ========== -->
 
 
-<partial name="_UsuarioModal" />
+
 
 
 

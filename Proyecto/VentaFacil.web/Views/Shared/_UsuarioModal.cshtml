@@ -107,22 +107,14 @@
 </div>
 
 <script>
-    // Variables globales - SOLO UNA VEZ
-        let modoActual = 'crear';
+    // Variables globales
+    let modoActual = 'crear';
     let usuarioActualId = 0;
 
-    // Función para obtener el token (compatible con ambos métodos)
+    // Función para obtener el token
     function getAntiForgeryToken() {
-        // Método 1: JavaScript vanilla
         const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
-        if (tokenElement) return tokenElement.value;
-
-        // Método 2: jQuery (si está disponible)
-        if (typeof $ !== 'undefined') {
-            return $('input[name="__RequestVerificationToken"]').val();
-        }
-
-        return '';
+        return tokenElement ? tokenElement.value : '';
     }
 
     // Función para mostrar modal
@@ -144,143 +136,214 @@
         mostrarModal();
     }
 
-    // Función para abrir modal en modo edición
-    function abrirModalEditar(usuario) {
-        console.log('✏️ Abriendo modal editar', usuario);
+        function abrirModalEditar(id, nombre, correo, rol, estado) {
+        console.log('✏️ Abriendo modal editar', { id, nombre, correo, rol, estado });
+
         modoActual = 'editar';
-        usuarioActualId = usuario.Id_Usr;
+        usuarioActualId = id;
         resetForm();
-        cargarDatosUsuario(usuario);
+
+        // Mostrar campo ID
+        document.getElementById('idField').style.display = 'block';
+        document.getElementById('Id_Usr').value = id;
+
+        // Llenar datos del formulario
+        document.getElementById('Nombre').value = nombre || '';
+        document.getElementById('Correo').value = correo || '';
+        document.getElementById('Rol').value = rol ? rol.toString() : '';
+        document.getElementById('Estado').checked = estado === true || estado === 'true';
+
+        // Limpiar campos de contraseña
+        document.getElementById('Contrasena').value = '';
+        document.getElementById('ConfirmarContrasena').value = '';
+
         configurarModal('Editar Usuario', 'editar');
         mostrarModal();
     }
 
-    // Función para abrir modal en modo visualización
-    function abrirModalVer(usuario) {
-        console.log('👁️ Abriendo modal ver', usuario);
+    // CORREGIDO: Función para abrir modal en modo visualización con parámetros individuales
+    function abrirModalVer(id, nombre, correo, rol, estado) {
+        console.log('👁️ Abriendo modal ver', { id, nombre, correo, rol, estado });
         modoActual = 'ver';
-        usuarioActualId = usuario.Id_Usr;
+        usuarioActualId = id;
         resetForm();
-        cargarDatosUsuario(usuario);
+
+        // Cargar datos directamente
+        document.getElementById('Id_Usr').value = id;
+        document.getElementById('Nombre').value = nombre || '';
+        document.getElementById('Correo').value = correo || '';
+        document.getElementById('Rol').value = rol || '';
+        document.getElementById('Estado').checked = estado !== false;
+
         configurarModal('Detalles del Usuario', 'ver');
         mostrarModal();
     }
 
-    // Función para resetear el formulario (compatible)
-    function resetForm() {
+    // Función para resetear el formulario
+        function resetForm() {
         const form = document.getElementById('usuarioForm');
         if (form) form.reset();
 
-        // Usar jQuery si está disponible, sino JavaScript vanilla
-        if (typeof $ !== 'undefined') {
-            $('#idField').hide();
-            $('#auditFields').hide();
-            $('#Contrasena, #ConfirmarContrasena').closest('.input-style-1').show();
-            $('#Contrasena, #ConfirmarContrasena').prop('required', true);
-        } else {
-            // JavaScript vanilla
-            const idField = document.getElementById('idField');
-            const auditFields = document.getElementById('auditFields');
-            if (idField) idField.style.display = 'none';
-            if (auditFields) auditFields.style.display = 'none';
+        // Remover validaciones y clases
+        document.querySelectorAll('.form-control, .form-select, .form-check-input').forEach(element => {
+            element.readonly = false;
+            element.disabled = false;
+            element.classList.remove('bg-light', 'is-invalid');
+        });
 
-            const contrasenaFields = document.querySelectorAll('#Contrasena, #ConfirmarContrasena');
-            contrasenaFields.forEach(field => {
-                field.required = true;
-                const parent = field.closest('.input-style-1');
-                if (parent) parent.style.display = 'block';
-            });
+        // Remover textos opcionales
+        document.querySelectorAll('.optional-text').forEach(text => text.remove());
+
+        // Mostrar todos los campos por defecto
+        document.querySelectorAll('.input-style-1, .select-style-1').forEach(element => {
+            element.style.display = 'block';
+        });
+
+        // Ocultar campos de auditoría e ID
+        document.getElementById('idField').style.display = 'none';
+        document.getElementById('auditFields').style.display = 'none';
+    }
+       function configurarModal(titulo, modo) {
+        const titleElement = document.getElementById('usuarioModalLabel');
+        const btnGuardar = document.getElementById('btnGuardarUsuario');
+        const btnEditar = document.getElementById('btnEditarUsuario');
+        const idField = document.getElementById('idField');
+        const auditFields = document.getElementById('auditFields');
+        const contrasenaInputs = document.querySelectorAll('#Contrasena, #ConfirmarContrasena');
+
+        if (titleElement) titleElement.textContent = titulo;
+
+        switch(modo) {
+            case 'crear':
+                if (btnGuardar) btnGuardar.style.display = 'block';
+                if (btnEditar) btnEditar.style.display = 'none';
+                if (idField) idField.style.display = 'none';
+                if (auditFields) auditFields.style.display = 'none';
+
+                // Contraseñas requeridas en creación
+                contrasenaInputs.forEach(input => {
+                    input.required = true;
+                    input.closest('.input-style-1').style.display = 'block';
+                    // Remover texto opcional si existe
+                    const label = input.closest('.input-style-1').querySelector('label');
+                    const optionalText = label.querySelector('.optional-text');
+                    if (optionalText) optionalText.remove();
+                });
+                break;
+
+            case 'editar':
+                if (btnGuardar) btnGuardar.style.display = 'block';
+                if (btnEditar) btnEditar.style.display = 'none';
+                if (idField) idField.style.display = 'block';
+                if (auditFields) auditFields.style.display = 'none';
+
+                // Contraseñas opcionales en edición
+                contrasenaInputs.forEach(input => {
+                    input.required = false;
+                    input.closest('.input-style-1').style.display = 'block';
+
+                    // Agregar texto indicando que es opcional
+                    const label = input.closest('.input-style-1').querySelector('label');
+                    if (label && !label.querySelector('.optional-text')) {
+                        const optionalText = document.createElement('small');
+                        optionalText.className = 'optional-text text-muted';
+                        optionalText.textContent = ' (Opcional)';
+                        label.appendChild(optionalText);
+                    }
+                });
+                break;
+
+            case 'ver':
+                if (btnGuardar) btnGuardar.style.display = 'none';
+                if (btnEditar) btnEditar.style.display = 'block';
+                if (idField) idField.style.display = 'block';
+                if (auditFields) auditFields.style.display = 'block';
+
+                // Ocultar campos de contraseña en modo visualización
+                contrasenaInputs.forEach(input => {
+                    input.closest('.input-style-1').style.display = 'none';
+                });
+                break;
         }
-    }
 
-    // Función para configurar el modal según el modo (compatible)
-    function configurarModal(titulo, modo) {
-        if (typeof $ !== 'undefined') {
-            // Usar jQuery
-            $('#usuarioModalLabel').text(titulo);
-
-            switch(modo) {
-                case 'crear':
-                    $('#btnGuardarUsuario').show();
-                    $('#btnEditarUsuario').hide();
-                    $('#Contrasena, #ConfirmarContrasena').prop('required', true).closest('.input-style-1').show();
-                    break;
-                case 'editar':
-                    $('#btnGuardarUsuario').show();
-                    $('#btnEditarUsuario').hide();
-                    $('#idField').show();
-                    $('#Contrasena, #ConfirmarContrasena').prop('required', false).closest('.input-style-1').hide();
-                    break;
-                case 'ver':
-                    $('#btnGuardarUsuario').hide();
-                    $('#btnEditarUsuario').show();
-                    $('#idField').show();
-                    $('#auditFields').show();
-                    $('.form-control').prop('readonly', true).addClass('bg-light');
-                    $('.form-select').prop('disabled', true);
-                    $('#Estado').prop('disabled', true);
-                    $('#Contrasena, #ConfirmarContrasena').closest('.input-style-1').hide();
-                    break;
+        // Configurar estado de los campos
+        document.querySelectorAll('.form-control, .form-select, .form-check-input').forEach(element => {
+            if (modo === 'ver') {
+                // Solo lectura en modo visualización
+                element.readonly = true;
+                element.disabled = true;
+                element.classList.add('bg-light');
+            } else {
+                // Editables en otros modos
+                element.readonly = false;
+                element.disabled = false;
+                element.classList.remove('bg-light');
             }
-        } else {
-            // JavaScript vanilla
-            const titleElement = document.getElementById('usuarioModalLabel');
-            if (titleElement) titleElement.textContent = titulo;
+        });
 
-            const btnGuardar = document.getElementById('btnGuardarUsuario');
-            const btnEditar = document.getElementById('btnEditarUsuario');
-            const idField = document.getElementById('idField');
-            const auditFields = document.getElementById('auditFields');
-
-            switch(modo) {
-                case 'crear':
-                    if (btnGuardar) btnGuardar.style.display = 'block';
-                    if (btnEditar) btnEditar.style.display = 'none';
-                    break;
-                case 'editar':
-                    if (btnGuardar) btnGuardar.style.display = 'block';
-                    if (btnEditar) btnEditar.style.display = 'none';
-                    if (idField) idField.style.display = 'block';
-                    break;
-                case 'ver':
-                    if (btnGuardar) btnGuardar.style.display = 'none';
-                    if (btnEditar) btnEditar.style.display = 'block';
-                    if (idField) idField.style.display = 'block';
-                    if (auditFields) auditFields.style.display = 'block';
-                    break;
-            }
-        }
+        // ID siempre es de solo lectura
+        document.getElementById('Id_Usr').readonly = true;
+        document.getElementById('Id_Usr').classList.add('bg-light');
     }
 
-    // Función para cargar datos del usuario en el formulario
-    function cargarDatosUsuario(usuario) {
-        document.getElementById('Id_Usr').value = usuario.Id_Usr || '';
-        document.getElementById('Nombre').value = usuario.Nombre || '';
-        document.getElementById('Correo').value = usuario.Correo || '';
-        document.getElementById('Rol').value = usuario.Rol || '';
-        document.getElementById('Estado').checked = usuario.Estado !== false;
-    }
-
-    // Función para validar el formulario
-    function validarFormulario() {
+    // Función para validar formulario
+        function validarFormulario() {
         const form = document.getElementById('usuarioForm');
-        if (!form.checkValidity()) {
-            form.reportValidity();
+
+        // Validar campos básicos
+        const nombre = document.getElementById('Nombre').value;
+        const correo = document.getElementById('Correo').value;
+        const rol = document.getElementById('Rol').value;
+
+        if (!nombre || !correo || !rol) {
+            alert('Por favor complete todos los campos requeridos');
             return false;
         }
 
+        // Validación de contraseñas según el modo
         if (modoActual === 'crear') {
             const contrasena = document.getElementById('Contrasena').value;
             const confirmarContrasena = document.getElementById('ConfirmarContrasena').value;
 
-            if (contrasena !== confirmarContrasena) {
-                alert('Las contraseñas no coinciden');
+            if (!contrasena || !confirmarContrasena) {
+                alert('Las contraseñas son requeridas para crear un usuario');
                 return false;
             }
 
             if (contrasena.length < 6) {
                 alert('La contraseña debe tener al menos 6 caracteres');
+                document.getElementById('Contrasena').classList.add('is-invalid');
                 return false;
+            }
+
+            if (contrasena !== confirmarContrasena) {
+                alert('Las contraseñas no coinciden');
+                document.getElementById('ConfirmarContrasena').classList.add('is-invalid');
+                return false;
+            }
+        } else if (modoActual === 'editar') {
+            // En edición, validar contraseñas solo si se ingresaron
+            const contrasena = document.getElementById('Contrasena').value;
+            const confirmarContrasena = document.getElementById('ConfirmarContrasena').value;
+
+            // Si se llena uno, validar ambos
+            if (contrasena || confirmarContrasena) {
+                if (!contrasena || !confirmarContrasena) {
+                    alert('Debe completar ambos campos de contraseña');
+                    return false;
+                }
+
+                if (contrasena.length < 6) {
+                    alert('La contraseña debe tener al menos 6 caracteres');
+                    document.getElementById('Contrasena').classList.add('is-invalid');
+                    return false;
+                }
+
+                if (contrasena !== confirmarContrasena) {
+                    alert('Las contraseñas no coinciden');
+                    document.getElementById('ConfirmarContrasena').classList.add('is-invalid');
+                    return false;
+                }
             }
         }
 
@@ -288,23 +351,32 @@
     }
 
     // Función para obtener datos del formulario
-    function obtenerDatosFormulario() {
+        function obtenerDatosFormulario() {
         const data = {
             Id_Usr: usuarioActualId,
             Nombre: document.getElementById('Nombre').value,
             Correo: document.getElementById('Correo').value,
-            Contrasena: document.getElementById('Contrasena').value,
-            ConfirmarContrasena: document.getElementById('ConfirmarContrasena').value,
-            Rol: document.getElementById('Rol').value,
+            Rol: parseInt(document.getElementById('Rol').value),
             Estado: document.getElementById('Estado').checked
         };
 
-        // En edición, si no se cambió la contraseña, enviar vacío
-        if (modoActual === 'editar' && data.Contrasena === '') {
-            data.Contrasena = null;
-            data.ConfirmarContrasena = null;
+        // Manejo de contraseñas
+        if (modoActual === 'crear') {
+            data.Contrasena = document.getElementById('Contrasena').value;
+            data.ConfirmarContrasena = document.getElementById('ConfirmarContrasena').value;
+        } else if (modoActual === 'editar') {
+            const contrasena = document.getElementById('Contrasena').value;
+            const confirmarContrasena = document.getElementById('ConfirmarContrasena').value;
+
+            // Solo incluir contraseñas si se proporcionaron
+            if (contrasena && confirmarContrasena) {
+                data.Contrasena = contrasena;
+                data.ConfirmarContrasena = confirmarContrasena;
+            }
+            // Si no se proporcionan contraseñas, no se incluyen en el objeto
         }
 
+        console.log('Datos a enviar:', data);
         return data;
     }
 
@@ -315,9 +387,11 @@
         }
     }
 
-    // Función para eliminar usuario via AJAX
+    // Función para eliminar usuario
     async function eliminarUsuario(id) {
         try {
+            console.log('🗑️ Eliminando usuario ID:', id);
+
             const response = await fetch(`/Admin/EliminarUsuario/${id}`, {
                 method: 'POST',
                 headers: {
@@ -327,28 +401,30 @@
             });
 
             const result = await response.json();
+            console.log('Resultado eliminación:', result);
 
             if (result.success) {
-                alert('Usuario eliminado correctamente');
+                alert('✅ Usuario eliminado correctamente');
                 location.reload();
             } else {
-                alert(result.message || 'Error al eliminar el usuario');
+                alert('❌ ' + (result.message || 'Error al eliminar el usuario'));
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al eliminar el usuario');
+            alert('❌ Error al eliminar el usuario: ' + error.message);
         }
     }
 
-    // Función para guardar/editar usuario via AJAX
+    // Función para guardar/editar usuario
     async function guardarUsuario(usuarioData) {
         try {
-            console.log('🔵 Intentando guardar usuario...', usuarioData);
+            console.log('💾 Guardando usuario...', usuarioData);
 
             const url = modoActual === 'crear' ? '/Admin/CrearUsuario' : '/Admin/EditarUsuario';
             const token = getAntiForgeryToken();
 
-            console.log('📤 Enviando a:', url);
+            console.log('URL:', url);
+            console.log('Token:', token ? 'Presente' : 'Faltante');
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -359,26 +435,31 @@
                 body: JSON.stringify(usuarioData)
             });
 
-            console.log('📥 Respuesta recibida. Status:', response.status);
-
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('✅ Resultado del servidor:', result);
+            console.log('✅ Respuesta del servidor:', result);
 
             if (result.success) {
                 alert('✅ ' + (modoActual === 'crear' ? 'Usuario creado exitosamente' : 'Usuario actualizado exitosamente'));
 
                 // Cerrar modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
+                const modalElement = document.getElementById('usuarioModal');
+                const modal = bootstrap.Modal.getInstance(modalElement);
                 if (modal) modal.hide();
 
-                // Recargar página
-                setTimeout(() => location.reload(), 1000);
+                // Recargar página después de un breve delay
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
             } else {
-                alert('❌ ' + (result.message || 'Error al guardar el usuario'));
+                let errorMessage = result.message || 'Error al guardar el usuario';
+                if (result.errors) {
+                    errorMessage += '\n' + result.errors.join('\n');
+                }
+                alert('❌ ' + errorMessage);
             }
 
         } catch (error) {
@@ -388,67 +469,46 @@
     }
 
     // Inicialización cuando el documento está listo
-        document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Modal de usuarios inicializado');
 
-        // Usar jQuery si está disponible para los event listeners
-        if (typeof $ !== 'undefined') {
-            $('#btnGuardarUsuario').click(function() {
-                if (validarFormulario()) {
-                    const usuarioData = obtenerDatosFormulario();
-                    guardarUsuario(usuarioData);
-                }
-            });
+        // Event listeners
+        document.getElementById('btnGuardarUsuario').addEventListener('click', function() {
+            console.log('🖲️ Botón guardar clickeado');
+            if (validarFormulario()) {
+                const usuarioData = obtenerDatosFormulario();
+                guardarUsuario(usuarioData);
+            }
+        });
 
-            $('#btnEditarUsuario').click(function() {
-                modoActual = 'editar';
-                configurarModal('Editar Usuario', 'editar');
-            });
+        document.getElementById('btnEditarUsuario').addEventListener('click', function() {
+            console.log('🖲️ Botón editar clickeado');
+            modoActual = 'editar';
+            configurarModal('Editar Usuario', 'editar');
+        });
 
-            $('#ConfirmarContrasena').on('input', function() {
-                const contrasena = $('#Contrasena').val();
-                const confirmar = $(this).val();
+        // Validación en tiempo real de contraseñas
+        document.getElementById('ConfirmarContrasena').addEventListener('input', function() {
+            const contrasena = document.getElementById('Contrasena').value;
+            const confirmar = this.value;
 
-                if (contrasena !== confirmar && confirmar !== '') {
-                    $(this).addClass('is-invalid');
+            if (contrasena !== confirmar && confirmar !== '') {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+
+        // Limpiar validación cuando se modifica la contraseña principal
+        document.getElementById('Contrasena').addEventListener('input', function() {
+            const confirmar = document.getElementById('ConfirmarContrasena');
+            if (confirmar.value !== '') {
+                if (this.value !== confirmar.value) {
+                    confirmar.classList.add('is-invalid');
                 } else {
-                    $(this).removeClass('is-invalid');
+                    confirmar.classList.remove('is-invalid');
                 }
-            });
-        } else {
-            // JavaScript vanilla para event listeners
-            const btnGuardar = document.getElementById('btnGuardarUsuario');
-            const btnEditar = document.getElementById('btnEditarUsuario');
-            const confirmarContrasena = document.getElementById('ConfirmarContrasena');
-
-            if (btnGuardar) {
-                btnGuardar.addEventListener('click', function() {
-                    if (validarFormulario()) {
-                        const usuarioData = obtenerDatosFormulario();
-                        guardarUsuario(usuarioData);
-                    }
-                });
             }
-
-            if (btnEditar) {
-                btnEditar.addEventListener('click', function() {
-                    modoActual = 'editar';
-                    configurarModal('Editar Usuario', 'editar');
-                });
-            }
-
-            if (confirmarContrasena) {
-                confirmarContrasena.addEventListener('input', function() {
-                    const contrasena = document.getElementById('Contrasena').value;
-                    const confirmar = this.value;
-
-                    if (contrasena !== confirmar && confirmar !== '') {
-                        this.classList.add('is-invalid');
-                    } else {
-                        this.classList.remove('is-invalid');
-                    }
-                });
-            }
-        }
+        });
     });
 </script>
