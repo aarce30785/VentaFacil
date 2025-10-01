@@ -1,63 +1,647 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using VentaFacil.web.Models.Response.Admin
+@model UsuarioListResponse
 @{
     ViewData["Title"] = "Panel de administrador";
     Layout = "_LayoutPlantilla";
+
+    
 }
 
-<div class="container-fluid"> 
-    <div class="title-wrapper pt-30 ">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div class="title d-flex align-items-center flex-wrap">
-                    <h2 class="mr-40">Panel de administrador</h2>
+<!-- ========== table components start ========== -->
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Panel de Administrador</h2>
+                    </div>
                 </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Gestión
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
             </div>
-            <div class="invoice-wrapper">
-                <div class="col-12">
-                    <div class="invoice-card card-style mb-30">
-                        <div class="container-fluid d-flex justify-content-center align-items-start min-vh-100 pt-4">
-                            <div class="row w-100 justify-content-center">
-                                <div class="col-12 col-md-8 col-lg-6">
-                                    <!-- Ajusta el ancho máximo según necesites -->
-                                    <ul class="nav nav-pills mb-3 justify-content-md-around" id="pills-tab" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Home</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Usuarios</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Contact</button>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content" id="pills-tabContent">
-                                        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-                                            <div class="text-center">
-                                                Contenido Home
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-                                            <div class="text-center">
-                                                Usuarios
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
-                                            <div class="text-center">
-                                                Contenido Contact
-                                            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        <!-- ========== tabs section start ========== -->
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <!-- Tabs Navigation -->
+                        <ul class="nav nav-pills mb-4" id="adminTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="true">
+                                    <i class="lni lni-users me-2"></i>Usuarios
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="products-tab" data-bs-toggle="pill" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">
+                                    <i class="lni lni-package me-2"></i>Productos
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="categoria-tab" data-bs-toggle="pill" data-bs-target="#categoria" type="button" role="tab" aria-controls="categoria" aria-selected="false">
+                                    <i class="lni lni-package me-2"></i>Categoria
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tabs Content -->
+                        <div class="tab-content" id="adminTabsContent">
+
+                            <!-- Tab de Usuarios -->
+                            <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Gestión de Usuarios</h6>
+                                    <button class="main-btn primary-btn btn-hover" onclick="abrirModalCrear()">
+                                        <i class="lni lni-plus me-2"></i>Agregar Usuario
+                                    </button>
+                                </div>
+                                <div class="table-wrapper table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th class="lead-name"><h6>Nombre</h6></th>
+                                                <th class="lead-email"><h6>Email</h6></th>
+                                                <th class="lead-role"><h6>Rol</h6></th>
+                                                <th><h6>Acción</h6></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.Usuarios != null && Model.Usuarios.Any())
+                                            {
+                                                foreach (var usuario in Model.Usuarios)
+                                                {
+                                                    <tr>
+                                                        <td class="min-width">
+                                                            <div class="lead">
+                                                                <div class="lead-image">
+                                                                    <img src="assets/images/lead/lead-1.png" alt="" />
+                                                                </div>
+                                                                <div class="lead-text">
+                                                                    <p>@usuario.Nombre</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="min-width">
+                                                            <div class="lead">
+                                                                <div class="lead-image">
+                                                                    <img src="assets/images/lead/lead-1.png" alt="" />
+                                                                </div>
+                                                                <div class="lead-text">
+                                                                    <p>@usuario.Correo</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="min-width">
+                                                            <span class="status-btn active-btn">@usuario.Rol</span>
+                                                        </td>
+                                                        <td>
+                                                            <div class="action d-flex gap-2">
+                                                                <!-- CORREGIDO: Pasar datos individualmente -->
+                                                                <a class="text-primary" href="javascript:void(0);"
+                                                                   onclick="abrirModalVer(@usuario.Id_Usr, '@usuario.Nombre', '@usuario.Correo', '@usuario.Rol', @usuario.Estado.ToString().ToLower())"
+                                                                   title="Ver">
+                                                                    <i class="lni lni-eye"></i>
+                                                                </a>
+                                                                <a class="text-warning" href="javascript:void(0);"
+                                                                   onclick="abrirModalEditar(@usuario.Id_Usr, '@usuario.Nombre', '@usuario.Correo', '@usuario.Rol', @usuario.Estado.ToString().ToLower())"
+                                                                   title="Editar">
+                                                                    <i class="lni lni-pencil"></i>
+                                                                </a>
+                                                                <a class="text-danger" href="javascript:void(0);"
+                                                                   onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
+                                                                   title="Eliminar">
+                                                                    <i class="lni lni-trash-can"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No se encontraron usuarios</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Menú de Paginación -->
+                                <div class="pagination-wrapper mt-4">
+                                    <nav aria-label="Page navigation">
+                                        <ul class="pagination justify-content-center">
+                                            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                                                <a class="page-link" href="@Url.Action("IndexUsuarios", "Admin", new { pagina = Model.PaginaActual - 1, cantidadPorPagina = 10 })"
+                                                   tabindex="-1" aria-disabled="@(Model.PaginaActual == 1 ? "true" : "false")">
+                                                    <i class="lni lni-chevron-left"></i>
+                                                </a>
+                                            </li>
+
+                                            @for (int i = 1; i <= Model.TotalPaginas; i++)
+                                            {
+                                                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                                    <a class="page-link" href="@Url.Action("IndexUsuarios", "Admin", new { pagina = i, cantidadPorPagina = 10 })">@i</a>
+                                                </li>
+                                            }
+
+                                            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                                                <a class="page-link" href="@Url.Action("IndexUsuarios", "Admin", new { pagina = Model.PaginaActual + 1, cantidadPorPagina = 10 })">
+                                                    <i class="lni lni-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+
+                                    <div class="pagination-info text-center mt-2">
+                                        @{
+                                            var inicio = (Model.PaginaActual - 1) * 10 + 1;
+                                            var fin = Math.Min(Model.PaginaActual * 10, Model.TotalUsuarios);
+                                        }
+                                        <p class="text-sm text-muted">Mostrando @inicio-@fin de @Model.TotalUsuarios registros</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <partial name="_UsuarioModal" />
+
+
+                            <!-- Tab de Productos -->
+                            <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Gestión de Productos</h6>
+                                    <button class="main-btn primary-btn btn-hover">
+                                        <i class="lni lni-plus me-2"></i>Agregar Producto
+                                    </button>
+                                </div>
+                                <div class="table-wrapper table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <h6>ID</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Producto</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Descripción</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Precio</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Stock</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Stock Mínimo</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Imagen</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Estado</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Acción</h6>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#PROD001</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>Laptop Gaming</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Laptop para gaming con RTX 4060</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold text-success">$1,299.99</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>15</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>5</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <div class="product-image">
+                                                        <img src="assets/images/lead/lead-1.png" alt="Laptop Gaming" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
+                                                    </div>
+                                                </td>
+                                                <td class="min-width">
+                                                    <span class="status-btn active-btn">Disponible</span>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#PROD002</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>Smartphone XL</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Teléfono inteligente 128GB</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold text-success">$599.99</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>8</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>3</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <div class="product-image">
+                                                        <img src="assets/images/lead/lead-2.png" alt="Smartphone" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
+                                                    </div>
+                                                </td>
+                                                <td class="min-width">
+                                                    <span class="status-btn active-btn">Disponible</span>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#PROD003</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>Auriculares Bluetooth</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Auriculares inalámbricos noise canceling</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold text-success">$199.99</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>2</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>5</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <div class="product-image">
+                                                        <img src="assets/images/lead/lead-3.png" alt="Auriculares" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
+                                                    </div>
+                                                </td>
+                                                <td class="min-width">
+                                                    <span class="status-btn warning-btn">Stock Bajo</span>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#PROD004</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>Tablet Pro</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Tablet 10 pulgadas 64GB</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold text-success">$349.99</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>0</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>2</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <div class="product-image">
+                                                        <img src="assets/images/lead/lead-4.png" alt="Tablet" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
+                                                    </div>
+                                                </td>
+                                                <td class="min-width">
+                                                    <span class="status-btn close-btn">Agotado</span>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#PROD005</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>Smart Watch</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Reloj inteligente deportivo</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold text-success">$159.99</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>25</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p>10</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <div class="product-image">
+                                                        <img src="assets/images/lead/lead-5.png" alt="Smart Watch" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
+                                                    </div>
+                                                </td>
+                                                <td class="min-width">
+                                                    <span class="status-btn active-btn">Disponible</span>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Menú de Paginación -->
+                                    <div class="pagination-wrapper mt-4">
+                                        <nav aria-label="Page navigation">
+                                            <ul class="pagination justify-content-center">
+                                                <li class="page-item disabled">
+                                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                                        <i class="lni lni-chevron-left"></i>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#">
+                                                        <i class="lni lni-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+
+                                        <!-- Información de página -->
+                                        <div class="pagination-info text-center mt-2">
+                                            <p class="text-sm text-muted">Mostrando 1-10 de 56 registros</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Tab de Categorías -->
+                            <div class="tab-pane fade" id="categoria" role="tabpanel" aria-labelledby="categoria-tab">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Gestión de Categorías</h6>
+                                    <button class="main-btn primary-btn btn-hover">
+                                        <i class="lni lni-plus me-2"></i>Agregar Categoría
+                                    </button>
+                                </div>
+                                <div class="table-wrapper table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <h6>ID</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Nombre</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Descripción</h6>
+                                                </th>
+                                                <th>
+                                                    <h6>Acción</h6>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#CAT001</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold">Electrónicos</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Dispositivos electrónicos y tecnológicos</p>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#CAT002</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold">Ropa</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Prendas de vestir para hombres, mujeres y niños</p>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#CAT003</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold">Hogar</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Artículos para el hogar y decoración</p>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#CAT004</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold">Deportes</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Equipamiento y ropa deportiva</p>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#CAT005</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold">Libros</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Libros de todos los géneros y temas</p>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-sm">#CAT006</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="fw-bold">Juguetes</p>
+                                                </td>
+                                                <td class="min-width">
+                                                    <p class="text-sm">Juguetes y juegos para todas las edades</p>
+                                                </td>
+                                                <td>
+                                                    <div class="action d-flex gap-2">
+                                                        <button class="text-primary" title="Editar">
+                                                            <i class="lni lni-pencil"></i>
+                                                        </button>
+                                                        <button class="text-danger" title="Eliminar">
+                                                            <i class="lni lni-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- Menú de Paginación -->
+                                    <div class="pagination-wrapper mt-4">
+                                        <nav aria-label="Page navigation">
+                                            <ul class="pagination justify-content-center">
+                                                <li class="page-item disabled">
+                                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                                        <i class="lni lni-chevron-left"></i>
+                                                    </a>
+                                                </li>
+                                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#">
+                                                        <i class="lni lni-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+
+                                        <!-- Información de página -->
+                                        <div class="pagination-info text-center mt-2">
+                                            <p class="text-sm text-muted">Mostrando 1-10 de 56 registros</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
+                    <!-- end card -->
                 </div>
+                <!-- end col -->
             </div>
+            <!-- end row -->
         </div>
+        <!-- ========== tabs section end ========== -->
     </div>
-</div>
+    <!-- end container -->
+</section>
+<!-- ========== table components end ========== -->
 
 
 

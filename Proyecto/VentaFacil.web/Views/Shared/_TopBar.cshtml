@@ -32,12 +32,12 @@
                 <div class="header-right">
                     <!-- profile start -->
                     <div class="profile-box ml-15">
-                        <button class="dropdown-toggle bg-transparent border-0" type="button" id="profile"
+                        <button class="dropdown-toggle bg-transparent border-0" type="button" id="profileDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="profile-info">
                                 <div class="info">
                                     <div class="image">
-                                        <img src="assets/images/profile/profile-image.png" alt="" />
+                                        <img src="~/assets/images/profile/profile-image.png" alt="Profile" />
                                     </div>
                                     <div>
                                         <h6 class="fw-500">@nombre</h6>
@@ -46,42 +46,45 @@
                                 </div>
                             </div>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profile">
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                             <li>
-                                <div class="author-info flex items-center !p-1">
-                                    <div class="image">
-                                        <img src="assets/images/profile/profile-image.png" alt="image">
+                                <div class="author-info flex items-center p-3">
+                                    <div class="image me-3">
+                                        <img src="~/assets/images/profile/profile-image.png" alt="image" class="rounded-circle" width="40">
                                     </div>
                                     <div class="content">
-                                        <h4 class="text-sm">@nombre</h4>
-                                        <a class="text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white text-xs"
-                                           href="#">@correo</a>
+                                        <h6 class="mb-0">@nombre</h6>
+                                        <small class="text-muted">@correo</small>
                                     </div>
                                 </div>
                             </li>
-                            <li class="divider"></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a href="#0">
-                                    <i class="lni lni-user"></i> View Profile
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-user me-2"></i> Perfil
                                 </a>
                             </li>
                             <li>
-                                <a href="#0">
-                                    <i class="lni lni-alarm"></i> Notifications
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-alarm me-2"></i> Notificaciones
                                 </a>
                             </li>
                             <li>
-                                <a href="#0"> <i class="lni lni-inbox"></i> Messages </a>
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-inbox me-2"></i> Mensajes
+                                </a>
                             </li>
                             <li>
-                                <a href="#0"> <i class="lni lni-cog"></i> Settings </a>
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-cog me-2"></i> Configuración
+                                </a>
                             </li>
-                            <li class="divider"></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form id="logoutForm" asp-controller="Login" asp-action="Logout" method="post">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item" style="background:none; border:none; width:100%; text-align:left;">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Salir
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="lni lni-exit me-2"></i>Cerrar Sesión
                                     </button>
                                 </form>
                             </li>

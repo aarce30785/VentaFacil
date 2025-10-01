@@ -4,45 +4,54 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - VentaFacil.web</title>
-    
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/VentaFacil.web.styles.css" asp-append-version="true" />
-    
-    <!-- ========== All CSS files linkup ========= -->
-    <link rel="stylesheet" href="~/Plantilla/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/Plantilla/css/lineicons.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="~/Plantilla/css/materialdesignicons.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="~/Plantilla/css/fullcalendar.css" />
+
+    <!-- SOLO UNA VERSIÓN DE BOOTSTRAP -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" rel="stylesheet">
+
+    <!-- CSS de la plantilla (verifica que no incluya bootstrap) -->
+    <link rel="stylesheet" href="~/Plantilla/css/lineicons.css" />
+    <link rel="stylesheet" href="~/Plantilla/css/materialdesignicons.min.css" />
     <link rel="stylesheet" href="~/Plantilla/css/fullcalendar.css" />
     <link rel="stylesheet" href="~/Plantilla/css/main.css" />
 
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    <!-- Token ANTIFORGERY aquí -->
+    @Html.AntiForgeryToken()
+
     <div class="wrapper">
         <!-- Sidebar Dinámico -->
         @if (User.Identity.IsAuthenticated)
         {
-            @Html.Partial("_TopBar")
-            @Html.Partial("_SideBar")
+            @await Html.PartialAsync("_TopBar")
+            @await Html.PartialAsync("_SideBar")
         }
 
         <div class="main-panel">
-            
             <!-- Contenido Principal -->
             <div class="content pt-5">
                 @RenderBody()
             </div>
-
         </div>
     </div>
-    
+
+    <!-- MODAL DEBE ESTAR FUERA DEL WRAPPER PARA EVITAR PROBLEMAS -->
+    <partial name="_UsuarioModal" />
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - VentaFacil.web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - VentaFacil.web
         </div>
     </footer>
-    <script src="~/Plantilla/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SCRIPTS EN ORDEN CORRECTO -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Scripts de la plantilla -->
     <script src="~/Plantilla/js/Chart.min.js"></script>
     <script src="~/Plantilla/js/dynamic-pie-chart.js"></script>
     <script src="~/Plantilla/js/moment.min.js"></script>
@@ -51,6 +60,25 @@
     <script src="~/Plantilla/js/world-merc.js"></script>
     <script src="~/Plantilla/js/polyfill.js"></script>
     <script src="~/Plantilla/js/main.js"></script>
+
+    <!-- Scripts de las vistas -->
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Script de inicialización global -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== VERIFICACIÓN DE CARGA ===');
+            console.log('jQuery:', typeof $ !== 'undefined');
+            console.log('Bootstrap:', typeof bootstrap !== 'undefined');
+            console.log('Modal element:', document.getElementById('usuarioModal'));
+            console.log('Token antiforgery:', document.querySelector('input[name="__RequestVerificationToken"]') ? 'Sí' : 'No');
+
+            // Verificar funciones globales
+            console.log('abrirModalCrear:', typeof abrirModalCrear);
+            console.log('abrirModalEditar:', typeof abrirModalEditar);
+            console.log('abrirModalVer:', typeof abrirModalVer);
+        });
+    </script>
 </body>
 </html>
+
