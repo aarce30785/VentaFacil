@@ -108,12 +108,21 @@
 
 <script>
     // Variables globales - SOLO UNA VEZ
-    let modoActual = 'crear';
+        let modoActual = 'crear';
     let usuarioActualId = 0;
 
-    // Función para obtener el token
+    // Función para obtener el token (compatible con ambos métodos)
     function getAntiForgeryToken() {
-        return document.querySelector('input[name="__RequestVerificationToken"]').value;
+        // Método 1: JavaScript vanilla
+        const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (tokenElement) return tokenElement.value;
+
+        // Método 2: jQuery (si está disponible)
+        if (typeof $ !== 'undefined') {
+            return $('input[name="__RequestVerificationToken"]').val();
+        }
+
+        return '';
     }
 
     // Función para mostrar modal
@@ -157,64 +166,89 @@
         mostrarModal();
     }
 
-    // Función para resetear el formulario
+    // Función para resetear el formulario (compatible)
     function resetForm() {
         const form = document.getElementById('usuarioForm');
         if (form) form.reset();
 
-        // Usar JavaScript vanilla en lugar de jQuery para evitar conflictos
-        const idField = document.getElementById('idField');
-        const auditFields = document.getElementById('auditFields');
-        if (idField) idField.style.display = 'none';
-        if (auditFields) auditFields.style.display = 'none';
+        // Usar jQuery si está disponible, sino JavaScript vanilla
+        if (typeof $ !== 'undefined') {
+            $('#idField').hide();
+            $('#auditFields').hide();
+            $('#Contrasena, #ConfirmarContrasena').closest('.input-style-1').show();
+            $('#Contrasena, #ConfirmarContrasena').prop('required', true);
+        } else {
+            // JavaScript vanilla
+            const idField = document.getElementById('idField');
+            const auditFields = document.getElementById('auditFields');
+            if (idField) idField.style.display = 'none';
+            if (auditFields) auditFields.style.display = 'none';
 
-        // Mostrar campos de contraseña por defecto
-        const contrasenaFields = document.querySelectorAll('#Contrasena, #ConfirmarContrasena');
-        contrasenaFields.forEach(field => {
-            field.required = true;
-            const parent = field.closest('.input-style-1');
-            if (parent) parent.style.display = 'block';
-        });
+            const contrasenaFields = document.querySelectorAll('#Contrasena, #ConfirmarContrasena');
+            contrasenaFields.forEach(field => {
+                field.required = true;
+                const parent = field.closest('.input-style-1');
+                if (parent) parent.style.display = 'block';
+            });
+        }
     }
 
-    // Función para configurar el modal según el modo
+    // Función para configurar el modal según el modo (compatible)
     function configurarModal(titulo, modo) {
-        const titleElement = document.getElementById('usuarioModalLabel');
-        if (titleElement) titleElement.textContent = titulo;
+        if (typeof $ !== 'undefined') {
+            // Usar jQuery
+            $('#usuarioModalLabel').text(titulo);
 
-        const btnGuardar = document.getElementById('btnGuardarUsuario');
-        const btnEditar = document.getElementById('btnEditarUsuario');
-        const idField = document.getElementById('idField');
-        const auditFields = document.getElementById('auditFields');
-        const contrasena = document.getElementById('Contrasena');
-        const confirmarContrasena = document.getElementById('ConfirmarContrasena');
+            switch(modo) {
+                case 'crear':
+                    $('#btnGuardarUsuario').show();
+                    $('#btnEditarUsuario').hide();
+                    $('#Contrasena, #ConfirmarContrasena').prop('required', true).closest('.input-style-1').show();
+                    break;
+                case 'editar':
+                    $('#btnGuardarUsuario').show();
+                    $('#btnEditarUsuario').hide();
+                    $('#idField').show();
+                    $('#Contrasena, #ConfirmarContrasena').prop('required', false).closest('.input-style-1').hide();
+                    break;
+                case 'ver':
+                    $('#btnGuardarUsuario').hide();
+                    $('#btnEditarUsuario').show();
+                    $('#idField').show();
+                    $('#auditFields').show();
+                    $('.form-control').prop('readonly', true).addClass('bg-light');
+                    $('.form-select').prop('disabled', true);
+                    $('#Estado').prop('disabled', true);
+                    $('#Contrasena, #ConfirmarContrasena').closest('.input-style-1').hide();
+                    break;
+            }
+        } else {
+            // JavaScript vanilla
+            const titleElement = document.getElementById('usuarioModalLabel');
+            if (titleElement) titleElement.textContent = titulo;
 
-        switch(modo) {
-            case 'crear':
-                if (btnGuardar) btnGuardar.style.display = 'block';
-                if (btnEditar) btnEditar.style.display = 'none';
-                if (contrasena) contrasena.required = true;
-                if (confirmarContrasena) confirmarContrasena.required = true;
-                break;
-            case 'editar':
-                if (btnGuardar) btnGuardar.style.display = 'block';
-                if (btnEditar) btnEditar.style.display = 'none';
-                if (idField) idField.style.display = 'block';
-                if (contrasena) contrasena.required = false;
-                if (confirmarContrasena) confirmarContrasena.required = false;
-                // Ocultar campos de contraseña en edición
-                if (contrasena) contrasena.closest('.input-style-1').style.display = 'none';
-                if (confirmarContrasena) confirmarContrasena.closest('.input-style-1').style.display = 'none';
-                break;
-            case 'ver':
-                if (btnGuardar) btnGuardar.style.display = 'none';
-                if (btnEditar) btnEditar.style.display = 'block';
-                if (idField) idField.style.display = 'block';
-                if (auditFields) auditFields.style.display = 'block';
-                // Ocultar campos de contraseña en visualización
-                if (contrasena) contrasena.closest('.input-style-1').style.display = 'none';
-                if (confirmarContrasena) confirmarContrasena.closest('.input-style-1').style.display = 'none';
-                break;
+            const btnGuardar = document.getElementById('btnGuardarUsuario');
+            const btnEditar = document.getElementById('btnEditarUsuario');
+            const idField = document.getElementById('idField');
+            const auditFields = document.getElementById('auditFields');
+
+            switch(modo) {
+                case 'crear':
+                    if (btnGuardar) btnGuardar.style.display = 'block';
+                    if (btnEditar) btnEditar.style.display = 'none';
+                    break;
+                case 'editar':
+                    if (btnGuardar) btnGuardar.style.display = 'block';
+                    if (btnEditar) btnEditar.style.display = 'none';
+                    if (idField) idField.style.display = 'block';
+                    break;
+                case 'ver':
+                    if (btnGuardar) btnGuardar.style.display = 'none';
+                    if (btnEditar) btnEditar.style.display = 'block';
+                    if (idField) idField.style.display = 'block';
+                    if (auditFields) auditFields.style.display = 'block';
+                    break;
+            }
         }
     }
 
@@ -354,42 +388,67 @@
     }
 
     // Inicialización cuando el documento está listo
-    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Modal de usuarios inicializado');
 
-        // Guardar usuario
-        const btnGuardar = document.getElementById('btnGuardarUsuario');
-        if (btnGuardar) {
-            btnGuardar.addEventListener('click', function() {
+        // Usar jQuery si está disponible para los event listeners
+        if (typeof $ !== 'undefined') {
+            $('#btnGuardarUsuario').click(function() {
                 if (validarFormulario()) {
                     const usuarioData = obtenerDatosFormulario();
                     guardarUsuario(usuarioData);
                 }
             });
-        }
 
-        // Botón editar en modo visualización
-        const btnEditar = document.getElementById('btnEditarUsuario');
-        if (btnEditar) {
-            btnEditar.addEventListener('click', function() {
+            $('#btnEditarUsuario').click(function() {
                 modoActual = 'editar';
                 configurarModal('Editar Usuario', 'editar');
             });
-        }
 
-        // Validación en tiempo real de contraseñas
-        const confirmarContrasena = document.getElementById('ConfirmarContrasena');
-        if (confirmarContrasena) {
-            confirmarContrasena.addEventListener('input', function() {
-                const contrasena = document.getElementById('Contrasena').value;
-                const confirmar = this.value;
+            $('#ConfirmarContrasena').on('input', function() {
+                const contrasena = $('#Contrasena').val();
+                const confirmar = $(this).val();
 
                 if (contrasena !== confirmar && confirmar !== '') {
-                    this.classList.add('is-invalid');
+                    $(this).addClass('is-invalid');
                 } else {
-                    this.classList.remove('is-invalid');
+                    $(this).removeClass('is-invalid');
                 }
             });
+        } else {
+            // JavaScript vanilla para event listeners
+            const btnGuardar = document.getElementById('btnGuardarUsuario');
+            const btnEditar = document.getElementById('btnEditarUsuario');
+            const confirmarContrasena = document.getElementById('ConfirmarContrasena');
+
+            if (btnGuardar) {
+                btnGuardar.addEventListener('click', function() {
+                    if (validarFormulario()) {
+                        const usuarioData = obtenerDatosFormulario();
+                        guardarUsuario(usuarioData);
+                    }
+                });
+            }
+
+            if (btnEditar) {
+                btnEditar.addEventListener('click', function() {
+                    modoActual = 'editar';
+                    configurarModal('Editar Usuario', 'editar');
+                });
+            }
+
+            if (confirmarContrasena) {
+                confirmarContrasena.addEventListener('input', function() {
+                    const contrasena = document.getElementById('Contrasena').value;
+                    const confirmar = this.value;
+
+                    if (contrasena !== confirmar && confirmar !== '') {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
         }
     });
 </script>

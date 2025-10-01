@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - VentaFacil.web</title>
 
-    <!-- Bootstrap solo una vez -->
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" rel="stylesheet">
 
@@ -47,14 +47,10 @@
     </footer>
 
     <!-- SCRIPTS EN ORDEN CORRECTO -->
-    <!-- jQuery primero -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Bootstrap solo una vez -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Scripts de la plantilla -->
-    <script src="~/Plantilla/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts de la plantilla (sin bootstrap duplicado) -->
     <script src="~/Plantilla/js/Chart.min.js"></script>
     <script src="~/Plantilla/js/dynamic-pie-chart.js"></script>
     <script src="~/Plantilla/js/moment.min.js"></script>
@@ -75,13 +71,6 @@
             console.log('Bootstrap:', typeof bootstrap);
             console.log('Modal:', typeof bootstrap?.Modal);
             console.log('Token antiforgery:', document.querySelector('input[name="__RequestVerificationToken"]') ? 'Sí' : 'No');
-
-            // Verificar funciones del modal
-            console.log('Funciones modal:', {
-                abrirModalCrear: typeof abrirModalCrear,
-                abrirModalEditar: typeof abrirModalEditar,
-                abrirModalVer: typeof abrirModalVer
-            });
         });
     </script>
 </body>
