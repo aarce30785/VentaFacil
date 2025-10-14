@@ -70,9 +70,9 @@
                             <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h6 class="mb-0">Gestión de Usuarios</h6>
-                                    <button class="main-btn primary-btn btn-hover" onclick="abrirModalCrear()">
-                                        <i class="lni lni-plus me-2"></i>Agregar Usuario
-                                    </button>
+                                    @Html.ActionLink("Agregar Usuario", "IndexUsuarios", "Admin",
+                                    new { pagina = Model.PaginaActual, cantidadPorPagina = 10, accion = "crear" },
+                                                                        new { @class = "main-btn primary-btn btn-hover" })
                                 </div>
                                 <div class="table-wrapper table-responsive">
                                     <table class="table">
@@ -84,7 +84,7 @@
                                                 <th><h6>Acción</h6></th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                         <tbody>
                                             @if (Model.Usuarios != null && Model.Usuarios.Any())
                                             {
                                                 foreach (var usuario in Model.Usuarios)
@@ -115,17 +115,23 @@
                                                         </td>
                                                         <td>
                                                             <div class="action d-flex gap-2">
-                                                                <!-- CORREGIDO: Pasar datos individualmente -->
-                                                                <a class="text-primary" href="javascript:void(0);"
-                                                                   onclick="abrirModalVer(@usuario.Id_Usr, '@usuario.Nombre', '@usuario.Correo', '@usuario.Rol', @usuario.Estado.ToString().ToLower())"
-                                                                   title="Ver">
+                                                                <!-- Ver -->
+                                                                <a>
+                                                                @Html.ActionLink(" ", "IndexUsuarios", "Admin", 
+                                                                    new { pagina = Model.PaginaActual, cantidadPorPagina = 10, usuarioId = usuario.Id_Usr, accion = "ver" }, 
+                                                                    new { @class = "text-primary", title = "Ver" })
                                                                     <i class="lni lni-eye"></i>
                                                                 </a>
-                                                                <a class="text-warning" href="javascript:void(0);"
-                                                                   onclick="abrirModalEditar(@usuario.Id_Usr, '@usuario.Nombre', '@usuario.Correo', '@usuario.Rol', @usuario.Estado.ToString().ToLower())"
-                                                                   title="Editar">
+                                    
+                                                                <!-- Editar -->
+                                                                <a>
+                                                                @Html.ActionLink(" ", "IndexUsuarios", "Admin", 
+                                                                    new { pagina = Model.PaginaActual, cantidadPorPagina = 10, usuarioId = usuario.Id_Usr, accion = "editar" }, 
+                                                                    new { @class = "text-warning", title = "Editar" })
                                                                     <i class="lni lni-pencil"></i>
                                                                 </a>
+                                    
+                                                                <!-- Eliminar (mantener JavaScript para confirmación) -->
                                                                 <a class="text-danger" href="javascript:void(0);"
                                                                    onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
                                                                    title="Eliminar">
@@ -181,8 +187,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <partial name="_UsuarioModal" />
-
+                            
+                            <partial name="~/Views/Shared/_UsuarioModal.cshtml" model="Model.UsuarioSeleccionado" />
 
                             <!-- Tab de Productos -->
                             <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
@@ -641,6 +647,36 @@
     </div>
     <!-- end container -->
 </section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Verificar si hay una acción modal en la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const accion = urlParams.get('accion');
+
+            if (accion) {
+                // Esperar a que el modal esté renderizado
+                setTimeout(function() {
+                    const modalElement = document.getElementById('usuarioModal');
+                    if (modalElement) {
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    }
+                }, 300);
+            }
+
+            // Limpiar URL cuando se cierre el modal
+            $('#usuarioModal').on('hidden.bs.modal', function () {
+                // Remover parámetros de la URL sin recargar
+                const url = new URL(window.location);
+                url.searchParams.delete('accion');
+                url.searchParams.delete('usuarioId');
+                window.history.replaceState({}, '', url);
+            });
+        });
+    </script>
+}
 <!-- ========== table components end ========== -->
 
 

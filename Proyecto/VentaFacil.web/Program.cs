@@ -8,6 +8,7 @@ using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Admin;
 using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
+using VentaFacil.web.Services.Usuario;
 
 namespace VentaFacil.web
 {
@@ -65,6 +66,7 @@ namespace VentaFacil.web
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRegisterProductoService, RegisterProductoService>();
+            builder.Services.AddScoped<IUsuarioService, UsuarioService>();
             builder.Services.AddScoped<IListProductoService, ListProductoService>();
             builder.Services.AddScoped<IEditProductoService, EditProductoService>();
             builder.Services.AddScoped<ICategoriaService, CategoriaService>();

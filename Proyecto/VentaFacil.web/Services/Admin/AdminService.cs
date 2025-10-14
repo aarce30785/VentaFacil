@@ -5,6 +5,7 @@ using VentaFacil.web.Helpers;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Admin;
+using VentaFacil.web.Models.Response.Usuario;
 
 namespace VentaFacil.web.Services.Admin
 {
@@ -18,72 +19,46 @@ namespace VentaFacil.web.Services.Admin
             _context = context;
         }
 
-        public async Task<RolResponse> GetRolByIdAsync(int id)
+        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina, int cantidadPorPagina)
         {
-            var rol = await _context.Rol.FindAsync(id);
-
-            if (rol == null)
+            try
             {
-                throw new Exception("Rol no encontrado");
-            }
-            return new RolResponse
-            {
-                Id_Rol = rol.Id_Rol,
-                Nombre = rol.Nombre_Rol,
-                Descripcion = rol.Descripcion
-            };
-        }
+                var query = _context.Usuario
+                    .Include(u => u.RolNavigation)
+                    .AsQueryable();
 
-        public async Task<UsuarioResponse> GetUsuarioByIdAsync(int id)
-        {
-            var usuario = await _context.Usuario
-                .Include(u => u.RolNavigation)
-                .FirstOrDefaultAsync(u => u.Id_Usr == id);
+                var totalUsuarios = await query.CountAsync();
+                var totalPaginas = (int)Math.Ceiling(totalUsuarios / (double)cantidadPorPagina);
 
-            if (usuario == null)
-            {
-                throw new Exception("Usuario no encontrado");
-            }
+                var usuarios = await query
+                    .OrderBy(u => u.Nombre)
+                    .Skip((pagina - 1) * cantidadPorPagina)
+                    .Take(cantidadPorPagina)
+                    .Select(u => new UsuarioResponse
+                    {
+                        Id_Usr = u.Id_Usr,
+                        Nombre = u.Nombre,
+                        Correo = u.Correo,
+                        Estado = u.Estado,
+                        RolId = u.Rol,
+                        Rol = u.RolNavigation.Nombre_Rol
+                    })
+                    .ToListAsync();
 
-            return new UsuarioResponse
-            {
-                Id_Usr = usuario.Id_Usr,
-                Nombre = usuario.Nombre,
-                Correo = usuario.Correo,
-                Estado = usuario.Estado,
-                RolId = usuario.Rol,
-                Rol = usuario.RolNavigation?.Nombre_Rol
-            };
-        }
-
-        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina = 1, int cantidadPorPagina = 10)
-        {
-            var query = _context.Usuario
-                .Include(u => u.RolNavigation)
-                .AsQueryable();
-
-            var totalUsuarios = await query.CountAsync();
-            var usuarios = await query
-                .OrderBy(u => u.Id_Usr) // Agregar ordenamiento
-                .Skip((pagina - 1) * cantidadPorPagina)
-                .Take(cantidadPorPagina)
-                .ToListAsync();
-
-            return new UsuarioListResponse
-            {
-                Usuarios = usuarios.Select(u => new UsuarioResponse
+                return new UsuarioListResponse
                 {
-                    Id_Usr = u.Id_Usr,
-                    Nombre = u.Nombre,
-                    Correo = u.Correo,
-                    Estado = u.Estado,
-                    RolId = u.Rol,
-                    Rol = u.RolNavigation?.Nombre_Rol
-                }).ToList(),
-                PaginaActual = pagina,
-                TotalPaginas = (int)Math.Ceiling(totalUsuarios / (double)cantidadPorPagina),
-                TotalUsuarios = totalUsuarios
-            };
+                    Usuarios = usuarios,
+                    PaginaActual = pagina,
+                    TotalPaginas = totalPaginas,
+                    TotalUsuarios = totalUsuarios,
+                    UsuarioSeleccionado = null, // Inicializar como null
+                    AccionModal = null // Inicializar como null
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener usuarios paginados", ex);
+            }
         }
 
         public async Task<bool> CrearUsuarioAsync(UsuarioDto usuarioDto)
@@ -100,7 +75,7 @@ namespace VentaFacil.web.Services.Admin
                 }
 
                 // Crear nuevo usuario usando PasswordHelper
-                var usuario = new Usuario
+                var usuario = new VentaFacil.web.Models.Usuario
                 {
                     Nombre = usuarioDto.Nombre.Trim(),
                     Correo = usuarioDto.Correo.Trim().ToLower(),

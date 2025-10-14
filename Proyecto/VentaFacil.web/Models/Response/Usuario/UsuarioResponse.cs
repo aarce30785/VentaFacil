@@ -1,4 +1,6 @@
-﻿namespace VentaFacil.web.Models.Response.Admin
+﻿using VentaFacil.web.Models.Dto;
+
+namespace VentaFacil.web.Models.Response.Usuario
 {
     public class UsuarioResponse
     {
@@ -8,5 +10,10 @@
         public bool? Estado { get; set; }
         public int? RolId { get; set; }
         public string Rol { get; set; }
+
+        public static implicit operator UsuarioResponse(UsuarioFormDto v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
