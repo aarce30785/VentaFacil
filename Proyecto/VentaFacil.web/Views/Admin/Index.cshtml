@@ -81,7 +81,7 @@
                                                            value="@Model.Busqueda" />
                                                 </div>
                                             </div>
-                    
+
                                             <!-- Filtro por rol -->
                                             <div class="col-md-4">
                                                 <select name="rolFiltro" class="form-select">
@@ -89,13 +89,13 @@
                                                     @foreach (var rol in ViewBag.Roles)
                                                     {
                                                         <option value="@rol.Value" 
-                                                                selected="@(Model.RolFiltro?.ToString() == rol.Value)">
+                                                                selected="@(Model.RolFiltro?.ToString() == rol.Value ? "selected" : null)">
                                                             @rol.Text
                                                         </option>
                                                     }
                                                 </select>
                                             </div>
-                    
+
                                             <!-- Botones de acción -->
                                             <div class="col-md-3">
                                                 <div class="btn-group w-100" role="group">
@@ -107,12 +107,13 @@
                                                     </a>
                                                 </div>
                                             </div>
-                    
+
                                             <!-- Campos ocultos para mantener otros parámetros -->
+                                            <input type="hidden" name="pagina" value="1" />
                                             <input type="hidden" name="cantidadPorPagina" value="10" />
                                         </form>
                                     </div>
-            
+
                                     <div class="col-md-4 text-end">
                                         <button type="button" class="main-btn primary-btn btn-hover" onclick="abrirModal('crear')">
                                             <i class="lni lni-plus"></i> Agregar Usuario
@@ -330,17 +331,20 @@
 @section Scripts {
     <script>
     // Auto-submit del filtro de rol cuando cambia
-        document.querySelector('select[name="rolFiltro"]').addEventListener('change', function() {
+        document.querySelector('select[name="rolFiltro"]')?.addEventListener('change', function() {
             document.getElementById('filtrosForm').submit();
         });
 
-        // Limpiar búsqueda individual
-        function limpiarBusqueda() {
-            document.querySelector('input[name="busqueda"]').value = '';
-            document.getElementById('filtrosForm').submit();
-        }
+        // Manejar el evento de enter en el campo de búsqueda
+        document.querySelector('input[name="busqueda"]')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('filtrosForm').submit();
+            }
+        });
 
         // Función para abrir el modal
+        // Función para abrir el modal - CORREGIDA
         function abrirModal(accion, usuarioId = null) {
             let url = '';
             const params = new URLSearchParams();
@@ -354,8 +358,8 @@
             }
 
             // Mantener los filtros actuales
-            const busqueda = '@Html.Raw(Model.Busqueda)';
-            const rolFiltro = '@Model.RolFiltro';
+            const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
+            const rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
             const pagina = '@Model.PaginaActual';
 
             if (busqueda) {
@@ -368,17 +372,7 @@
                 params.append('pagina', pagina);
             }
 
-            switch(accion) {
-                case 'crear':
-                    url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
-                    break;
-                case 'ver':
-                case 'editar':
-                    if (usuarioId) {
-                        url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
-                    }
-                    break;
-            }
+            url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
 
             if (url) {
                 // Cargar el modal via AJAX
@@ -397,6 +391,7 @@
                     .catch(error => console.error('Error:', error));
             }
         }
+
 
         // Función para configurar el modal según la acción
         function configurarModal(accion) {

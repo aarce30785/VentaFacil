@@ -10,5 +10,7 @@ namespace VentaFacil.web.Models.Response.Admin
         public int TotalUsuarios { get; set; }
         public UsuarioResponse UsuarioSeleccionado { get; set; }
         public string AccionModal { get; set; }
+        public string? Busqueda { get; set; }
+        public int? RolFiltro { get; set; }
     }
 }

@@ -11,9 +11,5 @@ namespace VentaFacil.web.Models.Response.Usuario
         public int? RolId { get; set; }
         public string Rol { get; set; }
 
-        public static implicit operator UsuarioResponse(UsuarioFormDto v)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -26,11 +26,13 @@ namespace VentaFacil.web.Controllers
         }
 
         // En tu AdminController
-        public async Task<IActionResult> IndexUsuarios(int pagina = 1, int cantidadPorPagina = 10, int? usuarioId = null, string accion = null)
+        public async Task<IActionResult> IndexUsuarios(int pagina = 1, int cantidadPorPagina = 10,
+                     string busqueda = null, int? rolFiltro = null, int? usuarioId = null, string accion = null)
         {
             try
             {
-                var usuarios = await _adminService.GetUsuariosPaginadosAsync(pagina, cantidadPorPagina);
+                // Pasar los parámetros de filtro al servicio
+                var usuarios = await _adminService.GetUsuariosPaginadosAsync(pagina, cantidadPorPagina, busqueda, rolFiltro);
 
                 if (usuarios == null)
                 {
@@ -39,8 +41,16 @@ namespace VentaFacil.web.Controllers
                         Usuarios = new List<UsuarioResponse>(),
                         PaginaActual = 1,
                         TotalPaginas = 1,
-                        TotalUsuarios = 0
+                        TotalUsuarios = 0,
+                        Busqueda = busqueda,
+                        RolFiltro = rolFiltro
                     };
+                }
+                else
+                {
+                    // Asegurar que los filtros se mantengan en la respuesta
+                    usuarios.Busqueda = busqueda;
+                    usuarios.RolFiltro = rolFiltro;
                 }
 
                 // Manejar acciones del modal
@@ -54,21 +64,29 @@ namespace VentaFacil.web.Controllers
                         if (usuarioId.HasValue)
                         {
                             var usuarioForm = await _usuarioService.GetUsuarioByIdAsync(usuarioId.Value);
-                            usuarios.UsuarioSeleccionado = usuarioForm;
+                            // Convertir UsuarioDto a UsuarioResponse
+                            usuarios.UsuarioSeleccionado = new UsuarioResponse
+                            {
+                                Id_Usr = usuarioForm.Id_Usr,
+                                Nombre = usuarioForm.Nombre,
+                                Correo = usuarioForm.Correo,
+                                Estado = usuarioForm.Estado,
+                                RolId = usuarioForm.Rol,
+                            };
                         }
                     }
                     else if (accion == "crear")
                     {
-                        usuarios.UsuarioSeleccionado = new UsuarioFormDto
+                        usuarios.UsuarioSeleccionado = new UsuarioResponse
                         {
                             Estado = true
                         };
                     }
                 }
 
-                // CARGAR ROLES - CORREGIDO
+                // CARGAR ROLES
                 var roles = await _usuarioService.GetRolesAsync();
-                ViewBag.Roles = roles ?? new List<SelectListItem>(); // ← Asegurar que no sea null
+                ViewBag.Roles = roles ?? new List<SelectListItem>();
 
                 ViewBag.PaginaActual = pagina;
 
@@ -81,13 +99,16 @@ namespace VentaFacil.web.Controllers
                     Usuarios = new List<UsuarioResponse>(),
                     PaginaActual = 1,
                     TotalPaginas = 1,
-                    TotalUsuarios = 0
+                    TotalUsuarios = 0,
+                    Busqueda = busqueda,
+                    RolFiltro = rolFiltro
                 };
 
-                ViewBag.Roles = new List<SelectListItem>(); // ← Lista vacía en caso de error
+                ViewBag.Roles = new List<SelectListItem>();
                 return View("Index", emptyResponse);
             }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> CrearUsuario([FromBody] UsuarioDto model)
@@ -129,6 +150,18 @@ namespace VentaFacil.web.Controllers
             }
         }
 
+        public IActionResult LimpiarFiltros()
+        {
+            return RedirectToAction("IndexUsuarios", new
+            {
+                pagina = 1,
+                cantidadPorPagina = 10,
+                busqueda = (string)null,
+                rolFiltro = (int?)null
+            });
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> DetalleUsuario(int id)
         {
@@ -144,44 +177,44 @@ namespace VentaFacil.web.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> EditarUsuario([FromBody] UsuarioDto model)
-        {
-            try
-            {
-                // Validar modelo
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
-                    return Json(new { success = false, message = "Datos inválidos", errors });
-                }
-
-                // Validar contraseñas si se están actualizando
-                if (!string.IsNullOrEmpty(model.Contrasena) && model.Contrasena != model.ConfirmarContrasena)
-                {
-                    return Json(new { success = false, message = "Las contraseñas no coinciden" });
-                }
-
-                // Actualizar usuario
-                var resultado = await _adminService.ActualizarUsuarioAsync(model);
-
-                if (resultado)
-                {
-                    return Json(new { success = true, message = "Usuario actualizado correctamente" });
-                }
-                else
-                {
-                    return Json(new { success = false, message = "Error al actualizar el usuario" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> EditarUsuario([FromBody] UsuarioDto model)
+        //{
+        //    try
+        //    {
+        //        // Validar modelo
+        //        if (!ModelState.IsValid)
+        //        {
+        //            var errors = ModelState.Values
+        //                .SelectMany(v => v.Errors)
+        //                .Select(e => e.ErrorMessage)
+        //                .ToList();
+        //            return Json(new { success = false, message = "Datos inválidos", errors });
+        //        }
+        //
+        //        // Validar contraseñas si se están actualizando
+        //        if (!string.IsNullOrEmpty(model.Contrasena) && model.Contrasena != model.ConfirmarContrasena)
+        //        {
+        //            return Json(new { success = false, message = "Las contraseñas no coinciden" });
+        //        }
+        //
+        //        // Actualizar usuario
+        //        var resultado = await _adminService.ActualizarUsuarioAsync(model);
+        //
+        //        if (resultado)
+        //        {
+        //            return Json(new { success = true, message = "Usuario actualizado correctamente" });
+        //        }
+        //        else
+        //        {
+        //            return Json(new { success = false, message = "Error al actualizar el usuario" });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new { success = false, message = ex.Message });
+        //    }
+        //}
 
         [HttpPost]
         public async Task<IActionResult> EliminarUsuario(int id)
