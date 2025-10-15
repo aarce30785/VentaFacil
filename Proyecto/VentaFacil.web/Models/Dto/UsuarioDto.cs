@@ -2,7 +2,7 @@
 
 namespace VentaFacil.web.Models.Dto
 {
-    public class UsuarioDto
+    public class UsuarioDto : IValidatableObject
     {
         public int Id_Usr { get; set; }
 
@@ -14,10 +14,9 @@ namespace VentaFacil.web.Models.Dto
         [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
         public string Correo { get; set; }
 
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+        // REMOVER DataAnnotations de Contrasena y ConfirmarContrasena
         public string Contrasena { get; set; }
 
-        [Compare("Contrasena", ErrorMessage = "Las contraseñas no coinciden")]
         public string ConfirmarContrasena { get; set; }
 
         public DateTime? FechaCreacion { get; set; }
@@ -27,5 +26,48 @@ namespace VentaFacil.web.Models.Dto
         public int Rol { get; set; }
 
         public bool Estado { get; set; } = true;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // Validación para creación
+            if (Id_Usr == 0)
+            {
+                if (string.IsNullOrWhiteSpace(Contrasena))
+                {
+                    yield return new ValidationResult(
+                        "La contraseña es requerida para crear un usuario",
+                        new[] { nameof(Contrasena) }
+                    );
+                }
+                else if (Contrasena.Length < 6)
+                {
+                    yield return new ValidationResult(
+                        "La contraseña debe tener al menos 6 caracteres",
+                        new[] { nameof(Contrasena) }
+                    );
+                }
+            }
+
+            // Validación para edición (solo si se proporciona contraseña)
+            if (Id_Usr > 0 && !string.IsNullOrWhiteSpace(Contrasena))
+            {
+                if (Contrasena.Length < 6)
+                {
+                    yield return new ValidationResult(
+                        "La contraseña debe tener al menos 6 caracteres",
+                        new[] { nameof(Contrasena) }
+                    );
+                }
+            }
+
+            // Validación de confirmación de contraseña
+            if (!string.IsNullOrWhiteSpace(Contrasena) && Contrasena != ConfirmarContrasena)
+            {
+                yield return new ValidationResult(
+                    "Las contraseñas no coinciden",
+                    new[] { nameof(ConfirmarContrasena) }
+                );
+            }
+        }
     }
 }

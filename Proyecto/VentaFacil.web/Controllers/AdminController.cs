@@ -110,8 +110,49 @@ namespace VentaFacil.web.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> ObtenerModalUsuario(string accion, int? usuarioId = null,
+            string busqueda = null, int? rolFiltro = null, int pagina = 1)
+        {
+            try
+            {
+                var model = new UsuarioDto();
+                ViewBag.AccionModal = accion;
+
+                // Mantener los filtros para el retorno
+                ViewBag.BusquedaActual = busqueda;
+                ViewBag.RolFiltroActual = rolFiltro;
+                ViewBag.PaginaActual = pagina;
+
+                // Cargar roles
+                var roles = await _usuarioService.GetRolesAsync();
+                ViewBag.Roles = roles ?? new List<SelectListItem>();
+
+                if (usuarioId.HasValue && (accion == "editar" || accion == "ver"))
+                {
+                    var usuario = await _usuarioService.GetUsuarioByIdAsync(usuarioId.Value);
+                    if (usuario != null)
+                    {
+                        model = usuario;
+                    }
+                }
+                else if (accion == "crear")
+                {
+                    model.Estado = true; // Por defecto activo
+                }
+
+                return PartialView("_UsuarioModal", model);
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, devolver un modal vacío
+                ViewBag.AccionModal = accion;
+                ViewBag.Roles = new List<SelectListItem>();
+                return PartialView("_UsuarioModal", new UsuarioDto());
+            }
+        }
         [HttpPost]
-        public async Task<IActionResult> CrearUsuario([FromBody] UsuarioDto model)
+        public async Task<IActionResult> GuardarUsuario([FromBody] UsuarioDto model)
         {
             try
             {
@@ -125,143 +166,80 @@ namespace VentaFacil.web.Controllers
                     return Json(new { success = false, message = "Datos inválidos", errors });
                 }
 
-                // Validar que las contraseñas coincidan
-                if (model.Contrasena != model.ConfirmarContrasena)
+                // Validar que las contraseñas coincidan (solo para crear o cuando se cambia la contraseña)
+                if ((model.Id_Usr == 0 || !string.IsNullOrEmpty(model.Contrasena)) &&
+                    model.Contrasena != model.ConfirmarContrasena)
                 {
                     return Json(new { success = false, message = "Las contraseñas no coinciden" });
                 }
 
-                // Crear usuario
-                var resultado = await _adminService.CrearUsuarioAsync(model);
+                bool resultado;
 
-                if (resultado)
+                if (model.Id_Usr == 0)
                 {
-                    return Json(new { success = true, message = "Usuario creado correctamente" });
+                    // Crear usuario
+                    resultado = await _adminService.CrearUsuarioAsync(model);
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Error al crear el usuario" });
+                    // Actualizar usuario
+                    resultado = await _adminService.ActualizarUsuarioAsync(model);
+                }
+
+                if (resultado)
+                {
+                    var action = model.Id_Usr == 0 ? "creado" : "actualizado";
+                    return Json(new
+                    {
+                        success = true,
+                        message = $"Usuario {action} correctamente"
+                    });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Error al guardar el usuario" });
                 }
             }
             catch (Exception ex)
             {
-                // Log the exception
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
-        public IActionResult LimpiarFiltros()
-        {
-            return RedirectToAction("IndexUsuarios", new
-            {
-                pagina = 1,
-                cantidadPorPagina = 10,
-                busqueda = (string)null,
-                rolFiltro = (int?)null
-            });
-        }
-
 
         [HttpGet]
-        public async Task<IActionResult> DetalleUsuario(int id)
+        public async Task<IActionResult> EliminarUsuario(int id, string? busqueda, int? rolFiltro, int pagina = 1)
         {
             try
             {
-                var usuario = await _usuarioService.GetUsuarioByIdAsync(id);
-                return View(usuario);
+                bool resultado = await _adminService.EliminarUsuarioAsync(id);
+
+                if (resultado)
+                    TempData["MensajeExito"] = "Usuario eliminado correctamente.";
+                else
+                    TempData["MensajeError"] = "No se pudo eliminar el usuario.";
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Error al cargar los detalles del usuario";
-                return RedirectToAction(nameof(IndexUsuarios));
+                TempData["MensajeError"] = $"Error al eliminar el usuario: {ex.Message}";
             }
+
+            // Redirigir manteniendo los filtros
+            return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, pagina });
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> EditarUsuario([FromBody] UsuarioDto model)
-        //{
-        //    try
-        //    {
-        //        // Validar modelo
-        //        if (!ModelState.IsValid)
-        //        {
-        //            var errors = ModelState.Values
-        //                .SelectMany(v => v.Errors)
-        //                .Select(e => e.ErrorMessage)
-        //                .ToList();
-        //            return Json(new { success = false, message = "Datos inválidos", errors });
-        //        }
-        //
-        //        // Validar contraseñas si se están actualizando
-        //        if (!string.IsNullOrEmpty(model.Contrasena) && model.Contrasena != model.ConfirmarContrasena)
-        //        {
-        //            return Json(new { success = false, message = "Las contraseñas no coinciden" });
-        //        }
-        //
-        //        // Actualizar usuario
-        //        var resultado = await _adminService.ActualizarUsuarioAsync(model);
-        //
-        //        if (resultado)
-        //        {
-        //            return Json(new { success = true, message = "Usuario actualizado correctamente" });
-        //        }
-        //        else
-        //        {
-        //            return Json(new { success = false, message = "Error al actualizar el usuario" });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { success = false, message = ex.Message });
-        //    }
-        //}
 
-        [HttpPost]
-        public async Task<IActionResult> EliminarUsuario(int id)
-        {
-            try
-            {
-                await _adminService.EliminarUsuarioAsync(id);
 
-                if (Request.Headers["Content-Type"] == "application/json")
-                {
-                    return Json(new { success = true, message = "Usuario eliminado correctamente" });
-                }
 
-                TempData["Success"] = "Usuario eliminado correctamente";
-                return RedirectToAction(nameof(IndexUsuarios));
-            }
-            catch (Exception ex)
-            {
-                if (Request.Headers["Content-Type"] == "application/json")
-                {
-                    return Json(new { success = false, message = ex.Message });
-                }
 
-                TempData["Error"] = "Error al eliminar el usuario";
-                return RedirectToAction(nameof(IndexUsuarios));
-            }
-        }
 
-        [HttpGet]
-        public async Task<IActionResult> DetalleRol(int id)
-        {
-            try
-            {
-                var rol = await _usuarioService.GetRolByIdAsync(id);
-                return View(rol);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception
-                TempData["Error"] = "Error al cargar los detalles del rol";
-                return RedirectToAction(nameof(Index));
-            }
-        }
 
-        
 
-        
+
+
+
+
+
 
     }
 }

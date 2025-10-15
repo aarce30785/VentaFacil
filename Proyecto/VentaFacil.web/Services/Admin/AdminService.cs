@@ -114,7 +114,7 @@ namespace VentaFacil.web.Services.Admin
             }
         }
 
-        public async Task<bool> ActualizarUsuarioAsync(UsuarioDto usuarioDto, bool actualizarContrasena)
+        public async Task<bool> ActualizarUsuarioAsync(UsuarioDto usuarioDto)
         {
             try
             {
@@ -122,27 +122,23 @@ namespace VentaFacil.web.Services.Admin
                     .FirstOrDefaultAsync(u => u.Id_Usr == usuarioDto.Id_Usr);
 
                 if (usuario == null)
-                {
                     throw new Exception("Usuario no encontrado");
-                }
 
                 // Verificar si el correo ya existe (excluyendo el usuario actual)
                 var existeCorreo = await _context.Usuario
                     .AnyAsync(u => u.Correo == usuarioDto.Correo && u.Id_Usr != usuarioDto.Id_Usr);
 
                 if (existeCorreo)
-                {
                     throw new Exception("El correo electrónico ya está registrado");
-                }
 
-                // Actualizar datos
+                // Actualizar datos básicos
                 usuario.Nombre = usuarioDto.Nombre.Trim();
                 usuario.Correo = usuarioDto.Correo.Trim().ToLower();
                 usuario.Rol = usuarioDto.Rol;
                 usuario.Estado = usuarioDto.Estado;
 
-                // Actualizar contraseña solo si se indica
-                if (actualizarContrasena && !string.IsNullOrEmpty(usuarioDto.Contrasena))
+                // Actualizar contraseña si viene una nueva
+                if (!string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
                     usuario.Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena);
                 }

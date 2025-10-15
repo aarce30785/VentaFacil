@@ -3,11 +3,9 @@
 @{
     ViewData["Title"] = "Panel de administrador";
     Layout = "_LayoutPlantilla";
-
     
 }
 
-<!-- ========== table components start ========== -->
 <!-- ========== table components start ========== -->
 <section class="table-components">
     <div class="container-fluid">
@@ -317,15 +315,11 @@
                                 }
                             </div>
                         </div>
-                    <!-- end card -->
-                </div>
-                <!-- end col -->
-            </div>
-            <!-- end row -->
-        </div>
-        <!-- ========== tabs section end ========== -->
-    </div>
-    <!-- end container -->
+                        </div> <!-- end card -->
+                </div> <!-- end col -->
+            </div> <!-- end row -->
+        </div> <!-- ========== tabs section end ========== -->
+    </div> <!-- end container -->
 </section>
 
 @section Scripts {
@@ -344,7 +338,7 @@
         });
 
         // Función para abrir el modal
-        // Función para abrir el modal - CORREGIDA
+        
         function abrirModal(accion, usuarioId = null) {
             let url = '';
             const params = new URLSearchParams();
