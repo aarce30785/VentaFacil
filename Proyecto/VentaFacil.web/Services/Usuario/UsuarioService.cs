@@ -55,7 +55,7 @@ namespace VentaFacil.web.Services.Usuario
             }
         }
 
-        public async Task<UsuarioFormDto> GetUsuarioByIdAsync(int id)
+        public async Task<UsuarioDto> GetUsuarioByIdAsync(int id)
         {
             var usuario = await _context.Usuario
                 .Include(u => u.RolNavigation)
@@ -66,15 +66,14 @@ namespace VentaFacil.web.Services.Usuario
                 throw new Exception("Usuario no encontrado");
             }
 
-            return new UsuarioFormDto
+            return new UsuarioDto
             {
                 Id_Usr = usuario.Id_Usr,
                 Nombre = usuario.Nombre,
                 Correo = usuario.Correo,
-                Rol = usuario.RolNavigation?.Nombre_Rol,
+                Rol = usuario.Rol,
                 Estado = usuario.Estado,
                 
-                // No incluir contraseñas por seguridad
             };
         }
     }

@@ -8,7 +8,7 @@ namespace VentaFacil.web.Services.Usuario
     public interface IUsuarioService
     {
         Task<RolResponse> GetRolByIdAsync(int id);
-        Task<UsuarioFormDto> GetUsuarioByIdAsync(int id);
+        Task<UsuarioDto> GetUsuarioByIdAsync(int id);
         Task<IEnumerable<SelectListItem>> GetRolesAsync();
     }
 }

@@ -1,4 +1,4 @@
-﻿@model VentaFacil.web.Models.Dto.UsuarioFormDto
+﻿@model VentaFacil.web.Models.Dto.UsuarioDto
 @{
     var accionModal = ViewBag.AccionModal as string;
     var roles = ViewBag.Roles as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
@@ -66,12 +66,22 @@
                             <div class="form-outline">
                                 @Html.PasswordFor(m => m.Contrasena, new {
                                     @class = "form-control",
-                                    placeholder = "Ingrese la contraseña",
+                                    placeholder = (ViewBag.AccionModal == "crear") ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual",
                                     id = "Contrasena",
+                                    minlength = (ViewBag.AccionModal == "crear") ? "6" : "0",
                                     required = (ViewBag.AccionModal == "crear") ? "required" : null
                                 })
                                 @Html.LabelFor(m => m.Contrasena, new { @class = "form-label" })
-                                <div class="form-text text-muted">Mínimo 6 caracteres</div>
+                                <div class="form-text text-muted">
+                                    @if (ViewBag.AccionModal == "crear")
+                                    {
+                                        <text>Mínimo 6 caracteres</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Complete solo si desea cambiar la contraseña</text>
+                                    }
+                                </div>
                                 @Html.ValidationMessageFor(m => m.Contrasena, null, new { @class = "invalid-feedback" })
                             </div>
                         </div>
@@ -80,7 +90,7 @@
                             <div class="form-outline">
                                 @Html.PasswordFor(m => m.ConfirmarContrasena, new {
                                     @class = "form-control",
-                                    placeholder = "Confirme la contraseña",
+                                    placeholder = (ViewBag.AccionModal == "crear") ? "Confirme la contraseña" : "Confirmar nueva contraseña",
                                     id = "ConfirmarContrasena",
                                     required = (ViewBag.AccionModal == "crear") ? "required" : null
                                 })
@@ -132,7 +142,116 @@
                             new { @class = "btn btn-warning" })
                     }
                 </div>
+
+                <input type="hidden" name="busqueda" value="@ViewBag.BusquedaActual" />
+                <input type="hidden" name="rolFiltro" value="@ViewBag.RolFiltroActual" />
+                <input type="hidden" name="pagina" value="@ViewBag.PaginaActual" />
             }
         </div>
     </div>
 </div>
+
+
+@if (ViewBag.AccionModal == "crear" || ViewBag.AccionModal == "editar")
+{
+    <div class="col-md-6" id="contrasenaField">
+        <div class="form-outline">
+            @Html.PasswordFor(m => m.Contrasena, new {
+                @class = "form-control",
+                placeholder = (ViewBag.AccionModal == "crear") ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual",
+                id = "Contrasena",
+                minlength = (ViewBag.AccionModal == "crear") ? "6" : "0",
+                required = (ViewBag.AccionModal == "crear") ? "required" : null
+            })
+            @Html.LabelFor(m => m.Contrasena, new { @class = "form-label" })
+            <div class="form-text text-muted">
+                @if (ViewBag.AccionModal == "crear")
+                {
+                    <text>Mínimo 6 caracteres</text>
+                }
+                else
+                {
+                    <text>Complete solo si desea cambiar la contraseña</text>
+                }
+            </div>
+            @Html.ValidationMessageFor(m => m.Contrasena, null, new { @class = "invalid-feedback" })
+        </div>
+    </div>
+
+    <div class="col-md-6" id="confirmarContrasenaField">
+        <div class="form-outline">
+            @Html.PasswordFor(m => m.ConfirmarContrasena, new {
+                @class = "form-control",
+                placeholder = (ViewBag.AccionModal == "crear") ? "Confirme la contraseña" : "Confirmar nueva contraseña",
+                id = "ConfirmarContrasena",
+                required = (ViewBag.AccionModal == "crear") ? "required" : null
+            })
+            @Html.LabelFor(m => m.ConfirmarContrasena, new { @class = "form-label" })
+            @Html.ValidationMessageFor(m => m.ConfirmarContrasena, null, new { @class = "invalid-feedback" })
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Configurar campos según la acción
+            const accion = '@ViewBag.AccionModal';
+            
+            if (accion === 'editar') {
+                // Remover atributos required para edición
+                $('#Contrasena').removeAttr('required');
+                $('#ConfirmarContrasena').removeAttr('required');
+                
+                // Limpiar campos al cargar
+                $('#Contrasena').val('');
+                $('#ConfirmarContrasena').val('');
+            }
+
+            // Validación del formulario
+            $('#usuarioForm').on('submit', function(e) {
+                const contrasena = $('#Contrasena').val();
+                const confirmarContrasena = $('#ConfirmarContrasena').val();
+                const accion = '@ViewBag.AccionModal';
+                
+                // Validaciones específicas por acción
+                if (accion === 'crear') {
+                    // En creación, contraseña es obligatoria
+                    if (!contrasena || contrasena.length < 6) {
+                        e.preventDefault();
+                        alert('La contraseña debe tener al menos 6 caracteres');
+                        return false;
+                    }
+                    
+                    if (contrasena !== confirmarContrasena) {
+                        e.preventDefault();
+                        alert('Las contraseñas no coinciden');
+                        return false;
+                    }
+                } 
+                else if (accion === 'editar') {
+                    // En edición, solo validar si se ingresó alguna contraseña
+                    if (contrasena || confirmarContrasena) {
+                        if (contrasena.length < 6) {
+                            e.preventDefault();
+                            alert('La contraseña debe tener al menos 6 caracteres');
+                            return false;
+                        }
+                        
+                        if (contrasena !== confirmarContrasena) {
+                            e.preventDefault();
+                            alert('Las contraseñas no coinciden');
+                            return false;
+                        }
+                    }
+                }
+            });
+
+            // Limpiar validación cuando los campos se modifiquen
+            $('#Contrasena, #ConfirmarContrasena').on('input', function() {
+                $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').hide();
+            });
+        });
+    </script>
+}

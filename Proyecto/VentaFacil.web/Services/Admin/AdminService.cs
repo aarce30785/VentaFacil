@@ -19,13 +19,28 @@ namespace VentaFacil.web.Services.Admin
             _context = context;
         }
 
-        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina, int cantidadPorPagina)
+        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina, int cantidadPorPagina, string busqueda = null, int? rolFiltro = null)
         {
             try
             {
                 var query = _context.Usuario
                     .Include(u => u.RolNavigation)
                     .AsQueryable();
+
+                // Aplicar filtro de búsqueda
+                if (!string.IsNullOrEmpty(busqueda))
+                {
+                    busqueda = busqueda.Trim().ToLower();
+                    query = query.Where(u =>
+                        u.Nombre.ToLower().Contains(busqueda) ||
+                        u.Correo.ToLower().Contains(busqueda));
+                }
+
+                // Aplicar filtro por rol
+                if (rolFiltro.HasValue && rolFiltro.Value > 0)
+                {
+                    query = query.Where(u => u.Rol == rolFiltro.Value);
+                }
 
                 var totalUsuarios = await query.CountAsync();
                 var totalPaginas = (int)Math.Ceiling(totalUsuarios / (double)cantidadPorPagina);
@@ -51,8 +66,10 @@ namespace VentaFacil.web.Services.Admin
                     PaginaActual = pagina,
                     TotalPaginas = totalPaginas,
                     TotalUsuarios = totalUsuarios,
-                    UsuarioSeleccionado = null, // Inicializar como null
-                    AccionModal = null // Inicializar como null
+                    UsuarioSeleccionado = null,
+                    AccionModal = null,
+                    Busqueda = busqueda,
+                    RolFiltro = rolFiltro
                 };
             }
             catch (Exception ex)
@@ -97,7 +114,7 @@ namespace VentaFacil.web.Services.Admin
             }
         }
 
-        public async Task<bool> ActualizarUsuarioAsync(UsuarioDto usuarioDto)
+        public async Task<bool> ActualizarUsuarioAsync(UsuarioDto usuarioDto, bool actualizarContrasena)
         {
             try
             {
@@ -123,12 +140,11 @@ namespace VentaFacil.web.Services.Admin
                 usuario.Correo = usuarioDto.Correo.Trim().ToLower();
                 usuario.Rol = usuarioDto.Rol;
                 usuario.Estado = usuarioDto.Estado;
-                
 
-                // Actualizar contraseña solo si se proporcionó una nueva
-                if (!string.IsNullOrEmpty(usuarioDto.Contrasena))
+                // Actualizar contraseña solo si se indica
+                if (actualizarContrasena && !string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
-                    usuario.Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena); // Usando el Helper
+                    usuario.Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena);
                 }
 
                 await _context.SaveChangesAsync();

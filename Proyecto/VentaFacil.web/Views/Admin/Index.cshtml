@@ -68,12 +68,80 @@
 
                             <!-- Tab de Usuarios -->
                             <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="mb-0">Gestión de Usuarios</h6>
-                                    @Html.ActionLink("Agregar Usuario", "IndexUsuarios", "Admin",
-                                    new { pagina = Model.PaginaActual, cantidadPorPagina = 10, accion = "crear" },
-                                                                        new { @class = "main-btn primary-btn btn-hover" })
+        
+                                <!-- Controles de Búsqueda y Filtros -->
+                                <div class="row mb-4">
+                                    <div class="col-md-8">
+                                        <form method="get" asp-action="IndexUsuarios" class="row g-3" id="filtrosForm">
+                                            <!-- Campo de búsqueda -->
+                                            <div class="col-md-5">
+                                                <div class="input-group">
+                                                    <input type="text" name="busqueda" class="form-control" 
+                                                           placeholder="Buscar por nombre o correo..." 
+                                                           value="@Model.Busqueda" />
+                                                </div>
+                                            </div>
+                    
+                                            <!-- Filtro por rol -->
+                                            <div class="col-md-4">
+                                                <select name="rolFiltro" class="form-select">
+                                                    <option value="">Todos los roles</option>
+                                                    @foreach (var rol in ViewBag.Roles)
+                                                    {
+                                                        <option value="@rol.Value" 
+                                                                selected="@(Model.RolFiltro?.ToString() == rol.Value)">
+                                                            @rol.Text
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </div>
+                    
+                                            <!-- Botones de acción -->
+                                            <div class="col-md-3">
+                                                <div class="btn-group w-100" role="group">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="lni lni-search-alt"></i> Buscar
+                                                    </button>
+                                                    <a href="@Url.Action("LimpiarFiltros", "Admin")" class="btn btn-outline-secondary">
+                                                        <i class="lni lni-close"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                    
+                                            <!-- Campos ocultos para mantener otros parámetros -->
+                                            <input type="hidden" name="cantidadPorPagina" value="10" />
+                                        </form>
+                                    </div>
+            
+                                    <div class="col-md-4 text-end">
+                                        <button type="button" class="main-btn primary-btn btn-hover" onclick="abrirModal('crear')">
+                                            <i class="lni lni-plus"></i> Agregar Usuario
+                                        </button>
+                                    </div>
                                 </div>
+
+                                <!-- Mensaje cuando no hay resultados CON FILTROS APLICADOS -->
+                                @if (Model.Usuarios != null && !Model.Usuarios.Any() && (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue))
+                                {
+                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                        <i class="lni lni-info-circle me-2"></i>
+                                        <strong>No se encontraron usuarios</strong> que coincidan con los criterios de búsqueda.
+                                        <a href="@Url.Action("LimpiarFiltros")" class="alert-link ms-2">Mostrar todos los usuarios</a>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                }
+
+                                <!-- Mensaje cuando no hay usuarios en absoluto -->
+                                @if (Model.Usuarios != null && !Model.Usuarios.Any() && string.IsNullOrEmpty(Model.Busqueda) && !Model.RolFiltro.HasValue)
+                                {
+                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                        <i class="lni lni-info-circle me-2"></i>
+                                        <strong>No hay usuarios registrados en el sistema.</strong>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                }
+
+                                <!-- Tabla de Usuarios -->
                                 <div class="table-wrapper table-responsive">
                                     <table class="table">
                                         <thead>
@@ -84,7 +152,7 @@
                                                 <th><h6>Acción</h6></th>
                                             </tr>
                                         </thead>
-                                         <tbody>
+                                        <tbody>
                                             @if (Model.Usuarios != null && Model.Usuarios.Any())
                                             {
                                                 foreach (var usuario in Model.Usuarios)
@@ -116,22 +184,20 @@
                                                         <td>
                                                             <div class="action d-flex gap-2">
                                                                 <!-- Ver -->
-                                                                <a>
-                                                                @Html.ActionLink(" ", "IndexUsuarios", "Admin", 
-                                                                    new { pagina = Model.PaginaActual, cantidadPorPagina = 10, usuarioId = usuario.Id_Usr, accion = "ver" }, 
-                                                                    new { @class = "text-primary", title = "Ver" })
+                                                                <a href="javascript:void(0);"
+                                                                   onclick="abrirModal('ver', @usuario.Id_Usr)"
+                                                                   class="text-primary" title="Ver">
                                                                     <i class="lni lni-eye"></i>
                                                                 </a>
-                                    
+
                                                                 <!-- Editar -->
-                                                                <a>
-                                                                @Html.ActionLink(" ", "IndexUsuarios", "Admin", 
-                                                                    new { pagina = Model.PaginaActual, cantidadPorPagina = 10, usuarioId = usuario.Id_Usr, accion = "editar" }, 
-                                                                    new { @class = "text-warning", title = "Editar" })
+                                                                <a href="javascript:void(0);"
+                                                                   onclick="abrirModal('editar', @usuario.Id_Usr)"
+                                                                   class="text-warning" title="Editar">
                                                                     <i class="lni lni-pencil"></i>
                                                                 </a>
-                                    
-                                                                <!-- Eliminar (mantener JavaScript para confirmación) -->
+
+                                                                <!-- Eliminar -->
                                                                 <a class="text-danger" href="javascript:void(0);"
                                                                    onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
                                                                    title="Eliminar">
@@ -142,501 +208,114 @@
                                                     </tr>
                                                 }
                                             }
+                                            else if (Model.Usuarios != null && !Model.Usuarios.Any())
+                                            {
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-4">
+                                                        <div class="text-muted">
+                                                            <i class="lni lni-users me-2"></i>
+                                                            @if (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue)
+                                                            {
+                                                                <span>No se encontraron usuarios con los filtros aplicados</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>No hay usuarios registrados</span>
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
                                             else
                                             {
                                                 <tr>
-                                                    <td colspan="4" class="text-center">No se encontraron usuarios</td>
+                                                    <td colspan="4" class="text-center py-4">
+                                                        <div class="text-muted">
+                                                            <i class="lni lni-warning me-2"></i>
+                                                            Error al cargar los usuarios
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             }
                                         </tbody>
                                     </table>
                                 </div>
+        
+                                <div id="modalContainer"></div>
 
                                 <!-- Menú de Paginación -->
-                                <div class="pagination-wrapper mt-4">
-                                    <nav aria-label="Page navigation">
-                                        <ul class="pagination justify-content-center">
-                                            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                                                <a class="page-link" href="@Url.Action("IndexUsuarios", "Admin", new { pagina = Model.PaginaActual - 1, cantidadPorPagina = 10 })"
-                                                   tabindex="-1" aria-disabled="@(Model.PaginaActual == 1 ? "true" : "false")">
-                                                    <i class="lni lni-chevron-left"></i>
-                                                </a>
-                                            </li>
-
-                                            @for (int i = 1; i <= Model.TotalPaginas; i++)
-                                            {
-                                                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                                                    <a class="page-link" href="@Url.Action("IndexUsuarios", "Admin", new { pagina = i, cantidadPorPagina = 10 })">@i</a>
+                                @if (Model.TotalPaginas > 1 && Model.Usuarios != null && Model.Usuarios.Any())
+                                {
+                                    <div class="pagination-wrapper mt-4">
+                                        <nav aria-label="Page navigation">
+                                            <ul class="pagination justify-content-center">
+                                                <!-- Botón Anterior -->
+                                                <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                                                    <a class="page-link" 
+                                                       href="@Url.Action("IndexUsuarios", "Admin", new { 
+                                                           pagina = Model.PaginaActual - 1, 
+                                                           cantidadPorPagina = 10,
+                                                           busqueda = Model.Busqueda,
+                                                           rolFiltro = Model.RolFiltro
+                                                       })"
+                                                       tabindex="-1" aria-disabled="@(Model.PaginaActual == 1 ? "true" : "false")">
+                                                        <i class="lni lni-chevron-left"></i>
+                                                    </a>
                                                 </li>
+
+                                                <!-- Números de página -->
+                                                @for (int i = 1; i <= Model.TotalPaginas; i++)
+                                                {
+                                                    <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                                        <a class="page-link" 
+                                                           href="@Url.Action("IndexUsuarios", "Admin", new { 
+                                                               pagina = i, 
+                                                               cantidadPorPagina = 10,
+                                                               busqueda = Model.Busqueda,
+                                                               rolFiltro = Model.RolFiltro
+                                                           })">@i</a>
+                                                    </li>
+                                                }
+
+                                                <!-- Botón Siguiente -->
+                                                <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                                                    <a class="page-link" 
+                                                       href="@Url.Action("IndexUsuarios", "Admin", new { 
+                                                           pagina = Model.PaginaActual + 1, 
+                                                           cantidadPorPagina = 10,
+                                                           busqueda = Model.Busqueda,
+                                                           rolFiltro = Model.RolFiltro
+                                                       })">
+                                                        <i class="lni lni-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+
+                                        <!-- Información de paginación -->
+                                        <div class="pagination-info text-center mt-2">
+                                            @{
+                                                var inicio = (Model.PaginaActual - 1) * 10 + 1;
+                                                var fin = Math.Min(Model.PaginaActual * 10, Model.TotalUsuarios);
                                             }
-
-                                            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                                                <a class="page-link" href="@Url.Action("IndexUsuarios", "Admin", new { pagina = Model.PaginaActual + 1, cantidadPorPagina = 10 })">
-                                                    <i class="lni lni-chevron-right"></i>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </nav>
-
-                                    <div class="pagination-info text-center mt-2">
-                                        @{
-                                            var inicio = (Model.PaginaActual - 1) * 10 + 1;
-                                            var fin = Math.Min(Model.PaginaActual * 10, Model.TotalUsuarios);
-                                        }
-                                        <p class="text-sm text-muted">Mostrando @inicio-@fin de @Model.TotalUsuarios registros</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <partial name="~/Views/Shared/_UsuarioModal.cshtml" model="Model.UsuarioSeleccionado" />
-
-                            <!-- Tab de Productos -->
-                            <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="mb-0">Gestión de Productos</h6>
-                                    <button class="main-btn primary-btn btn-hover">
-                                        <i class="lni lni-plus me-2"></i>Agregar Producto
-                                    </button>
-                                </div>
-                                <div class="table-wrapper table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    <h6>ID</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Producto</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Descripción</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Precio</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Stock</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Stock Mínimo</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Imagen</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Estado</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Acción</h6>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#PROD001</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>Laptop Gaming</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Laptop para gaming con RTX 4060</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold text-success">$1,299.99</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>15</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>5</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <div class="product-image">
-                                                        <img src="assets/images/lead/lead-1.png" alt="Laptop Gaming" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
-                                                    </div>
-                                                </td>
-                                                <td class="min-width">
-                                                    <span class="status-btn active-btn">Disponible</span>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#PROD002</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>Smartphone XL</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Teléfono inteligente 128GB</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold text-success">$599.99</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>8</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>3</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <div class="product-image">
-                                                        <img src="assets/images/lead/lead-2.png" alt="Smartphone" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
-                                                    </div>
-                                                </td>
-                                                <td class="min-width">
-                                                    <span class="status-btn active-btn">Disponible</span>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#PROD003</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>Auriculares Bluetooth</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Auriculares inalámbricos noise canceling</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold text-success">$199.99</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>2</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>5</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <div class="product-image">
-                                                        <img src="assets/images/lead/lead-3.png" alt="Auriculares" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
-                                                    </div>
-                                                </td>
-                                                <td class="min-width">
-                                                    <span class="status-btn warning-btn">Stock Bajo</span>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#PROD004</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>Tablet Pro</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Tablet 10 pulgadas 64GB</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold text-success">$349.99</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>0</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>2</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <div class="product-image">
-                                                        <img src="assets/images/lead/lead-4.png" alt="Tablet" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
-                                                    </div>
-                                                </td>
-                                                <td class="min-width">
-                                                    <span class="status-btn close-btn">Agotado</span>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#PROD005</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>Smart Watch</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Reloj inteligente deportivo</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold text-success">$159.99</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>25</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p>10</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <div class="product-image">
-                                                        <img src="assets/images/lead/lead-5.png" alt="Smart Watch" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
-                                                    </div>
-                                                </td>
-                                                <td class="min-width">
-                                                    <span class="status-btn active-btn">Disponible</span>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <!-- Menú de Paginación -->
-                                    <div class="pagination-wrapper mt-4">
-                                        <nav aria-label="Page navigation">
-                                            <ul class="pagination justify-content-center">
-                                                <li class="page-item disabled">
-                                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                                        <i class="lni lni-chevron-left"></i>
-                                                    </a>
-                                                </li>
-                                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="#">
-                                                        <i class="lni lni-chevron-right"></i>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </nav>
-
-                                        <!-- Información de página -->
-                                        <div class="pagination-info text-center mt-2">
-                                            <p class="text-sm text-muted">Mostrando 1-10 de 56 registros</p>
+                    
+                                            <p class="text-sm text-muted">
+                                                Mostrando @inicio-@fin de @Model.TotalUsuarios registros
+                        
+                                                @if (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue)
+                                                {
+                                                    <span class="ms-2">
+                                                        <a href="@Url.Action("LimpiarFiltros")" class="text-primary text-decoration-underline">
+                                                            (Ver todos)
+                                                        </a>
+                                                    </span>
+                                                }
+                                            </p>
                                         </div>
                                     </div>
-                                </div>
+                                }
                             </div>
-
-                            <!-- Tab de Categorías -->
-                            <div class="tab-pane fade" id="categoria" role="tabpanel" aria-labelledby="categoria-tab">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="mb-0">Gestión de Categorías</h6>
-                                    <button class="main-btn primary-btn btn-hover">
-                                        <i class="lni lni-plus me-2"></i>Agregar Categoría
-                                    </button>
-                                </div>
-                                <div class="table-wrapper table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    <h6>ID</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Nombre</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Descripción</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Acción</h6>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#CAT001</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold">Electrónicos</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Dispositivos electrónicos y tecnológicos</p>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#CAT002</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold">Ropa</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Prendas de vestir para hombres, mujeres y niños</p>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#CAT003</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold">Hogar</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Artículos para el hogar y decoración</p>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#CAT004</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold">Deportes</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Equipamiento y ropa deportiva</p>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#CAT005</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold">Libros</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Libros de todos los géneros y temas</p>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <p class="text-sm">#CAT006</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="fw-bold">Juguetes</p>
-                                                </td>
-                                                <td class="min-width">
-                                                    <p class="text-sm">Juguetes y juegos para todas las edades</p>
-                                                </td>
-                                                <td>
-                                                    <div class="action d-flex gap-2">
-                                                        <button class="text-primary" title="Editar">
-                                                            <i class="lni lni-pencil"></i>
-                                                        </button>
-                                                        <button class="text-danger" title="Eliminar">
-                                                            <i class="lni lni-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <!-- Menú de Paginación -->
-                                    <div class="pagination-wrapper mt-4">
-                                        <nav aria-label="Page navigation">
-                                            <ul class="pagination justify-content-center">
-                                                <li class="page-item disabled">
-                                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                                        <i class="lni lni-chevron-left"></i>
-                                                    </a>
-                                                </li>
-                                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="#">
-                                                        <i class="lni lni-chevron-right"></i>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </nav>
-
-                                        <!-- Información de página -->
-                                        <div class="pagination-info text-center mt-2">
-                                            <p class="text-sm text-muted">Mostrando 1-10 de 56 registros</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
-                    </div>
                     <!-- end card -->
                 </div>
                 <!-- end col -->
@@ -650,30 +329,203 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            // Verificar si hay una acción modal en la URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const accion = urlParams.get('accion');
+    // Auto-submit del filtro de rol cuando cambia
+        document.querySelector('select[name="rolFiltro"]').addEventListener('change', function() {
+            document.getElementById('filtrosForm').submit();
+        });
 
-            if (accion) {
-                // Esperar a que el modal esté renderizado
-                setTimeout(function() {
-                    const modalElement = document.getElementById('usuarioModal');
-                    if (modalElement) {
-                        const modal = new bootstrap.Modal(modalElement);
-                        modal.show();
-                    }
-                }, 300);
+        // Limpiar búsqueda individual
+        function limpiarBusqueda() {
+            document.querySelector('input[name="busqueda"]').value = '';
+            document.getElementById('filtrosForm').submit();
+        }
+
+        // Función para abrir el modal
+        function abrirModal(accion, usuarioId = null) {
+            let url = '';
+            const params = new URLSearchParams();
+
+            // Agregar parámetros básicos
+            params.append('accion', accion);
+        
+            // Agregar usuarioId si existe
+            if (usuarioId) {
+                params.append('usuarioId', usuarioId);
             }
 
-            // Limpiar URL cuando se cierre el modal
-            $('#usuarioModal').on('hidden.bs.modal', function () {
-                // Remover parámetros de la URL sin recargar
-                const url = new URL(window.location);
-                url.searchParams.delete('accion');
-                url.searchParams.delete('usuarioId');
-                window.history.replaceState({}, '', url);
+            // Mantener los filtros actuales
+            const busqueda = '@Html.Raw(Model.Busqueda)';
+            const rolFiltro = '@Model.RolFiltro';
+            const pagina = '@Model.PaginaActual';
+
+            if (busqueda) {
+                params.append('busqueda', busqueda);
+            }
+            if (rolFiltro) {
+                params.append('rolFiltro', rolFiltro);
+            }
+            if (pagina) {
+                params.append('pagina', pagina);
+            }
+
+            switch(accion) {
+                case 'crear':
+                    url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
+                    break;
+                case 'ver':
+                case 'editar':
+                    if (usuarioId) {
+                        url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
+                    }
+                    break;
+            }
+
+            if (url) {
+                // Cargar el modal via AJAX
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('modalContainer').innerHTML = data;
+
+                        // Mostrar el modal
+                        const modal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+                        modal.show();
+
+                        // Configurar el formulario según la acción
+                        configurarModal(accion);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+
+        // Función para configurar el modal según la acción
+        function configurarModal(accion) {
+            const form = document.getElementById('usuarioForm');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            const btnGuardar = document.getElementById('btnGuardarUsuario');
+
+            switch(accion) {
+                case 'ver':
+                    // Deshabilitar todos los inputs
+                    inputs.forEach(input => {
+                        input.disabled = true;
+                        input.readOnly = true;
+                    });
+                    // Ocultar botón guardar
+                    if (btnGuardar) btnGuardar.style.display = 'none';
+                    break;
+
+                case 'crear':
+                case 'editar':
+                    // Habilitar todos los inputs
+                    inputs.forEach(input => {
+                        input.disabled = false;
+                        input.readOnly = false;
+                    });
+                    // Mostrar botón guardar
+                    if (btnGuardar) btnGuardar.style.display = 'block';
+                
+                    // Configurar el evento submit para el formulario
+                    configurarSubmitForm(accion);
+                    break;
+            }
+        }
+
+        // Función para configurar el envío del formulario
+        function configurarSubmitForm(accion) {
+            const form = document.getElementById('usuarioForm');
+        
+            // Remover event listeners previos
+            form.replaceWith(form.cloneNode(true));
+            const newForm = document.getElementById('usuarioForm');
+        
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+            
+                const formData = new FormData(newForm);
+                const data = Object.fromEntries(formData);
+            
+                // Agregar los filtros actuales al objeto data
+                data.busqueda = '@Html.Raw(Model.Busqueda)';
+                data.rolFiltro = '@Model.RolFiltro';
+                data.pagina = '@Model.PaginaActual';
+            
+                // Convertir campos booleanos
+                if (data.Estado) {
+                    data.Estado = data.Estado === 'on' || data.Estado === 'true';
+                }
+            
+                fetch('@Url.Action("GuardarUsuario", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Cerrar el modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
+                        modal.hide();
+                    
+                        // Mostrar mensaje de éxito
+                        alert(result.message);
+                    
+                        // Recargar la página manteniendo los filtros
+                        const filtros = result.filtros || {};
+                        window.location.href = '@Url.Action("IndexUsuarios", "Admin")' + 
+                            `?busqueda=${encodeURIComponent(filtros.busqueda || '')}` +
+                            `&rolFiltro=${filtros.rolFiltro || ''}` +
+                            `&pagina=${filtros.pagina || 1}`;
+                    } else {
+                        // Mostrar errores
+                        alert(result.message);
+                        if (result.errors) {
+                            console.error('Errores:', result.errors);
+                            // Aquí puedes mostrar los errores específicos en el formulario si lo deseas
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al guardar el usuario');
+                });
             });
+        }
+
+        // Función para confirmar eliminación
+        function confirmarEliminacion(usuarioId, usuarioNombre) {
+            // Obtener filtros actuales
+            const busqueda = '@Html.Raw(Model.Busqueda)';
+            const rolFiltro = '@Model.RolFiltro';
+            const pagina = '@Model.PaginaActual';
+        
+            if (confirm(`¿Está seguro de que desea eliminar al usuario "${usuarioNombre}"?`)) {
+                // Construir URL con parámetros de filtro
+                let url = '@Url.Action("EliminarUsuario", "Admin")' + 
+                         `?id=${usuarioId}` +
+                         `&busqueda=${encodeURIComponent(busqueda)}` +
+                         `&rolFiltro=${rolFiltro}` +
+                         `&pagina=${pagina}`;
+            
+                window.location.href = url;
+            }
+        }
+
+        // Cerrar modal y limpiar
+        document.addEventListener('hidden.bs.modal', function (e) {
+            if (e.target.id === 'usuarioModal') {
+                document.getElementById('modalContainer').innerHTML = '';
+            }
+        });
+
+        // Manejar el evento de enter en el campo de búsqueda
+        document.querySelector('input[name="busqueda"]')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('filtrosForm').submit();
+            }
         });
     </script>
 }
