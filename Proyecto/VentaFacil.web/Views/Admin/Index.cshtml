@@ -324,7 +324,7 @@
 
 @section Scripts {
     <script>
-    // Auto-submit del filtro de rol cuando cambia
+        // Auto-submit del filtro de rol cuando cambia
         document.querySelector('select[name="rolFiltro"]')?.addEventListener('change', function() {
             document.getElementById('filtrosForm').submit();
         });
@@ -338,8 +338,9 @@
         });
 
         // Función para abrir el modal
-        
         function abrirModal(accion, usuarioId = null) {
+            console.log('Abriendo modal:', accion, 'Usuario ID:', usuarioId);
+    
             let url = '';
             const params = new URLSearchParams();
 
@@ -360,134 +361,364 @@
             if (pagina) params.append('pagina', pagina);
 
             url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
+            console.log('URL del modal:', url);
 
             // Cargar modal via AJAX
             fetch(url)
                 .then(response => {
-                    if (!response.ok) throw new Error('Error al cargar el modal');
+                    if (!response.ok) throw new Error('Error al cargar el modal: ' + response.status);
                     return response.text();
                 })
                 .then(data => {
                     document.getElementById('modalContainer').innerHTML = data;
-                    const modal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+                    const modalElement = document.getElementById('usuarioModal');
+            
+                    if (!modalElement) {
+                        console.error('Modal element no encontrado después de cargar');
+                        return;
+                    }
+            
+                    const modal = new bootstrap.Modal(modalElement);
+            
+                    // Configurar el evento cuando el modal se muestra completamente
+                    modalElement.addEventListener('shown.bs.modal', function () {
+                        console.log('Modal mostrado, configurando submit para:', accion);
+                        configurarSubmitForm(accion);
+                    });
+            
                     modal.show();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al cargar el formulario');
+                    alert('Error al cargar el formulario: ' + error.message);
                 });
         }
         
-        function configurarSubmitForm(accion) {
-            const form = document.getElementById('usuarioForm');
+       function configurarSubmitForm(accion) {
+        const form = document.getElementById('usuarioForm');
     
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                console.log('Acción:', accion); // Debug
-
-                // Validación manual
-                let isValid = true;
-                let errorMessage = '';
-
-                const contrasena = document.getElementById('Contrasena')?.value || '';
-                const confirmar = document.getElementById('ConfirmarContrasena')?.value || '';
-
-                if (accion === 'crear') {
-                    if (!contrasena || contrasena.length < 6) {
-                        errorMessage = 'La contraseña es requerida y debe tener al menos 6 caracteres';
-                        isValid = false;
-                    } else if (contrasena !== confirmar) {
-                        errorMessage = 'Las contraseñas no coinciden';
-                        isValid = false;
-                    }
-                }
-
-                if (accion === 'editar') {
-                    if (contrasena || confirmar) {
-                        if (!contrasena || !confirmar) {
-                            errorMessage = 'Debe completar ambos campos de contraseña si desea cambiarla';
-                            isValid = false;
-                        } else if (contrasena.length < 6) {
-                            errorMessage = 'La contraseña debe tener al menos 6 caracteres';
-                            isValid = false;
-                        } else if (contrasena !== confirmar) {
-                            errorMessage = 'Las contraseñas no coinciden';
-                            isValid = false;
-                        }
-                    }
-                }
-
-
-                if (!isValid) {
-                    alert(errorMessage);
-                    return false;
-                }
-
-                // Crear FormData
-                const formData = new FormData();
-
-                // Agregar campos básicos
-                formData.append('Id_Usr', document.querySelector('input[name="Id_Usr"]').value || '0');
-                formData.append('Nombre', document.querySelector('input[name="Nombre"]').value);
-                formData.append('Correo', document.querySelector('input[name="Correo"]').value);
-                formData.append('Rol', document.querySelector('select[name="Rol"]').value);
-                formData.append('Estado', document.querySelector('input[name="Estado"]').checked);
-
-                // Solo agregar contraseñas si se proporcionaron
-                if (contrasena) {
-                    formData.append('Contrasena', contrasena);
-                    formData.append('ConfirmarContrasena', confirmar);
-                } else {
-                    // Enviar vacíos si no se cambia la contraseña
-                    formData.append('Contrasena', '');
-                    formData.append('ConfirmarContrasena', '');
-                }
-
-                // Agregar parámetros de filtro
-                formData.append('busqueda', '@Html.Raw(Model.Busqueda ?? "")');
-                formData.append('rolFiltro', '@(Model.RolFiltro?.ToString() ?? "")');
-                formData.append('pagina', '@Model.PaginaActual');
-
-                // Obtener el token anti-forgery
-                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-                console.log('Enviando datos...'); // Debug
-
-                // Enviar la solicitud
-                fetch('@Url.Action("GuardarUsuario", "Admin")', {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': token
-                    },
-                    body: formData
-                })
-                .then(response => {
-                    console.log('Respuesta recibida:', response.status); // Debug
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(result => {
-                    console.log('Resultado:', result); // Debug
-                    if (result.success) {
-                        bootstrap.Modal.getInstance(document.getElementById('usuarioModal')).hide();
-                        alert(result.message);
-                        window.location.reload();
-                    } else {
-                        const errorMsg = result.message + (result.errors ? '\n' + result.errors.join('\n') : '');
-                        alert('Error: ' + errorMsg);
-                    }
-                })
-                .catch(err => {
-                    console.error('Error completo:', err);
-                    alert('Error al guardar el usuario: ' + err.message);
-                });
-            });
+        if (!form) {
+            console.error('Formulario no encontrado en configurarSubmitForm');
+            return;
         }
 
+        console.log('Configurando submit para acción:', accion, 'Form:', form);
+
+        // Remover event listeners previos para evitar duplicados
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        newForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            console.log('Submit del formulario para acción:', accion);
+
+            // Limpiar errores previos
+            limpiarErrores();
+
+            // Validación manual del frontend
+            let isValid = true;
+
+            const contrasena = document.getElementById('Contrasena')?.value || '';
+            const confirmar = document.getElementById('ConfirmarContrasena')?.value || '';
+
+            if (accion === 'crear') {
+                if (!contrasena || contrasena.length < 6) {
+                    mostrarError('Contrasena', 'La contraseña es requerida y debe tener al menos 6 caracteres');
+                    isValid = false;
+                } else if (contrasena !== confirmar) {
+                    mostrarError('ConfirmarContrasena', 'Las contraseñas no coinciden');
+                    isValid = false;
+                }
+            }
+
+            if (accion === 'editar') {
+                if (contrasena || confirmar) {
+                    if (!contrasena || !confirmar) {
+                        mostrarError('Contrasena', 'Debe completar ambos campos de contraseña si desea cambiarla');
+                        isValid = false;
+                    } else if (contrasena.length < 6) {
+                        mostrarError('Contrasena', 'La contraseña debe tener al menos 6 caracteres');
+                        isValid = false;
+                    } else if (contrasena !== confirmar) {
+                        mostrarError('ConfirmarContrasena', 'Las contraseñas no coinciden');
+                        isValid = false;
+                    }
+                }
+            }
+
+            if (!isValid) {
+                console.log('Validación frontend fallida');
+                return false;
+            }
+
+            // Crear FormData directamente desde el formulario
+            const formData = new FormData(newForm);
+
+            // Debug: mostrar datos que se enviarán
+            console.log('Datos a enviar:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+
+            // Enviar la solicitud
+            const url = '@Url.Action("GuardarUsuario", "Admin")';
+            console.log('Enviando a:', url);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData // FormData establece automáticamente los headers correctos
+            })
+            .then(response => {
+                console.log('Respuesta HTTP - Status:', response.status, 'OK:', response.ok);
+    
+                return response.text().then(text => {
+                    console.log('Respuesta completa recibida:', text);
+    
+                    try {
+                        // Intentar parsear como JSON
+                        const jsonData = JSON.parse(text);
+                        console.log('Parseado como JSON exitosamente:', jsonData);
+                        return jsonData;
+                    } catch (e) {
+                        console.log('No es JSON válido, manejando como texto/HTML');
+                    
+                        if (response.status === 400) {
+                            return {
+                                success: false,
+                                message: 'Error de validación en el servidor',
+                                errors: ['Por favor verifique que todos los campos sean correctos'],
+                                fieldErrors: {}
+                            };
+                        }
+                    
+                        if (!response.ok) {
+                            return {
+                                success: false,
+                                message: `Error del servidor: ${response.status}`,
+                                errors: [text.substring(0, 200)],
+                                fieldErrors: {}
+                            };
+                        }
+                    
+                        return {
+                            success: false,
+                            message: 'Respuesta inesperada del servidor',
+                            errors: [text],
+                            fieldErrors: {}
+                        };
+                    }
+                });
+            })
+            .then(result => {
+                if (!result) return;
+
+                console.log('Resultado procesado:', result);
+
+                if (result.success) {
+                    mostrarMensajeExito(result.message);
+                
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
+                        if (modal) modal.hide();
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    console.log('Mostrando errores:', result.errors, result.fieldErrors);
+                    if (result.errors || result.fieldErrors) {
+                        mostrarErroresEnFormulario(result.errors || [], result.fieldErrors || null);
+                    } else {
+                        mostrarErrorGeneral(result.message || 'Error desconocido');
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error en fetch:', err);
+                mostrarErrorGeneral('Error de conexión: ' + err.message);
+            });
+        });
+    }
+
+        function mostrarErroresEnFormulario(errors, fieldErrors = null) {
+            console.log('Mostrando errores:', errors, fieldErrors);
+            
+            // Limpiar errores previos primero
+            limpiarErrores();
+            
+            // PRIMERO usar fieldErrors si están disponibles (mapeo preciso)
+            if (fieldErrors) {
+                console.log('Procesando fieldErrors:', fieldErrors);
+                Object.keys(fieldErrors).forEach(field => {
+                    const errorMessage = fieldErrors[field];
+                    console.log(`Error en campo ${field}:`, errorMessage);
+                    mostrarError(field, errorMessage);
+                });
+            }
+            
+            // LUEGO procesar la lista general de errores
+            if (errors && errors.length > 0) {
+                console.log('Procesando errors generales:', errors);
+                errors.forEach(error => {
+                    // Verificar si este error ya fue manejado por fieldErrors
+                    const alreadyHandled = fieldErrors && Object.values(fieldErrors).includes(error);
+                    if (!alreadyHandled) {
+                        let fieldName = determinarCampoPorError(error);
+                        console.log(`Error general "${error}" mapeado a campo:`, fieldName);
+                        if (fieldName) {
+                            mostrarError(fieldName, error);
+                        } else {
+                            mostrarErrorGeneral(error);
+                        }
+                    }
+                });
+            }
+        }
+
+        // Función para determinar campo por error
+        function determinarCampoPorError(error) {
+            const errorLower = error.toLowerCase();
+            console.log('Determinando campo para error:', errorLower);
+            
+            if (errorLower.includes('nombre') || errorLower.includes('name') || errorLower.includes('el nombre')) {
+                return 'Nombre';
+            } else if (errorLower.includes('correo') || errorLower.includes('email')) {
+                return 'Correo';
+            } else if (errorLower.includes('contraseña') || errorLower.includes('contrasena') || errorLower.includes('password')) {
+                return 'Contrasena';
+            } else if (errorLower.includes('confirmar') || errorLower.includes('confirm')) {
+                return 'ConfirmarContrasena';
+            } else if (errorLower.includes('rol') || errorLower.includes('role')) {
+                return 'Rol';
+            }
+            
+            return null;
+        }
+
+        // Función para mostrar error en campo específico (SÓLO UNA VEZ)
+        function mostrarError(campo, mensaje) {
+            console.log(`Intentando mostrar error en campo ${campo}:`, mensaje);
+            
+            let input;
+            
+            // Buscar por name primero (es lo más específico)
+            input = document.querySelector(`[name="${campo}"]`);
+            console.log('Búsqueda por name:', input);
+            
+            // Si no se encuentra, buscar por id
+            if (!input) {
+                input = document.getElementById(campo);
+                console.log('Búsqueda por id:', input);
+            }
+            
+            // Si aún no se encuentra, intentar búsqueda case-insensitive
+            if (!input) {
+                const allInputs = document.querySelectorAll('input, select, textarea');
+                input = Array.from(allInputs).find(el => 
+                    el.name && el.name.toLowerCase() === campo.toLowerCase()
+                );
+                console.log('Búsqueda case-insensitive:', input);
+            }
+            
+            if (input) {
+                const formGroup = input.closest('.form-group');
+                
+                if (formGroup) {
+                    // Remover error previo
+                    const errorExistente = formGroup.querySelector('.text-danger.field-validation-error');
+                    if (errorExistente) {
+                        errorExistente.remove();
+                    }
+                    
+                    // Agregar nuevo error
+                    const errorElement = document.createElement('span');
+                    errorElement.className = 'text-danger field-validation-error';
+                    errorElement.style.display = 'block';
+                    errorElement.style.marginTop = '5px';
+                    errorElement.style.fontSize = '0.875rem';
+                    errorElement.textContent = mensaje;
+                    
+                    input.classList.add('is-invalid');
+                    formGroup.appendChild(errorElement);
+                    
+                    console.log(`Error mostrado en campo ${campo}`);
+                }
+            } else {
+                console.error(`Campo no encontrado: ${campo}`);
+                mostrarErrorGeneral(`Error en ${campo}: ${mensaje}`);
+            }
+        }
+
+        // Función para mostrar error general
+        function mostrarErrorGeneral(mensaje) {
+            // Buscar o crear contenedor de error general
+            let errorContainer = document.getElementById('errorGeneral');
+            if (!errorContainer) {
+                errorContainer = document.createElement('div');
+                errorContainer.id = 'errorGeneral';
+                errorContainer.className = 'alert alert-danger alert-dismissible fade show';
+                errorContainer.innerHTML = `
+                    <i class="lni lni-warning me-2"></i>
+                    ${mensaje}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+        
+                // Insertar después del título del modal
+                const modalHeader = document.querySelector('.modal-header');
+                if (modalHeader) {
+                    modalHeader.parentNode.insertBefore(errorContainer, modalHeader.nextSibling);
+                }
+            } else {
+                errorContainer.innerHTML = `
+                    <i class="lni lni-warning me-2"></i>
+                    ${mensaje}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                errorContainer.classList.remove('d-none');
+            }
+        }
+
+        // Función para mostrar mensaje de éxito
+        function mostrarMensajeExito(mensaje) {
+            const successContainer = document.createElement('div');
+            successContainer.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            successContainer.style.zIndex = '9999';
+            successContainer.innerHTML = `
+                <i class="lni lni-checkmark-circle me-2"></i>
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+    
+            document.body.appendChild(successContainer);
+    
+            // Auto-remover después de 3 segundos
+            setTimeout(() => {
+                if (successContainer.parentNode) {
+                    successContainer.parentNode.removeChild(successContainer);
+                }
+            }, 3000);
+        }
+
+        // Función para limpiar todos los errores
+        function limpiarErrores() {
+            console.log('Limpiando errores...');
+            
+            // Limpiar clases de error en inputs
+            document.querySelectorAll('.is-invalid').forEach(input => {
+                input.classList.remove('is-invalid');
+            });
+            
+            // Remover elementos de error
+            document.querySelectorAll('.field-validation-error').forEach(error => {
+                error.remove();
+            });
+            
+            // Limpiar error general
+            const errorGeneral = document.getElementById('errorGeneral');
+            if (errorGeneral) {
+                errorGeneral.remove();
+            }
+        }
 
         // Función para confirmar eliminación
         function confirmarEliminacion(usuarioId, usuarioNombre) {
@@ -512,14 +743,6 @@
         document.addEventListener('hidden.bs.modal', function (e) {
             if (e.target.id === 'usuarioModal') {
                 document.getElementById('modalContainer').innerHTML = '';
-            }
-        });
-
-        // Manejar el evento de enter en el campo de búsqueda
-        document.querySelector('input[name="busqueda"]')?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('filtrosForm').submit();
             }
         });
     </script>

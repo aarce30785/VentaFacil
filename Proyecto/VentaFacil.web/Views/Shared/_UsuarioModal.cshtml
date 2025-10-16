@@ -57,7 +57,7 @@
                                 <div class="form-group">
                                     <label asp-for="Contrasena" class="form-label"></label>
                                     <input asp-for="Contrasena" type="password" class="form-control"
-                                           id="Contrasena"
+                                           id="Contrasena" name="Contrasena"
                                            placeholder="@(accionModal == "crear" ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual")" />
                                     <small class="form-text text-muted">
                                         @if (accionModal == "crear")
@@ -69,17 +69,16 @@
                                             <text>Complete solo si desea cambiar la contraseña</text>
                                         }
                                     </small>
-                                    <!-- REMOVER span de validación para Contrasena -->
                                 </div>
                             </div>
+
 
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label asp-for="ConfirmarContrasena" class="form-label"></label>
                                     <input asp-for="ConfirmarContrasena" type="password" class="form-control"
-                                           id="ConfirmarContrasena"
+                                           id="ConfirmarContrasena" name="ConfirmarContrasena"
                                            placeholder="@(accionModal == "crear" ? "Confirme la contraseña" : "Confirmar nueva contraseña")" />
-                                    <!-- REMOVER span de validación para ConfirmarContrasena -->
                                 </div>
                             </div>
                         }
