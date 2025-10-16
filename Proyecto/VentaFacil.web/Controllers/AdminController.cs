@@ -154,19 +154,32 @@ namespace VentaFacil.web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GuardarUsuario(UsuarioDto usuarioDto,
-            string busqueda = null, int? rolFiltro = null, int pagina = 1)
+        public async Task<IActionResult> GuardarUsuario(
+            [FromForm] UsuarioDto usuarioDto,
+            [FromForm] string busqueda = null,
+            [FromForm] int? rolFiltro = null,
+            [FromForm] int pagina = 1)
         {
             try
             {
+                // DEBUG: Log para verificar que los datos llegan
+                Console.WriteLine($"Datos recibidos - ID: {usuarioDto.Id_Usr}, Nombre: {usuarioDto.Nombre}, Correo: {usuarioDto.Correo}, Rol: {usuarioDto.Rol}");
+                Console.WriteLine($"Contraseña recibida: {(string.IsNullOrEmpty(usuarioDto.Contrasena) ? "VACÍA" : "PRESENTE")}");
+                Console.WriteLine($"Filtros - Búsqueda: {busqueda}, RolFiltro: {rolFiltro}, Página: {pagina}");
+
+                // Limpiar ModelState antes de validar
+                ModelState.Clear();
+
                 // Remover errores de validación de contraseña para edición si están vacías
-                if (usuarioDto.Id_Usr > 0)
+                if (usuarioDto.Id_Usr > 0 && string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
-                    if (string.IsNullOrEmpty(usuarioDto.Contrasena))
-                    {
-                        ModelState.Remove(nameof(UsuarioDto.Contrasena));
-                        ModelState.Remove(nameof(UsuarioDto.ConfirmarContrasena));
-                    }
+                    // Para edición, si la contraseña está vacía, ignorar validación de contraseñas
+                    usuarioDto.Contrasena = null;
+                    usuarioDto.ConfirmarContrasena = null;
+
+                    // Remover del ModelState explícitamente
+                    ModelState.Remove("Contrasena");
+                    ModelState.Remove("ConfirmarContrasena");
                 }
 
                 // Validar manualmente usando IValidatableObject
@@ -179,43 +192,82 @@ namespace VentaFacil.web.Controllers
                 {
                     foreach (var memberName in validationResult.MemberNames)
                     {
-                        ModelState.AddModelError(memberName, validationResult.ErrorMessage);
+                        if (!ModelState.ContainsKey(memberName) || !ModelState[memberName].Errors.Any(e => e.ErrorMessage == validationResult.ErrorMessage))
+                        {
+                            ModelState.AddModelError(memberName, validationResult.ErrorMessage);
+                        }
                     }
                 }
 
                 if (!ModelState.IsValid)
                 {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Where(e => !string.IsNullOrEmpty(e.ErrorMessage))
-                        .Select(e => e.ErrorMessage)
+                    var errors = ModelState
+                        .Where(ms => ms.Value.Errors.Any())
+                        .SelectMany(ms => ms.Value.Errors
+                            .Where(e => !string.IsNullOrEmpty(e.ErrorMessage))
+                            .Select(e => new { Field = ms.Key, Message = e.ErrorMessage }))
                         .ToList();
 
-                    return Json(new { success = false, message = "Error de validación", errors });
+                    var errorMessages = errors.Select(e => e.Message).Distinct().ToList();
+                    var fieldErrors = errors.ToDictionary(e => e.Field, e => e.Message);
+
+                    // Log para debugging
+                    Console.WriteLine($"Errores de validación: {string.Join(", ", errorMessages)}");
+
+                    // RETORNAR JSON explícitamente
+                    return BadRequest(new // Usar BadRequest para status 400
+                    {
+                        success = false,
+                        message = "Error de validación",
+                        errors = errorMessages,
+                        fieldErrors = fieldErrors
+                    });
                 }
 
-                // Lógica para guardar el usuario
-                var result = await _adminService.ActualizarUsuarioAsync(usuarioDto);
+                bool result;
 
-                if (result) // Asumiendo que retorna true si fue exitoso
+                if (usuarioDto.Id_Usr > 0)
                 {
-                    // REDIRIGIR a Index en lugar de retornar JSON
-                    return RedirectToAction("IndexUsuarios", new
+                    // Actualizar usuario existente
+                    result = await _adminService.ActualizarUsuarioAsync(usuarioDto);
+                }
+                else
+                {
+                    // Crear nuevo usuario - necesitas un método diferente
+                    result = await _adminService.CrearUsuarioAsync(usuarioDto);
+                }
+
+                if (result)
+                {
+                    return Ok(new
                     {
-                        busqueda = busqueda,
-                        rolFiltro = rolFiltro,
-                        pagina = pagina,
-                        mensaje = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente"
+                        success = true,
+                        message = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente"
                     });
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Error al guardar el usuario" });
+                    // AÑADIR ESTE RETURN FALTANTE
+                    var operation = usuarioDto.Id_Usr > 0 ? "actualizar" : "crear";
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = $"Error al {operation} el usuario",
+                        errors = new List<string> { $"No se pudo {operation} el usuario en la base de datos" }
+                    });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error interno del servidor: " + ex.Message });
+                // Log de la excepción completa
+                Console.WriteLine($"Excepción en GuardarUsuario: {ex}");
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Error interno del servidor",
+                    errors = new List<string> { ex.Message }
+                });
             }
         }
 
