@@ -109,15 +109,29 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
+                   <div class="col-md-6">
                         <div class="form-check form-switch mt-4">
-                            @Html.CheckBoxFor(m => m.Estado, new { 
-                                @class = "form-check-input",
-                                @disabled = (accionModal == "ver") ? "disabled" : null
-                            })
-                            @Html.LabelFor(m => m.Estado, "Usuario Activo", new { @class = "form-check-label" })
+                            @if (accionModal == "ver")
+                            {
+                                @Html.CheckBoxFor(m => m.Estado, new { 
+                                    @class = "form-check-input",
+                                    @disabled = "disabled"
+                                })
+                                <label class="form-check-label" for="Estado">Usuario Activo</label>
+                            }
+                            else
+                            {
+                                <!-- Estructura corregida -->
+                                <input type="hidden" name="Estado" value="false" />
+                                @Html.CheckBoxFor(m => m.Estado, new { 
+                                    @class = "form-check-input",
+                                    value = "true"
+                                })
+                                <label class="form-check-label" for="Estado">Usuario Activo</label>
+                            }
                         </div>
                     </div>
+
 
                 </div>
 

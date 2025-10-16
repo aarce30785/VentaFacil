@@ -420,47 +420,67 @@
             }
         }
 
+        
         // Función para configurar el envío del formulario
         function configurarSubmitForm(accion) {
             const form = document.getElementById('usuarioForm');
-        
+    
             // Remover event listeners previos
             form.replaceWith(form.cloneNode(true));
             const newForm = document.getElementById('usuarioForm');
-        
+    
             newForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-            
+        
+                // Crear FormData correctamente
                 const formData = new FormData(newForm);
-                const data = Object.fromEntries(formData);
-            
-                // Agregar los filtros actuales al objeto data
-                data.busqueda = '@Html.Raw(Model.Busqueda)';
-                data.rolFiltro = '@Model.RolFiltro';
-                data.pagina = '@Model.PaginaActual';
-            
-                // Convertir campos booleanos
-                if (data.Estado) {
-                    data.Estado = data.Estado === 'on' || data.Estado === 'true';
+        
+                // Convertir a objeto manejando correctamente el checkbox
+                const data = {};
+                for (let [key, value] of formData.entries()) {
+                    // Manejar el checkbox Estado
+                    if (key === 'Estado') {
+                        data[key] = true; // Si está en el FormData, significa que está checked
+                    } else {
+                        data[key] = value;
+                    }
                 }
-            
+        
+                // Si el checkbox no está en el FormData, establecerlo como false
+                if (!formData.has('Estado')) {
+                    data.Estado = false;
+                }
+        
+                // Agregar los filtros actuales al objeto data
+                data.busqueda = '@Html.Raw(Model.Busqueda ?? "")';
+                data.rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
+                data.pagina = '@Model.PaginaActual';
+        
+                console.log('Datos a enviar:', data); // Para debugging
+        
                 fetch('@Url.Action("GuardarUsuario", "Admin")', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                     },
                     body: JSON.stringify(data)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+                    return response.json();
+                })
                 .then(result => {
                     if (result.success) {
                         // Cerrar el modal
                         const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
                         modal.hide();
-                    
+                
                         // Mostrar mensaje de éxito
                         alert(result.message);
-                    
+                
                         // Recargar la página manteniendo los filtros
                         const filtros = result.filtros || {};
                         window.location.href = '@Url.Action("IndexUsuarios", "Admin")' + 
@@ -472,13 +492,12 @@
                         alert(result.message);
                         if (result.errors) {
                             console.error('Errores:', result.errors);
-                            // Aquí puedes mostrar los errores específicos en el formulario si lo deseas
                         }
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al guardar el usuario');
+                    alert('Error al guardar el usuario: ' + error.message);
                 });
             });
         }
