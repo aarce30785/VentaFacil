@@ -25,114 +25,92 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            @using (Html.BeginForm("GuardarUsuario", "Admin", FormMethod.Post, new { @class = "row g-4", id = "usuarioForm" }))
-            {
+            <form method="post" asp-action="GuardarUsuario" id="usuarioForm" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
-                @Html.HiddenFor(m => m.Id_Usr)
+                <input type="hidden" asp-for="Id_Usr" />
 
                 <div class="modal-body">
-
-                    <div class="col-md-6">
-                        <div class="form-outline">
-                            @Html.TextBoxFor(m => m.Nombre, new {
-                                @class = "form-control",
-                                placeholder = "Ingrese el nombre completo",
-                                @readonly = (accionModal == "ver") ? "readonly" : null
-                            })
-                            @Html.LabelFor(m => m.Nombre, new { @class = "form-label" })
-                            <span class="text-danger field-validation-valid" data-valmsg-for="Nombre" data-valmsg-replace="true"></span>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-outline">
-                            @Html.TextBoxFor(m => m.Correo, new {
-                                @class = "form-control",
-                                type = "email",
-                                placeholder = "ejemplo@correo.com",
-                                @readonly = (accionModal == "ver") ? "readonly" : null
-                            })
-                            @Html.LabelFor(m => m.Correo, new { @class = "form-label" })
-                            <span class="text-danger field-validation-valid" data-valmsg-for="Correo" data-valmsg-replace="true"></span>
-                        </div>
-                    </div>
-
-                    @if (accionModal == "crear" || accionModal == "editar")
-                    {
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="form-outline">
-                                @Html.PasswordFor(m => m.Contrasena, new {
-                                    @class = "form-control",
-                                    placeholder = (accionModal == "crear") ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual",
-                                    id = "Contrasena"
-                                })
-                                @Html.LabelFor(m => m.Contrasena, new { @class = "form-label" })
-                                <div class="form-text text-muted">
-                                    @if (accionModal == "crear")
+                            <div class="form-group">
+                                <label asp-for="Nombre" class="form-label"></label>
+                                <input asp-for="Nombre" class="form-control"
+                                       placeholder="Ingrese el nombre completo"
+                                       readonly="@(accionModal == "ver")" />
+                                <span asp-validation-for="Nombre" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Correo" class="form-label"></label>
+                                <input asp-for="Correo" type="email" class="form-control"
+                                       placeholder="ejemplo@correo.com"
+                                       readonly="@(accionModal == "ver")" />
+                                <span asp-validation-for="Correo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        @if (accionModal == "crear" || accionModal == "editar")
+                        {
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Contrasena" class="form-label"></label>
+                                    <input asp-for="Contrasena" type="password" class="form-control"
+                                           id="Contrasena"
+                                           placeholder="@(accionModal == "crear" ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual")" />
+                                    <small class="form-text text-muted">
+                                        @if (accionModal == "crear")
+                                        {
+                                            <text>Mínimo 6 caracteres</text>
+                                        }
+                                        else
+                                        {
+                                            <text>Complete solo si desea cambiar la contraseña</text>
+                                        }
+                                    </small>
+                                    <!-- REMOVER span de validación para Contrasena -->
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ConfirmarContrasena" class="form-label"></label>
+                                    <input asp-for="ConfirmarContrasena" type="password" class="form-control"
+                                           id="ConfirmarContrasena"
+                                           placeholder="@(accionModal == "crear" ? "Confirme la contraseña" : "Confirmar nueva contraseña")" />
+                                    <!-- REMOVER span de validación para ConfirmarContrasena -->
+                                </div>
+                            </div>
+                        }
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Rol" class="form-label"></label>
+                                <select asp-for="Rol" asp-items="roles" class="form-select"
+                                        disabled="@(accionModal == "ver")">
+                                    <option value="">Seleccione un rol</option>
+                                </select>
+                                <span asp-validation-for="Rol" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check form-switch mt-4 pt-2">
+                                    @if (accionModal == "ver")
                                     {
-                                        <text>Mínimo 6 caracteres</text>
+                                        <input asp-for="Estado" class="form-check-input" disabled />
                                     }
                                     else
                                     {
-                                        <text>Complete solo si desea cambiar la contraseña</text>
+                                        <input asp-for="Estado" class="form-check-input" />
                                     }
+                                    <label class="form-check-label" for="Estado">Usuario Activo</label>
                                 </div>
-                                <span class="text-danger field-validation-valid" data-valmsg-for="Contrasena" data-valmsg-replace="true"></span>
                             </div>
                         </div>
-
-                        <div class="col-md-6">
-                            <div class="form-outline">
-                                @Html.PasswordFor(m => m.ConfirmarContrasena, new {
-                                    @class = "form-control",
-                                    placeholder = (accionModal == "crear") ? "Confirme la contraseña" : "Confirmar nueva contraseña",
-                                    id = "ConfirmarContrasena"
-                                })
-                                @Html.LabelFor(m => m.ConfirmarContrasena, new { @class = "form-label" })
-                                <span class="text-danger field-validation-valid" data-valmsg-for="ConfirmarContrasena" data-valmsg-replace="true"></span>
-                            </div>
-                        </div>
-                    }
-
-                    <div class="col-md-6">
-                        <div class="form-outline">
-                            @Html.DropDownListFor(m => m.Rol,
-                                new SelectList(roles, "Value", "Text"),
-                                "Seleccione un rol",
-                                new { 
-                                    @class = "form-select", 
-                                    @disabled = (accionModal == "ver") ? "disabled" : null
-                                }
-                            )
-                            @Html.LabelFor(m => m.Rol, new { @class = "form-label" })
-                            <span class="text-danger field-validation-valid" data-valmsg-for="Rol" data-valmsg-replace="true"></span>
-                        </div>
                     </div>
-
-                   <div class="col-md-6">
-                        <div class="form-check form-switch mt-4">
-                            @if (accionModal == "ver")
-                            {
-                                @Html.CheckBoxFor(m => m.Estado, new { 
-                                    @class = "form-check-input",
-                                    @disabled = "disabled"
-                                })
-                                <label class="form-check-label" for="Estado">Usuario Activo</label>
-                            }
-                            else
-                            {
-                                <!-- Estructura corregida -->
-                                <input type="hidden" name="Estado" value="false" />
-                                @Html.CheckBoxFor(m => m.Estado, new { 
-                                    @class = "form-check-input",
-                                    value = "true"
-                                })
-                                <label class="form-check-label" for="Estado">Usuario Activo</label>
-                            }
-                        </div>
-                    </div>
-
-
                 </div>
 
                 <div class="modal-footer">
@@ -145,79 +123,56 @@
 
                     @if (accionModal == "ver")
                     {
-                        @Html.ActionLink("Editar", "IndexUsuarios", "Admin", 
-                            new { pagina = ViewBag.PaginaActual, usuarioId = Model.Id_Usr, accion = "editar" }, 
-                            new { @class = "btn btn-warning" })
+                        <button type="button" class="btn btn-warning"
+                                onclick="abrirModal('editar', @Model.Id_Usr)">
+                            Editar
+                        </button>
                     }
                 </div>
 
+                <!-- Mantener parámetros de filtro -->
                 <input type="hidden" name="busqueda" value="@ViewBag.BusquedaActual" />
                 <input type="hidden" name="rolFiltro" value="@ViewBag.RolFiltroActual" />
                 <input type="hidden" name="pagina" value="@ViewBag.PaginaActual" />
-            }
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var accionModal = '@accionModal';
-            var form = document.getElementById('usuarioForm');
-            
-            // Deshabilitar validación HTML5 completamente
-            form.setAttribute('novalidate', 'novalidate');
-            
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    var isValid = true;
-                    
-                    // Validación manual para creación
-                    if (accionModal === 'crear') {
-                        var contrasena = document.getElementById('Contrasena').value;
-                        var confirmar = document.getElementById('ConfirmarContrasena').value;
-                        
-                        if (!contrasena || contrasena.length < 6) {
-                            alert('La contraseña es requerida y debe tener al menos 6 caracteres');
-                            isValid = false;
-                        }
-                        
-                        if (contrasena !== confirmar) {
-                            alert('Las contraseñas no coinciden');
-                            isValid = false;
-                        }
-                    }
-                    
-                    // Validación manual para edición
-                    if (accionModal === 'editar') {
-                        var contrasena = document.getElementById('Contrasena').value;
-                        var confirmar = document.getElementById('ConfirmarContrasena').value;
-                        
-                        // Solo validar si se llenó alguno de los campos
-                        if (contrasena || confirmar) {
-                            if (!contrasena || !confirmar) {
-                                alert('Debe completar ambos campos de contraseña si desea cambiarla');
-                                isValid = false;
-                            } else if (contrasena.length < 6) {
-                                alert('La contraseña debe tener al menos 6 caracteres');
-                                isValid = false;
-                            } else if (contrasena !== confirmar) {
-                                alert('Las contraseñas no coinciden');
-                                isValid = false;
-                            }
-                        }
-                    }
-                    
-                    if (!isValid) {
-                        e.preventDefault();
-                        return false;
-                    }
+        // Configurar el modal según la acción
+        function configurarModal(accion) {
+            const form = document.getElementById('usuarioForm');
+
+            if (accion === 'ver') {
+                // Deshabilitar todos los inputs en modo ver
+                form.querySelectorAll('input, select, textarea').forEach(element => {
+                    element.setAttribute('readonly', true);
+                    element.setAttribute('disabled', true);
+                });
+
+                // Ocultar botón guardar
+                const btnGuardar = document.getElementById('btnGuardarUsuario');
+                if (btnGuardar) btnGuardar.style.display = 'none';
+            } else {
+                // Configurar el envío del formulario para crear/editar
+                configurarSubmitForm(accion);
+            }
+        }
+
+        // Inicializar cuando el modal se muestra
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('usuarioModal');
+            if (modal) {
+                modal.addEventListener('shown.bs.modal', function() {
+                    const accion = '@accionModal';
+                    configurarModal(accion);
                 });
             }
         });
     </script>
 }
-
 
 
 

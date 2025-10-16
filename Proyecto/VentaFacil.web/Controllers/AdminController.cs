@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Admin;
 using VentaFacil.web.Models.Response.Usuario;
@@ -21,13 +22,12 @@ namespace VentaFacil.web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            
             return await IndexUsuarios();
         }
 
         // En tu AdminController
         public async Task<IActionResult> IndexUsuarios(int pagina = 1, int cantidadPorPagina = 10,
-                     string busqueda = null, int? rolFiltro = null, int? usuarioId = null, string accion = null)
+                     string? busqueda = null, int? rolFiltro = null, int? usuarioId = null, string? accion = null)
         {
             try
             {
@@ -92,7 +92,7 @@ namespace VentaFacil.web.Controllers
 
                 return View("Index", usuarios);
             }
-            catch (Exception ex)
+            catch
             {
                 var emptyResponse = new UsuarioListResponse
                 {
@@ -112,7 +112,7 @@ namespace VentaFacil.web.Controllers
 
         [HttpGet]
         public async Task<IActionResult> ObtenerModalUsuario(string accion, int? usuarioId = null,
-            string busqueda = null, int? rolFiltro = null, int pagina = 1)
+            string? busqueda = null, int? rolFiltro = null, int pagina = 1)
         {
             try
             {
@@ -143,7 +143,7 @@ namespace VentaFacil.web.Controllers
 
                 return PartialView("_UsuarioModal", model);
             }
-            catch (Exception ex)
+            catch
             {
                 // En caso de error, devolver un modal vacío
                 ViewBag.AccionModal = accion;
@@ -151,48 +151,61 @@ namespace VentaFacil.web.Controllers
                 return PartialView("_UsuarioModal", new UsuarioDto());
             }
         }
+
         [HttpPost]
-        public async Task<IActionResult> GuardarUsuario([FromBody] UsuarioDto model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarUsuario(UsuarioDto usuarioDto,
+            string busqueda = null, int? rolFiltro = null, int pagina = 1)
         {
             try
             {
-                // Validar modelo
+                // Remover errores de validación de contraseña para edición si están vacías
+                if (usuarioDto.Id_Usr > 0)
+                {
+                    if (string.IsNullOrEmpty(usuarioDto.Contrasena))
+                    {
+                        ModelState.Remove(nameof(UsuarioDto.Contrasena));
+                        ModelState.Remove(nameof(UsuarioDto.ConfirmarContrasena));
+                    }
+                }
+
+                // Validar manualmente usando IValidatableObject
+                var validationContext = new ValidationContext(usuarioDto, null, null);
+                var validationResults = new List<ValidationResult>();
+                bool isValid = Validator.TryValidateObject(usuarioDto, validationContext, validationResults, true);
+
+                // Agregar errores de validación personalizados al ModelState
+                foreach (var validationResult in validationResults)
+                {
+                    foreach (var memberName in validationResult.MemberNames)
+                    {
+                        ModelState.AddModelError(memberName, validationResult.ErrorMessage);
+                    }
+                }
+
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState.Values
                         .SelectMany(v => v.Errors)
+                        .Where(e => !string.IsNullOrEmpty(e.ErrorMessage))
                         .Select(e => e.ErrorMessage)
                         .ToList();
-                    return Json(new { success = false, message = "Datos inválidos", errors });
+
+                    return Json(new { success = false, message = "Error de validación", errors });
                 }
 
-                // Validar que las contraseñas coincidan (solo para crear o cuando se cambia la contraseña)
-                if ((model.Id_Usr == 0 || !string.IsNullOrEmpty(model.Contrasena)) &&
-                    model.Contrasena != model.ConfirmarContrasena)
-                {
-                    return Json(new { success = false, message = "Las contraseñas no coinciden" });
-                }
+                // Lógica para guardar el usuario
+                var result = await _adminService.ActualizarUsuarioAsync(usuarioDto);
 
-                bool resultado;
-
-                if (model.Id_Usr == 0)
+                if (result) // Asumiendo que retorna true si fue exitoso
                 {
-                    // Crear usuario
-                    resultado = await _adminService.CrearUsuarioAsync(model);
-                }
-                else
-                {
-                    // Actualizar usuario
-                    resultado = await _adminService.ActualizarUsuarioAsync(model);
-                }
-
-                if (resultado)
-                {
-                    var action = model.Id_Usr == 0 ? "creado" : "actualizado";
-                    return Json(new
+                    // REDIRIGIR a Index en lugar de retornar JSON
+                    return RedirectToAction("IndexUsuarios", new
                     {
-                        success = true,
-                        message = $"Usuario {action} correctamente"
+                        busqueda = busqueda,
+                        rolFiltro = rolFiltro,
+                        pagina = pagina,
+                        mensaje = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente"
                     });
                 }
                 else
@@ -202,7 +215,7 @@ namespace VentaFacil.web.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Error interno del servidor: " + ex.Message });
             }
         }
 
@@ -227,19 +240,5 @@ namespace VentaFacil.web.Controllers
             // Redirigir manteniendo los filtros
             return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, pagina });
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

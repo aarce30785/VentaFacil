@@ -345,162 +345,149 @@
 
             // Agregar parámetros básicos
             params.append('accion', accion);
-        
-            // Agregar usuarioId si existe
+    
             if (usuarioId) {
                 params.append('usuarioId', usuarioId);
             }
 
-            // Mantener los filtros actuales
+            // Mantener filtros
             const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
             const rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
             const pagina = '@Model.PaginaActual';
 
-            if (busqueda) {
-                params.append('busqueda', busqueda);
-            }
-            if (rolFiltro) {
-                params.append('rolFiltro', rolFiltro);
-            }
-            if (pagina) {
-                params.append('pagina', pagina);
-            }
+            if (busqueda) params.append('busqueda', busqueda);
+            if (rolFiltro) params.append('rolFiltro', rolFiltro);
+            if (pagina) params.append('pagina', pagina);
 
             url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
 
-            if (url) {
-                // Cargar el modal via AJAX
-                fetch(url)
-                    .then(response => response.text())
-                    .then(data => {
-                        document.getElementById('modalContainer').innerHTML = data;
-
-                        // Mostrar el modal
-                        const modal = new bootstrap.Modal(document.getElementById('usuarioModal'));
-                        modal.show();
-
-                        // Configurar el formulario según la acción
-                        configurarModal(accion);
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
+            // Cargar modal via AJAX
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar el modal');
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('modalContainer').innerHTML = data;
+                    const modal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar el formulario');
+                });
         }
-
-
-        // Función para configurar el modal según la acción
-        function configurarModal(accion) {
-            const form = document.getElementById('usuarioForm');
-            const inputs = form.querySelectorAll('input, select, textarea');
-            const btnGuardar = document.getElementById('btnGuardarUsuario');
-
-            switch(accion) {
-                case 'ver':
-                    // Deshabilitar todos los inputs
-                    inputs.forEach(input => {
-                        input.disabled = true;
-                        input.readOnly = true;
-                    });
-                    // Ocultar botón guardar
-                    if (btnGuardar) btnGuardar.style.display = 'none';
-                    break;
-
-                case 'crear':
-                case 'editar':
-                    // Habilitar todos los inputs
-                    inputs.forEach(input => {
-                        input.disabled = false;
-                        input.readOnly = false;
-                    });
-                    // Mostrar botón guardar
-                    if (btnGuardar) btnGuardar.style.display = 'block';
-                
-                    // Configurar el evento submit para el formulario
-                    configurarSubmitForm(accion);
-                    break;
-            }
-        }
-
         
-        // Función para configurar el envío del formulario
         function configurarSubmitForm(accion) {
             const form = document.getElementById('usuarioForm');
     
-            // Remover event listeners previos
-            form.replaceWith(form.cloneNode(true));
-            const newForm = document.getElementById('usuarioForm');
-    
-            newForm.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
-        
-                // Crear FormData correctamente
-                const formData = new FormData(newForm);
-        
-                // Convertir a objeto manejando correctamente el checkbox
-                const data = {};
-                for (let [key, value] of formData.entries()) {
-                    // Manejar el checkbox Estado
-                    if (key === 'Estado') {
-                        data[key] = true; // Si está en el FormData, significa que está checked
-                    } else {
-                        data[key] = value;
+                e.stopPropagation();
+
+                console.log('Acción:', accion); // Debug
+
+                // Validación manual
+                let isValid = true;
+                let errorMessage = '';
+
+                const contrasena = document.getElementById('Contrasena')?.value || '';
+                const confirmar = document.getElementById('ConfirmarContrasena')?.value || '';
+
+                if (accion === 'crear') {
+                    if (!contrasena || contrasena.length < 6) {
+                        errorMessage = 'La contraseña es requerida y debe tener al menos 6 caracteres';
+                        isValid = false;
+                    } else if (contrasena !== confirmar) {
+                        errorMessage = 'Las contraseñas no coinciden';
+                        isValid = false;
                     }
                 }
-        
-                // Si el checkbox no está en el FormData, establecerlo como false
-                if (!formData.has('Estado')) {
-                    data.Estado = false;
+
+                if (accion === 'editar') {
+                    if (contrasena || confirmar) {
+                        if (!contrasena || !confirmar) {
+                            errorMessage = 'Debe completar ambos campos de contraseña si desea cambiarla';
+                            isValid = false;
+                        } else if (contrasena.length < 6) {
+                            errorMessage = 'La contraseña debe tener al menos 6 caracteres';
+                            isValid = false;
+                        } else if (contrasena !== confirmar) {
+                            errorMessage = 'Las contraseñas no coinciden';
+                            isValid = false;
+                        }
+                    }
                 }
-        
-                // Agregar los filtros actuales al objeto data
-                data.busqueda = '@Html.Raw(Model.Busqueda ?? "")';
-                data.rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
-                data.pagina = '@Model.PaginaActual';
-        
-                console.log('Datos a enviar:', data); // Para debugging
-        
+
+
+                if (!isValid) {
+                    alert(errorMessage);
+                    return false;
+                }
+
+                // Crear FormData
+                const formData = new FormData();
+
+                // Agregar campos básicos
+                formData.append('Id_Usr', document.querySelector('input[name="Id_Usr"]').value || '0');
+                formData.append('Nombre', document.querySelector('input[name="Nombre"]').value);
+                formData.append('Correo', document.querySelector('input[name="Correo"]').value);
+                formData.append('Rol', document.querySelector('select[name="Rol"]').value);
+                formData.append('Estado', document.querySelector('input[name="Estado"]').checked);
+
+                // Solo agregar contraseñas si se proporcionaron
+                if (contrasena) {
+                    formData.append('Contrasena', contrasena);
+                    formData.append('ConfirmarContrasena', confirmar);
+                } else {
+                    // Enviar vacíos si no se cambia la contraseña
+                    formData.append('Contrasena', '');
+                    formData.append('ConfirmarContrasena', '');
+                }
+
+                // Agregar parámetros de filtro
+                formData.append('busqueda', '@Html.Raw(Model.Busqueda ?? "")');
+                formData.append('rolFiltro', '@(Model.RolFiltro?.ToString() ?? "")');
+                formData.append('pagina', '@Model.PaginaActual');
+
+                // Obtener el token anti-forgery
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                console.log('Enviando datos...'); // Debug
+
+                // Enviar la solicitud
                 fetch('@Url.Action("GuardarUsuario", "Admin")', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'RequestVerificationToken': token
                     },
-                    body: JSON.stringify(data)
+                    body: formData
                 })
                 .then(response => {
+                    console.log('Respuesta recibida:', response.status); // Debug
                     if (!response.ok) {
-                        throw new Error('Error en la respuesta del servidor');
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(result => {
+                    console.log('Resultado:', result); // Debug
                     if (result.success) {
-                        // Cerrar el modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
-                        modal.hide();
-                
-                        // Mostrar mensaje de éxito
+                        bootstrap.Modal.getInstance(document.getElementById('usuarioModal')).hide();
                         alert(result.message);
-                
-                        // Recargar la página manteniendo los filtros
-                        const filtros = result.filtros || {};
-                        window.location.href = '@Url.Action("IndexUsuarios", "Admin")' + 
-                            `?busqueda=${encodeURIComponent(filtros.busqueda || '')}` +
-                            `&rolFiltro=${filtros.rolFiltro || ''}` +
-                            `&pagina=${filtros.pagina || 1}`;
+                        window.location.reload();
                     } else {
-                        // Mostrar errores
-                        alert(result.message);
-                        if (result.errors) {
-                            console.error('Errores:', result.errors);
-                        }
+                        const errorMsg = result.message + (result.errors ? '\n' + result.errors.join('\n') : '');
+                        alert('Error: ' + errorMsg);
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al guardar el usuario: ' + error.message);
+                .catch(err => {
+                    console.error('Error completo:', err);
+                    alert('Error al guardar el usuario: ' + err.message);
                 });
             });
         }
+
 
         // Función para confirmar eliminación
         function confirmarEliminacion(usuarioId, usuarioNombre) {

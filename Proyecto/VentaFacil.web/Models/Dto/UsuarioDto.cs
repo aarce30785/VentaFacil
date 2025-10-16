@@ -25,48 +25,36 @@ namespace VentaFacil.web.Models.Dto
         [Range(1, 4, ErrorMessage = "El rol no es válido")]
         public int Rol { get; set; }
 
+        [Display(Name = "Estado")]
         public bool Estado { get; set; } = true;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            // Validación para creación
+            // Creación - contraseña es requerida
             if (Id_Usr == 0)
             {
                 if (string.IsNullOrWhiteSpace(Contrasena))
-                {
-                    yield return new ValidationResult(
-                        "La contraseña es requerida para crear un usuario",
-                        new[] { nameof(Contrasena) }
-                    );
-                }
-                else if (Contrasena.Length < 6)
-                {
-                    yield return new ValidationResult(
-                        "La contraseña debe tener al menos 6 caracteres",
-                        new[] { nameof(Contrasena) }
-                    );
-                }
+                    yield return new ValidationResult("La contraseña es requerida para crear un usuario", new[] { nameof(Contrasena) });
+
+                if (!string.IsNullOrWhiteSpace(Contrasena) && Contrasena.Length < 6)
+                    yield return new ValidationResult("La contraseña debe tener al menos 6 caracteres", new[] { nameof(Contrasena) });
+
+                if (Contrasena != ConfirmarContrasena)
+                    yield return new ValidationResult("Las contraseñas no coinciden", new[] { nameof(ConfirmarContrasena) });
             }
 
-            // Validación para edición (solo si se proporciona contraseña)
-            if (Id_Usr > 0 && !string.IsNullOrWhiteSpace(Contrasena))
+            // Edición - solo validar si se proporcionó contraseña
+            if (Id_Usr > 0)
             {
-                if (Contrasena.Length < 6)
+                // Solo validar si se está intentando cambiar la contraseña
+                if (!string.IsNullOrWhiteSpace(Contrasena))
                 {
-                    yield return new ValidationResult(
-                        "La contraseña debe tener al menos 6 caracteres",
-                        new[] { nameof(Contrasena) }
-                    );
-                }
-            }
+                    if (Contrasena.Length < 6)
+                        yield return new ValidationResult("La contraseña debe tener al menos 6 caracteres", new[] { nameof(Contrasena) });
 
-            // Validación de confirmación de contraseña
-            if (!string.IsNullOrWhiteSpace(Contrasena) && Contrasena != ConfirmarContrasena)
-            {
-                yield return new ValidationResult(
-                    "Las contraseñas no coinciden",
-                    new[] { nameof(ConfirmarContrasena) }
-                );
+                    if (Contrasena != ConfirmarContrasena)
+                        yield return new ValidationResult("Las contraseñas no coinciden", new[] { nameof(ConfirmarContrasena) });
+                }
             }
         }
     }
