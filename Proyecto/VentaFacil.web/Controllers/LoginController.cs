@@ -83,19 +83,19 @@ namespace VentaFacil.web.Controllers
             }
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public IActionResult Logout()
-        //{
-        //    // Cerrar sesión de cookies
-        //    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        //
-        //    // Limpiar sesión
-        //    HttpContext.Session.Clear();
-        //
-        //    TempData["SuccessMessage"] = "Sesión cerrada correctamente";
-        //    return RedirectToAction("Login", "Account");
-        //}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            // Cerrar sesión de cookies
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        
+            // Limpiar sesión
+            HttpContext.Session.Clear();
+        
+            TempData["SuccessMessage"] = "Sesión cerrada correctamente";
+            return RedirectToAction("InicioSesion", "Login");
+        }
 
         [HttpGet]
         public IActionResult AccessDenied()

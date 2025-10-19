@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Pedidos";
+
+}
+
+<div class="card shadow-sm p-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">📑 Lista de Pedidos</h4>
+    </div>
+
+    <div class="card-body">
+        <p>
+            <a asp-action="Crear" class="btn btn-success">
+                <i class="lni lni-plus"></i> Nuevo Pedido
+            </a>
+        </p>
+
+        <p class="text-muted">📌 Aquí se mostrará la lista de pedidos registrados.</p>
+    </div>
+</div>
+@if (TempData["Mensaje"] is string msg && !string.IsNullOrWhiteSpace(msg))
+{
+    <div class="alert alert-success">@msg</div>
+}

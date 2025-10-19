@@ -30,6 +30,30 @@ namespace VentaFacil.web.Data
                 }
             }
 
+            var categorias = new[]
+            {
+                new { Nombre = "Comida", Descripcion = "Categoria de comida" },
+                new { Nombre = "Bebida", Descripcion = "Categoria de bebidas" },
+                new { Nombre = "Otros", Descripcion = "otros productos" }
+            };
+
+            foreach (var categoria in categorias)
+            {
+                using var checkCategoria = new SqlCommand(
+                    "SELECT COUNT(*) FROM Categoria WHERE Nombre = @nombre", context);
+                checkCategoria.Parameters.AddWithValue("@nombre", categoria.Nombre);
+                var categoriaExists = (int)checkCategoria.ExecuteScalar();
+
+                if (categoriaExists == 0)
+                {
+                    using var insertCategoria = new SqlCommand(
+                        "INSERT INTO Categoria (Nombre, Descripcion) VALUES (@nombre, @descripcion)", context);
+                    insertCategoria.Parameters.AddWithValue("@nombre", categoria.Nombre);
+                    insertCategoria.Parameters.AddWithValue("@descripcion", categoria.Descripcion);
+                    insertCategoria.ExecuteNonQuery();
+                }
+            }
+
             // Crear usuario admin si no existe
             using var checkCmd = new SqlCommand(
                 "SELECT COUNT(*) FROM Usuario WHERE Correo = @correo", context);

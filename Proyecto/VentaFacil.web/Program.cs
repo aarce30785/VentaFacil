@@ -4,6 +4,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
 using VentaFacil.web.Services;
+using VentaFacil.web.Services.Categoria;
+using VentaFacil.web.Services.Admin;
+using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
 
 namespace VentaFacil.web
@@ -15,6 +18,11 @@ namespace VentaFacil.web
             var builder = WebApplication.CreateBuilder(args);
 
             bool isRunningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+            var environment = builder.Environment;
+
+            Console.WriteLine($"=== ENTORNO: {environment.EnvironmentName} ===");
+            Console.WriteLine($"=== EN CONTENEDOR: {isRunningInContainer} ===");
 
             if (isRunningInContainer)
             {
@@ -30,7 +38,14 @@ namespace VentaFacil.web
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null
+                    )
+                ));
 
             if (isRunningInContainer)
             {
@@ -52,6 +67,10 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IRegisterProductoService, RegisterProductoService>();
             builder.Services.AddScoped<IListProductoService, ListProductoService>();
             builder.Services.AddScoped<IEditProductoService, EditProductoService>();
+            builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IRegisterPedidoService, RegisterPedidoService>();
+
 
             // Configurar sesión
             builder.Services.AddSession(options =>
@@ -104,15 +123,15 @@ namespace VentaFacil.web
             if (!app.Environment.IsDevelopment())
             {
                 InitializeDatabase(builder.Configuration);
-                app.UseExceptionHandler("/Home/Error");
+                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
             else
             {
                 app.UseDeveloperExceptionPage();
-                
-                InitializeDatabase(builder.Configuration);
+                TestDatabaseConnection(builder.Configuration);
+                //InitializeDatabase(builder.Configuration);
             }
 
             app.UseHttpsRedirection();
@@ -167,6 +186,42 @@ namespace VentaFacil.web
             DbSeeder.Seed(connectionString);
 
             Console.WriteLine("=== BASE DE DATOS Y TABLAS INICIALIZADAS ===");
+        }
+
+        private static void TestDatabaseConnection(IConfiguration configuration)
+        {
+            try
+            {
+                string connectionString = configuration.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    Console.WriteLine("=== ADVERTENCIA: No hay cadena de conexión configurada ===");
+                    return;
+                }
+
+                Console.WriteLine($"=== INTENTANDO CONEXIÓN CON: {connectionString} ===");
+
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                // Probar consulta simple
+                using var cmd = new SqlCommand("SELECT DB_NAME()", connection);
+                var dbName = cmd.ExecuteScalar();
+
+                Console.WriteLine($"=== CONEXIÓN A BD EXITOSA - Base de datos: {dbName} ===");
+
+                // Verificar tablas
+                using var cmdTables = new SqlCommand(
+                    "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'",
+                    connection);
+                var tableCount = cmdTables.ExecuteScalar();
+                Console.WriteLine($"=== TABLAS EN LA BASE DE DATOS: {tableCount} ===");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"=== ERROR DE CONEXIÓN A BD: {ex.Message} ===");
+                Console.WriteLine($"=== StackTrace: {ex.StackTrace} ===");
+            }
         }
     }
 }

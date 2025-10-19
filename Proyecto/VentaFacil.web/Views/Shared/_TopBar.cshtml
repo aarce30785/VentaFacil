@@ -1,0 +1,98 @@
+﻿@using VentaFacil.web.Models.Response
+@using Microsoft.AspNetCore.Authentication
+@using System.Security.Claims
+@{
+    var correo = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+    var nombre = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+    var rol = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+    
+    var nombreSesion = Context.Session.GetString("UsuarioNombre");
+    var rolSesion = Context.Session.GetString("UsuarioRol");
+}
+<header class="header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-5 col-md-5 col-6">
+                <div class="header-left d-flex align-items-center">
+                    <div class="menu-toggle-btn mr-15">
+                        <button id="menu-toggle" class="main-btn primary-btn btn-hover">
+                            <i class="lni lni-chevron-left me-2"></i> Menu
+                        </button>
+                    </div>
+                    <div class="header-search d-none d-md-flex">
+                        <form action="#">
+                            <input type="text" placeholder="Search..." />
+                            <button><i class="lni lni-search-alt"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 col-md-7 col-6">
+                <div class="header-right">
+                    <!-- profile start -->
+                    <div class="profile-box ml-15">
+                        <button class="dropdown-toggle bg-transparent border-0" type="button" id="profileDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="profile-info">
+                                <div class="info">
+                                    <div class="image">
+                                        <img src="~/assets/images/profile/profile-image.png" alt="Profile" />
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-500">@nombre</h6>
+                                        <p>@rol</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li>
+                                <div class="author-info flex items-center p-3">
+                                    <div class="image me-3">
+                                        <img src="~/assets/images/profile/profile-image.png" alt="image" class="rounded-circle" width="40">
+                                    </div>
+                                    <div class="content">
+                                        <h6 class="mb-0">@nombre</h6>
+                                        <small class="text-muted">@correo</small>
+                                    </div>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-user me-2"></i> Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-alarm me-2"></i> Notificaciones
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-inbox me-2"></i> Mensajes
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="lni lni-cog me-2"></i> Configuración
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form id="logoutForm" asp-controller="Login" asp-action="Logout" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="lni lni-exit me-2"></i>Cerrar Sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- profile end -->
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
