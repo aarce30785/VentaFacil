@@ -48,6 +48,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cSW5pY2lvU2VzaW9uLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Pedidos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xDcmVhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Pedidos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Producto/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdG9cRWRpdGFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -70,6 +78,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Shared/_TopBar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Ub3BCYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Shared/_UsuarioModal.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Vc3VhcmlvTW9kYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Shared/_ValidationScriptsPartial.cshtml]
