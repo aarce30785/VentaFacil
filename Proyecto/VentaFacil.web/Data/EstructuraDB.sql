@@ -104,5 +104,12 @@ CREATE TABLE BitacoraAccion(Id_Bitacora INT IDENTITY (1,1),
 							CONSTRAINT Bit_Pk PRIMARY KEY (Id_Bitacora),
 							CONSTRAINT BitUsr_Fk FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr));
 
+--Datos iniciales
+INSERT INTO Categoria (Nombre, Descripcion)
+VALUES ('Comida', 'Categoria de comida');
 
-				
+INSERT INTO Categoria (Nombre, Descripcion)
+VALUES ('Bebida', 'Categoria de bebidas');
+
+INSERT INTO Categoria (Nombre, Descripcion)
+VALUES ('Otros', 'otros productos');				

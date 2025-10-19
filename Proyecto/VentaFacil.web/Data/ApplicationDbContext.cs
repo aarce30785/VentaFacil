@@ -12,6 +12,7 @@ namespace VentaFacil.web.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+
         }
       
 
@@ -60,7 +61,7 @@ namespace VentaFacil.web.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }
-        public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
+        //public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
 
         
     }

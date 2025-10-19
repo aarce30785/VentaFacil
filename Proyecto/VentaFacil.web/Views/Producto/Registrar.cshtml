@@ -28,11 +28,6 @@
                 <span asp-validation-for="Precio" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Imagen" class="control-label"></label>
-                <input asp-for="Imagen" class="form-control" />
-                <span asp-validation-for="Imagen" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label asp-for="StockMinimo" class="control-label"></label>
                 <input asp-for="StockMinimo" class="form-control" />
                 <span asp-validation-for="StockMinimo" class="text-danger"></span>
@@ -44,18 +39,18 @@
             </div>
             <div class="form-group">
                 <label asp-for="Id_Categoria" class="control-label"></label>
-                <input asp-for="Id_Categoria" class="form-control" />
+                @Html.DropDownListFor(model => model.Id_Categoria, (IEnumerable<SelectListItem>)ViewBag.Categorias, "Seleccione una categoría", new { @class = "form-control" })
                 <span asp-validation-for="Id_Categoria" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Registrar" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Listar">Volver</a>
 </div>
 
 @section Scripts {

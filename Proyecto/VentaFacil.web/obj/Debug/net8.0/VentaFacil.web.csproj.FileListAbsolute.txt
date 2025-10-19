@@ -262,3 +262,4 @@ C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\ref\VentaFaci
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\dotnet-aspnet-codegenerator-design.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll
+C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\scopedcss\Views\Shared\_LayoutPlantilla.cshtml.rz.scp.css
