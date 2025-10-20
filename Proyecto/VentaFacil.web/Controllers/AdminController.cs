@@ -25,7 +25,14 @@ namespace VentaFacil.web.Controllers
             return await IndexUsuarios();
         }
 
-        // En tu AdminController
+        [HttpGet]
+        public IActionResult LimpiarFiltros()
+        {
+           
+            return RedirectToAction("IndexUsuarios");
+        }
+
+
         public async Task<IActionResult> IndexUsuarios(int pagina = 1, int cantidadPorPagina = 10,
                      string? busqueda = null, int? rolFiltro = null, int? usuarioId = null, string? accion = null)
         {
@@ -119,12 +126,12 @@ namespace VentaFacil.web.Controllers
                 var model = new UsuarioDto();
                 ViewBag.AccionModal = accion;
 
-                // Mantener los filtros para el retorno
+                
                 ViewBag.BusquedaActual = busqueda;
                 ViewBag.RolFiltroActual = rolFiltro;
                 ViewBag.PaginaActual = pagina;
 
-                // Cargar roles
+               
                 var roles = await _usuarioService.GetRolesAsync();
                 ViewBag.Roles = roles ?? new List<SelectListItem>();
 
@@ -138,14 +145,14 @@ namespace VentaFacil.web.Controllers
                 }
                 else if (accion == "crear")
                 {
-                    model.Estado = true; // Por defecto activo
+                    model.Estado = true;
                 }
 
                 return PartialView("_UsuarioModal", model);
             }
             catch
             {
-                // En caso de error, devolver un modal vacío
+                
                 ViewBag.AccionModal = accion;
                 ViewBag.Roles = new List<SelectListItem>();
                 return PartialView("_UsuarioModal", new UsuarioDto());
@@ -162,32 +169,32 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                // DEBUG: Log para verificar que los datos llegan
+                
                 Console.WriteLine($"Datos recibidos - ID: {usuarioDto.Id_Usr}, Nombre: {usuarioDto.Nombre}, Correo: {usuarioDto.Correo}, Rol: {usuarioDto.Rol}");
                 Console.WriteLine($"Contraseña recibida: {(string.IsNullOrEmpty(usuarioDto.Contrasena) ? "VACÍA" : "PRESENTE")}");
                 Console.WriteLine($"Filtros - Búsqueda: {busqueda}, RolFiltro: {rolFiltro}, Página: {pagina}");
 
-                // Limpiar ModelState antes de validar
+                
                 ModelState.Clear();
 
-                // Remover errores de validación de contraseña para edición si están vacías
+                
                 if (usuarioDto.Id_Usr > 0 && string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
-                    // Para edición, si la contraseña está vacía, ignorar validación de contraseñas
+                    
                     usuarioDto.Contrasena = null;
                     usuarioDto.ConfirmarContrasena = null;
 
-                    // Remover del ModelState explícitamente
+                   
                     ModelState.Remove("Contrasena");
                     ModelState.Remove("ConfirmarContrasena");
                 }
 
-                // Validar manualmente usando IValidatableObject
+                
                 var validationContext = new ValidationContext(usuarioDto, null, null);
                 var validationResults = new List<ValidationResult>();
                 bool isValid = Validator.TryValidateObject(usuarioDto, validationContext, validationResults, true);
 
-                // Agregar errores de validación personalizados al ModelState
+                
                 foreach (var validationResult in validationResults)
                 {
                     foreach (var memberName in validationResult.MemberNames)
@@ -211,11 +218,11 @@ namespace VentaFacil.web.Controllers
                     var errorMessages = errors.Select(e => e.Message).Distinct().ToList();
                     var fieldErrors = errors.ToDictionary(e => e.Field, e => e.Message);
 
-                    // Log para debugging
+                   
                     Console.WriteLine($"Errores de validación: {string.Join(", ", errorMessages)}");
 
-                    // RETORNAR JSON explícitamente
-                    return BadRequest(new // Usar BadRequest para status 400
+                    
+                    return BadRequest(new 
                     {
                         success = false,
                         message = "Error de validación",
@@ -228,12 +235,12 @@ namespace VentaFacil.web.Controllers
 
                 if (usuarioDto.Id_Usr > 0)
                 {
-                    // Actualizar usuario existente
+                   
                     result = await _adminService.ActualizarUsuarioAsync(usuarioDto);
                 }
                 else
                 {
-                    // Crear nuevo usuario - necesitas un método diferente
+                    
                     result = await _adminService.CrearUsuarioAsync(usuarioDto);
                 }
 
@@ -247,7 +254,7 @@ namespace VentaFacil.web.Controllers
                 }
                 else
                 {
-                    // AÑADIR ESTE RETURN FALTANTE
+                   
                     var operation = usuarioDto.Id_Usr > 0 ? "actualizar" : "crear";
                     return BadRequest(new
                     {
@@ -259,7 +266,7 @@ namespace VentaFacil.web.Controllers
             }
             catch (Exception ex)
             {
-                // Log de la excepción completa
+                
                 Console.WriteLine($"Excepción en GuardarUsuario: {ex}");
 
                 return StatusCode(500, new
@@ -289,7 +296,7 @@ namespace VentaFacil.web.Controllers
                 TempData["MensajeError"] = $"Error al eliminar el usuario: {ex.Message}";
             }
 
-            // Redirigir manteniendo los filtros
+            
             return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, pagina });
         }
     }

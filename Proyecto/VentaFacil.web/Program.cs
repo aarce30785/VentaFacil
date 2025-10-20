@@ -80,7 +80,7 @@ namespace VentaFacil.web
             // Configurar sesión
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.IdleTimeout = TimeSpan.FromMinutes(5);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
@@ -92,7 +92,7 @@ namespace VentaFacil.web
                    options.LoginPath = "/Login/InicioSesion";
                    options.AccessDeniedPath = "/Login/AccessDenied";
                    options.LogoutPath = "/Login/Logout";
-                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                   options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
                    options.SlidingExpiration = true;
                    options.Cookie.Name = "VentaFacil.Auth";
                    options.Cookie.HttpOnly = true;

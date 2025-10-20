@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
+using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Admin;
 using VentaFacil.web.Models.Response.Usuario;
@@ -36,7 +38,7 @@ namespace VentaFacil.web.Services.Usuario
         {
             try
             {
-                // Ejemplo: si obtienes roles de una base de datos
+               
                 var roles = await _context.Rol
                     
                     .Select(r => new SelectListItem
@@ -50,7 +52,6 @@ namespace VentaFacil.web.Services.Usuario
             }
             catch (Exception ex)
             {
-                // Log del error
                 return new List<SelectListItem>();
             }
         }
@@ -76,6 +77,39 @@ namespace VentaFacil.web.Services.Usuario
                 
             };
         }
+
+        public async Task<UsuarioResponse> PerfilUsuario(int usuarioId)
+        {
+            try
+            {
+                // DEBUG
+                Console.WriteLine($"Buscando perfil para usuarioId: {usuarioId}");
+
+                var usuario = await _context.Usuario
+                    .Where(u => u.Id_Usr == usuarioId)
+                    .Select(u => new UsuarioResponse
+                    {
+                        Id_Usr  = u.Id_Usr,
+                        Nombre = u.Nombre,
+                        Correo = u.Correo,
+                        Rol = u.RolNavigation.Nombre_Rol ?? "Sin rol asignado",
+                        Estado = u.Estado
+                    })
+                    .FirstOrDefaultAsync();
+
+                Console.WriteLine($"Usuario encontrado: {(usuario != null ? "SÍ" : "NO")}");
+                return usuario;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en servicio: {ex.Message}");
+                return null;
+            }
+        }
+
+
     }
     
 }
+
+

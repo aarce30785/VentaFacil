@@ -1,0 +1,160 @@
+﻿@model VentaFacil.web.Models.Response.Usuario.UsuarioResponse
+@{
+    Layout = "_LayoutPlantilla";
+}
+
+<!-- ========== section start ========== -->
+<section class="section">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Mi Perfil</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item"><a href="#0">Páginas</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Mi Perfil
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        <!-- Mensajes de error -->
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card-style settings-card-1 mb-30">
+                    <div class="title mb-30 d-flex justify-content-between align-items-center">
+                        <h6>Información del Perfil</h6>
+                        <button class="border-0 bg-transparent">
+                            <i class="lni lni-pencil-alt"></i>
+                        </button>
+                    </div>
+                    <div class="profile-info">
+                        <div class="d-flex align-items-center mb-30">
+                            <div class="profile-image">
+                                <img src="assets/images/profile/profile-1.png" alt="" />
+                                <div class="update-image">
+                                    <input type="file" />
+                                    <label for=""><i class="lni lni-cloud-upload"></i></label>
+                                </div>
+                            </div>
+                            <div class="profile-meta">
+                                <h5 class="text-bold text-dark mb-10">@(Model?.Nombre ?? "Usuario")</h5>
+                                <p class="text-sm text-gray">@(Model?.Rol ?? "Rol no especificado")</p>
+                            </div>
+                        </div>
+
+                        <!-- Validación de modelo nulo -->
+                        @if (Model == null)
+                        {
+                            <div class="alert alert-warning">
+                                No se pudieron cargar los datos del perfil.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="input-style-1">
+                                <label>Nombre Completo</label>
+                                <input type="text" placeholder="Nombre completo" value="@(Model.Nombre ?? "No especificado")" readonly />
+                            </div>
+                            <div class="input-style-1">
+                                <label>Correo Electrónico</label>
+                                <input type="email" placeholder="Correo electrónico" value="@(Model.Correo ?? "No especificado")" readonly />
+                            </div>
+                            <div class="input-style-1">
+                                <label>Rol</label>
+                                <input type="text" placeholder="Rol" value="@(Model.Rol ?? "No especificado")" readonly />
+                            </div>
+                            <div class="input-style-1">
+                                <label>Estado</label>
+                                <div class="form-control-plaintext">
+                                    <span class="badge @(Model.Estado ?? false ? "bg-success" : "bg-danger")">
+                                        @(Model.Estado ?? false ? "Activo" : "Inactivo")
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <!-- end card -->
+            </div>
+            <!-- end col -->
+
+            <div class="col-lg-6">
+                <div class="card-style settings-card-2 mb-30">
+                    <div class="title mb-30">
+                        <h6>Editar Perfil</h6>
+                    </div>
+                    <form action="#">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="input-style-1">
+                                    <label>Nombre Completo</label>
+                                    <input type="text" placeholder="Nombre completo" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="input-style-1">
+                                    <label>Correo Electrónico</label>
+                                    <input type="email" placeholder="Correo electrónico" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="input-style-1">
+                                    <label>Contraseña Actual</label>
+                                    <input type="password" placeholder="Contraseña actual" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="input-style-1">
+                                    <label>Nueva Contraseña</label>
+                                    <input type="password" placeholder="Nueva contraseña" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="input-style-1">
+                                    <label>Confirmar Nueva Contraseña</label>
+                                    <input type="password" placeholder="Confirmar nueva contraseña" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button class="main-btn primary-btn btn-hover">
+                                    <i class="lni lni-checkmark-circle me-2"></i>
+                                    Actualizar Perfil
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- end card -->
+            </div>
+            <!-- end col -->
+        </div>
+        
+    </div>
+    
+</section>
