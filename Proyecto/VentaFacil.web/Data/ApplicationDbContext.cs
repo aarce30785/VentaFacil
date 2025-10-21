@@ -21,6 +21,7 @@ namespace VentaFacil.web.Data
         public DbSet<Rol> Rol { get; set; }
         public DbSet<Categoria> Categoria { get; set; }
         public DbSet<Producto> Producto { get; set; }
+        public DbSet<Inventario> Inventario { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,6 +62,7 @@ namespace VentaFacil.web.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }
+        public DbSet<VentaFacil.web.Models.Dto.InventarioDto> InventarioDto { get; set; } = default!;
         //public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
 
         

@@ -1,0 +1,39 @@
+﻿@model IEnumerable<VentaFacil.web.Models.Dto.InventarioDto>
+
+@{
+    ViewData["Title"] = "Inventario";
+}
+
+<h1>Inventario</h1>
+
+<p>
+    <a asp-action="Registrar">Registrar</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id_Producto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StockActual)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id_Producto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StockActual)
+            </td>
+            <td>
+                <a asp-action="Editar" asp-route-id="@item.Id_Inventario">Editar</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

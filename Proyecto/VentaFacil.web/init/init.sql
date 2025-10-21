@@ -177,6 +177,20 @@ BEGIN
     );
 END;
 
+-- Tabla Inventario
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Inventario]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE Inventario (
+        Id_Inventario INT IDENTITY (1,1),
+        Id_Producto INT,
+        StockActual INT,
+        CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario),
+        CONSTRAINT InvProd_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto)
+    );
+END
+GO
+
+
 -- Roles base
 IF NOT EXISTS (SELECT 1 FROM Rol WHERE Nombre_Rol = 'Administrador')
     INSERT INTO Rol (Nombre_Rol, Descripcion) VALUES ('Administrador', 'Acceso completo al sistema');

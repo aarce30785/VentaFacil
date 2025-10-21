@@ -104,6 +104,14 @@ CREATE TABLE BitacoraAccion(Id_Bitacora INT IDENTITY (1,1),
 							CONSTRAINT Bit_Pk PRIMARY KEY (Id_Bitacora),
 							CONSTRAINT BitUsr_Fk FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr));
 
+CREATE TABLE Inventario (
+        Id_Inventario INT IDENTITY (1,1),
+        Id_Producto INT,
+        StockActual INT,
+        CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario),
+        CONSTRAINT InvProd_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto)
+    );
+
 --Datos iniciales
 INSERT INTO Categoria (Nombre, Descripcion)
 VALUES ('Comida', 'Categoria de comida');

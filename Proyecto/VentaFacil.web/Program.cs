@@ -8,6 +8,7 @@ using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Admin;
 using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
+using VentaFacil.web.Services.Inventario;
 
 namespace VentaFacil.web
 {
@@ -70,6 +71,10 @@ namespace VentaFacil.web
             builder.Services.AddScoped<ICategoriaService, CategoriaService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IRegisterPedidoService, RegisterPedidoService>();
+            builder.Services.AddScoped<IGetInventarioService, GetInventarioService>();
+            builder.Services.AddScoped<IListInventarioService, ListInventarioService>();
+            builder.Services.AddScoped<IRegisterInventarioService, RegisterInventarioService>();
+            builder.Services.AddScoped<IEditInventarioService, EditInventarioService>();
 
 
             // Configurar sesión
@@ -177,9 +182,12 @@ namespace VentaFacil.web
                     throw new FileNotFoundException($"No se encontró el archivo de inicialización en {scriptPath}");
 
                 string script = File.ReadAllText(scriptPath);
-
-                using var cmd = new SqlCommand(script, connDb);
-                cmd.ExecuteNonQuery();
+                var batches = script.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var batch in batches)
+                {
+                    using var cmd = new SqlCommand(batch, connDb);
+                    cmd.ExecuteNonQuery();
+                }
             }
 
             // Seeder para crear usuario admin
