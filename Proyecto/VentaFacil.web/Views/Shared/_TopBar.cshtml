@@ -2,13 +2,13 @@
 @using Microsoft.AspNetCore.Authentication
 @using System.Security.Claims
 @{
-    var correo = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-    var nombre = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-    var rol = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-
-    
     var nombreSesion = Context.Session.GetString("UsuarioNombre");
     var rolSesion = Context.Session.GetString("UsuarioRol");
+    var correoSesion = Context.Session.GetString("UsuarioCorreo");
+
+    var nombre = !string.IsNullOrEmpty(nombreSesion) ? nombreSesion : User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+    var rol = !string.IsNullOrEmpty(rolSesion) ? rolSesion : User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+    var correo = !string.IsNullOrEmpty(correoSesion) ? correoSesion : User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 }
 <header class="header">
     <div class="container-fluid">

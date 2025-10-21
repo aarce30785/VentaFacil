@@ -12,5 +12,7 @@ namespace VentaFacil.web.Services.Usuario
         Task<IEnumerable<SelectListItem>> GetRolesAsync();
 
         Task<UsuarioResponse> PerfilUsuario(int id);
+
+        Task<bool> ActualizarPerfilAsync(UsuarioPerfilDto modelo);
     }
 }

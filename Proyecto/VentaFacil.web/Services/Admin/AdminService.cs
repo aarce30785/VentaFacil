@@ -82,7 +82,7 @@ namespace VentaFacil.web.Services.Admin
         {
             try
             {
-                // Verificar si el correo ya existe
+                
                 var existeCorreo = await _context.Usuario
                     .AnyAsync(u => u.Correo == usuarioDto.Correo);
 
@@ -91,12 +91,12 @@ namespace VentaFacil.web.Services.Admin
                     throw new Exception("El correo electrónico ya está registrado");
                 }
 
-                // Crear nuevo usuario usando PasswordHelper
+                
                 var usuario = new VentaFacil.web.Models.Usuario
                 {
                     Nombre = usuarioDto.Nombre.Trim(),
                     Correo = usuarioDto.Correo.Trim().ToLower(),
-                    Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena), // Usando el Helper
+                    Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena),
                     Rol = usuarioDto.Rol,
                     Estado = usuarioDto.Estado,
                     FechaCreacion = DateTime.Now,
@@ -124,20 +124,20 @@ namespace VentaFacil.web.Services.Admin
                 if (usuario == null)
                     throw new Exception("Usuario no encontrado");
 
-                // Verificar si el correo ya existe (excluyendo el usuario actual)
+                
                 var existeCorreo = await _context.Usuario
                     .AnyAsync(u => u.Correo == usuarioDto.Correo && u.Id_Usr != usuarioDto.Id_Usr);
 
                 if (existeCorreo)
                     throw new Exception("El correo electrónico ya está registrado");
 
-                // Actualizar datos básicos
+                
                 usuario.Nombre = usuarioDto.Nombre.Trim();
                 usuario.Correo = usuarioDto.Correo.Trim().ToLower();
                 usuario.Rol = usuarioDto.Rol;
                 usuario.Estado = usuarioDto.Estado;
 
-                // Actualizar contraseña si viene una nueva
+                
                 if (!string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
                     usuario.Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena);

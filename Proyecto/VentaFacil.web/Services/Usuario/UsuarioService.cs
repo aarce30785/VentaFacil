@@ -1,7 +1,9 @@
 ﻿using Humanizer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
+using VentaFacil.web.Helpers;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Admin;
@@ -82,7 +84,7 @@ namespace VentaFacil.web.Services.Usuario
         {
             try
             {
-                // DEBUG
+                
                 Console.WriteLine($"Buscando perfil para usuarioId: {usuarioId}");
 
                 var usuario = await _context.Usuario
@@ -107,6 +109,61 @@ namespace VentaFacil.web.Services.Usuario
             }
         }
 
+        public async Task<bool> ActualizarPerfilAsync(UsuarioPerfilDto perfilDto)
+        {
+            try
+            {
+                var usuario = await _context.Usuario
+                    .FirstOrDefaultAsync(u => u.Id_Usr == perfilDto.Id_Usr);
+
+                if (usuario == null)
+                    throw new Exception("Usuario no encontrado");
+
+               
+                if (!string.IsNullOrEmpty(perfilDto.Correo))
+                {
+                    var existeCorreo = await _context.Usuario
+                        .AnyAsync(u => u.Correo == perfilDto.Correo && u.Id_Usr != perfilDto.Id_Usr);
+
+                    if (existeCorreo)
+                        throw new Exception("El correo electrónico ya está registrado");
+                }
+
+                
+                if (!string.IsNullOrEmpty(perfilDto.NuevaContrasena))
+                {
+                    
+                    var contraseñaValida = PasswordHelper.VerifyPassword(
+                        usuario.Contrasena,
+                        perfilDto.ContrasenaActual 
+                    );
+
+                    if (!contraseñaValida)
+                        throw new Exception("La contraseña actual es incorrecta");
+
+                    
+                    usuario.Contrasena = PasswordHelper.HashPassword(perfilDto.NuevaContrasena);
+                }
+
+                
+                if (!string.IsNullOrEmpty(perfilDto.Nombre))
+                {
+                    usuario.Nombre = perfilDto.Nombre.Trim();
+                }
+
+                if (!string.IsNullOrEmpty(perfilDto.Correo))
+                {
+                    usuario.Correo = perfilDto.Correo.Trim().ToLower();
+                }
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al actualizar perfil: {ex.Message}", ex);
+            }
+        }
 
     }
     
