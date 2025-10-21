@@ -12,12 +12,13 @@ services:
     environment:
       - DOTNET_USE_POLLING_FILE_WATCHER=1
       - ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS=true
-      #- NUGET_FALLBACK_PACKAGES=$container_paths_to_fallback_packages_ventafacil.web$
+      - NUGET_FALLBACK_PACKAGES=/.nuget/fallbackpackages
     volumes:
       - C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web:/app:rw
       - C:\Git\DesarrolloSistemas\Proyecto:/src:rw
       - C:\Users\anton\vsdbg\vs2017u5:/remote_debugger:rw
-#$nuget_volume_mapping_ventafacil.web$
+      - C:\Users\anton\.nuget\packages:/.nuget/packages:ro
+      - C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages:/.nuget/fallbackpackages:ro
       - C:\Users\anton\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro
       - C:\Users\anton\AppData\Roaming\ASP.NET\Https:/home/app/.aspnet/https:ro
       - C:\Users\anton\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro
@@ -28,7 +29,7 @@ services:
     entrypoint: "dotnet --roll-forward Major /VSTools/DistrolessHelper/DistrolessHelper.dll --wait"
     labels:
       com.microsoft.visualstudio.debuggee.program: "dotnet"
-      #com.microsoft.visualstudio.debuggee.arguments: " $debuggee_arguments_probing_paths_ventafacil.web$ \"/app/bin/Debug/net8.0/VentaFacil.web.dll\""
+      com.microsoft.visualstudio.debuggee.arguments: " --additionalProbingPath /.nuget/packages --additionalProbingPath /.nuget/fallbackpackages  \"/app/bin/Debug/net8.0/VentaFacil.web.dll\""
       com.microsoft.visualstudio.debuggee.workingdirectory: "/app"
       com.microsoft.visualstudio.debuggee.killprogram: "dotnet --roll-forward Major /VSTools/DistrolessHelper/DistrolessHelper.dll --stop dotnet"
     tty: true

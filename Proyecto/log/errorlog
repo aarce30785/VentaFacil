@@ -1,475 +1,160 @@
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-2025-10-01 00:12:41.20 Server      Microsoft SQL Server 2022 (RTM-CU21) (KB5065865) - 16.0.4215.2 (X64) 
-=======
-2025-10-01 11:44:08.32 Server      Microsoft SQL Server 2022 (RTM-CU21) (KB5065865) - 16.0.4215.2 (X64) 
->>>>>>> 7770885009c356174e477c6c3678859ee1a3ec2c
+2025-10-20 18:08:57.44 Server      Microsoft SQL Server 2022 (RTM-CU21) (KB5065865) - 16.0.4215.2 (X64) 
 	Aug 11 2025 13:24:21 
 	Copyright (C) 2022 Microsoft Corporation
 	Developer Edition (64-bit) on Linux (Ubuntu 22.04.5 LTS) <X64>
-2025-10-01 11:44:08.32 Server      UTC adjustment: 0:00
-2025-10-01 11:44:08.32 Server      (c) Microsoft Corporation.
-2025-10-01 11:44:08.32 Server      All rights reserved.
-2025-10-01 11:44:08.32 Server      Server process ID is 504.
-2025-10-01 11:44:08.32 Server      Logging SQL Server messages in file '/var/opt/mssql/log/errorlog'.
-2025-10-01 11:44:08.32 Server      Registry startup parameters: 
+2025-10-20 18:08:57.44 Server      UTC adjustment: 0:00
+2025-10-20 18:08:57.44 Server      (c) Microsoft Corporation.
+2025-10-20 18:08:57.44 Server      All rights reserved.
+2025-10-20 18:08:57.44 Server      Server process ID is 504.
+2025-10-20 18:08:57.44 Server      Logging SQL Server messages in file '/var/opt/mssql/log/errorlog'.
+2025-10-20 18:08:57.44 Server      Registry startup parameters: 
 	 -d /var/opt/mssql/data/master.mdf
 	 -l /var/opt/mssql/data/mastlog.ldf
 	 -e /var/opt/mssql/log/errorlog
-<<<<<<< HEAD
-2025-10-01 00:12:41.21 Server      SQL Server detected 1 sockets with 6 cores per socket and 12 logical processors per socket, 12 total logical processors; using 12 logical processors based on SQL Server licensing. This is an informational message; no user action is required.
-2025-10-01 00:12:41.21 Server      SQL Server is starting at normal priority base (=7). This is an informational message only. No user action is required.
-2025-10-01 00:12:41.21 Server      Detected 12764 MB of RAM, 12318 MB of available memory, 12318 MB of available page file. This is an informational message; no user action is required.
-2025-10-01 00:12:41.21 Server      Using conventional memory in the memory manager.
-2025-10-01 00:12:41.21 Server      Detected pause instruction latency: 37 cycles.
-2025-10-01 00:12:41.21 Server      SQL Server detected the following NUMA node configuration (NUMA Node number 0, Processor Group number 0, CPU Mask 0x0000000000000fff).
-2025-10-01 00:12:41.22 Server      Page exclusion bitmap is enabled.
-2025-10-01 00:12:41.28 Server      Buffer pool extension is not supported on Linux platform.
-2025-10-01 00:12:41.29 Server      Buffer Pool: Allocating 16777216 bytes for 1969805 hashPages.
-2025-10-01 00:12:41.38 Server      Buffer pool extension is already disabled. No action is necessary.
-2025-10-01 00:12:41.64 Server      Installing Client TLS certificates to the store.
-2025-10-01 00:12:41.65 Server      CPU vectorization level(s) detected:  SSE SSE2 SSE3 SSSE3 SSE41 SSE42 AVX AVX2 POPCNT BMI1 BMI2
-2025-10-01 00:12:41.72 Server      Successfully initialized the TLS configuration. Allowed TLS protocol versions are ['1.0 1.1 1.2']. Allowed TLS ciphers are ['ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!DHE-RSA-AES256-GCM-SHA384:!DHE-RSA-AES128-GCM-SHA256:!DHE-RSA-AES256-SHA:!DHE-RSA-AES128-SHA'].
-2025-10-01 00:12:41.74 Server      Query Store settings initialized with enabled = 1, 
-2025-10-01 00:12:41.75 Server      The maximum number of dedicated administrator connections for this instance is '1'
-2025-10-01 00:12:41.75 Server      Node configuration: node 0: CPU mask: 0x0000000000000fff:0 Active CPU mask: 0x0000000000000fff:0. This message provides a description of the NUMA configuration for this computer. This is an informational message only. No user action is required.
-2025-10-01 00:12:41.78 Server      Using dynamic lock allocation.  Initial allocation of 2500 Lock blocks and 5000 Lock Owner blocks per node.  This is an informational message only.  No user action is required.
-2025-10-01 00:12:41.81 Server      In-Memory OLTP initialized on standard machine.
-2025-10-01 00:12:41.87 Server      CLR version v4.0.30319 loaded.
-2025-10-01 00:12:41.89 Server      [INFO] Created Extended Events session 'hkenginexesession'
-2025-10-01 00:12:41.89 Server      Database Instant File Initialization: enabled. For security and performance considerations see the topic 'Database Instant File Initialization' in SQL Server Books Online. This is an informational message only. No user action is required.
-2025-10-01 00:12:41.90 Server      Total Log Writer threads: 2. This is an informational message; no user action is required.
-2025-10-01 00:12:41.91 Server      clwb is selected for pmem flush operation.
-2025-10-01 00:12:41.92 Server      Software Usage Metrics is disabled.
-2025-10-01 00:12:41.93 spid35s     [1]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:12:41.93 spid35s     Starting up database 'master'.
-2025-10-01 00:12:42.03 spid35s     25 transactions rolled forward in database 'master' (1:0). This is an informational message only. No user action is required.
-2025-10-01 00:12:42.04 spid35s     0 transactions rolled back in database 'master' (1:0). This is an informational message only. No user action is required.
-2025-10-01 00:12:42.05 spid35s     Recovery is writing a checkpoint in database 'master' (1). This is an informational message only. No user action is required.
-2025-10-01 00:12:42.13 spid35s     Service Master Key could not be decrypted using one of its encryptions. See sys.key_encryptions for details.
-2025-10-01 00:12:42.14 spid35s     An error occurred during Service Master Key initialization. SQLErrorCode=33095, State=14, LastOsError=2.
-2025-10-01 00:12:42.14 spid35s     [32762]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:12:42.14 spid38s     [32767]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:12:42.14 spid35s     Starting up database 'model_replicatedmaster'.
-2025-10-01 00:12:42.15 spid38s     Starting up database 'mssqlsystemresource'.
-2025-10-01 00:12:42.15 spid38s     The resource database build version is 16.00.4215. This is an informational message only. No user action is required.
-2025-10-01 00:12:42.18 Server      Common language runtime (CLR) functionality initialized.
-2025-10-01 00:12:42.20 spid38s     [3]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:12:42.20 spid38s     Starting up database 'model'.
-2025-10-01 00:12:42.23 Server      External governance manager initialized
-2025-10-01 00:12:42.59 spid35s     Converting database 'model_replicatedmaster' from version 927 to the current version 957.
-2025-10-01 00:12:42.59 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 927 to version 928.
-2025-10-01 00:12:42.75 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 928 to version 929.
-2025-10-01 00:12:42.82 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 929 to version 930.
-2025-10-01 00:12:42.84 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 930 to version 931.
-2025-10-01 00:12:42.85 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 931 to version 932.
-2025-10-01 00:12:42.87 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 932 to version 933.
-2025-10-01 00:12:42.89 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 933 to version 934.
-2025-10-01 00:12:42.92 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 934 to version 935.
-2025-10-01 00:12:42.93 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 935 to version 936.
-2025-10-01 00:12:42.95 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 936 to version 937.
-2025-10-01 00:12:42.97 spid45s     A self-generated certificate was successfully loaded for encryption.
-2025-10-01 00:12:42.98 spid45s     Server is listening on [ 'any' <ipv6> 1433] accept sockets 1.
-2025-10-01 00:12:42.98 spid45s     Server is listening on [ 'any' <ipv4> 1433] accept sockets 1.
-2025-10-01 00:12:42.98 Server      Server is listening on [ ::1 <ipv6> 1434] accept sockets 1.
-2025-10-01 00:12:42.98 Server      Server is listening on [ 127.0.0.1 <ipv4> 1434] accept sockets 1.
-2025-10-01 00:12:42.98 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 937 to version 938.
-2025-10-01 00:12:42.98 Server      Dedicated admin connection support was established for listening locally on port 1434.
-2025-10-01 00:12:42.98 spid45s     Server is listening on [ ::1 <ipv6> 1431] accept sockets 1.
-2025-10-01 00:12:42.98 spid45s     Server is listening on [ 127.0.0.1 <ipv4> 1431] accept sockets 1.
-2025-10-01 00:12:42.99 spid45s     SQL Server is now ready for client connections. This is an informational message; no user action is required.
-2025-10-01 00:12:43.05 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 938 to version 939.
-2025-10-01 00:12:43.06 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 939 to version 940.
-2025-10-01 00:12:43.08 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 940 to version 941.
-2025-10-01 00:12:43.10 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 941 to version 942.
-2025-10-01 00:12:43.12 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 942 to version 943.
-2025-10-01 00:12:43.17 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 943 to version 944.
-2025-10-01 00:12:43.19 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 944 to version 945.
-2025-10-01 00:12:43.22 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 945 to version 946.
-2025-10-01 00:12:43.24 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 946 to version 947.
-2025-10-01 00:12:43.28 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 947 to version 948.
-2025-10-01 00:12:43.29 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 948 to version 949.
-2025-10-01 00:12:43.30 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 949 to version 950.
-2025-10-01 00:12:43.32 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 950 to version 951.
-2025-10-01 00:12:43.34 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 951 to version 952.
-2025-10-01 00:12:43.36 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 952 to version 953.
-2025-10-01 00:12:43.56 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 953 to version 954.
-2025-10-01 00:12:43.57 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 954 to version 955.
-2025-10-01 00:12:43.58 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 955 to version 956.
-2025-10-01 00:12:43.60 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 956 to version 957.
-2025-10-01 00:12:43.69 spid35s     [32761]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:12:43.69 spid35s     Starting up database 'model_msdb'.
-2025-10-01 00:12:43.82 spid35s     Converting database 'model_msdb' from version 927 to the current version 957.
-2025-10-01 00:12:43.82 spid35s     Database 'model_msdb' running the upgrade step from version 927 to version 928.
-2025-10-01 00:12:44.22 spid35s     Database 'model_msdb' running the upgrade step from version 928 to version 929.
-2025-10-01 00:12:44.36 spid35s     Database 'model_msdb' running the upgrade step from version 929 to version 930.
-2025-10-01 00:12:44.38 spid35s     Database 'model_msdb' running the upgrade step from version 930 to version 931.
-2025-10-01 00:12:44.43 spid35s     Database 'model_msdb' running the upgrade step from version 931 to version 932.
-2025-10-01 00:12:44.46 spid35s     Database 'model_msdb' running the upgrade step from version 932 to version 933.
-2025-10-01 00:12:44.47 spid35s     Database 'model_msdb' running the upgrade step from version 933 to version 934.
-2025-10-01 00:12:44.49 spid35s     Database 'model_msdb' running the upgrade step from version 934 to version 935.
-2025-10-01 00:12:44.50 spid35s     Database 'model_msdb' running the upgrade step from version 935 to version 936.
-2025-10-01 00:12:44.53 spid35s     Database 'model_msdb' running the upgrade step from version 936 to version 937.
-2025-10-01 00:12:44.55 spid35s     Database 'model_msdb' running the upgrade step from version 937 to version 938.
-2025-10-01 00:12:44.57 spid35s     Database 'model_msdb' running the upgrade step from version 938 to version 939.
-2025-10-01 00:12:44.61 spid35s     Database 'model_msdb' running the upgrade step from version 939 to version 940.
-2025-10-01 00:12:44.62 spid35s     Database 'model_msdb' running the upgrade step from version 940 to version 941.
-2025-10-01 00:12:44.64 spid35s     Database 'model_msdb' running the upgrade step from version 941 to version 942.
-2025-10-01 00:12:44.66 spid35s     Database 'model_msdb' running the upgrade step from version 942 to version 943.
-2025-10-01 00:12:44.71 spid35s     Database 'model_msdb' running the upgrade step from version 943 to version 944.
-2025-10-01 00:12:44.74 spid35s     Database 'model_msdb' running the upgrade step from version 944 to version 945.
-2025-10-01 00:12:44.77 spid35s     Database 'model_msdb' running the upgrade step from version 945 to version 946.
-2025-10-01 00:12:44.79 spid35s     Database 'model_msdb' running the upgrade step from version 946 to version 947.
-2025-10-01 00:12:44.80 spid35s     Database 'model_msdb' running the upgrade step from version 947 to version 948.
-2025-10-01 00:12:44.83 spid35s     Database 'model_msdb' running the upgrade step from version 948 to version 949.
-2025-10-01 00:12:44.86 spid35s     Database 'model_msdb' running the upgrade step from version 949 to version 950.
-2025-10-01 00:12:44.99 spid35s     Database 'model_msdb' running the upgrade step from version 950 to version 951.
-2025-10-01 00:12:45.01 spid35s     Database 'model_msdb' running the upgrade step from version 951 to version 952.
-2025-10-01 00:12:45.03 spid35s     Database 'model_msdb' running the upgrade step from version 952 to version 953.
-2025-10-01 00:12:45.09 spid35s     Database 'model_msdb' running the upgrade step from version 953 to version 954.
-2025-10-01 00:12:45.11 spid35s     Database 'model_msdb' running the upgrade step from version 954 to version 955.
-2025-10-01 00:12:45.14 spid35s     Database 'model_msdb' running the upgrade step from version 955 to version 956.
-2025-10-01 00:12:45.24 spid35s     Database 'model_msdb' running the upgrade step from version 956 to version 957.
-2025-10-01 00:12:45.34 spid48s     Attribute synchronization initialized
-2025-10-01 00:12:45.34 spid35s     Resource governor reconfiguration succeeded.
-2025-10-01 00:12:45.34 spid48s     Attribute synchronization manager initialized
-2025-10-01 00:12:45.34 spid35s     SQL Server Audit is starting the audits. This is an informational message. No user action is required.
-2025-10-01 00:12:45.34 spid35s     SQL Server Audit has started the audits. This is an informational message. No user action is required.
-2025-10-01 00:12:45.46 spid35s     SQL Trace ID 1 was started by login "sa".
-2025-10-01 00:12:45.47 spid35s     Server name is 'mssql-db'. This is an informational message only. No user action is required.
-2025-10-01 00:12:45.50 spid38s     Clearing tempdb database.
-2025-10-01 00:12:45.50 spid55s     Always On: The availability replica manager is starting. This is an informational message only. No user action is required.
-2025-10-01 00:12:45.50 spid58s     [4]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:12:45.50 spid55s     Always On: The availability replica manager is waiting for the instance of SQL Server to allow client connections. This is an informational message only. No user action is required.
-2025-10-01 00:12:45.50 spid58s     Starting up database 'msdb'.
-2025-10-01 00:12:45.60 spid35s     Recovery is writing a checkpoint in database 'msdb' (4). This is an informational message only. No user action is required.
-2025-10-01 00:12:45.75 spid38s     [2]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:12:45.75 spid38s     Starting up database 'tempdb'.
-2025-10-01 00:12:46.34 spid38s     The tempdb database has 8 data file(s).
-2025-10-01 00:12:46.36 spid46s     The Service Broker endpoint is in disabled or stopped state.
-2025-10-01 00:12:46.36 spid46s     The Database Mirroring endpoint is in disabled or stopped state.
-2025-10-01 00:12:46.37 spid46s     Service Broker manager has started.
-2025-10-01 00:12:46.37 spid35s     Recovery is complete. This is an informational message only. No user action is required.
-2025-10-01 00:15:40.59 spid67      [5]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 00:15:40.59 spid67      Starting up database 'VentaFacilDB'.
-2025-10-01 00:15:40.60 spid67      RemoveStaleDbEntries: Cleanup of stale DB entries called for database ID: [5]
-2025-10-01 00:15:40.60 spid67      RemoveStaleDbEntries: Cleanup of stale DB entries skipped because master db is not memory optimized. DbId: 5.
-2025-10-01 00:15:40.65 spid67      Parallel redo is started for database 'VentaFacilDB' with worker pool size [6].
-2025-10-01 00:15:40.69 spid67      Parallel redo is shutdown for database 'VentaFacilDB' with worker pool size [6].
-2025-10-01 00:17:15.01 spid67      Attempting to load library 'xplog70.dll' into memory. This is an informational message only. No user action is required.
-2025-10-01 00:17:15.02 spid67      Using 'xplog70.dll' version '2022.160.4215' to execute extended stored procedure 'xp_msver'. This is an informational message only; no user action is required.
-2025-10-01 00:17:15.29 spid73      Attempting to load library 'xpsqlbot.dll' into memory. This is an informational message only. No user action is required.
-2025-10-01 00:17:15.29 spid73      Using 'xpsqlbot.dll' version '2022.160.4215' to execute extended stored procedure 'xp_qv'. This is an informational message only; no user action is required.
-2025-10-01 00:19:25.07 spid74      Using 'dbghelp.dll' version '4.0.5'
-2025-10-01 01:12:42.99 spid9s      [DevOpsSnapshotTelemetryTask] Evaluating the background task.
-=======
-2025-10-19 04:48:04.97 Server      Microsoft SQL Server 2022 (RTM-CU21) (KB5065865) - 16.0.4215.2 (X64) 
-	Aug 11 2025 13:24:21 
-	Copyright (C) 2022 Microsoft Corporation
-	Developer Edition (64-bit) on Linux (Ubuntu 22.04.5 LTS) <X64>
-2025-10-19 04:48:04.97 Server      UTC adjustment: 0:00
-2025-10-19 04:48:04.97 Server      (c) Microsoft Corporation.
-2025-10-19 04:48:04.97 Server      All rights reserved.
-2025-10-19 04:48:04.97 Server      Server process ID is 504.
-2025-10-19 04:48:04.97 Server      Logging SQL Server messages in file '/var/opt/mssql/log/errorlog'.
-2025-10-19 04:48:04.97 Server      Registry startup parameters: 
-	 -d /var/opt/mssql/data/master.mdf
-	 -l /var/opt/mssql/data/mastlog.ldf
-	 -e /var/opt/mssql/log/errorlog
-2025-10-19 04:48:04.98 Server      SQL Server detected 1 sockets with 6 cores per socket and 12 logical processors per socket, 12 total logical processors; using 12 logical processors based on SQL Server licensing. This is an informational message; no user action is required.
-2025-10-19 04:48:04.98 Server      SQL Server is starting at normal priority base (=7). This is an informational message only. No user action is required.
-2025-10-19 04:48:04.98 Server      Detected 12764 MB of RAM, 12317 MB of available memory, 12317 MB of available page file. This is an informational message; no user action is required.
-2025-10-19 04:48:04.98 Server      Using conventional memory in the memory manager.
-2025-10-19 04:48:04.98 Server      Detected pause instruction latency: 37 cycles.
-2025-10-19 04:48:04.98 Server      SQL Server detected the following NUMA node configuration (NUMA Node number 0, Processor Group number 0, CPU Mask 0x0000000000000fff).
-2025-10-19 04:48:05.00 Server      Page exclusion bitmap is enabled.
-2025-10-19 04:48:05.06 Server      Buffer pool extension is not supported on Linux platform.
-2025-10-19 04:48:05.07 Server      Buffer Pool: Allocating 16777216 bytes for 1969646 hashPages.
-2025-10-19 04:48:05.16 Server      Buffer pool extension is already disabled. No action is necessary.
-2025-10-19 04:48:05.42 Server      Installing Client TLS certificates to the store.
-2025-10-19 04:48:05.43 Server      CPU vectorization level(s) detected:  SSE SSE2 SSE3 SSSE3 SSE41 SSE42 AVX AVX2 POPCNT BMI1 BMI2
-2025-10-19 04:48:05.48 Server      Successfully initialized the TLS configuration. Allowed TLS protocol versions are ['1.0 1.1 1.2']. Allowed TLS ciphers are ['ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!DHE-RSA-AES256-GCM-SHA384:!DHE-RSA-AES128-GCM-SHA256:!DHE-RSA-AES256-SHA:!DHE-RSA-AES128-SHA'].
-2025-10-19 04:48:05.51 Server      Query Store settings initialized with enabled = 1, 
-2025-10-19 04:48:05.52 Server      The maximum number of dedicated administrator connections for this instance is '1'
-2025-10-19 04:48:05.52 Server      Node configuration: node 0: CPU mask: 0x0000000000000fff:0 Active CPU mask: 0x0000000000000fff:0. This message provides a description of the NUMA configuration for this computer. This is an informational message only. No user action is required.
-2025-10-19 04:48:05.54 Server      Using dynamic lock allocation.  Initial allocation of 2500 Lock blocks and 5000 Lock Owner blocks per node.  This is an informational message only.  No user action is required.
-2025-10-19 04:48:05.57 Server      In-Memory OLTP initialized on standard machine.
-2025-10-19 04:48:05.64 Server      CLR version v4.0.30319 loaded.
-2025-10-19 04:48:05.75 Server      [INFO] Created Extended Events session 'hkenginexesession'
-2025-10-19 04:48:05.75 Server      Database Instant File Initialization: enabled. For security and performance considerations see the topic 'Database Instant File Initialization' in SQL Server Books Online. This is an informational message only. No user action is required.
-2025-10-19 04:48:05.76 Server      Total Log Writer threads: 2. This is an informational message; no user action is required.
-2025-10-19 04:48:05.77 Server      clwb is selected for pmem flush operation.
-2025-10-19 04:48:05.77 Server      Software Usage Metrics is disabled.
-2025-10-19 04:48:05.79 spid35s     [1]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:05.79 spid35s     Starting up database 'master'.
-2025-10-19 04:48:05.88 spid35s     21 transactions rolled forward in database 'master' (1:0). This is an informational message only. No user action is required.
-2025-10-19 04:48:05.91 spid35s     0 transactions rolled back in database 'master' (1:0). This is an informational message only. No user action is required.
-2025-10-19 04:48:05.91 spid35s     Recovery is writing a checkpoint in database 'master' (1). This is an informational message only. No user action is required.
-2025-10-19 04:48:05.98 Server      Common language runtime (CLR) functionality initialized.
-2025-10-19 04:48:06.00 spid35s     Service Master Key could not be decrypted using one of its encryptions. See sys.key_encryptions for details.
-2025-10-19 04:48:06.01 spid35s     An error occurred during Service Master Key initialization. SQLErrorCode=33095, State=14, LastOsError=2.
-2025-10-19 04:48:06.01 spid35s     [32762]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:06.01 spid35s     Starting up database 'model_replicatedmaster'.
-2025-10-19 04:48:06.01 spid38s     [32767]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:06.02 spid38s     Starting up database 'mssqlsystemresource'.
-2025-10-19 04:48:06.02 spid38s     The resource database build version is 16.00.4215. This is an informational message only. No user action is required.
-2025-10-19 04:48:06.04 spid38s     [3]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:06.04 spid38s     Starting up database 'model'.
-2025-10-19 04:48:06.10 Server      External governance manager initialized
-2025-10-19 04:48:06.26 spid45s     A self-generated certificate was successfully loaded for encryption.
-2025-10-19 04:48:06.26 spid45s     Server is listening on [ 'any' <ipv6> 1433] accept sockets 1.
-2025-10-19 04:48:06.26 spid45s     Server is listening on [ 'any' <ipv4> 1433] accept sockets 1.
-2025-10-19 04:48:06.26 Server      Server is listening on [ ::1 <ipv6> 1434] accept sockets 1.
-2025-10-19 04:48:06.26 Server      Server is listening on [ 127.0.0.1 <ipv4> 1434] accept sockets 1.
-2025-10-19 04:48:06.26 Server      Dedicated admin connection support was established for listening locally on port 1434.
-2025-10-19 04:48:06.27 spid45s     Server is listening on [ ::1 <ipv6> 1431] accept sockets 1.
-2025-10-19 04:48:06.27 spid45s     Server is listening on [ 127.0.0.1 <ipv4> 1431] accept sockets 1.
-2025-10-19 04:48:06.27 spid45s     SQL Server is now ready for client connections. This is an informational message; no user action is required.
-2025-10-19 04:48:06.27 spid35s     Converting database 'model_replicatedmaster' from version 927 to the current version 957.
-2025-10-19 04:48:06.28 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 927 to version 928.
-2025-10-19 04:48:06.43 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 928 to version 929.
-2025-10-19 04:48:06.49 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 929 to version 930.
-2025-10-19 04:48:06.52 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 930 to version 931.
-2025-10-19 04:48:06.54 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 931 to version 932.
-2025-10-19 04:48:06.56 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 932 to version 933.
-2025-10-19 04:48:06.59 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 933 to version 934.
-2025-10-19 04:48:06.60 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 934 to version 935.
-2025-10-19 04:48:06.62 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 935 to version 936.
-2025-10-19 04:48:06.65 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 936 to version 937.
-2025-10-19 04:48:06.67 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 937 to version 938.
-2025-10-19 04:48:06.70 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 938 to version 939.
-2025-10-19 04:48:06.72 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 939 to version 940.
-2025-10-19 04:48:06.74 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 940 to version 941.
-2025-10-19 04:48:06.80 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 941 to version 942.
-2025-10-19 04:48:06.90 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 942 to version 943.
-2025-10-19 04:48:07.00 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 943 to version 944.
-2025-10-19 04:48:07.03 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 944 to version 945.
-2025-10-19 04:48:07.04 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 945 to version 946.
-2025-10-19 04:48:07.07 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 946 to version 947.
-2025-10-19 04:48:07.08 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 947 to version 948.
-2025-10-19 04:48:07.11 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 948 to version 949.
-2025-10-19 04:48:07.14 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 949 to version 950.
-2025-10-19 04:48:07.16 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 950 to version 951.
-2025-10-19 04:48:07.19 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 951 to version 952.
-2025-10-19 04:48:07.21 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 952 to version 953.
-2025-10-19 04:48:07.30 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 953 to version 954.
-2025-10-19 04:48:07.47 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 954 to version 955.
-2025-10-19 04:48:07.48 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 955 to version 956.
-2025-10-19 04:48:07.50 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 956 to version 957.
-2025-10-19 04:48:07.62 spid35s     [32761]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:07.62 spid35s     Starting up database 'model_msdb'.
-2025-10-19 04:48:07.80 spid35s     Converting database 'model_msdb' from version 927 to the current version 957.
-2025-10-19 04:48:07.80 spid35s     Database 'model_msdb' running the upgrade step from version 927 to version 928.
-2025-10-19 04:48:08.25 spid35s     Database 'model_msdb' running the upgrade step from version 928 to version 929.
-2025-10-19 04:48:08.30 spid35s     Database 'model_msdb' running the upgrade step from version 929 to version 930.
-2025-10-19 04:48:08.32 spid35s     Database 'model_msdb' running the upgrade step from version 930 to version 931.
-2025-10-19 04:48:08.38 spid35s     Database 'model_msdb' running the upgrade step from version 931 to version 932.
-2025-10-19 04:48:08.40 spid35s     Database 'model_msdb' running the upgrade step from version 932 to version 933.
-2025-10-19 04:48:08.42 spid35s     Database 'model_msdb' running the upgrade step from version 933 to version 934.
-2025-10-19 04:48:08.44 spid35s     Database 'model_msdb' running the upgrade step from version 934 to version 935.
-2025-10-19 04:48:08.46 spid35s     Database 'model_msdb' running the upgrade step from version 935 to version 936.
-2025-10-19 04:48:08.50 spid35s     Database 'model_msdb' running the upgrade step from version 936 to version 937.
-2025-10-19 04:48:08.51 spid35s     Database 'model_msdb' running the upgrade step from version 937 to version 938.
-2025-10-19 04:48:08.53 spid35s     Database 'model_msdb' running the upgrade step from version 938 to version 939.
-2025-10-19 04:48:08.59 spid35s     Database 'model_msdb' running the upgrade step from version 939 to version 940.
-2025-10-19 04:48:08.77 spid35s     Database 'model_msdb' running the upgrade step from version 940 to version 941.
-2025-10-19 04:48:08.78 spid35s     Database 'model_msdb' running the upgrade step from version 941 to version 942.
-2025-10-19 04:48:08.80 spid35s     Database 'model_msdb' running the upgrade step from version 942 to version 943.
-2025-10-19 04:48:08.85 spid35s     Database 'model_msdb' running the upgrade step from version 943 to version 944.
-2025-10-19 04:48:08.87 spid35s     Database 'model_msdb' running the upgrade step from version 944 to version 945.
-2025-10-19 04:48:08.91 spid35s     Database 'model_msdb' running the upgrade step from version 945 to version 946.
-2025-10-19 04:48:08.94 spid35s     Database 'model_msdb' running the upgrade step from version 946 to version 947.
-2025-10-19 04:48:08.97 spid35s     Database 'model_msdb' running the upgrade step from version 947 to version 948.
-2025-10-19 04:48:08.98 spid35s     Database 'model_msdb' running the upgrade step from version 948 to version 949.
-2025-10-19 04:48:09.01 spid35s     Database 'model_msdb' running the upgrade step from version 949 to version 950.
-2025-10-19 04:48:09.03 spid35s     Database 'model_msdb' running the upgrade step from version 950 to version 951.
-2025-10-19 04:48:09.06 spid35s     Database 'model_msdb' running the upgrade step from version 951 to version 952.
-2025-10-19 04:48:09.09 spid35s     Database 'model_msdb' running the upgrade step from version 952 to version 953.
-2025-10-19 04:48:09.10 spid35s     Database 'model_msdb' running the upgrade step from version 953 to version 954.
-2025-10-19 04:48:09.16 spid35s     Database 'model_msdb' running the upgrade step from version 954 to version 955.
-2025-10-19 04:48:09.18 spid35s     Database 'model_msdb' running the upgrade step from version 955 to version 956.
-2025-10-19 04:48:09.29 spid35s     Database 'model_msdb' running the upgrade step from version 956 to version 957.
-2025-10-19 04:48:09.44 spid43s     Attribute synchronization initialized
-2025-10-19 04:48:09.44 spid35s     Resource governor reconfiguration succeeded.
-2025-10-19 04:48:09.45 spid43s     Attribute synchronization manager initialized
-2025-10-19 04:48:09.45 spid35s     SQL Server Audit is starting the audits. This is an informational message. No user action is required.
-2025-10-19 04:48:09.45 spid35s     SQL Server Audit has started the audits. This is an informational message. No user action is required.
-2025-10-19 04:48:09.69 spid35s     SQL Trace ID 1 was started by login "sa".
-2025-10-19 04:48:09.71 spid35s     Server name is 'mssql-db'. This is an informational message only. No user action is required.
-2025-10-19 04:48:09.74 spid38s     Clearing tempdb database.
-2025-10-19 04:48:09.74 spid58s     Always On: The availability replica manager is starting. This is an informational message only. No user action is required.
-2025-10-19 04:48:09.74 spid61s     [5]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:09.74 spid62s     [4]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:09.74 spid58s     Always On: The availability replica manager is waiting for the instance of SQL Server to allow client connections. This is an informational message only. No user action is required.
-2025-10-19 04:48:09.74 spid61s     Starting up database 'VentaFacilDB'.
-2025-10-19 04:48:09.74 spid62s     Starting up database 'msdb'.
-2025-10-19 04:48:09.74 spid61s     RemoveStaleDbEntries: Cleanup of stale DB entries called for database ID: [5]
-2025-10-19 04:48:09.75 spid61s     RemoveStaleDbEntries: Cleanup of stale DB entries skipped because master db is not memory optimized. DbId: 5.
-2025-10-19 04:48:09.82 spid61s     Parallel redo is started for database 'VentaFacilDB' with worker pool size [6].
-2025-10-19 04:48:09.92 spid61s     10 transactions rolled forward in database 'VentaFacilDB' (5:0). This is an informational message only. No user action is required.
-2025-10-19 04:48:09.99 spid35s     Recovery is writing a checkpoint in database 'msdb' (4). This is an informational message only. No user action is required.
-2025-10-19 04:48:10.10 spid38s     [2]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-19 04:48:10.10 spid38s     Starting up database 'tempdb'.
-2025-10-19 04:48:10.10 spid61s     0 transactions rolled back in database 'VentaFacilDB' (5:0). This is an informational message only. No user action is required.
-2025-10-19 04:48:10.10 spid61s     Parallel redo is shutdown for database 'VentaFacilDB' with worker pool size [6].
-2025-10-19 04:48:10.75 spid38s     The tempdb database has 8 data file(s).
-2025-10-19 04:48:10.76 spid46s     The Service Broker endpoint is in disabled or stopped state.
-2025-10-19 04:48:10.76 spid46s     The Database Mirroring endpoint is in disabled or stopped state.
-2025-10-19 04:48:10.76 spid46s     Service Broker manager has started.
-2025-10-19 04:48:10.77 spid35s     Recovery is complete. This is an informational message only. No user action is required.
-2025-10-19 04:53:21.11 spid73      Attempting to load library 'xplog70.dll' into memory. This is an informational message only. No user action is required.
-2025-10-19 04:53:21.13 spid73      Using 'xplog70.dll' version '2022.160.4215' to execute extended stored procedure 'xp_msver'. This is an informational message only; no user action is required.
-2025-10-19 04:55:15.54 spid73      Using 'dbghelp.dll' version '4.0.5'
->>>>>>> Stashed changes
-=======
-2025-10-01 11:44:08.33 Server      SQL Server detected 1 sockets with 6 cores per socket and 12 logical processors per socket, 12 total logical processors; using 12 logical processors based on SQL Server licensing. This is an informational message; no user action is required.
-2025-10-01 11:44:08.33 Server      SQL Server is starting at normal priority base (=7). This is an informational message only. No user action is required.
-2025-10-01 11:44:08.33 Server      Detected 12764 MB of RAM, 12318 MB of available memory, 12318 MB of available page file. This is an informational message; no user action is required.
-2025-10-01 11:44:08.33 Server      Using conventional memory in the memory manager.
-2025-10-01 11:44:08.33 Server      Detected pause instruction latency: 37 cycles.
-2025-10-01 11:44:08.33 Server      SQL Server detected the following NUMA node configuration (NUMA Node number 0, Processor Group number 0, CPU Mask 0x0000000000000fff).
-2025-10-01 11:44:08.34 Server      Page exclusion bitmap is enabled.
-2025-10-01 11:44:08.40 Server      Buffer pool extension is not supported on Linux platform.
-2025-10-01 11:44:08.41 Server      Buffer Pool: Allocating 16777216 bytes for 1969836 hashPages.
-2025-10-01 11:44:08.50 Server      Buffer pool extension is already disabled. No action is necessary.
-2025-10-01 11:44:08.76 Server      Installing Client TLS certificates to the store.
-2025-10-01 11:44:08.76 Server      CPU vectorization level(s) detected:  SSE SSE2 SSE3 SSSE3 SSE41 SSE42 AVX AVX2 POPCNT BMI1 BMI2
-2025-10-01 11:44:08.82 Server      Successfully initialized the TLS configuration. Allowed TLS protocol versions are ['1.0 1.1 1.2']. Allowed TLS ciphers are ['ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!DHE-RSA-AES256-GCM-SHA384:!DHE-RSA-AES128-GCM-SHA256:!DHE-RSA-AES256-SHA:!DHE-RSA-AES128-SHA'].
-2025-10-01 11:44:08.84 Server      Query Store settings initialized with enabled = 1, 
-2025-10-01 11:44:08.85 Server      The maximum number of dedicated administrator connections for this instance is '1'
-2025-10-01 11:44:08.86 Server      Node configuration: node 0: CPU mask: 0x0000000000000fff:0 Active CPU mask: 0x0000000000000fff:0. This message provides a description of the NUMA configuration for this computer. This is an informational message only. No user action is required.
-2025-10-01 11:44:08.88 Server      Using dynamic lock allocation.  Initial allocation of 2500 Lock blocks and 5000 Lock Owner blocks per node.  This is an informational message only.  No user action is required.
-2025-10-01 11:44:08.91 Server      In-Memory OLTP initialized on standard machine.
-2025-10-01 11:44:08.97 Server      CLR version v4.0.30319 loaded.
-2025-10-01 11:44:09.10 Server      [INFO] Created Extended Events session 'hkenginexesession'
-2025-10-01 11:44:09.11 Server      Database Instant File Initialization: enabled. For security and performance considerations see the topic 'Database Instant File Initialization' in SQL Server Books Online. This is an informational message only. No user action is required.
-2025-10-01 11:44:09.12 Server      Total Log Writer threads: 2. This is an informational message; no user action is required.
-2025-10-01 11:44:09.13 Server      clwb is selected for pmem flush operation.
-2025-10-01 11:44:09.13 Server      Software Usage Metrics is disabled.
-2025-10-01 11:44:09.14 spid35s     [1]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:09.15 spid35s     Starting up database 'master'.
-2025-10-01 11:44:09.23 spid35s     29 transactions rolled forward in database 'master' (1:0). This is an informational message only. No user action is required.
-2025-10-01 11:44:09.25 Server      Common language runtime (CLR) functionality initialized.
-2025-10-01 11:44:09.27 spid35s     0 transactions rolled back in database 'master' (1:0). This is an informational message only. No user action is required.
-2025-10-01 11:44:09.27 spid35s     Recovery is writing a checkpoint in database 'master' (1). This is an informational message only. No user action is required.
-2025-10-01 11:44:09.34 spid35s     Service Master Key could not be decrypted using one of its encryptions. See sys.key_encryptions for details.
-2025-10-01 11:44:09.35 spid35s     An error occurred during Service Master Key initialization. SQLErrorCode=33095, State=14, LastOsError=2.
-2025-10-01 11:44:09.35 spid35s     [32762]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:09.35 spid35s     Starting up database 'model_replicatedmaster'.
-2025-10-01 11:44:09.35 spid38s     [32767]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:09.36 spid38s     Starting up database 'mssqlsystemresource'.
-2025-10-01 11:44:09.36 spid38s     The resource database build version is 16.00.4215. This is an informational message only. No user action is required.
-2025-10-01 11:44:09.38 spid38s     [3]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:09.38 spid38s     Starting up database 'model'.
-2025-10-01 11:44:09.45 Server      External governance manager initialized
-2025-10-01 11:44:09.48 spid35s     Converting database 'model_replicatedmaster' from version 927 to the current version 957.
-2025-10-01 11:44:09.49 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 927 to version 928.
-2025-10-01 11:44:09.52 spid45s     A self-generated certificate was successfully loaded for encryption.
-2025-10-01 11:44:09.53 spid45s     Server is listening on [ 'any' <ipv6> 1433] accept sockets 1.
-2025-10-01 11:44:09.53 spid45s     Server is listening on [ 'any' <ipv4> 1433] accept sockets 1.
-2025-10-01 11:44:09.53 Server      Server is listening on [ ::1 <ipv6> 1434] accept sockets 1.
-2025-10-01 11:44:09.53 Server      Server is listening on [ 127.0.0.1 <ipv4> 1434] accept sockets 1.
-2025-10-01 11:44:09.53 Server      Dedicated admin connection support was established for listening locally on port 1434.
-2025-10-01 11:44:09.53 spid45s     Server is listening on [ ::1 <ipv6> 1431] accept sockets 1.
-2025-10-01 11:44:09.53 spid45s     Server is listening on [ 127.0.0.1 <ipv4> 1431] accept sockets 1.
-2025-10-01 11:44:09.53 spid45s     SQL Server is now ready for client connections. This is an informational message; no user action is required.
-2025-10-01 11:44:09.68 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 928 to version 929.
-2025-10-01 11:44:09.73 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 929 to version 930.
-2025-10-01 11:44:09.75 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 930 to version 931.
-2025-10-01 11:44:09.77 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 931 to version 932.
-2025-10-01 11:44:09.79 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 932 to version 933.
-2025-10-01 11:44:09.82 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 933 to version 934.
-2025-10-01 11:44:09.83 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 934 to version 935.
-2025-10-01 11:44:09.84 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 935 to version 936.
-2025-10-01 11:44:09.86 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 936 to version 937.
-2025-10-01 11:44:09.87 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 937 to version 938.
-2025-10-01 11:44:09.90 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 938 to version 939.
-2025-10-01 11:44:09.92 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 939 to version 940.
-2025-10-01 11:44:09.94 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 940 to version 941.
-2025-10-01 11:44:09.96 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 941 to version 942.
-2025-10-01 11:44:10.08 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 942 to version 943.
-2025-10-01 11:44:10.14 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 943 to version 944.
-2025-10-01 11:44:10.15 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 944 to version 945.
-2025-10-01 11:44:10.17 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 945 to version 946.
-2025-10-01 11:44:10.19 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 946 to version 947.
-2025-10-01 11:44:10.21 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 947 to version 948.
-2025-10-01 11:44:10.22 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 948 to version 949.
-2025-10-01 11:44:10.24 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 949 to version 950.
-2025-10-01 11:44:10.25 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 950 to version 951.
-2025-10-01 11:44:10.28 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 951 to version 952.
-2025-10-01 11:44:10.30 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 952 to version 953.
-2025-10-01 11:44:10.48 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 953 to version 954.
-2025-10-01 11:44:10.50 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 954 to version 955.
-2025-10-01 11:44:10.54 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 955 to version 956.
-2025-10-01 11:44:10.56 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 956 to version 957.
-2025-10-01 11:44:10.64 spid35s     [32761]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:10.64 spid35s     Starting up database 'model_msdb'.
-2025-10-01 11:44:10.73 spid35s     Converting database 'model_msdb' from version 927 to the current version 957.
-2025-10-01 11:44:10.73 spid35s     Database 'model_msdb' running the upgrade step from version 927 to version 928.
-2025-10-01 11:44:10.77 spid35s     Database 'model_msdb' running the upgrade step from version 928 to version 929.
-2025-10-01 11:44:10.80 spid35s     Database 'model_msdb' running the upgrade step from version 929 to version 930.
-2025-10-01 11:44:10.82 spid35s     Database 'model_msdb' running the upgrade step from version 930 to version 931.
-2025-10-01 11:44:10.84 spid35s     Database 'model_msdb' running the upgrade step from version 931 to version 932.
-2025-10-01 11:44:10.85 spid35s     Database 'model_msdb' running the upgrade step from version 932 to version 933.
-2025-10-01 11:44:10.86 spid35s     Database 'model_msdb' running the upgrade step from version 933 to version 934.
-2025-10-01 11:44:10.87 spid35s     Database 'model_msdb' running the upgrade step from version 934 to version 935.
-2025-10-01 11:44:10.88 spid35s     Database 'model_msdb' running the upgrade step from version 935 to version 936.
-2025-10-01 11:44:10.89 spid35s     Database 'model_msdb' running the upgrade step from version 936 to version 937.
-2025-10-01 11:44:10.90 spid35s     Database 'model_msdb' running the upgrade step from version 937 to version 938.
-2025-10-01 11:44:10.91 spid35s     Database 'model_msdb' running the upgrade step from version 938 to version 939.
-2025-10-01 11:44:10.92 spid35s     Database 'model_msdb' running the upgrade step from version 939 to version 940.
-2025-10-01 11:44:10.93 spid35s     Database 'model_msdb' running the upgrade step from version 940 to version 941.
-2025-10-01 11:44:10.94 spid35s     Database 'model_msdb' running the upgrade step from version 941 to version 942.
-2025-10-01 11:44:10.95 spid35s     Database 'model_msdb' running the upgrade step from version 942 to version 943.
-2025-10-01 11:44:10.98 spid35s     Database 'model_msdb' running the upgrade step from version 943 to version 944.
-2025-10-01 11:44:10.99 spid35s     Database 'model_msdb' running the upgrade step from version 944 to version 945.
-2025-10-01 11:44:11.01 spid35s     Database 'model_msdb' running the upgrade step from version 945 to version 946.
-2025-10-01 11:44:11.02 spid35s     Database 'model_msdb' running the upgrade step from version 946 to version 947.
-2025-10-01 11:44:11.03 spid35s     Database 'model_msdb' running the upgrade step from version 947 to version 948.
-2025-10-01 11:44:11.04 spid35s     Database 'model_msdb' running the upgrade step from version 948 to version 949.
-2025-10-01 11:44:11.06 spid35s     Database 'model_msdb' running the upgrade step from version 949 to version 950.
-2025-10-01 11:44:11.07 spid35s     Database 'model_msdb' running the upgrade step from version 950 to version 951.
-2025-10-01 11:44:11.08 spid35s     Database 'model_msdb' running the upgrade step from version 951 to version 952.
-2025-10-01 11:44:11.09 spid35s     Database 'model_msdb' running the upgrade step from version 952 to version 953.
-2025-10-01 11:44:11.10 spid35s     Database 'model_msdb' running the upgrade step from version 953 to version 954.
-2025-10-01 11:44:11.11 spid35s     Database 'model_msdb' running the upgrade step from version 954 to version 955.
-2025-10-01 11:44:11.12 spid35s     Database 'model_msdb' running the upgrade step from version 955 to version 956.
-2025-10-01 11:44:11.15 spid35s     Database 'model_msdb' running the upgrade step from version 956 to version 957.
-2025-10-01 11:44:11.21 spid47s     Attribute synchronization initialized
-2025-10-01 11:44:11.21 spid35s     Resource governor reconfiguration succeeded.
-2025-10-01 11:44:11.22 spid47s     Attribute synchronization manager initialized
-2025-10-01 11:44:11.22 spid35s     SQL Server Audit is starting the audits. This is an informational message. No user action is required.
-2025-10-01 11:44:11.22 spid35s     SQL Server Audit has started the audits. This is an informational message. No user action is required.
-2025-10-01 11:44:11.43 spid35s     SQL Trace ID 1 was started by login "sa".
-2025-10-01 11:44:11.44 spid35s     Server name is 'mssql-db'. This is an informational message only. No user action is required.
-2025-10-01 11:44:11.46 spid38s     Clearing tempdb database.
-2025-10-01 11:44:11.46 spid56s     Always On: The availability replica manager is starting. This is an informational message only. No user action is required.
-2025-10-01 11:44:11.47 spid61s     [5]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:11.47 spid56s     Always On: The availability replica manager is waiting for the instance of SQL Server to allow client connections. This is an informational message only. No user action is required.
-2025-10-01 11:44:11.47 spid59s     [4]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:11.47 spid61s     Starting up database 'VentaFacilDB'.
-2025-10-01 11:44:11.47 spid61s     RemoveStaleDbEntries: Cleanup of stale DB entries called for database ID: [5]
-2025-10-01 11:44:11.47 spid59s     Starting up database 'msdb'.
-2025-10-01 11:44:11.47 spid61s     RemoveStaleDbEntries: Cleanup of stale DB entries skipped because master db is not memory optimized. DbId: 5.
-2025-10-01 11:44:11.55 spid61s     Parallel redo is started for database 'VentaFacilDB' with worker pool size [6].
-2025-10-01 11:44:11.59 spid61s     65 transactions rolled forward in database 'VentaFacilDB' (5:0). This is an informational message only. No user action is required.
-2025-10-01 11:44:11.67 spid35s     Recovery is writing a checkpoint in database 'msdb' (4). This is an informational message only. No user action is required.
-2025-10-01 11:44:11.69 spid38s     [2]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-2025-10-01 11:44:11.69 spid38s     Starting up database 'tempdb'.
-2025-10-01 11:44:11.69 spid61s     0 transactions rolled back in database 'VentaFacilDB' (5:0). This is an informational message only. No user action is required.
-2025-10-01 11:44:11.69 spid61s     Recovery is writing a checkpoint in database 'VentaFacilDB' (5). This is an informational message only. No user action is required.
-2025-10-01 11:44:11.71 spid61s     Parallel redo is shutdown for database 'VentaFacilDB' with worker pool size [6].
-2025-10-01 11:44:12.24 spid38s     The tempdb database has 8 data file(s).
-2025-10-01 11:44:12.25 spid46s     The Service Broker endpoint is in disabled or stopped state.
-2025-10-01 11:44:12.25 spid46s     The Database Mirroring endpoint is in disabled or stopped state.
-2025-10-01 11:44:12.25 spid46s     Service Broker manager has started.
-2025-10-01 11:44:12.26 spid35s     Recovery is complete. This is an informational message only. No user action is required.
-2025-10-01 11:49:24.37 spid66      Attempting to load library 'xplog70.dll' into memory. This is an informational message only. No user action is required.
-2025-10-01 11:49:24.39 spid66      Using 'xplog70.dll' version '2022.160.4215' to execute extended stored procedure 'xp_msver'. This is an informational message only; no user action is required.
-2025-10-01 11:51:29.45 spid66      Using 'dbghelp.dll' version '4.0.5'
-2025-10-01 11:59:54.77 spid67      Attempting to load library 'xpsqlbot.dll' into memory. This is an informational message only. No user action is required.
-2025-10-01 11:59:54.77 spid67      Using 'xpsqlbot.dll' version '2022.160.4215' to execute extended stored procedure 'xp_qv'. This is an informational message only; no user action is required.
-2025-10-01 12:44:11.35 spid22s     [DevOpsSnapshotTelemetryTask] Evaluating the background task.
-2025-10-01 14:45:33.50 spid70      Attempting to load library 'xpstar.dll' into memory. This is an informational message only. No user action is required.
-2025-10-01 14:45:33.55 spid70      Using 'xpstar.dll' version '2022.160.4215' to execute extended stored procedure 'xp_instance_regread'. This is an informational message only; no user action is required.
->>>>>>> 7770885009c356174e477c6c3678859ee1a3ec2c
+2025-10-20 18:08:57.44 Server      SQL Server detected 1 sockets with 6 cores per socket and 12 logical processors per socket, 12 total logical processors; using 12 logical processors based on SQL Server licensing. This is an informational message; no user action is required.
+2025-10-20 18:08:57.45 Server      SQL Server is starting at normal priority base (=7). This is an informational message only. No user action is required.
+2025-10-20 18:08:57.45 Server      Detected 12764 MB of RAM, 12396 MB of available memory, 12396 MB of available page file. This is an informational message; no user action is required.
+2025-10-20 18:08:57.45 Server      Using conventional memory in the memory manager.
+2025-10-20 18:08:57.45 Server      Detected pause instruction latency: 37 cycles.
+2025-10-20 18:08:57.45 Server      SQL Server detected the following NUMA node configuration (NUMA Node number 0, Processor Group number 0, CPU Mask 0x0000000000000fff).
+2025-10-20 18:08:57.47 Server      Page exclusion bitmap is enabled.
+2025-10-20 18:08:57.53 Server      Buffer pool extension is not supported on Linux platform.
+2025-10-20 18:08:57.54 Server      Buffer Pool: Allocating 16777216 bytes for 1982303 hashPages.
+2025-10-20 18:08:57.65 Server      Buffer pool extension is already disabled. No action is necessary.
+2025-10-20 18:08:58.01 Server      Installing Client TLS certificates to the store.
+2025-10-20 18:08:58.02 Server      CPU vectorization level(s) detected:  SSE SSE2 SSE3 SSSE3 SSE41 SSE42 AVX AVX2 POPCNT BMI1 BMI2
+2025-10-20 18:08:58.09 Server      Successfully initialized the TLS configuration. Allowed TLS protocol versions are ['1.0 1.1 1.2']. Allowed TLS ciphers are ['ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!DHE-RSA-AES256-GCM-SHA384:!DHE-RSA-AES128-GCM-SHA256:!DHE-RSA-AES256-SHA:!DHE-RSA-AES128-SHA'].
+2025-10-20 18:08:58.11 Server      Query Store settings initialized with enabled = 1, 
+2025-10-20 18:08:58.13 Server      The maximum number of dedicated administrator connections for this instance is '1'
+2025-10-20 18:08:58.13 Server      Node configuration: node 0: CPU mask: 0x0000000000000fff:0 Active CPU mask: 0x0000000000000fff:0. This message provides a description of the NUMA configuration for this computer. This is an informational message only. No user action is required.
+2025-10-20 18:08:58.17 Server      Using dynamic lock allocation.  Initial allocation of 2500 Lock blocks and 5000 Lock Owner blocks per node.  This is an informational message only.  No user action is required.
+2025-10-20 18:08:58.22 Server      In-Memory OLTP initialized on standard machine.
+2025-10-20 18:08:58.26 Server      CLR version v4.0.30319 loaded.
+2025-10-20 18:08:58.45 Server      [INFO] Created Extended Events session 'hkenginexesession'
+2025-10-20 18:08:58.46 Server      Database Instant File Initialization: enabled. For security and performance considerations see the topic 'Database Instant File Initialization' in SQL Server Books Online. This is an informational message only. No user action is required.
+2025-10-20 18:08:58.47 Server      Total Log Writer threads: 2. This is an informational message; no user action is required.
+2025-10-20 18:08:58.48 Server      clwb is selected for pmem flush operation.
+2025-10-20 18:08:58.49 Server      Software Usage Metrics is disabled.
+2025-10-20 18:08:58.50 spid35s     [1]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:08:58.50 spid35s     Starting up database 'master'.
+2025-10-20 18:08:58.62 Server      Common language runtime (CLR) functionality initialized.
+2025-10-20 18:08:58.64 spid35s     25 transactions rolled forward in database 'master' (1:0). This is an informational message only. No user action is required.
+2025-10-20 18:08:58.66 spid35s     0 transactions rolled back in database 'master' (1:0). This is an informational message only. No user action is required.
+2025-10-20 18:08:58.66 spid35s     Recovery is writing a checkpoint in database 'master' (1). This is an informational message only. No user action is required.
+2025-10-20 18:08:58.74 spid35s     Service Master Key could not be decrypted using one of its encryptions. See sys.key_encryptions for details.
+2025-10-20 18:08:58.74 spid35s     An error occurred during Service Master Key initialization. SQLErrorCode=33095, State=14, LastOsError=2.
+2025-10-20 18:08:58.74 spid35s     [32762]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:08:58.75 spid38s     [32767]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:08:58.75 spid35s     Starting up database 'model_replicatedmaster'.
+2025-10-20 18:08:58.75 spid38s     Starting up database 'mssqlsystemresource'.
+2025-10-20 18:08:58.75 spid38s     The resource database build version is 16.00.4215. This is an informational message only. No user action is required.
+2025-10-20 18:08:58.78 spid38s     [3]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:08:58.78 spid38s     Starting up database 'model'.
+2025-10-20 18:08:58.86 Server      External governance manager initialized
+2025-10-20 18:08:59.08 spid35s     Converting database 'model_replicatedmaster' from version 927 to the current version 957.
+2025-10-20 18:08:59.08 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 927 to version 928.
+2025-10-20 18:08:59.10 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 928 to version 929.
+2025-10-20 18:08:59.18 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 929 to version 930.
+2025-10-20 18:08:59.20 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 930 to version 931.
+2025-10-20 18:08:59.21 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 931 to version 932.
+2025-10-20 18:08:59.22 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 932 to version 933.
+2025-10-20 18:08:59.24 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 933 to version 934.
+2025-10-20 18:08:59.26 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 934 to version 935.
+2025-10-20 18:08:59.28 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 935 to version 936.
+2025-10-20 18:08:59.30 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 936 to version 937.
+2025-10-20 18:08:59.31 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 937 to version 938.
+2025-10-20 18:08:59.33 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 938 to version 939.
+2025-10-20 18:08:59.35 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 939 to version 940.
+2025-10-20 18:08:59.38 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 940 to version 941.
+2025-10-20 18:08:59.40 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 941 to version 942.
+2025-10-20 18:08:59.44 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 942 to version 943.
+2025-10-20 18:08:59.45 spid45s     A self-generated certificate was successfully loaded for encryption.
+2025-10-20 18:08:59.45 spid45s     Server is listening on [ 'any' <ipv6> 1433] accept sockets 1.
+2025-10-20 18:08:59.45 spid45s     Server is listening on [ 'any' <ipv4> 1433] accept sockets 1.
+2025-10-20 18:08:59.45 Server      Server is listening on [ ::1 <ipv6> 1434] accept sockets 1.
+2025-10-20 18:08:59.46 Server      Server is listening on [ 127.0.0.1 <ipv4> 1434] accept sockets 1.
+2025-10-20 18:08:59.46 Server      Dedicated admin connection support was established for listening locally on port 1434.
+2025-10-20 18:08:59.46 spid45s     Server is listening on [ ::1 <ipv6> 1431] accept sockets 1.
+2025-10-20 18:08:59.46 spid45s     Server is listening on [ 127.0.0.1 <ipv4> 1431] accept sockets 1.
+2025-10-20 18:08:59.46 spid45s     SQL Server is now ready for client connections. This is an informational message; no user action is required.
+2025-10-20 18:08:59.55 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 943 to version 944.
+2025-10-20 18:08:59.58 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 944 to version 945.
+2025-10-20 18:08:59.61 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 945 to version 946.
+2025-10-20 18:08:59.62 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 946 to version 947.
+2025-10-20 18:08:59.63 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 947 to version 948.
+2025-10-20 18:08:59.65 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 948 to version 949.
+2025-10-20 18:08:59.67 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 949 to version 950.
+2025-10-20 18:08:59.68 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 950 to version 951.
+2025-10-20 18:08:59.71 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 951 to version 952.
+2025-10-20 18:08:59.74 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 952 to version 953.
+2025-10-20 18:08:59.80 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 953 to version 954.
+2025-10-20 18:08:59.82 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 954 to version 955.
+2025-10-20 18:08:59.84 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 955 to version 956.
+2025-10-20 18:08:59.87 spid35s     Database 'model_replicatedmaster' running the upgrade step from version 956 to version 957.
+2025-10-20 18:09:00.05 spid35s     [32761]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:09:00.06 spid35s     Starting up database 'model_msdb'.
+2025-10-20 18:09:00.14 spid35s     Converting database 'model_msdb' from version 927 to the current version 957.
+2025-10-20 18:09:00.14 spid35s     Database 'model_msdb' running the upgrade step from version 927 to version 928.
+2025-10-20 18:09:00.54 spid35s     Database 'model_msdb' running the upgrade step from version 928 to version 929.
+2025-10-20 18:09:00.58 spid35s     Database 'model_msdb' running the upgrade step from version 929 to version 930.
+2025-10-20 18:09:00.61 spid35s     Database 'model_msdb' running the upgrade step from version 930 to version 931.
+2025-10-20 18:09:00.65 spid35s     Database 'model_msdb' running the upgrade step from version 931 to version 932.
+2025-10-20 18:09:00.66 spid35s     Database 'model_msdb' running the upgrade step from version 932 to version 933.
+2025-10-20 18:09:00.68 spid35s     Database 'model_msdb' running the upgrade step from version 933 to version 934.
+2025-10-20 18:09:00.70 spid35s     Database 'model_msdb' running the upgrade step from version 934 to version 935.
+2025-10-20 18:09:00.72 spid35s     Database 'model_msdb' running the upgrade step from version 935 to version 936.
+2025-10-20 18:09:00.74 spid35s     Database 'model_msdb' running the upgrade step from version 936 to version 937.
+2025-10-20 18:09:00.77 spid35s     Database 'model_msdb' running the upgrade step from version 937 to version 938.
+2025-10-20 18:09:00.90 spid35s     Database 'model_msdb' running the upgrade step from version 938 to version 939.
+2025-10-20 18:09:00.92 spid35s     Database 'model_msdb' running the upgrade step from version 939 to version 940.
+2025-10-20 18:09:00.94 spid35s     Database 'model_msdb' running the upgrade step from version 940 to version 941.
+2025-10-20 18:09:00.96 spid35s     Database 'model_msdb' running the upgrade step from version 941 to version 942.
+2025-10-20 18:09:00.98 spid35s     Database 'model_msdb' running the upgrade step from version 942 to version 943.
+2025-10-20 18:09:01.03 spid35s     Database 'model_msdb' running the upgrade step from version 943 to version 944.
+2025-10-20 18:09:01.06 spid35s     Database 'model_msdb' running the upgrade step from version 944 to version 945.
+2025-10-20 18:09:01.08 spid35s     Database 'model_msdb' running the upgrade step from version 945 to version 946.
+2025-10-20 18:09:01.10 spid35s     Database 'model_msdb' running the upgrade step from version 946 to version 947.
+2025-10-20 18:09:01.12 spid35s     Database 'model_msdb' running the upgrade step from version 947 to version 948.
+2025-10-20 18:09:01.14 spid35s     Database 'model_msdb' running the upgrade step from version 948 to version 949.
+2025-10-20 18:09:01.16 spid35s     Database 'model_msdb' running the upgrade step from version 949 to version 950.
+2025-10-20 18:09:01.19 spid35s     Database 'model_msdb' running the upgrade step from version 950 to version 951.
+2025-10-20 18:09:01.45 spid35s     Database 'model_msdb' running the upgrade step from version 951 to version 952.
+2025-10-20 18:09:01.54 spid35s     Database 'model_msdb' running the upgrade step from version 952 to version 953.
+2025-10-20 18:09:01.60 spid35s     Database 'model_msdb' running the upgrade step from version 953 to version 954.
+2025-10-20 18:09:01.61 spid35s     Database 'model_msdb' running the upgrade step from version 954 to version 955.
+2025-10-20 18:09:01.63 spid35s     Database 'model_msdb' running the upgrade step from version 955 to version 956.
+2025-10-20 18:09:01.69 spid35s     Database 'model_msdb' running the upgrade step from version 956 to version 957.
+2025-10-20 18:09:01.84 spid48s     Attribute synchronization initialized
+2025-10-20 18:09:01.84 spid35s     Resource governor reconfiguration succeeded.
+2025-10-20 18:09:01.84 spid48s     Attribute synchronization manager initialized
+2025-10-20 18:09:01.84 spid35s     SQL Server Audit is starting the audits. This is an informational message. No user action is required.
+2025-10-20 18:09:01.84 spid35s     SQL Server Audit has started the audits. This is an informational message. No user action is required.
+2025-10-20 18:09:02.12 spid35s     SQL Trace ID 1 was started by login "sa".
+2025-10-20 18:09:02.13 spid35s     Server name is 'mssql-db'. This is an informational message only. No user action is required.
+2025-10-20 18:09:02.17 spid38s     Clearing tempdb database.
+2025-10-20 18:09:02.17 spid57s     Always On: The availability replica manager is starting. This is an informational message only. No user action is required.
+2025-10-20 18:09:02.17 spid61s     [4]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:09:02.17 spid57s     Always On: The availability replica manager is waiting for the instance of SQL Server to allow client connections. This is an informational message only. No user action is required.
+2025-10-20 18:09:02.17 spid60s     [5]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:09:02.17 spid61s     Starting up database 'msdb'.
+2025-10-20 18:09:02.18 spid60s     Starting up database 'VentaFacilDB'.
+2025-10-20 18:09:02.18 spid60s     RemoveStaleDbEntries: Cleanup of stale DB entries called for database ID: [5]
+2025-10-20 18:09:02.18 spid60s     RemoveStaleDbEntries: Cleanup of stale DB entries skipped because master db is not memory optimized. DbId: 5.
+2025-10-20 18:09:02.27 spid60s     Parallel redo is started for database 'VentaFacilDB' with worker pool size [6].
+2025-10-20 18:09:02.33 spid60s     26 transactions rolled forward in database 'VentaFacilDB' (5:0). This is an informational message only. No user action is required.
+2025-10-20 18:09:02.37 spid35s     Recovery is writing a checkpoint in database 'msdb' (4). This is an informational message only. No user action is required.
+2025-10-20 18:09:02.48 spid38s     [2]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
+2025-10-20 18:09:02.48 spid38s     Starting up database 'tempdb'.
+2025-10-20 18:09:02.49 spid60s     0 transactions rolled back in database 'VentaFacilDB' (5:0). This is an informational message only. No user action is required.
+2025-10-20 18:09:02.49 spid60s     Parallel redo is shutdown for database 'VentaFacilDB' with worker pool size [6].
+2025-10-20 18:09:03.31 spid38s     The tempdb database has 8 data file(s).
+2025-10-20 18:09:03.33 spid46s     The Service Broker endpoint is in disabled or stopped state.
+2025-10-20 18:09:03.33 spid46s     The Database Mirroring endpoint is in disabled or stopped state.
+2025-10-20 18:09:03.34 spid46s     Service Broker manager has started.
+2025-10-20 18:09:03.34 spid35s     Recovery is complete. This is an informational message only. No user action is required.
+2025-10-20 18:11:07.57 spid67      Attempting to load library 'xpstar.dll' into memory. This is an informational message only. No user action is required.
+2025-10-20 18:11:07.58 spid67      Using 'xpstar.dll' version '2022.160.4215' to execute extended stored procedure 'xp_instance_regread'. This is an informational message only; no user action is required.
+2025-10-20 18:14:12.00 spid68      Attempting to load library 'xplog70.dll' into memory. This is an informational message only. No user action is required.
+2025-10-20 18:14:12.02 spid68      Using 'xplog70.dll' version '2022.160.4215' to execute extended stored procedure 'xp_msver'. This is an informational message only; no user action is required.
+2025-10-20 18:15:47.23 spid68      Using 'dbghelp.dll' version '4.0.5'
+2025-10-20 19:08:59.80 spid12s     [DevOpsSnapshotTelemetryTask] Evaluating the background task.
