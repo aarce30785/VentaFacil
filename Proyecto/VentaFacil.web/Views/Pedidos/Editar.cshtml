@@ -1,0 +1,211 @@
+﻿@model VentaFacil.web.Models.Dto.PedidoDto
+@using VentaFacil.web.Models.Enums
+@{
+    ViewData["Title"] = "Editar Pedido";
+    var catalogo = ViewBag.Catalogo as List<VentaFacil.web.Models.Dto.ProductoDto> ?? new();
+    bool editable = Model.Estado == PedidoEstado.Borrador;
+}
+
+<div class="card shadow-sm p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Editar Pedido #@Model.Id_Venta</h4>
+        <span class="badge @(editable ? "bg-secondary" : "bg-warning text-dark")">
+            Estado: @Model.Estado
+        </span>
+    </div>
+
+    @if (TempData["Mensaje"] is string msg && !string.IsNullOrWhiteSpace(msg))
+    {
+        <div class="alert alert-success">@msg</div>
+    }
+
+    @if (!editable)
+    {
+        <div class="alert alert-warning mb-3">
+            Este pedido no se puede modificar porque no está en <strong>Borrador</strong>.
+        </div>
+    }
+
+    <!-- Cabecera del pedido -->
+    <form asp-action="Editar" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="Id_Venta" />
+
+        <div class="col-md-6">
+            <label asp-for="Cliente" class="form-label"></label>
+            <input asp-for="Cliente" class="form-control" disabled="@(!editable)" />
+            <span asp-validation-for="Cliente" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Modalidad" class="form-label"></label>
+            <select asp-for="Modalidad" class="form-select" disabled="@(!editable)">
+                <option value="0" selected="@(Model.Modalidad == 0)">Para llevar</option>
+                <option value="1" selected="@(Model.Modalidad == 1)">En mesa</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="NumeroMesa" class="form-label"></label>
+            <input asp-for="NumeroMesa" class="form-control" disabled="@(!editable)" />
+            <span asp-validation-for="NumeroMesa" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary" disabled="@(!editable)">
+                Guardar cabecera
+            </button>
+        </div>
+    </form>
+
+    <hr class="my-4" />
+
+    <!-- Agregar productos -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Agregar producto</label>
+            <div class="input-group">
+                <select id="productoId" class="form-select" disabled="@(!editable)">
+                    <option value="">-- Seleccione --</option>
+                    @foreach (var p in catalogo)
+                    {
+                        <option value="@p.Id_Producto">@p.Nombre (@p.Precio.ToString("C"))</option>
+                    }
+                </select>
+                <input type="number" id="cantidad" class="form-control" min="1" value="1" disabled="@(!editable)" />
+                <button class="btn btn-success" onclick="agregarItem();" disabled="@(!editable)">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de items -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th style="width:130px;">Cantidad</th>
+                    <th style="width:150px;">Precio</th>
+                    <th style="width:150px;">Descuento</th>
+                    <th style="width:150px;">Subtotal</th>
+                    <th style="width:130px;"></th>
+                </tr>
+            </thead>
+            <tbody id="tbodyItems">
+                @foreach (var it in Model.Items)
+                {
+                    <tr data-id="@it.Id_Detalle">
+                        <td>@it.NombreProducto</td>
+                        <td>
+                            <div class="input-group input-group-sm">
+                                <button class="btn btn-outline-secondary" onclick="cambiarCantidad(@it.Id_Detalle, @((it.Cantidad - 1) < 0 ? 0 : it.Cantidad - 1)); return false;" disabled="@(!editable)">-</button>
+                                <input class="form-control text-center" type="number" min="0" value="@it.Cantidad"
+                                       onchange="cambiarCantidad(@it.Id_Detalle, this.value)" disabled="@(!editable)" />
+                                <button class="btn btn-outline-secondary" onclick="cambiarCantidad(@it.Id_Detalle, @((it.Cantidad + 1))); return false;" disabled="@(!editable)">+</button>
+                            </div>
+                        </td>
+                        <td>@it.PrecioUnitario.ToString("C")</td>
+                        <td>@it.Descuento.ToString("C")</td>
+                        <td>@it.Subtotal.ToString("C")</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarItem(@it.Id_Detalle)" disabled="@(!editable)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4" class="text-end">Total</th>
+                    <th colspan="2" id="thTotal">@Model.Total.ToString("C")</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="mt-3">
+        <button class="btn btn-secondary" onclick="window.location.href='@Url.Action("Index")'">Volver</button>
+        <button class="btn btn-primary" disabled title="(Demo Sprint 1) Enviar a cocina cuando se integre flujo real">Enviar a cocina</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const pedidoId = @Model.Id_Venta;
+
+        async function agregarItem() {
+            const prod = document.getElementById('productoId').value;
+            const cant = parseInt(document.getElementById('cantidad').value || '1');
+            if (!prod) return;
+
+            const resp = await fetch('@Url.Action("AgregarItem", "Pedidos")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ pedidoId, productoId: prod, cantidad: cant })
+            });
+            await manejarRespuesta(resp);
+        }
+
+        async function cambiarCantidad(itemId, cantidad) {
+            const resp = await fetch('@Url.Action("ActualizarCantidad", "Pedidos")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ pedidoId, itemId, cantidad })
+            });
+            await manejarRespuesta(resp);
+        }
+
+        async function eliminarItem(itemId) {
+            const resp = await fetch('@Url.Action("EliminarItem", "Pedidos")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ pedidoId, itemId })
+            });
+            await manejarRespuesta(resp);
+        }
+
+        async function manejarRespuesta(resp) {
+            if (!resp.ok) {
+                const data = await resp.json().catch(()=>({ message: 'Error inesperado' }));
+                alert(data.message || 'No es posible modificar este pedido.');
+                return;
+            }
+            const data = await resp.json();
+            if (data.ok) {
+                renderPedido(data.pedido);
+            }
+        }
+
+        function renderPedido(pedido) {
+            const tbody = document.getElementById('tbodyItems');
+            tbody.innerHTML = '';
+            (pedido.items || []).forEach(it => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-id', it.id_Detalle);
+
+                tr.innerHTML = `
+                    <td>${it.nombreProducto}</td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${it.id_Detalle}, ${Math.max(0, it.cantidad - 1)}); return false;">-</button>
+                            <input class="form-control text-center" type="number" min="0" value="${it.cantidad}" onchange="cambiarCantidad(${it.id_Detalle}, this.value)" />
+                            <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${it.id_Detalle}, ${it.cantidad + 1}); return false;">+</button>
+                        </div>
+                    </td>
+                    <td>${formateaMoneda(it.precioUnitario)}</td>
+                    <td>${formateaMoneda(it.descuento || 0)}</td>
+                    <td>${formateaMoneda(it.subtotal)}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="eliminarItem(${it.id_Detalle})">Eliminar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('thTotal').innerText = formateaMoneda(pedido.total || 0);
+        }
+
+        function formateaMoneda(num) {
+            try { return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(num); }
+            catch { return num; }
+        }
+    </script>
+}
