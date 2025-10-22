@@ -71,7 +71,7 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IUsuarioService, UsuarioService>();
             builder.Services.AddScoped<ICategoriaService, CategoriaService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
-            builder.Services.AddScoped<IRegisterPedidoService, RegisterPedidoService>();
+            builder.Services.AddScoped<IPedidoService, PedidoService>();
             builder.Services.AddScoped<IProductoService, ProductoService>();
 
 

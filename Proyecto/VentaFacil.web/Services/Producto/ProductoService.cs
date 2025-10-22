@@ -148,5 +148,33 @@ namespace VentaFacil.web.Services.Producto
             return response;
         }
 
+        public async Task<ProductoDto?> ObtenerPorIdAsync(int idProducto)
+        {
+            try
+            {
+                var producto = await _context.Producto
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id_Producto == idProducto && p.Estado);
+
+                if (producto == null) return null;
+
+                return new ProductoDto
+                {
+                    Id_Producto = producto.Id_Producto,
+                    Nombre = producto.Nombre,
+                    Descripcion = producto.Descripcion,
+                    Precio = producto.Precio,
+                    Imagen = producto.Imagen,
+                    StockMinimo = producto.StockMinimo,
+                    Estado = producto.Estado,
+                    Id_Categoria = producto.Id_Categoria
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
     }
 }

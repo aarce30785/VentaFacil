@@ -3,20 +3,18 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using VentaFacil.web.Models.Dto;
+using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Enums;
 using VentaFacil.web.Services.Producto;
 
 namespace VentaFacil.web.Services.Pedido
 {
-    /// <summary>
-    /// Servicio en memoria para PE3 (Sprint 1).
-    /// Centraliza reglas de edición, eliminación y recálculo.
-    /// </summary>
+   
     public class PedidoService : IPedidoService
     {
-        // “Storage” en memoria por ahora (clave: Id_Venta)
-        private static readonly ConcurrentDictionary<int, PedidoDto> _store = new();
-
+        private static readonly ConcurrentDictionary<int, PedidoDto> _pedidosTemporales = new();
+        private static int _contadorId= 1;
+        private static readonly object _lock = new object();
         private readonly IProductoService _productoService;
 
         public PedidoService(IProductoService productoService)
@@ -24,96 +22,85 @@ namespace VentaFacil.web.Services.Pedido
             _productoService = productoService;
         }
 
-        public Task<PedidoDto> ObtenerAsync(int id)
+        public Task<PedidoDto> CrearPedidoAsync(int idUsuario, string? cliente = null)
         {
-            if (!_store.TryGetValue(id, out var pedido))
+            lock (_lock)
             {
-                // Si no existe, crea uno borrador para pruebas
-                pedido = new PedidoDto
+                var nuevoPedido = new PedidoDto
                 {
-                    Id_Venta = id,
+                    Id_Venta = _contadorId++,
+                    Fecha = DateTime.Now,
                     Estado = PedidoEstado.Borrador,
-                    Fecha = DateTime.Now
+                    Id_Usuario = idUsuario,
+                    Cliente = cliente,
+                    Modalidad = ModalidadPedido.ParaLlevar,
+                    Items = new List<PedidoItemDto>()
                 };
 
-                // Simulación Sprint 1: nombres para los 2 pedidos de demo
-                if (id == 1)
-                {
-                    pedido.Cliente = "Ana López";
-                    // (opcional) si quieres que aparezca algo en la tabla al entrar, descomenta:
-                    // pedido.Items.Add(new PedidoItemDto
-                    // {
-                    //     Id_Detalle = 1,
-                    //     Id_Producto = 1,
-                    //     NombreProducto = "Hamburguesa Clásica",
-                    //     PrecioUnitario = 3200m,
-                    //     Cantidad = 1
-                    // });
-                }
-                else if (id == 2)
-                {
-                    pedido.Cliente = "Pedro Ruiz";
-                }
+                _pedidosTemporales[nuevoPedido.Id_Venta] = nuevoPedido;
 
-                // Recalcula total por si sembraste ítems arriba
-                pedido.Total = pedido.Items.Sum(i => i.Subtotal);
-
-                _store[id] = pedido;
+                return Task.FromResult(nuevoPedido);
             }
-            return Task.FromResult(pedido);
         }
 
-        public Task<PedidoDto> GuardarCabeceraAsync(PedidoDto dto)
+        public Task<PedidoDto> ObtenerPedidoAsync(int idPedido)
         {
-            var pedido = _store.GetOrAdd(dto.Id_Venta, dto);
-
-            AsegurarEditable(pedido);
-
-            pedido.Cliente = dto.Cliente?.Trim();
-            pedido.Id_Usuario = dto.Id_Usuario;
-            pedido.Modalidad = dto.Modalidad;
-            pedido.NumeroMesa = dto.Modalidad == 1 ? dto.NumeroMesa : null;
-
-            RecalcularTotales(pedido);
-            return Task.FromResult(pedido);
-        }
-
-        public async Task<PedidoDto> AgregarItemAsync(int pedidoId, int productoId, int cantidad)
-        {
-            var pedido = await ObtenerAsync(pedidoId);
-            AsegurarEditable(pedido);
-
-            var prod = await _productoService.ObtenerPorIdAsync(productoId)
-                       ?? throw new InvalidOperationException("Producto no encontrado.");
-
-            var item = pedido.Items.FirstOrDefault(i => i.Id_Producto == productoId);
-            if (item is null)
+            if (_pedidosTemporales.TryGetValue(idPedido, out var pedido))
             {
-                item = new PedidoItemDto
-                {
-                    Id_Detalle = pedido.Items.Count == 0 ? 1 : pedido.Items.Max(i => i.Id_Detalle) + 1,
-                    Id_Producto = prod.Id_Producto,
-                    NombreProducto = prod.Nombre ?? "Producto",
-                    PrecioUnitario = prod.Precio,
-                    Cantidad = 0
-                };
-                pedido.Items.Add(item);
+                return Task.FromResult(pedido);
             }
 
-            item.Cantidad += Math.Max(1, cantidad);
-            // Subtotal es calculado en el DTO: no se asigna aquí
+            throw new KeyNotFoundException($"Pedido con ID {idPedido} no encontrado");
+        }
 
-            RecalcularTotales(pedido);
+        public async Task<PedidoDto> AgregarProductoAsync(int idPedido, int idProducto, int cantidad)
+        {
+            if (cantidad <= 0)
+                throw new ArgumentException("La cantidad debe ser mayor a 0");
+
+            var pedido = await ObtenerPedidoAsync(idPedido);
+
+            if (!await PuedeEditarseAsync(idPedido))
+                throw new InvalidOperationException("No se puede modificar un pedido que no está en estado borrador");
+
+            var producto = await _productoService.ObtenerPorIdAsync(idProducto);
+            if (producto == null)
+                throw new ArgumentException($"Producto con ID {idProducto} no encontrado");
+
+            // Verificar si el producto ya existe en el pedido
+            var itemExistente = pedido.Items.FirstOrDefault(i => i.Id_Producto == idProducto);
+
+            if (itemExistente != null)
+            {
+                itemExistente.Cantidad += cantidad;
+            }
+            else
+            {
+                var nuevoItem = new PedidoItemDto
+                {
+                    Id_Detalle = pedido.Items.Count > 0 ? pedido.Items.Max(i => i.Id_Detalle) + 1 : 1,
+                    Id_Producto = producto.Id_Producto,
+                    NombreProducto = producto.Nombre ?? "Producto sin nombre",
+                    PrecioUnitario = producto.Precio,
+                    Cantidad = cantidad
+                };
+                pedido.Items.Add(nuevoItem);
+            }
+
+            RecalcularTotal(pedido);
             return pedido;
         }
 
-        public async Task<PedidoDto> ActualizarCantidadAsync(int pedidoId, int itemId, int cantidad)
+        public async Task<PedidoDto> ActualizarCantidadProductoAsync(int idPedido, int idDetalle, int cantidad)
         {
-            var pedido = await ObtenerAsync(pedidoId);
-            AsegurarEditable(pedido);
+            var pedido = await ObtenerPedidoAsync(idPedido);
 
-            var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == itemId)
-                       ?? throw new InvalidOperationException("Ítem no encontrado.");
+            if (!await PuedeEditarseAsync(idPedido))
+                throw new InvalidOperationException("No se puede modificar un pedido que no está en estado borrador");
+
+            var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == idDetalle);
+            if (item == null)
+                throw new ArgumentException($"Item con ID {idDetalle} no encontrado en el pedido");
 
             if (cantidad <= 0)
             {
@@ -122,41 +109,137 @@ namespace VentaFacil.web.Services.Pedido
             else
             {
                 item.Cantidad = cantidad;
-                // Subtotal es calculado en el DTO
             }
 
-            RecalcularTotales(pedido);
+            RecalcularTotal(pedido);
             return pedido;
         }
 
-        public async Task<PedidoDto> EliminarItemAsync(int pedidoId, int itemId)
+        public async Task<PedidoDto> EliminarProductoAsync(int idPedido, int idDetalle)
         {
-            var pedido = await ObtenerAsync(pedidoId);
-            AsegurarEditable(pedido);
+            var pedido = await ObtenerPedidoAsync(idPedido);
 
-            var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == itemId);
+            if (!await PuedeEditarseAsync(idPedido))
+                throw new InvalidOperationException("No se puede modificar un pedido que no está en estado borrador");
+
+            var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == idDetalle);
             if (item != null)
             {
                 pedido.Items.Remove(item);
+                RecalcularTotal(pedido);
             }
 
-            RecalcularTotales(pedido);
             return pedido;
         }
 
-        // ====== Reglas y utilidades ======
-
-        private static void AsegurarEditable(PedidoDto pedido)
+        public async Task<PedidoDto> ActualizarModalidadAsync(int idPedido, ModalidadPedido modalidad, int? numeroMesa = null)
         {
-            if (pedido.Estado != PedidoEstado.Borrador)
-                throw new InvalidOperationException("Este pedido no se puede modificar (no está en Borrador).");
+            var pedido = await ObtenerPedidoAsync(idPedido);
+
+            if (!await PuedeEditarseAsync(idPedido))
+                throw new InvalidOperationException("No se puede modificar un pedido que no está en estado borrador");
+
+            pedido.Modalidad = modalidad;
+            pedido.NumeroMesa = modalidad == ModalidadPedido.EnMesa ? numeroMesa : null;
+
+            return pedido;
         }
 
-        private static void RecalcularTotales(PedidoDto pedido)
+        public async Task<ResultadoPedido> GuardarPedidoAsync(int idPedido)
         {
-            var subtotal = pedido.Items.Sum(i => i.Subtotal); // usa tu Subtotal calculado
-            // Si luego agregan impuestos/servicio, aplíquenlos aquí
-            pedido.Total = subtotal;
+            var pedido = await ObtenerPedidoAsync(idPedido);
+
+            // Validaciones según PE1 Escenario 2
+            if (!pedido.Items.Any())
+            {
+                return new ResultadoPedido
+                {
+                    Success = false,
+                    Message = "Debe agregar al menos un producto al pedido"
+                };
+            }
+
+            // Validaciones según PE2 Escenario 2
+            if (pedido.Modalidad == ModalidadPedido.EnMesa && !pedido.NumeroMesa.HasValue)
+            {
+                return new ResultadoPedido
+                {
+                    Success = false,
+                    Message = "Debe ingresar un número de mesa para pedidos en mesa"
+                };
+            }
+
+            // PE1 Escenario 1: Registrar como pendiente
+            pedido.Estado = PedidoEstado.EnviadoACocina;
+            pedido.Fecha = DateTime.Now;
+
+            // Aquí en el futuro persistiríamos a la base de datos
+            // await _context.SaveChangesAsync();
+
+            return new ResultadoPedido
+            {
+                Success = true,
+                Message = $"Pedido #{pedido.Id_Venta} guardado correctamente con estado 'pendiente'",
+                Pedido = pedido
+            };
+        }
+
+        public async Task<ResultadoPedido> GuardarComoBorradorAsync(int idPedido)
+        {
+            var pedido = await ObtenerPedidoAsync(idPedido);
+
+            // PE1 Escenario 3: Conservar como borrador
+            pedido.Estado = PedidoEstado.Borrador;
+            pedido.Fecha = DateTime.Now;
+
+            return new ResultadoPedido
+            {
+                Success = true,
+                Message = $"Pedido #{pedido.Id_Venta} guardado como borrador correctamente",
+                Pedido = pedido
+            };
+        }
+
+        public async Task<bool> PuedeEditarseAsync(int idPedido)
+        {
+            var pedido = await ObtenerPedidoAsync(idPedido);
+            
+            return pedido.Estado == PedidoEstado.Borrador;
+        }
+
+        public Task<List<PedidoDto>> ObtenerPedidosBorradorAsync(int idUsuario)
+        {
+            var pedidos = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.Borrador)
+                .ToList();
+
+            return Task.FromResult(pedidos);
+        }
+
+        private void RecalcularTotal(PedidoDto pedido)
+        {
+            pedido.Total = pedido.Items.Sum(item => item.Subtotal);
+        }
+
+        public Task<List<PedidoDto>> ObtenerPedidosPendientesAsync(int idUsuario)
+        {
+            var pedidos = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.EnviadoACocina)
+                .OrderByDescending(p => p.Fecha)
+                .ToList();
+
+            return Task.FromResult(pedidos);
+        }
+
+        public Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario)
+        {
+            var pedidos = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario)
+                .OrderByDescending(p => p.Fecha)
+                .ToList();
+
+            return Task.FromResult(pedidos);
         }
     }
+       
 }

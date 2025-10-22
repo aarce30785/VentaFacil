@@ -9,5 +9,6 @@ namespace VentaFacil.web.Services.Producto
         Task<ListProductoResponse> ListarTodosAsync();
         Task<RegisterProductoResponse> RegisterAsync(ProductoDto productoDto);
         Task<EditProductoResponse> EditarAsync(ProductoDto productoDto);
+        Task<ProductoDto?> ObtenerPorIdAsync(int idProducto);
     }
 }

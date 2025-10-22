@@ -2,32 +2,28 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VentaFacil.web.Models.Enum;
+using VentaFacil.web.Models.Enums;
 
 namespace VentaFacil.web.Models.Dto
 {
     public class PedidoDto
     {
-        [Key]
-        [Display(Name = "ID Pedido")]
         public int Id_Venta { get; set; }
-
-        [Display(Name = "Cliente")]
-        public string? Cliente { get; set; }
-
-        [Display(Name = "Fecha")]
         public DateTime Fecha { get; set; } = DateTime.Now;
-
-        [Display(Name = "Total")]
-        [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }
-
-        [Display(Name = "Estado")]
-        public bool Estado { get; set; } = false; // false = pendiente/borrador, true = finalizado
-
-        [Display(Name = "Usuario")]
+        public PedidoEstado Estado { get; set; } = PedidoEstado.Borrador;
         public int Id_Usuario { get; set; }
+        public string? Cliente { get; set; }
+        public ModalidadPedido Modalidad { get; set; }
+        public int? NumeroMesa { get; set; }
+        public List<PedidoItemDto> Items { get; set; } = new List<PedidoItemDto>();
 
-        [Display(Name = "Productos del Pedido")]
-        public List<PedidoItemDto> Items { get; set; } = new();
+        // Método para validar si el pedido puede ser guardado
+        public bool PuedeSerGuardado()
+        {
+            return Items.Any() &&
+                   (Modalidad != ModalidadPedido.EnMesa || NumeroMesa.HasValue);
+        }
     }
 }
