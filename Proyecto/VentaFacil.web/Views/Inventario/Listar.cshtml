@@ -1,0 +1,53 @@
+﻿@model IEnumerable<VentaFacil.web.Models.Dto.InventarioDto>
+
+@{
+    ViewData["Title"] = "Inventario";
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<h1>Inventario</h1>
+
+<p>
+    <a asp-action="Registrar">Registrar</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Stock Actual</th>
+            <th>Stock Mínimo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@item.Id_Inventario</td>
+            <td>@item.Nombre</td>
+            <td>@item.StockActual</td>
+            <td>@item.StockMinimo</td>
+            <td>
+                <a asp-action="Editar" asp-route-id="@item.Id_Inventario" class="btn btn-warning btn-sm">Editar</a>
+                |
+                <form asp-action="AgregarUnidad" asp-route-id="@item.Id_Inventario" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-success btn-sm">+</button>
+                </form>
+                <form asp-action="QuitarUnidad" asp-route-id="@item.Id_Inventario" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">-</button>
+                </form>
+                |
+                <a asp-action="HistorialMovimientos" asp-route-idInventario="@item.Id_Inventario" class="btn btn-info btn-sm">
+                    Historial
+                </a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

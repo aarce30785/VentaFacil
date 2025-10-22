@@ -75,6 +75,35 @@ namespace VentaFacil.web.Data
 
                 insertCmd.ExecuteNonQuery();
             }
+
+            // Crear producto si no existe
+            using var checkProducto = new SqlCommand(
+                "SELECT COUNT(*) FROM Producto WHERE Nombre = @nombre", context);
+            checkProducto.Parameters.AddWithValue("@nombre", "Producto Demo");
+            var productoExists = (int)checkProducto.ExecuteScalar();
+
+            if (productoExists == 0)
+            {
+                // Obtener Id_Categoria para el producto demo
+                using var getCategoriaId = new SqlCommand(
+                    "SELECT TOP 1 Id_Categoria FROM Categoria WHERE Nombre = @nombreCat", context);
+                getCategoriaId.Parameters.AddWithValue("@nombreCat", "Comida");
+                var categoriaId = getCategoriaId.ExecuteScalar();
+
+                using var insertProducto = new SqlCommand(@"
+                    INSERT INTO Producto (Nombre, Descripcion, Precio, Imagen, StockMinimo, Estado, Id_Categoria)
+                    VALUES (@nombre, @descripcion, @precio, @imagen, @stockMinimo, @estado, @idCategoria)", context);
+
+                insertProducto.Parameters.AddWithValue("@nombre", "Producto Demo");
+                insertProducto.Parameters.AddWithValue("@descripcion", "Producto de ejemplo para pruebas");
+                insertProducto.Parameters.AddWithValue("@precio", 10.00m);
+                insertProducto.Parameters.AddWithValue("@imagen", "");
+                insertProducto.Parameters.AddWithValue("@stockMinimo", 5);
+                insertProducto.Parameters.AddWithValue("@estado", true);
+                insertProducto.Parameters.AddWithValue("@idCategoria", categoriaId ?? (object)DBNull.Value);
+
+                insertProducto.ExecuteNonQuery();
+            }
         }
     }
 }

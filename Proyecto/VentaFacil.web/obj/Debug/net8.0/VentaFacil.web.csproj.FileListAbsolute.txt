@@ -50,10 +50,13 @@ C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Ide
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.NET.StringTools.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.SqlServer.Server.dll
+C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.Core.dll
+C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\dotnet-aspnet-codegenerator-design.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll
+C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Win32.SystemEvents.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Mono.TextTemplating.dll
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Newtonsoft.Json.dll
@@ -246,6 +249,7 @@ C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\rjimswa.dswa.
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
+C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\scopedcss\Views\Shared\_LayoutPlantilla.cshtml.rz.scp.css
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\scopedcss\bundle\VentaFacil.web.styles.css
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\scopedcss\projectbundle\VentaFacil.web.bundle.scp.css
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\staticwebassets.build.json
@@ -259,7 +263,3 @@ C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\refint\VentaF
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\VentaFacil.web.pdb
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\VentaFacil.web.genruntimeconfig.cache
 C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\ref\VentaFacil.web.dll
-C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGeneration.dll
-C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\dotnet-aspnet-codegenerator-design.dll
-C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll
-C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web\obj\Debug\net8.0\scopedcss\Views\Shared\_LayoutPlantilla.cshtml.rz.scp.css
