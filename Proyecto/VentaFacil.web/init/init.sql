@@ -78,13 +78,13 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Inventar
 BEGIN
     CREATE TABLE InventarioMovimiento (
         Id_Movimiento INT IDENTITY (1,1),
-        Id_Producto INT,
-        Tipo_Movimieto VARCHAR(255),
-        Cantidad INT,
+        Id_Inventario INT NOT NULL,
+        Tipo_Movimiento VARCHAR(255),
+        Cantidad INT NOT NULL,
         Fecha DATETIME,
-        Id_Usuario INT,
+        Id_Usuario INT NOT NULL,
         CONSTRAINT IMov_Pk PRIMARY KEY (Id_Movimiento),
-        CONSTRAINT IMovPro_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto),
+        CONSTRAINT IMovInv_Fk FOREIGN KEY (Id_Inventario) REFERENCES Inventario(Id_Inventario),
         CONSTRAINT IMovUsr_Fk FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
     );
 END;
@@ -182,10 +182,10 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Inventar
 BEGIN
     CREATE TABLE Inventario (
         Id_Inventario INT IDENTITY (1,1),
-        Id_Producto INT,
-        StockActual INT,
-        CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario),
-        CONSTRAINT InvProd_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto)
+        Nombre VARCHAR(255) NOT NULL,
+        StockActual INT NOT NULL,
+        StockMinimo INT NOT NULL,
+        CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
     );
 END
 GO

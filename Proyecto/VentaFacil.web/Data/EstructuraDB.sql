@@ -41,15 +41,17 @@ CREATE TABLE Producto(Id_Producto int IDENTITY (1,1),
 					  CONSTRAINT Pro_Pk PRIMARY KEY (Id_Producto),
 					  CONSTRAINT CatPro_Fk FOREIGN KEY (Id_Categoria) REFERENCES Categoria(Id_Categoria));
 
-CREATE TABLE InventarioMovimiento(Id_Movimiento INT IDENTITY (1,1),
-								  Id_Producto INT,
-								  Tipo_Movimieto VARCHAR(255),
-								  Cantidad INT,
-								  Fecha DATETIME,
-								  Id_Usuario INT,
-								  CONSTRAINT IMov_Pk PRIMARY KEY (Id_Movimiento),
-								  CONSTRAINT IMovPro_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto),
-								  CONSTRAINT IMovUsr_Fk FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr));
+CREATE TABLE InventarioMovimiento (
+    Id_Movimiento INT IDENTITY (1,1),
+    Id_Inventario INT NOT NULL,
+    Tipo_Movimiento VARCHAR(255),
+    Cantidad INT NOT NULL,
+    Fecha DATETIME,
+    Id_Usuario INT NOT NULL,
+    CONSTRAINT IMov_Pk PRIMARY KEY (Id_Movimiento),
+    CONSTRAINT IMovInv_Fk FOREIGN KEY (Id_Inventario) REFERENCES Inventario(Id_Inventario),
+    CONSTRAINT IMovUsr_Fk FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
+);
 
 CREATE TABLE Venta(Id_Venta INT IDENTITY (1,1),
 				   Fecha DATETIME,
@@ -105,12 +107,12 @@ CREATE TABLE BitacoraAccion(Id_Bitacora INT IDENTITY (1,1),
 							CONSTRAINT BitUsr_Fk FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr));
 
 CREATE TABLE Inventario (
-        Id_Inventario INT IDENTITY (1,1),
-        Id_Producto INT,
-        StockActual INT,
-        CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario),
-        CONSTRAINT InvProd_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto)
-    );
+    Id_Inventario INT IDENTITY (1,1),
+    Nombre VARCHAR(255) NOT NULL,
+    StockActual INT NOT NULL,
+    StockMinimo INT NOT NULL,
+    CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
+);
 
 --Datos iniciales
 INSERT INTO Categoria (Nombre, Descripcion)
@@ -120,4 +122,4 @@ INSERT INTO Categoria (Nombre, Descripcion)
 VALUES ('Bebida', 'Categoria de bebidas');
 
 INSERT INTO Categoria (Nombre, Descripcion)
-VALUES ('Otros', 'otros productos');				
+VALUES ('Otros', 'otros productos');

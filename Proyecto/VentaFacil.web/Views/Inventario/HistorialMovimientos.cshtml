@@ -1,0 +1,35 @@
+﻿@model IEnumerable<VentaFacil.web.Models.Dto.InventarioMovimientoDto>
+
+@{
+    ViewData["Title"] = "HistorialMovimientos";
+}
+
+<h1>Movimiento de insumos</h1>
+
+<p>
+    <a asp-action="Listar" class="btn btn-secondary">Volver a Inventario</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Id_Inventario)</th>
+            <th>@Html.DisplayNameFor(model => model.Tipo_Movimiento)</th>
+            <th>@Html.DisplayNameFor(model => model.Cantidad)</th>
+            <th>@Html.DisplayNameFor(model => model.Fecha)</th>
+            <th>@Html.DisplayNameFor(model => model.Id_Usuario)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Id_Inventario)</td>
+            <td>@Html.DisplayFor(modelItem => item.Tipo_Movimiento)</td>
+            <td>@Html.DisplayFor(modelItem => item.Cantidad)</td>
+            <td>@Html.DisplayFor(modelItem => item.Fecha)</td>
+            <td>@Html.DisplayFor(modelItem => item.Id_Usuario)</td>
+        </tr>
+}
+    </tbody>
+</table>

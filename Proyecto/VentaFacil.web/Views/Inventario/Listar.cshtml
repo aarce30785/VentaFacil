@@ -4,6 +4,13 @@
     ViewData["Title"] = "Inventario";
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
 <h1>Inventario</h1>
 
 <p>
@@ -12,26 +19,33 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Id_Producto)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockActual)
-            </th>
-            <th></th>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Stock Actual</th>
+            <th>Stock Mínimo</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>@item.Id_Inventario</td>
+            <td>@item.Nombre</td>
+            <td>@item.StockActual</td>
+            <td>@item.StockMinimo</td>
             <td>
-                @Html.DisplayFor(modelItem => item.Id_Producto)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StockActual)
-            </td>
-            <td>
-                <a asp-action="Editar" asp-route-id="@item.Id_Inventario">Editar</a>
+                <a asp-action="Editar" asp-route-id="@item.Id_Inventario" class="btn btn-warning btn-sm">Editar</a>
+                |
+                <form asp-action="AgregarUnidad" asp-route-id="@item.Id_Inventario" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-success btn-sm">+</button>
+                </form>
+                <form asp-action="QuitarUnidad" asp-route-id="@item.Id_Inventario" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">-</button>
+                </form>
+                |
+                <a asp-action="HistorialMovimientos" asp-route-idInventario="@item.Id_Inventario" class="btn btn-info btn-sm">
+                    Historial
+                </a>
             </td>
         </tr>
 }

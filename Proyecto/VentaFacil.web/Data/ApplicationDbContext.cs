@@ -22,6 +22,7 @@ namespace VentaFacil.web.Data
         public DbSet<Categoria> Categoria { get; set; }
         public DbSet<Producto> Producto { get; set; }
         public DbSet<Inventario> Inventario { get; set; }
+        public DbSet<InventarioMovimiento> InventarioMovimiento { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -63,6 +64,7 @@ namespace VentaFacil.web.Data
             });
         }
         public DbSet<VentaFacil.web.Models.Dto.InventarioDto> InventarioDto { get; set; } = default!;
+        public DbSet<VentaFacil.web.Models.Dto.InventarioMovimientoDto> InventarioMovimientoDto { get; set; } = default!;
         //public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
 
         

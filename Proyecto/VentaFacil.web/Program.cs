@@ -9,6 +9,7 @@ using VentaFacil.web.Services.Admin;
 using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
 using VentaFacil.web.Services.Inventario;
+using VentaFacil.web.Services.Movimiento;
 
 namespace VentaFacil.web
 {
@@ -71,10 +72,9 @@ namespace VentaFacil.web
             builder.Services.AddScoped<ICategoriaService, CategoriaService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IRegisterPedidoService, RegisterPedidoService>();
-            builder.Services.AddScoped<IGetInventarioService, GetInventarioService>();
-            builder.Services.AddScoped<IListInventarioService, ListInventarioService>();
-            builder.Services.AddScoped<IRegisterInventarioService, RegisterInventarioService>();
-            builder.Services.AddScoped<IEditInventarioService, EditInventarioService>();
+            builder.Services.AddScoped<IInventarioService, InventarioService>();
+            builder.Services.AddScoped<IMovimientoService, MovimientoService>();
+
 
 
             // Configurar sesión

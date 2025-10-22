@@ -1,138 +1,146 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Threading.Tasks;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Services.Inventario;
-using VentaFacil.web.Services.Producto;
-using System.Threading.Tasks;
-using System.Linq;
-
+using VentaFacil.web.Services.Movimiento;
 namespace VentaFacil.web.Controllers
 {
     public class InventarioController : Controller
     {
-        private readonly IRegisterInventarioService _registerInventarioService;
-        private readonly IEditInventarioService _editInventarioService;
-        private readonly IListInventarioService _listInventarioService;
-        private readonly IGetInventarioService _getInventarioService;
-        private readonly IListProductoService _listProductoService;
+        private readonly IInventarioService _inventarioService;
+        private readonly IMovimientoService _movimientoService;
 
-        public InventarioController(
-            IRegisterInventarioService registerInventarioService,
-            IEditInventarioService editInventarioService,
-            IListInventarioService listInventarioService,
-            IGetInventarioService getInventarioService,
-            IListProductoService listProductoService)
+        public InventarioController(IInventarioService inventarioService, IMovimientoService movimientoService)
         {
-            _registerInventarioService = registerInventarioService;
-            _editInventarioService = editInventarioService;
-            _listInventarioService = listInventarioService;
-            _getInventarioService = getInventarioService;
-            _listProductoService = listProductoService;
+            _inventarioService = inventarioService;
+            _movimientoService = movimientoService;
         }
 
         // GET: Inventario/Listar
         public async Task<IActionResult> Listar()
         {
-            var response = await _listInventarioService.ListarTodosAsync();
-            return View(response.Inventarios);
+            var inventarios = await _inventarioService.ListarTodosAsync();
+            return View(inventarios);
         }
 
-        // GET: Inventario/Registrar
-        public async Task<IActionResult> Registrar()
+        // GET: Inventario/Details/5
+        public async Task<IActionResult> Detalles(int id)
         {
-            var productos = await _listProductoService.ListarTodosAsync();
-            ViewBag.Productos = productos.Productos
-                .Select(p => new SelectListItem { Value = p.Id_Producto.ToString(), Text = p.Nombre })
-                .ToList();
+            var inventario = await _inventarioService.GetByIdAsync(id);
+            if (inventario == null)
+                return NotFound();
+            return View(inventario);
+        }
+
+        // GET: Inventario/Create
+        public IActionResult Registrar()
+        {
             return View();
         }
 
-        // POST: Inventario/Registrar
+        // POST: Inventario/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Registrar(InventarioDto dto)
         {
             if (!ModelState.IsValid)
-            {
-                var productos = await _listProductoService.ListarTodosAsync();
-                ViewBag.Productos = productos.Productos
-                    .Select(p => new SelectListItem { Value = p.Id_Producto.ToString(), Text = p.Nombre })
-                    .ToList();
                 return View(dto);
-            }
 
-            var response = await _registerInventarioService.RegisterAsync(dto);
-            if (response.Success)
-            {
-                TempData["Mensaje"] = response.Message;
+            var result = await _inventarioService.RegistrarAsync(dto);
+            if (result)
                 return RedirectToAction(nameof(Listar));
-            }
 
-            ModelState.AddModelError("", response.Message);
-            var productosError = await _listProductoService.ListarTodosAsync();
-            ViewBag.Productos = productosError.Productos
-                .Select(p => new SelectListItem { Value = p.Id_Producto.ToString(), Text = p.Nombre })
-                .ToList();
+            ModelState.AddModelError("", "No se pudo crear el inventario.");
             return View(dto);
         }
 
-        // GET: Inventario/Editar/5
+        // GET: Inventario/Edit/5
         public async Task<IActionResult> Editar(int id)
         {
-            var getResponse = await _getInventarioService.GetByIdAsync(id);
-            if (!getResponse.Success || getResponse.Inventario == null)
+            var inventario = await _inventarioService.GetByIdAsync(id);
+            if (inventario == null)
                 return NotFound();
-
-            var productos = await _listProductoService.ListarTodosAsync();
-            ViewBag.Productos = productos.Productos
-                .Select(p => new SelectListItem { Value = p.Id_Producto.ToString(), Text = p.Nombre })
-                .ToList();
-
-            return View(getResponse.Inventario);
+            return View(inventario);
         }
 
-        // POST: Inventario/Editar/5
+        // POST: Inventario/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(InventarioDto dto)
         {
             if (!ModelState.IsValid)
-            {
-                var productos = await _listProductoService.ListarTodosAsync();
-                ViewBag.Productos = productos.Productos
-                    .Select(p => new SelectListItem { Value = p.Id_Producto.ToString(), Text = p.Nombre })
-                    .ToList();
                 return View(dto);
-            }
 
-            var response = await _editInventarioService.EditarAsync(dto);
-            if (response.Success)
-            {
-                TempData["Mensaje"] = response.Message;
+            if (dto.StockActual < 0)
+                ModelState.AddModelError(nameof(dto.StockActual), "El stock actual no puede ser negativo.");
+
+            if (dto.StockMinimo < 0)
+                ModelState.AddModelError(nameof(dto.StockMinimo), "El stock mínimo no puede ser negativo.");
+
+            if (!ModelState.IsValid)
+                return View(dto);
+
+            var result = await _inventarioService.EditarAsync(dto);
+            if (result)
                 return RedirectToAction(nameof(Listar));
-            }
 
-            ModelState.AddModelError("", response.Message);
-            var productosError = await _listProductoService.ListarTodosAsync();
-            ViewBag.Productos = productosError.Productos
-                .Select(p => new SelectListItem { Value = p.Id_Producto.ToString(), Text = p.Nombre })
-                .ToList();
+            ModelState.AddModelError("", "No se pudo editar el inventario.");
             return View(dto);
         }
 
-        // GET: Inventario/Buscar
-        public async Task<IActionResult> Buscar(string? nombre, int? id)
+        // GET: Inventario/Delete/5
+        public async Task<IActionResult> Eliminar(int id)
         {
-            var response = await _listInventarioService.ListarTodosAsync();
-            var inventarios = response.Inventarios.AsQueryable();
+            var inventario = await _inventarioService.GetByIdAsync(id);
+            if (inventario == null)
+                return NotFound();
+            return View(inventario);
+        }
 
-            if (id.HasValue)
-                inventarios = inventarios.Where(i => i.Id_Inventario == id.Value);
+        // POST: Inventario/Delete/5
+        [HttpPost, ActionName("Eliminar")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var result = await _inventarioService.EliminarAsync(id);
+            if (result)
+                return RedirectToAction(nameof(Listar));
 
-            if (!string.IsNullOrEmpty(nombre))
-                inventarios = inventarios.Where(i => i.Id_Producto.ToString() == nombre);
+            ModelState.AddModelError("", "No se pudo eliminar el inventario.");
+            var inventario = await _inventarioService.GetByIdAsync(id);
+            return View("Delete", inventario);
+        }
 
-            return View(inventarios.ToList());
+        [HttpPost]
+        public async Task<IActionResult> AgregarUnidad(int id)
+        {
+            var result = await _inventarioService.AgregarUnidadAsync(id);
+            if (!result)
+                return NotFound();
+            return RedirectToAction("Listar");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> QuitarUnidad(int id)
+        {
+            var result = await _inventarioService.QuitarUnidadAsync(id);
+            if (!result)
+            {
+                TempData["Error"] = "No se puede registrar la salida. El inventario no puede ser negativo.";
+                return RedirectToAction("Listar");
+            }
+            return RedirectToAction("Listar");
+        }
+
+        // GET: Inventario/HistorialMovimientos
+        public async Task<IActionResult> HistorialMovimientos(int idInventario, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            var movimientos = await _movimientoService.ListarMovimientosAsync(idInventario, fechaInicio, fechaFin);
+            ViewBag.IdInventario = idInventario;
+            ViewBag.FechaInicio = fechaInicio;
+            ViewBag.FechaFin = fechaFin;
+            return View(movimientos);
         }
     }
 }

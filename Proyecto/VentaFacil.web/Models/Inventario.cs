@@ -10,15 +10,14 @@ namespace VentaFacil.web.Models
         [Column("Id_Inventario")]
         public int Id_Inventario { get; set; }
 
-        [Column("Id_Producto")]
-        public int Id_Producto { get; set; }
+        [Required]
+        [MaxLength(255)]
+        public string Nombre { get; set; }
 
         [Required]
         public int StockActual { get; set; }
 
-        
-        // Propiedad de navegación
-        [ForeignKey("Id_Producto")]
-        public Producto Producto { get; set; }
+        [Required]
+        public int StockMinimo { get; set; }
     }
 }
