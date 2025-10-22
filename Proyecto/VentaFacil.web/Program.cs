@@ -68,13 +68,11 @@ namespace VentaFacil.web
 
 
             builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<IRegisterProductoService, RegisterProductoService>();
             builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-            builder.Services.AddScoped<IListProductoService, ListProductoService>();
-            builder.Services.AddScoped<IEditProductoService, EditProductoService>();
             builder.Services.AddScoped<ICategoriaService, CategoriaService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IRegisterPedidoService, RegisterPedidoService>();
+            builder.Services.AddScoped<IProductoService, ProductoService>();
 
 
             // Configurar sesión
