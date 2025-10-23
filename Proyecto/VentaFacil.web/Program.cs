@@ -37,6 +37,26 @@ namespace VentaFacil.web
                 Console.WriteLine("=== EJECUTANDO EN MODO DESARROLLO LOCAL ===");
             }
 
+            if (isRunningInContainer)
+            {
+                // En Docker, usar un directorio persistente para las claves
+                builder.Services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+                    .SetApplicationName("VentaFacil")
+                    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
+
+                Console.WriteLine("=== DATA PROTECTION CONFIGURADO PARA DOCKER ===");
+            }
+            else
+            {
+                // En desarrollo local, usar el directorio por defecto
+                builder.Services.AddDataProtection()
+                    .SetApplicationName("VentaFacil");
+
+                Console.WriteLine("=== DATA PROTECTION CONFIGURADO PARA DESARROLLO LOCAL ===");
+            }
+
+
             // Add services to the container.
             builder.Services.AddControllersWithViews().AddJsonOptions(options =>
             {
@@ -53,34 +73,6 @@ namespace VentaFacil.web
                 )
             ));
 
-            if (isRunningInContainer)
-            {
-                // En Docker, usar un directorio persistente para las claves
-                builder.Services.AddDataProtection()
-                    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
-                    .SetApplicationName("VentaFacil")
-                    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
-            }
-            else
-            {
-                // En desarrollo local, usar el directorio por defecto
-                builder.Services.AddDataProtection()
-                    .SetApplicationName("VentaFacil");
-            }
-
-
-            builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-            builder.Services.AddScoped<ICategoriaService, CategoriaService>();
-            builder.Services.AddScoped<IAdminService, AdminService>();
-            builder.Services.AddScoped<IPedidoService, PedidoService>();
-            builder.Services.AddScoped<IProductoService, ProductoService>();
-            builder.Services.AddScoped<IRegisterPedidoService, RegisterPedidoService>();
-            builder.Services.AddScoped<IInventarioService, InventarioService>();
-            builder.Services.AddScoped<IMovimientoService, MovimientoService>();
-
-
-            // Configurar sesión
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(5);
@@ -115,6 +107,20 @@ namespace VentaFacil.web
             // Configurar autorización
             builder.Services.AddAuthorization();
 
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+            builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IPedidoService, PedidoService>();
+            builder.Services.AddScoped<IProductoService, ProductoService>();
+            builder.Services.AddScoped<IInventarioService, InventarioService>();
+            builder.Services.AddScoped<IMovimientoService, MovimientoService>();
+
+
+            // Configurar sesión
+            
+
             var app = builder.Build();
 
             if (isRunningInContainer)
@@ -124,6 +130,27 @@ namespace VentaFacil.web
                 {
                     Directory.CreateDirectory(keysDirectory);
                     Console.WriteLine($"=== DIRECTORIO DE CLAVES CREADO: {keysDirectory} ===");
+
+                    // Verificar permisos
+                    try
+                    {
+                        var testFile = Path.Combine(keysDirectory, "test.txt");
+                        File.WriteAllText(testFile, "test");
+                        File.Delete(testFile);
+                        Console.WriteLine("=== PERMISOS DE ESCRITURA VERIFICADOS ===");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"=== ERROR DE PERMISOS EN {keysDirectory}: {ex.Message} ===");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"=== DIRECTORIO DE CLAVES YA EXISTE: {keysDirectory} ===");
+
+                    // Verificar claves existentes
+                    var keyFiles = Directory.GetFiles(keysDirectory, "*.xml");
+                    Console.WriteLine($"=== CLAVES ENCONTRADAS: {keyFiles.Length} ===");
                 }
             }
 

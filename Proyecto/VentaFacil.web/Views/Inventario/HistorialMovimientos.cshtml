@@ -1,35 +1,118 @@
 ﻿@model IEnumerable<VentaFacil.web.Models.Dto.InventarioMovimientoDto>
 
 @{
-    ViewData["Title"] = "HistorialMovimientos";
+    ViewData["Title"] = "Historial de Movimientos";
+    Layout = "_LayoutPlantilla";
 }
 
-<h1>Movimiento de insumos</h1>
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Historial de Movimientos</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="@Url.Action("Listar")">Inventario</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Historial
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
 
-<p>
-    <a asp-action="Listar" class="btn btn-secondary">Volver a Inventario</a>
-</p>
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4>Movimientos de Insumos</h4>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <a href="@Url.Action("Listar")" class="main-btn light-btn btn-hover">
+                                        <i class="lni lni-arrow-left me-2"></i>Volver al Inventario
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="table-wrapper table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class="min-width"><h6>ID Inventario</h6></th>
+                                            <th class="min-width"><h6>Tipo de Movimiento</h6></th>
+                                            <th class="min-width"><h6>Cantidad</h6></th>
+                                            <th class="min-width"><h6>Fecha</h6></th>
+                                            <th class="min-width"><h6>ID Usuario</h6></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model != null && Model.Any())
+                                        {
+                                            foreach (var item in Model)
+                                            {
+                                                var movimientoClase = item.Tipo_Movimiento == "Entrada" ? "success-btn" : "danger-btn";
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Id_Inventario)</th>
-            <th>@Html.DisplayNameFor(model => model.Tipo_Movimiento)</th>
-            <th>@Html.DisplayNameFor(model => model.Cantidad)</th>
-            <th>@Html.DisplayNameFor(model => model.Fecha)</th>
-            <th>@Html.DisplayNameFor(model => model.Id_Usuario)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>@Html.DisplayFor(modelItem => item.Id_Inventario)</td>
-            <td>@Html.DisplayFor(modelItem => item.Tipo_Movimiento)</td>
-            <td>@Html.DisplayFor(modelItem => item.Cantidad)</td>
-            <td>@Html.DisplayFor(modelItem => item.Fecha)</td>
-            <td>@Html.DisplayFor(modelItem => item.Id_Usuario)</td>
-        </tr>
-}
-    </tbody>
-</table>
+                                                <tr>
+                                                    <td class="min-width">
+                                                        <span class="status-btn info-btn">@item.Id_Inventario</span>
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <span class="status-btn @movimientoClase">@item.Tipo_Movimiento</span>
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <span class="status-btn warning-btn">@item.Cantidad</span>
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <span class="text-muted">@item.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <span class="status-btn active-btn">@item.Id_Usuario</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4">
+                                                    <div class="text-muted">
+                                                        <i class="lni lni-history me-2"></i>
+                                                        No hay movimientos registrados para este insumo.
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ========== table components end ========== -->
