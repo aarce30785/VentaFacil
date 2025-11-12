@@ -195,18 +195,25 @@ namespace VentaFacil.web.Services.Pedido
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
 
-            
+            Console.WriteLine($"=== GUARDAR PEDIDO SERVICE ===");
+            Console.WriteLine($"Pedido ID: {idPedido}");
+            Console.WriteLine($"Estado antes: {pedido.Estado}");
+
             var esValido = await ValidarPedidoParaGuardarAsync(idPedido);
             if (!esValido)
             {
+                Console.WriteLine("VALIDACIÓN FALLIDA");
                 return ServiceResult.Error("No se puede guardar el pedido. Verifique que tenga productos, cliente y si es en mesa, número de mesa válido");
             }
 
-            
-            pedido.Estado = PedidoEstado.EnPreparacion;
+            // CAMBIAR ESTADO A PENDIENTE
+            pedido.Estado = PedidoEstado.Pendiente;
             pedido.Fecha = DateTime.Now;
 
-            return ServiceResult.SuccessResult($"Pedido #{pedido.Id_Venta} enviado a cocina correctamente", pedido);
+            Console.WriteLine($"Estado después: {pedido.Estado}");
+            Console.WriteLine($"=== GUARDADO EXITOSO ===");
+
+            return ServiceResult.SuccessResult($"Pedido #{pedido.Id_Venta} guardado correctamente. Proceda al pago.", pedido);
         }
 
         public async Task<ServiceResult> GuardarComoBorradorAsync(int idPedido)
@@ -243,9 +250,18 @@ namespace VentaFacil.web.Services.Pedido
         public Task<List<PedidoDto>> ObtenerPedidosPendientesAsync(int idUsuario)
         {
             var pedidos = _pedidosTemporales.Values
-                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.EnPreparacion) 
+                .Where(p => p.Id_Usuario == idUsuario &&
+                           (p.Estado == PedidoEstado.Pendiente || p.Estado == PedidoEstado.EnPreparacion))
                 .OrderByDescending(p => p.Fecha)
                 .ToList();
+
+            Console.WriteLine($"=== OBTENER PEDIDOS PENDIENTES ===");
+            Console.WriteLine($"Usuario: {idUsuario}");
+            Console.WriteLine($"Total pedidos encontrados: {pedidos.Count}");
+            foreach (var pedido in pedidos)
+            {
+                Console.WriteLine($"Pedido #{pedido.Id_Venta} - Estado: {pedido.Estado}");
+            }
 
             return Task.FromResult(pedidos);
         }
@@ -263,7 +279,7 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<List<PedidoDto>> ObtenerPedidosParaCocinaAsync()
         {
             return await Task.FromResult(_pedidosTemporales.Values
-                .Where(p => p.Estado == PedidoEstado.EnPreparacion || p.Estado == PedidoEstado.Listo)
+                .Where(p => p.Estado == PedidoEstado.Pendiente || p.Estado == PedidoEstado.EnPreparacion || p.Estado == PedidoEstado.Listo) // AGREGAR Pendiente
                 .OrderBy(p => p.Fecha)
                 .ToList());
         }
@@ -372,10 +388,28 @@ namespace VentaFacil.web.Services.Pedido
         {
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
+            Console.WriteLine($"=== INICIAR PREPARACION SERVICE ===");
+            Console.WriteLine($"Pedido ID: {pedidoId}");
+            Console.WriteLine($"Estado actual: {pedido.Estado}");
+
             if (pedido.Estado != PedidoEstado.Pendiente && pedido.Estado != PedidoEstado.Borrador)
+            {
+                Console.WriteLine($"ERROR: Estado inválido. Esperado: Pendiente o Borrador, Actual: {pedido.Estado}");
                 return ServiceResult.Error("Solo se pueden iniciar preparación de pedidos pendientes o en borrador");
+            }
 
             pedido.Estado = PedidoEstado.EnPreparacion;
+            pedido.FechaActualizacion = DateTime.Now;
+
+            Console.WriteLine($"Nuevo estado: {pedido.Estado}");
+            Console.WriteLine($"Total pedidos en memoria: {_pedidosTemporales.Count}");
+
+           
+            if (_pedidosTemporales.TryGetValue(pedidoId, out var pedidoVerificado))
+            {
+                Console.WriteLine($"Pedido verificado - Estado: {pedidoVerificado.Estado}");
+            }
+
             return ServiceResult.SuccessResult("Preparación del pedido iniciada");
         }
 
@@ -437,6 +471,20 @@ namespace VentaFacil.web.Services.Pedido
                 .ToList();
 
             return Task.FromResult(pedidos);
+        }
+
+        public void VerificarEstadoPedidos(int usuarioId)
+        {
+            Console.WriteLine($"=== VERIFICACIÓN ESTADO PEDIDOS ===");
+            Console.WriteLine($"Total pedidos en memoria: {_pedidosTemporales.Count}");
+
+            var pedidosUsuario = _pedidosTemporales.Values.Where(p => p.Id_Usuario == usuarioId).ToList();
+            Console.WriteLine($"Pedidos del usuario {usuarioId}: {pedidosUsuario.Count}");
+
+            foreach (var pedido in pedidosUsuario)
+            {
+                Console.WriteLine($"Pedido #{pedido.Id_Venta} - Estado: {pedido.Estado} - Cliente: {pedido.Cliente} - Items: {pedido.Items.Count}");
+            }
         }
     }
     

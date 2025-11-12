@@ -32,6 +32,7 @@ namespace VentaFacil.web.Services.Pedido
         Task<List<PedidoDto>> ObtenerPedidosListosAsync(int idUsuario);
         Task<List<PedidoDto>> ObtenerPedidosEntregadosAsync(int idUsuario);
         Task<List<PedidoDto>> ObtenerPedidosCanceladosAsync(int idUsuario);
+        void VerificarEstadoPedidos(int usuarioId);
     }
 
    

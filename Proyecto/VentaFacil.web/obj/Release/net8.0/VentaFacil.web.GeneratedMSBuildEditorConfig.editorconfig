@@ -64,6 +64,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cSW5pY2lvU2VzaW9uLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/VentaFacil/Proyecto/VentaFacil.web/Views/Pedidos/Cocina.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xDb2NpbmEuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/VentaFacil/Proyecto/VentaFacil.web/Views/Pedidos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xDcmVhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/VentaFacil/Proyecto/VentaFacil.web/Views/Pedidos/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xFZGl0YXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

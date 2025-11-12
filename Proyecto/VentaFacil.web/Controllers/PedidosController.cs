@@ -25,11 +25,14 @@ namespace VentaFacil.web.Controllers
             try
             {
                 var usuarioId = ObtenerUsuarioId();
+
+                _pedidoService.VerificarEstadoPedidos(usuarioId);
+
                 var pedidosBorrador = await _pedidoService.ObtenerPedidosBorradorAsync(usuarioId);
                 var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
                 var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
 
-                
+
                 var pedidosListos = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Listo).ToList();
                 var pedidosEntregados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Entregado).ToList();
                 var pedidosCancelados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Cancelado).ToList();
@@ -125,15 +128,73 @@ namespace VentaFacil.web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcederAlPago(int pedidoId)
+        {
+            try
+            {
+                var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
+
+                Console.WriteLine($"=== PROCEDER AL PAGO ===");
+                Console.WriteLine($"Pedido ID: {pedidoId}");
+                Console.WriteLine($"Estado actual: {pedido.Estado}");
+
+                // PERMITIR tanto Borrador como Pendiente
+                if (pedido.Estado != PedidoEstado.Borrador && pedido.Estado != PedidoEstado.Pendiente)
+                {
+                    TempData["Error"] = $"El pedido no está listo para procesar pago. Estado actual: {pedido.Estado}";
+                    Console.WriteLine($"ERROR: Estado inválido - {pedido.Estado}");
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+
+                // Si está en Borrador, cambiarlo a Pendiente
+                if (pedido.Estado == PedidoEstado.Borrador)
+                {
+                    var resultadoGuardado = await _pedidoService.GuardarPedidoAsync(pedidoId);
+                    if (!resultadoGuardado.Success)
+                    {
+                        TempData["Error"] = resultadoGuardado.Message;
+                        return RedirectToAction("Editar", new { id = pedidoId });
+                    }
+                }
+
+                // Validar que el pedido cumple con los requisitos para pago
+                var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
+                if (!esValido)
+                {
+                    TempData["Error"] = "No se puede proceder al pago. Verifique que: \n" +
+                                       "- Tenga al menos un producto \n" +
+                                       "- Tenga un cliente asignado \n" +
+                                       "- Si es en mesa, tenga un número de mesa válido";
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+
+                Console.WriteLine("Redirigiendo a Facturación...");
+                return RedirectToAction("ProcesarPago", "Facturacion", new { pedidoId });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR en ProcederAlPago: {ex.Message}");
+                TempData["Error"] = $"Error al proceder al pago: {ex.Message}";
+                return RedirectToAction("Editar", new { id = pedidoId });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> GuardarNuevoPedido(int pedidoId, string cliente, ModalidadPedido modalidad,
             int? numeroMesa, string tipoGuardado, List<ItemPedido> productos)
         {
             try
             {
+                Console.WriteLine($"=== GUARDAR NUEVO PEDIDO ===");
+                Console.WriteLine($"PedidoId: {pedidoId}, Tipo: {tipoGuardado}");
+
+                // Actualizar datos básicos del pedido
                 var pedido = await _pedidoService.ActualizarClienteAsync(pedidoId, cliente);
                 pedido = await _pedidoService.ActualizarModalidadAsync(pedidoId, modalidad, numeroMesa);
 
-                if (productos != null)
+                // Agregar productos si se proporcionaron
+                if (productos != null && productos.Any())
                 {
                     foreach (var item in productos)
                     {
@@ -141,23 +202,45 @@ namespace VentaFacil.web.Controllers
                     }
                 }
 
+                // Validar pedido antes de guardar
+                var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
+
+                if (!esValido)
+                {
+                    TempData["Error"] = "No se puede guardar el pedido. Verifique que: \n" +
+                                       "- Tenga al menos un producto \n" +
+                                       "- Tenga un cliente asignado \n" +
+                                       "- Si es en mesa, tenga un número de mesa válido";
+                    return RedirectToAction("Editar", new { id = pedidoId }); 
+                }
+
                 if (tipoGuardado == "completo")
                 {
+                    
                     var resultado = await _pedidoService.GuardarPedidoAsync(pedidoId);
+
                     if (resultado.Success)
                     {
                         TempData["Success"] = resultado.Message;
-                        return RedirectToAction("Index");
+                        Console.WriteLine($"Guardado exitoso - Redirigiendo a pago con pedidoId: {pedidoId}");
+
+                       
+                        var pedidoActualizado = await _pedidoService.ObtenerPedidoAsync(pedidoId);
+                        Console.WriteLine($"Estado después de guardar: {pedidoActualizado.Estado}");
+
+                        return RedirectToAction("ProcesarPago", "Facturacion", new { pedidoId });
                     }
                     else
                     {
                         TempData["Error"] = resultado.Message;
-                        return RedirectToAction("Crear");
+                        return RedirectToAction("Editar", new { id = pedidoId }); 
                     }
                 }
-                else 
+                else
                 {
+                    
                     var resultado = await _pedidoService.GuardarComoBorradorAsync(pedidoId);
+
                     if (resultado.Success)
                     {
                         TempData["Success"] = resultado.Message;
@@ -166,14 +249,15 @@ namespace VentaFacil.web.Controllers
                     else
                     {
                         TempData["Error"] = resultado.Message;
-                        return RedirectToAction("Crear");
+                        return RedirectToAction("Editar", new { id = pedidoId }); 
                     }
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"ERROR en GuardarNuevoPedido: {ex.Message}");
                 TempData["Error"] = $"Error al guardar pedido: {ex.Message}";
-                return RedirectToAction("Crear");
+                return RedirectToAction("Editar", new { id = pedidoId }); 
             }
         }
 
@@ -182,6 +266,8 @@ namespace VentaFacil.web.Controllers
             public int ProductoId { get; set; }
             public int Cantidad { get; set; }
         }
+
+        
 
         // POST: /Pedidos/AgregarProducto
         [HttpPost]
@@ -300,44 +386,7 @@ namespace VentaFacil.web.Controllers
             }
         }
 
-        // POST: /Pedidos/GuardarPedido
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GuardarPedido(int pedidoId)
-        {
-            try
-            {
-                
-                var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
-
-                if (!esValido)
-                {
-                    TempData["Error"] = "No se puede guardar el pedido. Verifique que: \n" +
-                                       "- Tenga al menos un producto \n" +
-                                       "- Tenga un cliente asignado \n" +
-                                       "- Si es en mesa, tenga un número de mesa válido";
-                    return RedirectToAction("Editar", new { id = pedidoId });
-                }
-
-                var resultado = await _pedidoService.GuardarPedidoAsync(pedidoId);
-
-                if (resultado.Success)
-                {
-                    TempData["Success"] = resultado.Message;
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    TempData["Error"] = resultado.Message;
-                    return RedirectToAction("Editar", new { id = pedidoId });
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error al guardar pedido: {ex.Message}";
-                return RedirectToAction("Editar", new { id = pedidoId });
-            }
-        }
+        
 
         // POST: /Pedidos/GuardarBorrador
         [HttpPost]
@@ -750,6 +799,13 @@ namespace VentaFacil.web.Controllers
             }
         }
 
+        [HttpPost]
+        public IActionResult LimpiarTempData()
+        {
+            TempData.Remove("Error");
+            TempData.Remove("ErrorDetalles");
+            return Ok();
+        }
 
         private int ObtenerUsuarioId()
         {

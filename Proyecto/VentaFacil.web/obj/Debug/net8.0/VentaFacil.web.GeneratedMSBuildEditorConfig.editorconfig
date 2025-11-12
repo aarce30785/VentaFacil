@@ -32,6 +32,14 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/VentaFacil/Proyecto/VentaFacil.web/Views/Facturacion/DetalleFactura.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjdHVyYWNpb25cRGV0YWxsZUZhY3R1cmEuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/VentaFacil/Proyecto/VentaFacil.web/Views/Facturacion/ProcesarPago.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjdHVyYWNpb25cUHJvY2VzYXJQYWdvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/VentaFacil/Proyecto/VentaFacil.web/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

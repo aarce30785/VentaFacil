@@ -738,6 +738,37 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Alertas del sistema -->
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Botón para ver facturas recientes (opcional) -->
+                    @if (TempData["FacturaId"] != null)
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>✅ Pago procesado exitosamente. ¿Desea ver la factura?</span>
+                                <a href="@Url.Action("DetalleFactura", "Facturacion", new { facturaId = TempData["FacturaId"] })"
+                                   class="btn btn-sm btn-outline-primary ms-3">
+                                    <i class="lni lni-receipt me-1"></i> Ver Factura
+                                </a>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
                 </div>
                 <!-- end col -->
             </div>

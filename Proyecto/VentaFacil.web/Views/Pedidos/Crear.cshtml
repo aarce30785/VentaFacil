@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Nuevo Pedido";
+    Layout = "_LayoutPlantilla";
 }
 
 <div class="card shadow-sm p-4">
@@ -123,11 +124,12 @@
                 </div>
 
                 <!-- Botones de Acción -->
+                
                 <div class="card mt-4">
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success btn-lg" name="tipoGuardado" value="completo">
-                                ✅ Guardar y Enviar a Cocina
+                                💳 Guardar y Proceder al Pago
                             </button>
                             <button type="submit" class="btn btn-outline-secondary" name="tipoGuardado" value="borrador">
                                 💾 Guardar como Borrador
@@ -138,7 +140,7 @@
                         </div>
                         <div class="mt-2">
                             <small class="text-muted">
-                                <strong>Guardar y Enviar a Cocina:</strong> Requiere cliente, modalidad y al menos un producto<br>
+                                <strong>Guardar y Proceder al Pago:</strong> Requiere cliente, modalidad y al menos un producto<br>
                                 <strong>Guardar como Borrador:</strong> Puede continuar después sin validaciones
                             </small>
                         </div>

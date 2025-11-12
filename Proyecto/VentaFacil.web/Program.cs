@@ -4,13 +4,14 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
 using VentaFacil.web.Services;
-using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Admin;
+using VentaFacil.web.Services.Categoria;
+using VentaFacil.web.Services.Facturacion;
+using VentaFacil.web.Services.Inventario;
+using VentaFacil.web.Services.Movimiento;
 using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
 using VentaFacil.web.Services.Usuario;
-using VentaFacil.web.Services.Inventario;
-using VentaFacil.web.Services.Movimiento;
 
 namespace VentaFacil.web
 {
@@ -116,10 +117,12 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IProductoService, ProductoService>();
             builder.Services.AddScoped<IInventarioService, InventarioService>();
             builder.Services.AddScoped<IMovimientoService, MovimientoService>();
+            builder.Services.AddScoped<IFacturacionService, FacturacionService>();
 
+            builder.Services.AddHttpContextAccessor();
 
             // Configurar sesión
-            
+
 
             var app = builder.Build();
 
