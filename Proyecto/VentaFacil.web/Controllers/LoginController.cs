@@ -87,10 +87,10 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            // Cerrar sesión de cookies
+            
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         
-            // Limpiar sesión
+            
             HttpContext.Session.Clear();
         
             TempData["SuccessMessage"] = "Sesión cerrada correctamente";

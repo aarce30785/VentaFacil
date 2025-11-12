@@ -14,8 +14,6 @@ namespace VentaFacil.web.Data
         {
 
         }
-      
-
 
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Rol> Rol { get; set; }
@@ -62,9 +60,18 @@ namespace VentaFacil.web.Data
                       .HasForeignKey(u => u.Rol)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<InventarioMovimiento>(entity =>
+            {
+                entity.Property(e => e.Id_Inventario)
+                      .HasColumnName("Id_Inventario"); 
+
+                entity.Property(e => e.Tipo_Movimiento)
+                      .HasColumnName("Tipo_Movimiento"); 
+            });
         }
-        public DbSet<VentaFacil.web.Models.Dto.InventarioDto> InventarioDto { get; set; } = default!;
-        public DbSet<VentaFacil.web.Models.Dto.InventarioMovimientoDto> InventarioMovimientoDto { get; set; } = default!;
+        //public DbSet<VentaFacil.web.Models.Dto.InventarioDto> InventarioDto { get; set; } = default!;
+        //public DbSet<VentaFacil.web.Models.Dto.InventarioMovimientoDto> InventarioMovimientoDto { get; set; } = default!;
         //public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
 
         

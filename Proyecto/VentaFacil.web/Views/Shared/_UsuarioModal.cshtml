@@ -1,514 +1,178 @@
-﻿<div class="modal fade" id="usuarioModal" tabindex="-1" aria-labelledby="usuarioModalLabel" aria-hidden="true">
+﻿@model VentaFacil.web.Models.Dto.UsuarioDto
+@{
+    var accionModal = ViewBag.AccionModal as string;
+    var roles = ViewBag.Roles as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<div class="modal fade" id="usuarioModal" tabindex="-1" aria-labelledby="usuarioModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="usuarioModalLabel">Gestión de Usuario</h5>
+                <h5 class="modal-title" id="usuarioModalLabel">
+                    @if (accionModal == "crear")
+                    {
+                        <text>Crear Usuario</text>
+                    }
+                    else if (accionModal == "editar")
+                    {
+                        <text>Editar Usuario</text>
+                    }
+                    else
+                    {
+                        <text>Ver Usuario</text>
+                    }
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="usuarioForm">
-                    <!-- Campo ID (solo visible en edición) -->
-                    <div class="row mb-3" id="idField" style="display: none;">
-                        <div class="col-12">
-                            <div class="input-style-1">
-                                <label for="Id_Usr">ID Usuario</label>
-                                <input type="text" id="Id_Usr" name="Id_Usr" readonly class="bg-light">
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label for="Nombre">Nombre <span class="text-danger">*</span></label>
-                                <input type="text" id="Nombre" name="Nombre" placeholder="Ingrese el nombre completo" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label for="Correo">Correo Electrónico <span class="text-danger">*</span></label>
-                                <input type="email" id="Correo" name="Correo" placeholder="ejemplo@correo.com" required>
-                            </div>
-                        </div>
-                    </div>
+            <form method="post" asp-action="GuardarUsuario" id="usuarioForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id_Usr" />
 
-                    <div class="row">
+                <div class="modal-body">
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label for="Contrasena">Contraseña <span class="text-danger">*</span></label>
-                                <input type="password" id="Contrasena" name="Contrasena" placeholder="Ingrese la contraseña" required>
-                                <small class="form-text text-muted">Mínimo 6 caracteres</small>
+                            <div class="form-group">
+                                <label asp-for="Nombre" class="form-label"></label>
+                                <input asp-for="Nombre" class="form-control"
+                                       placeholder="Ingrese el nombre completo"
+                                       readonly="@(accionModal == "ver")" />
+                                <span asp-validation-for="Nombre" class="text-danger"></span>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label for="ConfirmarContrasena">Confirmar Contraseña <span class="text-danger">*</span></label>
-                                <input type="password" id="ConfirmarContrasena" name="ConfirmarContrasena" placeholder="Confirme la contraseña" required>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="row">
                         <div class="col-md-6">
-                            <div class="select-style-1">
-                                <label for="Rol">Rol <span class="text-danger">*</span></label>
-                                <div class="select-position">
-                                    <select id="Rol" name="Rol" required>
-                                        <option value="">Seleccione un rol</option>
-                                        <option value="1">Administrador</option>
-                                        <option value="2">Vendedor</option>
-                                        <option value="3">Cliente</option>
-                                        <option value="4">Invitado</option>
-                                    </select>
+                            <div class="form-group">
+                                <label asp-for="Correo" class="form-label"></label>
+                                <input asp-for="Correo" type="email" class="form-control"
+                                       placeholder="ejemplo@correo.com"
+                                       readonly="@(accionModal == "ver")" />
+                                <span asp-validation-for="Correo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        @if (accionModal == "crear" || accionModal == "editar")
+                        {
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Contrasena" class="form-label"></label>
+                                    <input asp-for="Contrasena" type="password" class="form-control"
+                                           id="Contrasena" name="Contrasena"
+                                           placeholder="@(accionModal == "crear" ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual")" />
+                                    <small class="form-text text-muted">
+                                        @if (accionModal == "crear")
+                                        {
+                                            <text>Mínimo 6 caracteres</text>
+                                        }
+                                        else
+                                        {
+                                            <text>Complete solo si desea cambiar la contraseña</text>
+                                        }
+                                    </small>
                                 </div>
                             </div>
-                        </div>
+
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ConfirmarContrasena" class="form-label"></label>
+                                    <input asp-for="ConfirmarContrasena" type="password" class="form-control"
+                                           id="ConfirmarContrasena" name="ConfirmarContrasena"
+                                           placeholder="@(accionModal == "crear" ? "Confirme la contraseña" : "Confirmar nueva contraseña")" />
+                                </div>
+                            </div>
+                        }
+
                         <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label>Estado</label>
-                                <div class="form-check form-switch toggle-switch mt-2">
-                                    <input class="form-check-input" type="checkbox" id="Estado" name="Estado" checked>
+                            <div class="form-group">
+                                <label asp-for="Rol" class="form-label"></label>
+                                <select asp-for="Rol" asp-items="roles" class="form-select"
+                                        disabled="@(accionModal == "ver")">
+                                    <option value="">Seleccione un rol</option>
+                                </select>
+                                <span asp-validation-for="Rol" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check form-switch mt-4 pt-2">
+                                    @if (accionModal == "ver")
+                                    {
+                                        <input asp-for="Estado" class="form-check-input" disabled />
+                                    }
+                                    else
+                                    {
+                                        <input asp-for="Estado" class="form-check-input" />
+                                    }
                                     <label class="form-check-label" for="Estado">Usuario Activo</label>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="row mt-4" id="auditFields" style="display: none;">
-                        <div class="col-12">
-                            <div class="card-style mb-3">
-                                <h6 class="mb-3">Información de Auditoría</h6>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="input-style-1">
-                                            <label for="FechaCreacion">Fecha de Creación</label>
-                                            <input type="text" id="FechaCreacion" name="FechaCreacion" readonly class="bg-light">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="input-style-1">
-                                            <label for="UltimaActualizacion">Última Actualización</label>
-                                            <input type="text" id="UltimaActualizacion" name="UltimaActualizacion" readonly class="bg-light">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btnGuardarUsuario">Guardar</button>
-                <button type="button" class="btn btn-warning" id="btnEditarUsuario" style="display: none;">Editar</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+
+                    @if (accionModal == "crear" || accionModal == "editar")
+                    {
+                        <button type="submit" class="btn btn-primary" id="btnGuardarUsuario">Guardar</button>
+                    }
+
+                    @if (accionModal == "ver")
+                    {
+                        <button type="button" class="btn btn-warning"
+                                onclick="abrirModal('editar', @Model.Id_Usr)">
+                            Editar
+                        </button>
+                    }
+                </div>
+
+                <!-- Mantener parámetros de filtro -->
+                <input type="hidden" name="busqueda" value="@ViewBag.BusquedaActual" />
+                <input type="hidden" name="rolFiltro" value="@ViewBag.RolFiltroActual" />
+                <input type="hidden" name="pagina" value="@ViewBag.PaginaActual" />
+            </form>
         </div>
     </div>
 </div>
 
-<script>
-    // Variables globales
-    let modoActual = 'crear';
-    let usuarioActualId = 0;
+@section Scripts {
+    <script>
+        // Configurar el modal según la acción
+        function configurarModal(accion) {
+            const form = document.getElementById('usuarioForm');
 
-    // Función para obtener el token
-    function getAntiForgeryToken() {
-        const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
-        return tokenElement ? tokenElement.value : '';
-    }
-
-    // Función para mostrar modal
-    function mostrarModal() {
-        const modalElement = document.getElementById('usuarioModal');
-        if (modalElement) {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        }
-    }
-
-    // Función para abrir modal en modo creación
-    function abrirModalCrear() {
-        console.log('➕ Abriendo modal crear');
-        modoActual = 'crear';
-        usuarioActualId = 0;
-        resetForm();
-        configurarModal('Crear Usuario', 'crear');
-        mostrarModal();
-    }
-
-        function abrirModalEditar(id, nombre, correo, rol, estado) {
-        console.log('✏️ Abriendo modal editar', { id, nombre, correo, rol, estado });
-
-        modoActual = 'editar';
-        usuarioActualId = id;
-        resetForm();
-
-        // Mostrar campo ID
-        document.getElementById('idField').style.display = 'block';
-        document.getElementById('Id_Usr').value = id;
-
-        // Llenar datos del formulario
-        document.getElementById('Nombre').value = nombre || '';
-        document.getElementById('Correo').value = correo || '';
-        document.getElementById('Rol').value = rol ? rol.toString() : '';
-        document.getElementById('Estado').checked = estado === true || estado === 'true';
-
-        // Limpiar campos de contraseña
-        document.getElementById('Contrasena').value = '';
-        document.getElementById('ConfirmarContrasena').value = '';
-
-        configurarModal('Editar Usuario', 'editar');
-        mostrarModal();
-    }
-
-    // CORREGIDO: Función para abrir modal en modo visualización con parámetros individuales
-    function abrirModalVer(id, nombre, correo, rol, estado) {
-        console.log('👁️ Abriendo modal ver', { id, nombre, correo, rol, estado });
-        modoActual = 'ver';
-        usuarioActualId = id;
-        resetForm();
-
-        // Cargar datos directamente
-        document.getElementById('Id_Usr').value = id;
-        document.getElementById('Nombre').value = nombre || '';
-        document.getElementById('Correo').value = correo || '';
-        document.getElementById('Rol').value = rol || '';
-        document.getElementById('Estado').checked = estado !== false;
-
-        configurarModal('Detalles del Usuario', 'ver');
-        mostrarModal();
-    }
-
-    // Función para resetear el formulario
-        function resetForm() {
-        const form = document.getElementById('usuarioForm');
-        if (form) form.reset();
-
-        // Remover validaciones y clases
-        document.querySelectorAll('.form-control, .form-select, .form-check-input').forEach(element => {
-            element.readonly = false;
-            element.disabled = false;
-            element.classList.remove('bg-light', 'is-invalid');
-        });
-
-        // Remover textos opcionales
-        document.querySelectorAll('.optional-text').forEach(text => text.remove());
-
-        // Mostrar todos los campos por defecto
-        document.querySelectorAll('.input-style-1, .select-style-1').forEach(element => {
-            element.style.display = 'block';
-        });
-
-        // Ocultar campos de auditoría e ID
-        document.getElementById('idField').style.display = 'none';
-        document.getElementById('auditFields').style.display = 'none';
-    }
-       function configurarModal(titulo, modo) {
-        const titleElement = document.getElementById('usuarioModalLabel');
-        const btnGuardar = document.getElementById('btnGuardarUsuario');
-        const btnEditar = document.getElementById('btnEditarUsuario');
-        const idField = document.getElementById('idField');
-        const auditFields = document.getElementById('auditFields');
-        const contrasenaInputs = document.querySelectorAll('#Contrasena, #ConfirmarContrasena');
-
-        if (titleElement) titleElement.textContent = titulo;
-
-        switch(modo) {
-            case 'crear':
-                if (btnGuardar) btnGuardar.style.display = 'block';
-                if (btnEditar) btnEditar.style.display = 'none';
-                if (idField) idField.style.display = 'none';
-                if (auditFields) auditFields.style.display = 'none';
-
-                // Contraseñas requeridas en creación
-                contrasenaInputs.forEach(input => {
-                    input.required = true;
-                    input.closest('.input-style-1').style.display = 'block';
-                    // Remover texto opcional si existe
-                    const label = input.closest('.input-style-1').querySelector('label');
-                    const optionalText = label.querySelector('.optional-text');
-                    if (optionalText) optionalText.remove();
+            if (accion === 'ver') {
+                // Deshabilitar todos los inputs en modo ver
+                form.querySelectorAll('input, select, textarea').forEach(element => {
+                    element.setAttribute('readonly', true);
+                    element.setAttribute('disabled', true);
                 });
-                break;
 
-            case 'editar':
-                if (btnGuardar) btnGuardar.style.display = 'block';
-                if (btnEditar) btnEditar.style.display = 'none';
-                if (idField) idField.style.display = 'block';
-                if (auditFields) auditFields.style.display = 'none';
-
-                // Contraseñas opcionales en edición
-                contrasenaInputs.forEach(input => {
-                    input.required = false;
-                    input.closest('.input-style-1').style.display = 'block';
-
-                    // Agregar texto indicando que es opcional
-                    const label = input.closest('.input-style-1').querySelector('label');
-                    if (label && !label.querySelector('.optional-text')) {
-                        const optionalText = document.createElement('small');
-                        optionalText.className = 'optional-text text-muted';
-                        optionalText.textContent = ' (Opcional)';
-                        label.appendChild(optionalText);
-                    }
-                });
-                break;
-
-            case 'ver':
+                // Ocultar botón guardar
+                const btnGuardar = document.getElementById('btnGuardarUsuario');
                 if (btnGuardar) btnGuardar.style.display = 'none';
-                if (btnEditar) btnEditar.style.display = 'block';
-                if (idField) idField.style.display = 'block';
-                if (auditFields) auditFields.style.display = 'block';
+            } else {
+                // Configurar el envío del formulario para crear/editar
+                configurarSubmitForm(accion);
+            }
+        }
 
-                // Ocultar campos de contraseña en modo visualización
-                contrasenaInputs.forEach(input => {
-                    input.closest('.input-style-1').style.display = 'none';
+        // Inicializar cuando el modal se muestra
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('usuarioModal');
+            if (modal) {
+                modal.addEventListener('shown.bs.modal', function() {
+                    const accion = '@accionModal';
+                    configurarModal(accion);
                 });
-                break;
-        }
-
-        // Configurar estado de los campos
-        document.querySelectorAll('.form-control, .form-select, .form-check-input').forEach(element => {
-            if (modo === 'ver') {
-                // Solo lectura en modo visualización
-                element.readonly = true;
-                element.disabled = true;
-                element.classList.add('bg-light');
-            } else {
-                // Editables en otros modos
-                element.readonly = false;
-                element.disabled = false;
-                element.classList.remove('bg-light');
             }
         });
+    </script>
+}
 
-        // ID siempre es de solo lectura
-        document.getElementById('Id_Usr').readonly = true;
-        document.getElementById('Id_Usr').classList.add('bg-light');
-    }
 
-    // Función para validar formulario
-        function validarFormulario() {
-        const form = document.getElementById('usuarioForm');
 
-        // Validar campos básicos
-        const nombre = document.getElementById('Nombre').value;
-        const correo = document.getElementById('Correo').value;
-        const rol = document.getElementById('Rol').value;
 
-        if (!nombre || !correo || !rol) {
-            alert('Por favor complete todos los campos requeridos');
-            return false;
-        }
-
-        // Validación de contraseñas según el modo
-        if (modoActual === 'crear') {
-            const contrasena = document.getElementById('Contrasena').value;
-            const confirmarContrasena = document.getElementById('ConfirmarContrasena').value;
-
-            if (!contrasena || !confirmarContrasena) {
-                alert('Las contraseñas son requeridas para crear un usuario');
-                return false;
-            }
-
-            if (contrasena.length < 6) {
-                alert('La contraseña debe tener al menos 6 caracteres');
-                document.getElementById('Contrasena').classList.add('is-invalid');
-                return false;
-            }
-
-            if (contrasena !== confirmarContrasena) {
-                alert('Las contraseñas no coinciden');
-                document.getElementById('ConfirmarContrasena').classList.add('is-invalid');
-                return false;
-            }
-        } else if (modoActual === 'editar') {
-            // En edición, validar contraseñas solo si se ingresaron
-            const contrasena = document.getElementById('Contrasena').value;
-            const confirmarContrasena = document.getElementById('ConfirmarContrasena').value;
-
-            // Si se llena uno, validar ambos
-            if (contrasena || confirmarContrasena) {
-                if (!contrasena || !confirmarContrasena) {
-                    alert('Debe completar ambos campos de contraseña');
-                    return false;
-                }
-
-                if (contrasena.length < 6) {
-                    alert('La contraseña debe tener al menos 6 caracteres');
-                    document.getElementById('Contrasena').classList.add('is-invalid');
-                    return false;
-                }
-
-                if (contrasena !== confirmarContrasena) {
-                    alert('Las contraseñas no coinciden');
-                    document.getElementById('ConfirmarContrasena').classList.add('is-invalid');
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    // Función para obtener datos del formulario
-        function obtenerDatosFormulario() {
-        const data = {
-            Id_Usr: usuarioActualId,
-            Nombre: document.getElementById('Nombre').value,
-            Correo: document.getElementById('Correo').value,
-            Rol: parseInt(document.getElementById('Rol').value),
-            Estado: document.getElementById('Estado').checked
-        };
-
-        // Manejo de contraseñas
-        if (modoActual === 'crear') {
-            data.Contrasena = document.getElementById('Contrasena').value;
-            data.ConfirmarContrasena = document.getElementById('ConfirmarContrasena').value;
-        } else if (modoActual === 'editar') {
-            const contrasena = document.getElementById('Contrasena').value;
-            const confirmarContrasena = document.getElementById('ConfirmarContrasena').value;
-
-            // Solo incluir contraseñas si se proporcionaron
-            if (contrasena && confirmarContrasena) {
-                data.Contrasena = contrasena;
-                data.ConfirmarContrasena = confirmarContrasena;
-            }
-            // Si no se proporcionan contraseñas, no se incluyen en el objeto
-        }
-
-        console.log('Datos a enviar:', data);
-        return data;
-    }
-
-    // Función para confirmar eliminación
-    function confirmarEliminacion(id, nombre) {
-        if (confirm(`¿Está seguro de que desea eliminar al usuario "${nombre}"?`)) {
-            eliminarUsuario(id);
-        }
-    }
-
-    // Función para eliminar usuario
-    async function eliminarUsuario(id) {
-        try {
-            console.log('🗑️ Eliminando usuario ID:', id);
-
-            const response = await fetch(`/Admin/EliminarUsuario/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': getAntiForgeryToken()
-                }
-            });
-
-            const result = await response.json();
-            console.log('Resultado eliminación:', result);
-
-            if (result.success) {
-                alert('✅ Usuario eliminado correctamente');
-                location.reload();
-            } else {
-                alert('❌ ' + (result.message || 'Error al eliminar el usuario'));
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al eliminar el usuario: ' + error.message);
-        }
-    }
-
-    // Función para guardar/editar usuario
-    async function guardarUsuario(usuarioData) {
-        try {
-            console.log('💾 Guardando usuario...', usuarioData);
-
-            const url = modoActual === 'crear' ? '/Admin/CrearUsuario' : '/Admin/EditarUsuario';
-            const token = getAntiForgeryToken();
-
-            console.log('URL:', url);
-            console.log('Token:', token ? 'Presente' : 'Faltante');
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': token
-                },
-                body: JSON.stringify(usuarioData)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('✅ Respuesta del servidor:', result);
-
-            if (result.success) {
-                alert('✅ ' + (modoActual === 'crear' ? 'Usuario creado exitosamente' : 'Usuario actualizado exitosamente'));
-
-                // Cerrar modal
-                const modalElement = document.getElementById('usuarioModal');
-                const modal = bootstrap.Modal.getInstance(modalElement);
-                if (modal) modal.hide();
-
-                // Recargar página después de un breve delay
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } else {
-                let errorMessage = result.message || 'Error al guardar el usuario';
-                if (result.errors) {
-                    errorMessage += '\n' + result.errors.join('\n');
-                }
-                alert('❌ ' + errorMessage);
-            }
-
-        } catch (error) {
-            console.error('💥 Error completo:', error);
-            alert('❌ Error de conexión: ' + error.message);
-        }
-    }
-
-    // Inicialización cuando el documento está listo
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ Modal de usuarios inicializado');
-
-        // Event listeners
-        document.getElementById('btnGuardarUsuario').addEventListener('click', function() {
-            console.log('🖲️ Botón guardar clickeado');
-            if (validarFormulario()) {
-                const usuarioData = obtenerDatosFormulario();
-                guardarUsuario(usuarioData);
-            }
-        });
-
-        document.getElementById('btnEditarUsuario').addEventListener('click', function() {
-            console.log('🖲️ Botón editar clickeado');
-            modoActual = 'editar';
-            configurarModal('Editar Usuario', 'editar');
-        });
-
-        // Validación en tiempo real de contraseñas
-        document.getElementById('ConfirmarContrasena').addEventListener('input', function() {
-            const contrasena = document.getElementById('Contrasena').value;
-            const confirmar = this.value;
-
-            if (contrasena !== confirmar && confirmar !== '') {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
-            }
-        });
-
-        // Limpiar validación cuando se modifica la contraseña principal
-        document.getElementById('Contrasena').addEventListener('input', function() {
-            const confirmar = document.getElementById('ConfirmarContrasena');
-            if (confirmar.value !== '') {
-                if (this.value !== confirmar.value) {
-                    confirmar.classList.add('is-invalid');
-                } else {
-                    confirmar.classList.remove('is-invalid');
-                }
-            }
-        });
-    });
-</script>
