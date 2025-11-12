@@ -17,6 +17,7 @@ namespace VentaFacil.web.Models.Dto
         public string? Cliente { get; set; }
         public ModalidadPedido Modalidad { get; set; }
         public int? NumeroMesa { get; set; }
+        public string? MotivoCancelacion { get; set; }
         public List<PedidoItemDto> Items { get; set; } = new List<PedidoItemDto>();
 
         // Método para validar si el pedido puede ser guardado

@@ -1,8 +1,13 @@
-﻿@{
+﻿@using VentaFacil.web.Models.Dto
+@using VentaFacil.web.Models.Enum
+@using VentaFacil.web.Models.Enums
+@{
     ViewData["Title"] = "Pedidos";
     var pedidosBorrador = ViewBag.PedidosBorrador as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
     var pedidosPendientes = ViewBag.PedidosPendientes as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
     var todosLosPedidos = ViewBag.TodosLosPedidos as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
+    // NUEVA VARIABLE PARA PE05
+    var pedidosBusqueda = ViewBag.PedidosBusqueda as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
 }
 
 <div class="card shadow-sm p-4">
@@ -17,7 +22,6 @@
     </div>
 
     <div class="card-body">
-        <!-- Mensajes -->
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success">@TempData["Success"]</div>
@@ -27,7 +31,74 @@
             <div class="alert alert-danger">@TempData["Error"]</div>
         }
 
-        <!-- Pedidos en Borrador -->
+        <div class="mb-4">
+            <form method="post" asp-action="Buscar">
+                <div class="input-group">
+                    <input type="text" name="criterio" class="form-control" placeholder="Buscar por ID de pedido o nombre de cliente..." />
+                    <button type="submit" class="btn btn-outline-primary">
+                        🔍 Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        @if (pedidosBusqueda.Any())
+        {
+            <div class="mb-4">
+                <h5>🔎 Resultados de Búsqueda (@pedidosBusqueda.Count)</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Estado</th>
+                                <th>Modalidad</th>
+                                <th>Total</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in pedidosBusqueda)
+                            {
+                                <tr>
+                                    <td>#@pedido.Id_Venta</td>
+                                    <td>@(pedido.Cliente ?? "Sin nombre")</td>
+                                    <td>
+                                        <span class="badge @(pedido.Estado == PedidoEstado.Borrador ? "bg-secondary" :
+                                                                                                             pedido.Estado == PedidoEstado.EnviadoACocina ? "bg-warning text-dark" :
+                                                                                                             "bg-success")">
+                                    @pedido.Estado
+                                </span>
+                            </td>
+                            <td>
+                                @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
+                                        {
+                                            <span class="badge bg-info">🍽️ Mesa @pedido.NumeroMesa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">📦 Para Llevar</span>
+                                        }
+                                    </td>
+                                    <td>$@pedido.Total.ToString("N2")</td>
+                                    <td>@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
+                                           class="btn btn-info btn-sm">
+                                            👀 Ver Detalles
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+
         @if (pedidosBorrador.Any())
         {
             <div class="mb-4">
@@ -65,7 +136,7 @@
                                     </td>
                                     <td>$@pedido.Total.ToString("N2")</td>
                                     <td>
-                                        <a asp-action="ContinuarBorrador" asp-route-id="@pedido.Id_Venta" 
+                                        <a asp-action="ContinuarBorrador" asp-route-id="@pedido.Id_Venta"
                                            class="btn btn-warning btn-sm">
                                             ✏️ Continuar
                                         </a>
@@ -78,7 +149,6 @@
             </div>
         }
 
-        <!-- Pedidos Pendientes (Enviados a Cocina) -->
         @if (pedidosPendientes.Any())
         {
             <div class="mb-4">
@@ -118,7 +188,7 @@
                                     <td>$@pedido.Total.ToString("N2")</td>
                                     <td>@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td>
-                                        <a asp-action="Editar" asp-route-id="@pedido.Id_Venta" 
+                                        <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
                                            class="btn btn-info btn-sm">
                                             👀 Ver Detalles
                                         </a>
@@ -131,8 +201,7 @@
             </div>
         }
 
-        <!-- Todos los pedidos (para debugging) -->
-        @if (todosLosPedidos.Any() && false) 
+        @if (todosLosPedidos.Any() && false)
         {
             <div class="mb-4">
                 <h5>🔍 Todos los Pedidos (Debug)</h5>
@@ -166,7 +235,7 @@
             </div>
         }
 
-        @if (!pedidosBorrador.Any() && !pedidosPendientes.Any())
+        @if (!pedidosBorrador.Any() && !pedidosPendientes.Any() && !pedidosBusqueda.Any())
         {
             <div class="alert alert-info text-center py-4">
                 <i class="lni lni-cart fs-1 text-muted"></i>
@@ -175,7 +244,6 @@
             </div>
         }
 
-        <!-- Información del sistema -->
         <div class="alert alert-info mt-4">
             <h6>📋 Flujo de Pedidos</h6>
             <ul class="mb-0">
@@ -185,7 +253,6 @@
             </ul>
         </div>
 
-        <!-- Estadísticas rápidas -->
         <div class="row text-center mt-4">
             <div class="col-md-3">
                 <div class="card bg-light">

@@ -45,7 +45,7 @@ namespace VentaFacil.web.Controllers
             {
                 var pedido = await _pedidoService.ObtenerPedidoAsync(id);
 
-                
+
                 var usuarioId = ObtenerUsuarioId();
                 if (pedido.Id_Usuario != usuarioId)
                 {
@@ -53,7 +53,7 @@ namespace VentaFacil.web.Controllers
                     return RedirectToAction("Index");
                 }
 
-               
+
                 var productosResponse = await _productoService.ListarTodosAsync();
                 ViewBag.Productos = productosResponse.Success ? productosResponse.Productos : new List<ProductoDto>();
 
@@ -235,6 +235,42 @@ namespace VentaFacil.web.Controllers
             }
         }
 
+        // POST: /Pedidos/Cancelar (NUEVA ACCIÓN PE06)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancelar(int pedidoId, string motivoCancelacion)
+        {
+            try
+            {
+                var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
+                var usuarioId = ObtenerUsuarioId();
+
+                if (pedido.Id_Usuario != usuarioId)
+                {
+                    TempData["Error"] = "No tiene permisos para cancelar este pedido";
+                    return RedirectToAction("Index");
+                }
+
+                var resultado = await _pedidoService.CancelarPedidoAsync(pedidoId, motivoCancelacion);
+
+                if (resultado.Success)
+                {
+                    TempData["Success"] = resultado.Message;
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    TempData["Error"] = resultado.Message;
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al cancelar pedido: {ex.Message}";
+                return RedirectToAction("Editar", new { id = pedidoId });
+            }
+        }
+
         // GET: /Pedidos/Index
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -290,14 +326,65 @@ namespace VentaFacil.web.Controllers
             }
         }
 
+        // NUEVA ACCIÓN PE05: Búsqueda de pedidos por ID o cliente
+        // POST: /Pedidos/Buscar
+        [HttpPost]
+        public async Task<IActionResult> Buscar(string criterio)
+        {
+            try
+            {
+                var usuarioId = ObtenerUsuarioId();
+
+                // 1. Obtener todas las listas necesarias para Index (mantener la estructura)
+                var pedidosBorrador = await _pedidoService.ObtenerPedidosBorradorAsync(usuarioId);
+                var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
+                var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
+
+                ViewBag.PedidosBorrador = pedidosBorrador;
+                ViewBag.PedidosPendientes = pedidosPendientes;
+                ViewBag.TodosLosPedidos = todosLosPedidos;
+                ViewBag.UsuarioId = usuarioId;
+
+                // Si el criterio está vacío, simplemente mostramos el Index normal
+                if (string.IsNullOrWhiteSpace(criterio))
+                {
+                    TempData["Error"] = "Ingrese un criterio de búsqueda (ID o Nombre de cliente).";
+                    return View("Index");
+                }
+
+                // 2. Realizar la búsqueda de PE05
+                var resultados = await _pedidoService.BuscarPedidosAsync(usuarioId, criterio);
+
+                if (!resultados.Any())
+                {
+                    // Escenario 2: Pedido no encontrado
+                    TempData["Error"] = $"Pedido no encontrado para el criterio: '{criterio}'";
+                }
+                else
+                {
+                    // Escenario 1: Asignar resultados a un ViewBag específico
+                    ViewBag.PedidosBusqueda = resultados;
+                    TempData["Success"] = $"Se encontraron {resultados.Count} pedidos para el criterio '{criterio}'.";
+                }
+
+                // 3. Devolver la vista Index
+                return View("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al buscar pedidos: {ex.Message}";
+                return RedirectToAction("Index");
+            }
+        }
+
         private int ObtenerUsuarioId()
         {
             if (User?.Identity?.IsAuthenticated == true)
             {
                 // Buscar el claim que contiene el ID del usuario
                 var idClaim = User.FindFirst("UsuarioId") ??
-                             User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ??
-                             User.FindFirst("sub"); // Para JWT tokens
+                                 User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ??
+                                 User.FindFirst("sub"); // Para JWT tokens
 
                 if (idClaim != null && int.TryParse(idClaim.Value, out var usuarioId))
                     return usuarioId;

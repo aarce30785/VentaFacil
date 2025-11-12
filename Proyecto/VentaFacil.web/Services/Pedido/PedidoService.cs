@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VentaFacil.web.Models.Dto;
@@ -9,11 +10,10 @@ using VentaFacil.web.Services.Producto;
 
 namespace VentaFacil.web.Services.Pedido
 {
-   
     public class PedidoService : IPedidoService
     {
         private static readonly ConcurrentDictionary<int, PedidoDto> _pedidosTemporales = new();
-        private static int _contadorId= 1;
+        private static int _contadorId = 1;
         private static readonly object _lock = new object();
         private readonly IProductoService _productoService;
 
@@ -149,6 +149,39 @@ namespace VentaFacil.web.Services.Pedido
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
 
+            // Validación: Solo se puede enviar a cocina si está en Borrador (PE04 Requisito b)
+            if (pedido.Estado != PedidoEstado.Borrador)
+            {
+                return new ResultadoPedido
+                {
+                    Success = false,
+                    Message = $"El pedido #{idPedido} ya no está en estado borrador. Su estado actual es: {pedido.Estado}. Solo los pedidos en borrador pueden ser enviados a cocina."
+                };
+            }
+
+            // Validaciones de datos obligatorios (PE04 Requisito c)
+            var validacion = ValidarPedidoParaEnvio(pedido);
+            if (!validacion.Success)
+            {
+                return validacion;
+            }
+
+            // PE04 Escenario 1: Registrar como enviado a cocina
+            pedido.Estado = PedidoEstado.EnviadoACocina;
+            pedido.Fecha = DateTime.Now;
+
+            // Aquí en el futuro persistiríamos a la base de datos
+
+            return new ResultadoPedido
+            {
+                Success = true,
+                Message = $"Pedido #{pedido.Id_Venta} enviado a cocina correctamente y marcado como '{nameof(PedidoEstado.EnviadoACocina)}'.",
+                Pedido = pedido
+            };
+        }
+
+        private ResultadoPedido ValidarPedidoParaEnvio(PedidoDto pedido)
+        {
             // Validaciones según PE1 Escenario 2
             if (!pedido.Items.Any())
             {
@@ -169,19 +202,7 @@ namespace VentaFacil.web.Services.Pedido
                 };
             }
 
-            // PE1 Escenario 1: Registrar como pendiente
-            pedido.Estado = PedidoEstado.EnviadoACocina;
-            pedido.Fecha = DateTime.Now;
-
-            // Aquí en el futuro persistiríamos a la base de datos
-            // await _context.SaveChangesAsync();
-
-            return new ResultadoPedido
-            {
-                Success = true,
-                Message = $"Pedido #{pedido.Id_Venta} guardado correctamente con estado 'pendiente'",
-                Pedido = pedido
-            };
+            return new ResultadoPedido { Success = true };
         }
 
         public async Task<ResultadoPedido> GuardarComoBorradorAsync(int idPedido)
@@ -200,17 +221,85 @@ namespace VentaFacil.web.Services.Pedido
             };
         }
 
+        public async Task<ResultadoPedido> CancelarPedidoAsync(int idPedido, string motivoCancelacion)
+        {
+            var pedido = await ObtenerPedidoAsync(idPedido);
+
+            // Validar estados no permitidos para cancelación
+            if (pedido.Estado == PedidoEstado.Entregado)
+            {
+                return new ResultadoPedido
+                {
+                    Success = false,
+                    Message = "No es posible cancelar un pedido que ya ha sido entregado."
+                };
+            }
+
+            if (pedido.Estado == PedidoEstado.EnPreparacion || pedido.Estado == PedidoEstado.Listo || pedido.Estado == PedidoEstado.Cancelado)
+            {
+                return new ResultadoPedido
+                {
+                    Success = false,
+                    Message = "No es posible cancelar un pedido que ya está en preparación o finalizado."
+                };
+            }
+
+            // Estados permitidos: Borrador (0) o EnviadoACocina (1)
+            pedido.Estado = PedidoEstado.Cancelado;
+            pedido.Fecha = DateTime.Now;
+            pedido.MotivoCancelacion = string.IsNullOrWhiteSpace(motivoCancelacion) ? "Cancelado sin motivo especificado" : motivoCancelacion;
+
+            return new ResultadoPedido
+            {
+                Success = true,
+                Message = $"Pedido #{pedido.Id_Venta} cancelado correctamente.",
+                Pedido = pedido
+            };
+        }
+
         public async Task<bool> PuedeEditarseAsync(int idPedido)
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
-            
+
             return pedido.Estado == PedidoEstado.Borrador;
+        }
+
+        public Task<List<PedidoDto>> BuscarPedidosAsync(int idUsuario, string criterio)
+        {
+            var pedidosDelUsuario = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario);
+
+            if (string.IsNullOrWhiteSpace(criterio))
+            {
+                return Task.FromResult(new List<PedidoDto>());
+            }
+
+            var criterioLimpio = criterio.Trim();
+            List<PedidoDto> resultados;
+
+            if (int.TryParse(criterioLimpio, out int idCriterio))
+            {
+                resultados = pedidosDelUsuario
+                    .Where(p => p.Id_Venta == idCriterio)
+                    .OrderByDescending(p => p.Fecha)
+                    .ToList();
+            }
+            else
+            {
+                resultados = pedidosDelUsuario
+                    .Where(p => p.Cliente != null && p.Cliente.IndexOf(criterioLimpio, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .OrderByDescending(p => p.Fecha)
+                    .ToList();
+            }
+
+            return Task.FromResult(resultados);
         }
 
         public Task<List<PedidoDto>> ObtenerPedidosBorradorAsync(int idUsuario)
         {
             var pedidos = _pedidosTemporales.Values
                 .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.Borrador)
+                .OrderByDescending(p => p.Fecha)
                 .ToList();
 
             return Task.FromResult(pedidos);
@@ -241,5 +330,4 @@ namespace VentaFacil.web.Services.Pedido
             return Task.FromResult(pedidos);
         }
     }
-       
 }

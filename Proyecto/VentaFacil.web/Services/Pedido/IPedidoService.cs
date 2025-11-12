@@ -16,6 +16,8 @@ namespace VentaFacil.web.Services.Pedido
         Task<ResultadoPedido> GuardarComoBorradorAsync(int idPedido);
         Task<bool> PuedeEditarseAsync(int idPedido);
         Task<List<PedidoDto>> ObtenerPedidosBorradorAsync(int idUsuario);
+        Task<List<PedidoDto>> BuscarPedidosAsync(int idUsuario, string criterio);
+        Task<ResultadoPedido> CancelarPedidoAsync(int idPedido, string motivoCancelacion);
 
         Task<List<PedidoDto>> ObtenerPedidosPendientesAsync(int idUsuario);
         Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario);

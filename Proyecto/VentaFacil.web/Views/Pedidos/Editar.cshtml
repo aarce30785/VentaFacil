@@ -4,20 +4,21 @@
 
 @{
     ViewData["Title"] = $"Editar Pedido #{Model.Id_Venta}";
-    bool editable = Model.Estado == PedidoEstado.Borrador || Model.Estado == PedidoEstado.EnviadoACocina;
+    bool editable = Model.Estado == PedidoEstado.Borrador;
+    // NUEVA VARIABLE PARA PE06
+    bool puedeCancelar = Model.Estado == PedidoEstado.Borrador || Model.Estado == PedidoEstado.EnviadoACocina;
 }
 
 <div class="card shadow-sm p-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">📋 Editar Pedido #@Model.Id_Venta</h4>
         <span class="badge @(Model.Estado == PedidoEstado.Borrador ? "bg-secondary" :
-                                                                    Model.Estado == PedidoEstado.EnviadoACocina ? "bg-warning text-dark" :
-                                        "bg-success")">
+                                                               Model.Estado == PedidoEstado.EnviadoACocina ? "bg-warning text-dark" :
+                                                               "bg-success")">
             Estado: @Model.Estado
         </span>
     </div>
 
-    <!-- Mensajes -->
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success">@TempData["Success"]</div>
@@ -30,11 +31,10 @@
     @if (!editable)
     {
         <div class="alert alert-warning mb-3">
-            <strong>⚠️ Este pedido no se puede modificar</strong> porque ya fue enviado a cocina.
+            <strong>⚠️ Este pedido no se puede modificar</strong> porque ya no está en estado borrador (fue enviado a cocina o está en proceso).
         </div>
     }
 
-    <!-- Información del pedido -->
     <div class="row">
         <div class="col-md-6">
             <div class="card mb-4">
@@ -88,7 +88,6 @@
                 </div>
             </div>
 
-            <!-- Botones de acción -->
             @if (editable)
             {
                 <div class="card">
@@ -96,9 +95,9 @@
                         <form method="post" asp-action="GuardarPedido" class="mb-2">
                             <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
                             <button type="submit" class="btn btn-success w-100">
-                                ✅ Guardar Pedido
+                                ✅ Enviar a Cocina
                             </button>
-                            <small class="text-muted">(Estado: Pendiente - Listo para cocina)</small>
+                            <small class="text-muted">(Cambia el estado a @nameof(PedidoEstado.EnviadoACocina) y no podrá editarse)</small>
                         </form>
 
                         <form method="post" asp-action="GuardarBorrador">
@@ -111,9 +110,36 @@
                     </div>
                 </div>
             }
+
+            @if (puedeCancelar)
+            {
+                <div class="card mt-4 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">❌ Cancelar Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-action="Cancelar">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
+
+                            <p class="mb-3">Esta acción marcará el pedido como cancelado, retirándolo del flujo de cocina.</p>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Motivo de Cancelación</label>
+                                <textarea name="motivoCancelacion" class="form-control" placeholder="Motivo de cancelación (opcional)" rows="2"></textarea>
+                            </div>
+
+                            <p class="text-muted mb-3"><small>⚠️ Esta acción no se puede deshacer y registrará la cancelación en el historial.</small></p>
+
+                            <button type="submit" class="btn btn-danger w-100">
+                                ❌ Cancelar Pedido
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
         </div>
 
-        <!-- Productos -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
@@ -220,7 +246,6 @@
         </div>
     </div>
 
-    <!-- Botón volver -->
     <div class="mt-4">
         <a asp-action="Index" class="btn btn-secondary">
             ← Volver a la lista
@@ -228,7 +253,6 @@
     </div>
 </div>
 
-<!-- Modal para agregar productos (simplificado para demo) -->
 @if (editable)
 {
     <div class="modal fade" id="modalAgregarProducto" tabindex="-1">
@@ -269,7 +293,6 @@
                             </div>
                         </div>
 
-                        <!-- Información del producto seleccionado -->
                         <div id="infoProducto" class="alert alert-info d-none">
                             <div class="row">
                                 <div class="col-md-8">
