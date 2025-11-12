@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 using VentaFacil.web.Models;
@@ -21,6 +20,8 @@ namespace VentaFacil.web.Data
         public DbSet<Producto> Producto { get; set; }
         public DbSet<Inventario> Inventario { get; set; }
         public DbSet<InventarioMovimiento> InventarioMovimiento { get; set; }
+        public DbSet<Caja> Caja { get; set; }
+        public DbSet<CajaRetiro> CajaRetiro { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -70,11 +71,7 @@ namespace VentaFacil.web.Data
                       .HasColumnName("Tipo_Movimiento"); 
             });
         }
-        //public DbSet<VentaFacil.web.Models.Dto.InventarioDto> InventarioDto { get; set; } = default!;
-        //public DbSet<VentaFacil.web.Models.Dto.InventarioMovimientoDto> InventarioMovimientoDto { get; set; } = default!;
-        //public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
-
-        
+        public DbSet<VentaFacil.web.Models.Dto.CajaRetiroDto> CajaRetiroDto { get; set; } = default!;
     }
 
 }

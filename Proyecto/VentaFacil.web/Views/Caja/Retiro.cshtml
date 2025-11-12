@@ -1,0 +1,53 @@
+﻿@model VentaFacil.web.Models.Dto.CajaRetiroDto
+
+@{
+    ViewData["Title"] = "Retiro";
+}
+
+<h1>Retiro</h1>
+
+<h4>CajaRetiroDto</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Retiro">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Id_Caja" class="control-label"></label>
+                <input asp-for="Id_Caja" class="form-control" />
+                <span asp-validation-for="Id_Caja" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Id_Usuario" class="control-label"></label>
+                <input asp-for="Id_Usuario" class="form-control" />
+                <span asp-validation-for="Id_Usuario" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Monto" class="control-label"></label>
+                <input asp-for="Monto" class="form-control" />
+                <span asp-validation-for="Monto" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Motivo" class="control-label"></label>
+                <input asp-for="Motivo" class="form-control" />
+                <span asp-validation-for="Motivo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaHora" class="control-label"></label>
+                <input asp-for="FechaHora" class="form-control" />
+                <span asp-validation-for="FechaHora" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

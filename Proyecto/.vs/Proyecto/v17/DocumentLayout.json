@@ -3,24 +3,32 @@
   "WorkspaceRootPath": "C:\\Git\\DesarrolloSistemas\\Proyecto\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\views\\inventario\\listar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\inventario\\listar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\views\\caja\\listar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\caja\\listar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\views\\inventario\\historialmovimientos.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\inventario\\historialmovimientos.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\services\\caja\\cajaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\services\\caja\\cajaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\services\\inventario\\inventarioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\services\\inventario\\inventarioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\services\\caja\\icajaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\services\\caja\\icajaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\services\\movimiento\\movimientoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\services\\movimiento\\movimientoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\controllers\\cajacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\controllers\\cajacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\controllers\\inventariocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\controllers\\inventariocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\views\\caja\\cerrar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\caja\\cerrar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\views\\caja\\_retiroscajapartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\caja\\_retiroscajapartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\views\\caja\\retiro.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\caja\\retiro.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,79 +38,97 @@
       "DocumentGroups": [
         {
           "DockedWidth": 216,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Listar.cshtml",
-              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Inventario\\Listar.cshtml",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Inventario\\Listar.cshtml",
-              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Inventario\\Listar.cshtml",
-              "RelativeToolTip": "VentaFacil.web\\Views\\Inventario\\Listar.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAMAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-10-22T14:02:56.196Z",
+              "WhenOpened": "2025-11-12T22:24:05.327Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "HistorialMovimientos.cshtml",
-              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Inventario\\HistorialMovimientos.cshtml",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Inventario\\HistorialMovimientos.cshtml",
-              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Inventario\\HistorialMovimientos.cshtml",
-              "RelativeToolTip": "VentaFacil.web\\Views\\Inventario\\HistorialMovimientos.cshtml",
-              "ViewState": "AgIAAAIAAAAAAAAAAAAgwB4AAABDAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-10-22T13:59:49.762Z",
+              "Title": "CajaService.cs",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Caja\\CajaService.cs",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Services\\Caja\\CajaService.cs",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Caja\\CajaService.cs",
+              "RelativeToolTip": "VentaFacil.web\\Services\\Caja\\CajaService.cs",
+              "ViewState": "AgIAADgAAAAAAAAAAAAIwCcAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-12T22:20:27.994Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "InventarioService.cs",
-              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Inventario\\InventarioService.cs",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Services\\Inventario\\InventarioService.cs",
-              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Inventario\\InventarioService.cs",
-              "RelativeToolTip": "VentaFacil.web\\Services\\Inventario\\InventarioService.cs",
-              "ViewState": "AgIAAIIAAAAAAAAAAAAswI8AAABPAAAAAAAAAA==",
+              "Title": "ICajaService.cs",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Caja\\ICajaService.cs",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Services\\Caja\\ICajaService.cs",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Caja\\ICajaService.cs",
+              "RelativeToolTip": "VentaFacil.web\\Services\\Caja\\ICajaService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-22T13:57:51.68Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "MovimientoService.cs",
-              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Movimiento\\MovimientoService.cs",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Services\\Movimiento\\MovimientoService.cs",
-              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Movimiento\\MovimientoService.cs",
-              "RelativeToolTip": "VentaFacil.web\\Services\\Movimiento\\MovimientoService.cs",
-              "ViewState": "AgIAAB4AAAAAAAAAAAAowAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-22T13:57:45.223Z",
+              "WhenOpened": "2025-11-12T22:20:01.506Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "InventarioController.cs",
-              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Controllers\\InventarioController.cs",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Controllers\\InventarioController.cs",
-              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Controllers\\InventarioController.cs",
-              "RelativeToolTip": "VentaFacil.web\\Controllers\\InventarioController.cs",
-              "ViewState": "AgIAAIAAAAAAAAAAAAAswAAAAAAAAAAAAAAAAA==",
+              "Title": "Cerrar.cshtml",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Cerrar.cshtml",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\Cerrar.cshtml",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Cerrar.cshtml",
+              "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\Cerrar.cshtml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-12T22:19:21.267Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Retiro.cshtml",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Retiro.cshtml",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\Retiro.cshtml",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Retiro.cshtml",
+              "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\Retiro.cshtml",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-12T22:14:46.357Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "_RetirosCajaPartial.cshtml",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\_RetirosCajaPartial.cshtml",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\_RetirosCajaPartial.cshtml",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\_RetirosCajaPartial.cshtml",
+              "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\_RetirosCajaPartial.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-12T22:14:21.802Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CajaController.cs",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Controllers\\CajaController.cs",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Controllers\\CajaController.cs",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Controllers\\CajaController.cs",
+              "RelativeToolTip": "VentaFacil.web\\Controllers\\CajaController.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAowEsAAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-22T13:57:31.216Z",
+              "WhenOpened": "2025-11-12T22:13:37.826Z",
               "EditorCaption": ""
             }
           ]

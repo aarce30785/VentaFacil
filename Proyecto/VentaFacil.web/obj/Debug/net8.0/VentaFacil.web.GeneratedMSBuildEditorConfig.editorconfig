@@ -32,6 +32,26 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Caja/Abrir.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FqYVxBYnJpci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Caja/Cerrar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FqYVxDZXJyYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Caja/Listar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FqYVxMaXN0YXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Caja/Retiro.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FqYVxSZXRpcm8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Caja/_RetirosCajaPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FqYVxfUmV0aXJvc0NhamFQYXJ0aWFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Git/DesarrolloSistemas/Proyecto/VentaFacil.web/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

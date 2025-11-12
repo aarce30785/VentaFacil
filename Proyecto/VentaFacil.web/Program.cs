@@ -11,6 +11,7 @@ using VentaFacil.web.Services.Producto;
 using VentaFacil.web.Services.Usuario;
 using VentaFacil.web.Services.Inventario;
 using VentaFacil.web.Services.Movimiento;
+using VentaFacil.web.Services.Caja;
 
 namespace VentaFacil.web
 {
@@ -116,10 +117,11 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IProductoService, ProductoService>();
             builder.Services.AddScoped<IInventarioService, InventarioService>();
             builder.Services.AddScoped<IMovimientoService, MovimientoService>();
+            builder.Services.AddScoped<ICajaService, CajaService>();
 
 
             // Configurar sesión
-            
+
 
             var app = builder.Build();
 
