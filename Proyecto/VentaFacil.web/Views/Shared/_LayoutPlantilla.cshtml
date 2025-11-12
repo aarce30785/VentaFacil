@@ -14,9 +14,10 @@
     <link rel="stylesheet" href="~/Plantilla/css/materialdesignicons.min.css" />
     <link rel="stylesheet" href="~/Plantilla/css/fullcalendar.css" />
     <link rel="stylesheet" href="~/Plantilla/css/main.css" />
-
+    
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <!-- Token ANTIFORGERY aquí -->

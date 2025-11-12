@@ -10,6 +10,8 @@ namespace VentaFacil.web.Models.Dto
         public string NombreProducto { get; set; } = string.Empty;
         public decimal PrecioUnitario { get; set; }
         public int Cantidad { get; set; }
+
+        public string Notas { get; set; } = string.Empty;
         public decimal Subtotal => PrecioUnitario * Cantidad;
     }
 }

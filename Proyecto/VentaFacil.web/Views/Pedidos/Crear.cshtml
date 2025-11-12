@@ -1,0 +1,415 @@
+﻿@model VentaFacil.web.Models.Dto.PedidoDto
+@using VentaFacil.web.Models.Enum
+
+@{
+    ViewData["Title"] = "Nuevo Pedido";
+}
+
+<div class="card shadow-sm p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">🆕 Crear Nuevo Pedido</h4>
+        <span class="badge bg-secondary">Estado: Borrador</span>
+    </div>
+
+    <!-- Mensajes -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form method="post" asp-action="GuardarNuevoPedido" id="formCrearPedido">
+        <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
+
+        <div class="row">
+            <!-- Información del Pedido -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">👤 Información del Cliente</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre del Cliente *</label>
+                            <input type="text" class="form-control" name="cliente" value="@Model.Cliente"
+                                   placeholder="Ingrese el nombre del cliente" required />
+                            <small class="text-muted">Requerido para guardar el pedido</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Modalidad *</label>
+                            <select class="form-select" name="modalidad" id="selectModalidad" required>
+                                <option value="">-- Seleccione modalidad --</option>
+                                <option value="0">📦 Para Llevar</option>
+                                <option value="1">🍽️ En Mesa</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="divNumeroMesa" style="display: none;">
+                            <label class="form-label fw-bold">Número de Mesa *</label>
+                            <input type="number" class="form-control" name="numeroMesa"
+                                   min="1" placeholder="Ej: 1, 2, 3..." />
+                            <small class="text-muted">Requerido para pedidos en mesa</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen del Pedido -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">📊 Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Productos:</span>
+                            <span class="fw-bold" id="contadorProductos">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span class="fw-bold" id="subtotal">$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Total:</span>
+                            <span class="fw-bold text-primary fs-5" id="total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">🛒 Productos</h5>
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarProducto">
+                            ➕ Agregar Producto
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="listaProductosVacia" class="alert alert-info text-center py-4">
+                            <i class="lni lni-cart fs-1 text-muted"></i>
+                            <p class="mb-1 fs-5">No hay productos agregados</p>
+                            <p class="mb-0"><small>Haz clic en "Agregar Producto" para comenzar</small></p>
+                        </div>
+
+                        <div id="listaProductos" class="table-responsive" style="display: none;">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center" style="width: 120px;">Cantidad</th>
+                                        <th class="text-end" style="width: 100px;">Precio</th>
+                                        <th class="text-end" style="width: 100px;">Subtotal</th>
+                                        <th class="text-center" style="width: 80px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyProductos">
+                                    <!-- Los productos se agregarán aquí dinámicamente -->
+                                </tbody>
+                                <tfoot class="table-primary">
+                                    <tr>
+                                        <th colspan="3" class="text-end">Total:</th>
+                                        <th class="text-end" id="totalTabla">$0.00</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg" name="tipoGuardado" value="completo">
+                                ✅ Guardar y Enviar a Cocina
+                            </button>
+                            <button type="submit" class="btn btn-outline-secondary" name="tipoGuardado" value="borrador">
+                                💾 Guardar como Borrador
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-danger">
+                                ❌ Cancelar
+                            </a>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <strong>Guardar y Enviar a Cocina:</strong> Requiere cliente, modalidad y al menos un producto<br>
+                                <strong>Guardar como Borrador:</strong> Puede continuar después sin validaciones
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Modal para agregar productos -->
+<div class="modal fade" id="modalAgregarProducto" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">➕ Agregar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Seleccionar Producto</label>
+                            <select class="form-select" id="selectProducto" required>
+                                <option value="">-- Seleccione un producto --</option>
+                                @foreach (var producto in ViewBag.Productos as List<VentaFacil.web.Models.Dto.ProductoDto> ?? new List<VentaFacil.web.Models.Dto.ProductoDto>())
+                                {
+                                    <option value="@producto.Id_Producto"
+                                            data-precio="@producto.Precio"
+                                            data-nombre="@producto.Nombre"
+                                            data-descripcion="@producto.Descripcion">
+                                        @producto.Nombre - $@producto.Precio.ToString("N2")
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Cantidad</label>
+                            <input type="number" class="form-control" id="inputCantidad" value="1" min="1" max="100" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del producto seleccionado -->
+                <div id="infoProducto" class="alert alert-info d-none">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <strong id="nombreProducto"></strong>
+                            <p class="mb-0 small" id="descripcionProducto"></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="fw-bold text-primary" id="precioProducto"></span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!(ViewBag.Productos as List<VentaFacil.web.Models.Dto.ProductoDto> ?? new List<VentaFacil.web.Models.Dto.ProductoDto>()).Any())
+                {
+                    <div class="alert alert-warning">
+                        ⚠️ No hay productos disponibles en el catálogo.
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnAgregarProducto">Agregar al Pedido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let productosAgregados = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Controlar visibilidad del número de mesa
+            const selectModalidad = document.getElementById('selectModalidad');
+            const divNumeroMesa = document.getElementById('divNumeroMesa');
+
+            selectModalidad.addEventListener('change', function() {
+                if (this.value === '1') { // En Mesa
+                    divNumeroMesa.style.display = 'block';
+                } else {
+                    divNumeroMesa.style.display = 'none';
+                }
+            });
+
+            // Modal de productos
+            const selectProducto = document.getElementById('selectProducto');
+            const inputCantidad = document.getElementById('inputCantidad');
+            const btnAgregarProducto = document.getElementById('btnAgregarProducto');
+            const infoProducto = document.getElementById('infoProducto');
+
+            selectProducto.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    document.getElementById('nombreProducto').textContent = selectedOption.getAttribute('data-nombre');
+                    document.getElementById('descripcionProducto').textContent = selectedOption.getAttribute('data-descripcion') || 'Sin descripción';
+                    document.getElementById('precioProducto').textContent = '$' + parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
+                    infoProducto.classList.remove('d-none');
+                } else {
+                    infoProducto.classList.add('d-none');
+                }
+            });
+
+            btnAgregarProducto.addEventListener('click', function() {
+                const selectedOption = selectProducto.options[selectProducto.selectedIndex];
+                if (!selectedOption.value) {
+                    alert('Por favor seleccione un producto');
+                    return;
+                }
+
+                const productoId = parseInt(selectedOption.value);
+                const cantidad = parseInt(inputCantidad.value);
+                const precio = parseFloat(selectedOption.getAttribute('data-precio'));
+                const nombre = selectedOption.getAttribute('data-nombre');
+
+                // Verificar si el producto ya está agregado
+                const index = productosAgregados.findIndex(p => p.id === productoId);
+                if (index > -1) {
+                    // Actualizar cantidad
+                    productosAgregados[index].cantidad += cantidad;
+                    productosAgregados[index].subtotal = productosAgregados[index].cantidad * precio;
+                } else {
+                    // Agregar nuevo producto
+                    productosAgregados.push({
+                        id: productoId,
+                        nombre: nombre,
+                        precio: precio,
+                        cantidad: cantidad,
+                        subtotal: cantidad * precio
+                    });
+                }
+
+                actualizarListaProductos();
+                $('#modalAgregarProducto').modal('hide');
+            });
+
+            // Resetear modal cuando se cierre
+            $('#modalAgregarProducto').on('hidden.bs.modal', function() {
+                selectProducto.value = '';
+                inputCantidad.value = 1;
+                infoProducto.classList.add('d-none');
+            });
+
+            // Validar formulario antes de enviar
+            document.getElementById('formCrearPedido').addEventListener('submit', function(e) {
+                const tipoGuardado = document.querySelector('button[type="submit"]:focus')?.value ||
+                                   document.querySelector('button[name="tipoGuardado"]').value;
+
+                if (tipoGuardado === 'completo') {
+                    // Validaciones para guardado completo
+                    if (productosAgregados.length === 0) {
+                        e.preventDefault();
+                        alert('Debe agregar al menos un producto para guardar el pedido completo');
+                        return;
+                    }
+
+                    const cliente = document.querySelector('input[name="cliente"]').value;
+                    if (!cliente.trim()) {
+                        e.preventDefault();
+                        alert('El nombre del cliente es requerido');
+                        return;
+                    }
+
+                    const modalidad = document.querySelector('select[name="modalidad"]').value;
+                    if (!modalidad) {
+                        e.preventDefault();
+                        alert('Debe seleccionar una modalidad');
+                        return;
+                    }
+
+                    if (modalidad === '1') { // En Mesa
+                        const numeroMesa = document.querySelector('input[name="numeroMesa"]').value;
+                        if (!numeroMesa || numeroMesa <= 0) {
+                            e.preventDefault();
+                            alert('Debe ingresar un número de mesa válido');
+                            return;
+                        }
+                    }
+                }
+
+                // Agregar productos al formulario como hidden inputs
+                productosAgregados.forEach((producto, index) => {
+                    const inputId = document.createElement('input');
+                    inputId.type = 'hidden';
+                    inputId.name = `productos[${index}].ProductoId`;
+                    inputId.value = producto.id;
+                    this.appendChild(inputId);
+
+                    const inputCantidad = document.createElement('input');
+                    inputCantidad.type = 'hidden';
+                    inputCantidad.name = `productos[${index}].Cantidad`;
+                    inputCantidad.value = producto.cantidad;
+                    this.appendChild(inputCantidad);
+                });
+            });
+        });
+
+        function actualizarListaProductos() {
+            const tbody = document.getElementById('tbodyProductos');
+            const listaVacia = document.getElementById('listaProductosVacia');
+            const listaProductos = document.getElementById('listaProductos');
+            const contadorProductos = document.getElementById('contadorProductos');
+            const subtotalElement = document.getElementById('subtotal');
+            const totalElement = document.getElementById('total');
+            const totalTabla = document.getElementById('totalTabla');
+
+            tbody.innerHTML = '';
+
+            if (productosAgregados.length === 0) {
+                listaVacia.style.display = 'block';
+                listaProductos.style.display = 'none';
+                contadorProductos.textContent = '0';
+                subtotalElement.textContent = '$0.00';
+                totalElement.textContent = '$0.00';
+                totalTabla.textContent = '$0.00';
+                return;
+            }
+
+            listaVacia.style.display = 'none';
+            listaProductos.style.display = 'block';
+
+            let total = 0;
+            productosAgregados.forEach((producto, index) => {
+                total += producto.subtotal;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${producto.nombre}</td>
+                    <td class="text-center">
+                        <div class="input-group input-group-sm" style="width: 120px;">
+                            <input type="number" value="${producto.cantidad}" min="1"
+                                   class="form-control text-center" onchange="actualizarCantidad(${index}, this.value)">
+                            <button type="button" class="btn btn-outline-danger" onclick="eliminarProducto(${index})">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                    <td class="text-end">$${producto.precio.toFixed(2)}</td>
+                    <td class="text-end fw-bold">$${producto.subtotal.toFixed(2)}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})">
+                            ❌
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            contadorProductos.textContent = productosAgregados.length;
+            subtotalElement.textContent = `$${total.toFixed(2)}`;
+            totalElement.textContent = `$${total.toFixed(2)}`;
+            totalTabla.textContent = `$${total.toFixed(2)}`;
+        }
+
+        function actualizarCantidad(index, nuevaCantidad) {
+            const cantidad = parseInt(nuevaCantidad);
+            if (cantidad > 0) {
+                productosAgregados[index].cantidad = cantidad;
+                productosAgregados[index].subtotal = cantidad * productosAgregados[index].precio;
+                actualizarListaProductos();
+            }
+        }
+
+        function eliminarProducto(index) {
+            productosAgregados.splice(index, 1);
+            actualizarListaProductos();
+        }
+    </script>
+}

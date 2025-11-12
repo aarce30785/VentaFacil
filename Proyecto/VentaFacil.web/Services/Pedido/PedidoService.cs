@@ -67,7 +67,7 @@ namespace VentaFacil.web.Services.Pedido
             if (producto == null)
                 throw new ArgumentException($"Producto con ID {idProducto} no encontrado");
 
-            // Verificar si el producto ya existe en el pedido
+            
             var itemExistente = pedido.Items.FirstOrDefault(i => i.Id_Producto == idProducto);
 
             if (itemExistente != null)
@@ -132,72 +132,91 @@ namespace VentaFacil.web.Services.Pedido
             return pedido;
         }
 
-        public async Task<PedidoDto> ActualizarModalidadAsync(int idPedido, ModalidadPedido modalidad, int? numeroMesa = null)
+        public async Task<PedidoDto> ActualizarModalidadAsync(int pedidoId, ModalidadPedido modalidad, int? numeroMesa)
         {
-            var pedido = await ObtenerPedidoAsync(idPedido);
+            var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            if (!await PuedeEditarseAsync(idPedido))
-                throw new InvalidOperationException("No se puede modificar un pedido que no está en estado borrador");
+            if (!await PuedeEditarseAsync(pedidoId))
+                throw new InvalidOperationException("El pedido no puede ser modificado");
 
             pedido.Modalidad = modalidad;
-            pedido.NumeroMesa = modalidad == ModalidadPedido.EnMesa ? numeroMesa : null;
+
+            
+            if (modalidad == ModalidadPedido.ParaLlevar)
+            {
+                pedido.NumeroMesa = null;
+            }
+            else
+            {
+                pedido.NumeroMesa = numeroMesa;
+            }
 
             return pedido;
         }
 
-        public async Task<ResultadoPedido> GuardarPedidoAsync(int idPedido)
+        public async Task<PedidoDto> ActualizarClienteAsync(int pedidoId, string cliente)
         {
-            var pedido = await ObtenerPedidoAsync(idPedido);
+            var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            // Validaciones según PE1 Escenario 2
-            if (!pedido.Items.Any())
-            {
-                return new ResultadoPedido
-                {
-                    Success = false,
-                    Message = "Debe agregar al menos un producto al pedido"
-                };
-            }
+            if (!await PuedeEditarseAsync(pedidoId))
+                throw new InvalidOperationException("El pedido no puede ser modificado");
 
-            // Validaciones según PE2 Escenario 2
-            if (pedido.Modalidad == ModalidadPedido.EnMesa && !pedido.NumeroMesa.HasValue)
-            {
-                return new ResultadoPedido
-                {
-                    Success = false,
-                    Message = "Debe ingresar un número de mesa para pedidos en mesa"
-                };
-            }
+            pedido.Cliente = cliente?.Trim();
 
-            // PE1 Escenario 1: Registrar como pendiente
-            pedido.Estado = PedidoEstado.EnviadoACocina;
-            pedido.Fecha = DateTime.Now;
-
-            // Aquí en el futuro persistiríamos a la base de datos
-            // await _context.SaveChangesAsync();
-
-            return new ResultadoPedido
-            {
-                Success = true,
-                Message = $"Pedido #{pedido.Id_Venta} guardado correctamente con estado 'pendiente'",
-                Pedido = pedido
-            };
+            return pedido;
         }
 
-        public async Task<ResultadoPedido> GuardarComoBorradorAsync(int idPedido)
+        public async Task<bool> ValidarPedidoParaGuardarAsync(int pedidoId)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+
+            
+            if (!pedido.Items.Any())
+                return false;
+
+            
+            if (pedido.Modalidad == ModalidadPedido.EnMesa && (!pedido.NumeroMesa.HasValue || pedido.NumeroMesa <= 0))
+                return false;
+
+            
+            if (string.IsNullOrWhiteSpace(pedido.Cliente))
+                return false;
+
+            return true;
+        }
+
+        public async Task<bool> ValidarModalidadMesaAsync(int pedidoId)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+            return pedido.Modalidad == ModalidadPedido.EnMesa && pedido.NumeroMesa.HasValue && pedido.NumeroMesa > 0;
+        }
+
+        public async Task<ServiceResult> GuardarPedidoAsync(int idPedido)
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
 
-            // PE1 Escenario 3: Conservar como borrador
+            
+            var esValido = await ValidarPedidoParaGuardarAsync(idPedido);
+            if (!esValido)
+            {
+                return ServiceResult.Error("No se puede guardar el pedido. Verifique que tenga productos, cliente y si es en mesa, número de mesa válido");
+            }
+
+            
+            pedido.Estado = PedidoEstado.EnPreparacion;
+            pedido.Fecha = DateTime.Now;
+
+            return ServiceResult.SuccessResult($"Pedido #{pedido.Id_Venta} enviado a cocina correctamente", pedido);
+        }
+
+        public async Task<ServiceResult> GuardarComoBorradorAsync(int idPedido)
+        {
+            var pedido = await ObtenerPedidoAsync(idPedido);
+
             pedido.Estado = PedidoEstado.Borrador;
             pedido.Fecha = DateTime.Now;
 
-            return new ResultadoPedido
-            {
-                Success = true,
-                Message = $"Pedido #{pedido.Id_Venta} guardado como borrador correctamente",
-                Pedido = pedido
-            };
+            return ServiceResult.SuccessResult($"Pedido #{pedido.Id_Venta} guardado como borrador correctamente", pedido);
         }
 
         public async Task<bool> PuedeEditarseAsync(int idPedido)
@@ -224,7 +243,7 @@ namespace VentaFacil.web.Services.Pedido
         public Task<List<PedidoDto>> ObtenerPedidosPendientesAsync(int idUsuario)
         {
             var pedidos = _pedidosTemporales.Values
-                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.EnviadoACocina)
+                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.EnPreparacion) 
                 .OrderByDescending(p => p.Fecha)
                 .ToList();
 
@@ -240,6 +259,117 @@ namespace VentaFacil.web.Services.Pedido
 
             return Task.FromResult(pedidos);
         }
+
+        public async Task<List<PedidoDto>> ObtenerPedidosParaCocinaAsync()
+        {
+            return await Task.FromResult(_pedidosTemporales.Values
+                .Where(p => p.Estado == PedidoEstado.EnPreparacion || p.Estado == PedidoEstado.Listo)
+                .OrderBy(p => p.Fecha)
+                .ToList());
+        }
+
+        public async Task<ServiceResult> MarcarComoListoAsync(int pedidoId)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+
+            if (pedido.Estado != PedidoEstado.EnPreparacion)
+                return ServiceResult.Error("Solo se pueden marcar como listo pedidos en preparación");
+
+            pedido.Estado = PedidoEstado.Listo;
+            return ServiceResult.SuccessResult("Pedido marcado como listo para entregar");
+        }
+
+        public async Task<ServiceResult> AgregarNotaCocinaAsync(int pedidoId, string nota)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+            pedido.Notas = nota;
+            return ServiceResult.SuccessResult("Nota agregada correctamente");
+        }
+
+        public async Task<ServiceResult> CancelarPedidoAsync(int pedidoId, string razon)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+
+            if (pedido.Estado == PedidoEstado.Entregado)
+                return ServiceResult.Error("No se puede cancelar un pedido ya entregado");
+
+            if (pedido.Estado == PedidoEstado.Cancelado)
+                return ServiceResult.Error("El pedido ya está cancelado");
+
+            pedido.Estado = PedidoEstado.Cancelado;
+            pedido.Notas = $"CANCELADO: {razon}";
+
+            return ServiceResult.SuccessResult("Pedido cancelado correctamente");
+        }
+
+        public async Task<List<PedidoDto>> BuscarPedidosAsync(string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+                return new List<PedidoDto>();
+
+            return _pedidosTemporales.Values
+                .Where(p =>
+                    (p.Cliente?.Contains(termino, StringComparison.OrdinalIgnoreCase) == true) ||
+                    (p.NumeroMesa?.ToString()?.Contains(termino) == true) ||
+                    p.Id_Venta.ToString().Contains(termino) ||
+                    p.Items.Any(i => i.NombreProducto.Contains(termino, StringComparison.OrdinalIgnoreCase))
+                )
+                .Take(10)
+                .ToList();
+        }
+
+        public async Task<ServiceResult> MarcarComoEntregadoAsync(int pedidoId)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+
+            if (pedido.Estado != PedidoEstado.Listo)
+                return ServiceResult.Error("Solo se pueden marcar como entregado pedidos listos");
+
+            pedido.Estado = PedidoEstado.Entregado;
+            return ServiceResult.SuccessResult("Pedido marcado como entregado correctamente");
+        }
+
+        public async Task<ServiceResult> IniciarPreparacionAsync(int pedidoId)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+
+            if (pedido.Estado != PedidoEstado.Pendiente && pedido.Estado != PedidoEstado.Borrador)
+                return ServiceResult.Error("Solo se pueden iniciar preparación de pedidos pendientes o en borrador");
+
+            pedido.Estado = PedidoEstado.EnPreparacion;
+            return ServiceResult.SuccessResult("Preparación del pedido iniciada");
+        }
+
+        private bool EsTransicionValida(PedidoEstado estadoActual, PedidoEstado nuevoEstado)
+        {
+            var transicionesValidas = new Dictionary<PedidoEstado, List<PedidoEstado>>
+            {
+                { PedidoEstado.Borrador, new List<PedidoEstado> { PedidoEstado.EnPreparacion, PedidoEstado.Cancelado } },
+                { PedidoEstado.EnPreparacion, new List<PedidoEstado> { PedidoEstado.Listo, PedidoEstado.Cancelado } },
+                { PedidoEstado.Listo, new List<PedidoEstado> { PedidoEstado.Entregado, PedidoEstado.Cancelado } },
+                { PedidoEstado.Entregado, new List<PedidoEstado>() },
+                { PedidoEstado.Cancelado, new List<PedidoEstado>() }
+            };
+
+            return transicionesValidas[estadoActual].Contains(nuevoEstado);
+        }
+
+        public async Task<ResumenPedidosDto> ObtenerResumenPedidosAsync(int usuarioId)
+        {
+            var borrador = await ObtenerPedidosBorradorAsync(usuarioId);
+            var pendientes = await ObtenerPedidosPendientesAsync(usuarioId);
+            var todos = await ObtenerTodosLosPedidosAsync(usuarioId);
+
+            return new ResumenPedidosDto
+            {
+                TotalBorrador = borrador.Count,
+                TotalEnCocina = pendientes.Count,
+                TotalListos = todos.Count(p => p.Estado == PedidoEstado.Listo),
+                TotalEntregados = todos.Count(p => p.Estado == PedidoEstado.Entregado),
+                TotalCancelados = todos.Count(p => p.Estado == PedidoEstado.Cancelado)
+            };
+        }
     }
-       
+    
+
 }
