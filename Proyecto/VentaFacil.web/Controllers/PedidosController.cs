@@ -29,10 +29,18 @@ namespace VentaFacil.web.Controllers
                 var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
                 var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
 
+                
+                var pedidosListos = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Listo).ToList();
+                var pedidosEntregados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Entregado).ToList();
+                var pedidosCancelados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Cancelado).ToList();
+
                 ViewBag.PedidosBorrador = pedidosBorrador;
                 ViewBag.PedidosPendientes = pedidosPendientes;
+                ViewBag.PedidosListos = pedidosListos;
+                ViewBag.PedidosEntregados = pedidosEntregados;
+                ViewBag.PedidosCancelados = pedidosCancelados;
                 ViewBag.TodosLosPedidos = todosLosPedidos;
-                ViewBag.UsuarioId = usuarioId; // Para debugging
+                ViewBag.UsuarioId = usuarioId;
 
                 return View();
             }
@@ -122,11 +130,9 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                // Actualizar información básica del pedido
                 var pedido = await _pedidoService.ActualizarClienteAsync(pedidoId, cliente);
                 pedido = await _pedidoService.ActualizarModalidadAsync(pedidoId, modalidad, numeroMesa);
 
-                // Agregar productos al pedido
                 if (productos != null)
                 {
                     foreach (var item in productos)
@@ -135,7 +141,6 @@ namespace VentaFacil.web.Controllers
                     }
                 }
 
-                // Guardar según el tipo seleccionado
                 if (tipoGuardado == "completo")
                 {
                     var resultado = await _pedidoService.GuardarPedidoAsync(pedidoId);
@@ -150,7 +155,7 @@ namespace VentaFacil.web.Controllers
                         return RedirectToAction("Crear");
                     }
                 }
-                else // borrador
+                else 
                 {
                     var resultado = await _pedidoService.GuardarComoBorradorAsync(pedidoId);
                     if (resultado.Success)
@@ -422,13 +427,26 @@ namespace VentaFacil.web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> MarcarComoListo([FromBody] MarcarListoRequest request)
         {
             try
             {
                 Console.WriteLine($"=== MARCAR COMO LISTO INICIADO ===");
-                Console.WriteLine($"Pedido ID recibido: {request.PedidoId}");
+                Console.WriteLine($"Pedido ID recibido: {request?.PedidoId}");
+                Console.WriteLine($"Request completo: {System.Text.Json.JsonSerializer.Serialize(request)}");
+
+                if (request == null)
+                {
+                    Console.WriteLine("ERROR: Request es null");
+                    return BadRequest("Request no puede ser null");
+                }
+
+                if (request.PedidoId <= 0)
+                {
+                    Console.WriteLine("ERROR: PedidoId inválido");
+                    return BadRequest("PedidoId inválido");
+                }
 
                 var resultado = await _pedidoService.MarcarComoListoAsync(request.PedidoId);
 
@@ -492,29 +510,53 @@ namespace VentaFacil.web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelarPedido(int id, string razon)
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelarPedido([FromBody] CancelarPedidoRequest request)
         {
             try
             {
-                var resultado = await _pedidoService.CancelarPedidoAsync(id, razon);
+                Console.WriteLine($"=== CANCELAR PEDIDO INICIADO ===");
+                Console.WriteLine($"Pedido ID: {request?.id}, Razón: {request?.razon}");
+
+                if (request == null)
+                {
+                    return BadRequest("Request no puede ser null");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.razon))
+                {
+                    return BadRequest("La razón de cancelación es requerida");
+                }
+
+                var resultado = await _pedidoService.CancelarPedidoAsync(request.id, request.razon);
+
+                Console.WriteLine($"Resultado del servicio - Success: {resultado.Success}, Message: {resultado.Message}");
 
                 if (resultado.Success)
                 {
-                    TempData["Success"] = resultado.Message;
+                    // Verificar que el pedido se canceló correctamente
+                    var pedidoCancelado = await _pedidoService.ObtenerPedidoAsync(request.id);
+                    Console.WriteLine($"Pedido después de cancelar - Estado: {pedidoCancelado.Estado}, Motivo: {pedidoCancelado.MotivoCancelacion}");
+
+                    return Json(new { success = true, message = resultado.Message });
                 }
                 else
                 {
-                    TempData["Error"] = resultado.Message;
+                    return Json(new { success = false, message = resultado.Message });
                 }
-
-                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Error al cancelar pedido: {ex.Message}";
-                return RedirectToAction("Index");
+                Console.WriteLine($"Error al cancelar pedido: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
+        }
+
+        public class CancelarPedidoRequest
+        {
+            public int id { get; set; }
+            public string razon { get; set; }
         }
 
         [HttpGet]
@@ -565,7 +607,7 @@ namespace VentaFacil.web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> MarcarComoEntregado([FromBody] MarcarListoRequest request)
         {
             try
@@ -629,11 +671,26 @@ namespace VentaFacil.web.Controllers
             try
             {
                 var usuarioId = ObtenerUsuarioId();
+
+                // Obtener todos los pedidos actualizados
                 var pedidosBorrador = await _pedidoService.ObtenerPedidosBorradorAsync(usuarioId);
                 var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
                 var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
 
-                // Verificar si hay cambios significativos (pedidos que cambiaron de estado)
+                // Filtrar estados específicos desde todosLosPedidos (más confiable)
+                var pedidosListos = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Listo).ToList();
+                var pedidosEntregados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Entregado).ToList();
+                var pedidosCancelados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Cancelado).ToList();
+
+                Console.WriteLine($"=== RESUMEN PEDIDOS ===");
+                Console.WriteLine($"Borrador: {pedidosBorrador.Count}");
+                Console.WriteLine($"En Cocina: {pedidosPendientes.Count}");
+                Console.WriteLine($"Listos: {pedidosListos.Count}");
+                Console.WriteLine($"Entregados: {pedidosEntregados.Count}");
+                Console.WriteLine($"Cancelados: {pedidosCancelados.Count}");
+                Console.WriteLine($"Total: {todosLosPedidos.Count}");
+
+                // Verificar si hay cambios significativos
                 var cambiosSignificativos = todosLosPedidos.Any(p =>
                     p.Estado == PedidoEstado.Listo ||
                     p.Estado == PedidoEstado.Entregado);
@@ -646,14 +703,15 @@ namespace VentaFacil.web.Controllers
                     {
                         borrador = pedidosBorrador.Count,
                         enCocina = pedidosPendientes.Count,
-                        listos = todosLosPedidos.Count(p => p.Estado == PedidoEstado.Listo),
-                        entregados = todosLosPedidos.Count(p => p.Estado == PedidoEstado.Entregado),
-                        cancelados = todosLosPedidos.Count(p => p.Estado == PedidoEstado.Cancelado)
+                        listos = pedidosListos.Count,
+                        entregados = pedidosEntregados.Count,
+                        cancelados = pedidosCancelados.Count
                     }
                 });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"ERROR en ObtenerResumenPedidos: {ex.Message}");
                 return Json(new { actualizado = false, error = ex.Message });
             }
         }
@@ -697,25 +755,24 @@ namespace VentaFacil.web.Controllers
         {
             if (User?.Identity?.IsAuthenticated == true)
             {
-                // Buscar el claim que contiene el ID del usuario
+                
                 var idClaim = User.FindFirst("UsuarioId") ??
                              User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ??
-                             User.FindFirst("sub"); // Para JWT tokens
+                             User.FindFirst("sub"); 
 
                 if (idClaim != null && int.TryParse(idClaim.Value, out var usuarioId))
                     return usuarioId;
 
-                // Si no se puede parsear, buscar por nombre de usuario (solo para desarrollo)
+                
                 var nameClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Name);
                 if (nameClaim != null)
                 {
-                    // Esto es solo para desarrollo - en producción deberías tener el ID real
+                    
                     return Math.Abs(nameClaim.Value.GetHashCode()) % 1000 + 1;
                 }
             }
 
-            // Para desarrollo, retornar un ID por defecto
-            // En producción, esto debería redirigir al login
+            
             return 1;
         }
     }

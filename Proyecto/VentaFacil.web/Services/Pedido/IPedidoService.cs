@@ -29,6 +29,9 @@ namespace VentaFacil.web.Services.Pedido
         Task<ServiceResult> IniciarPreparacionAsync(int pedidoId);
 
         Task<ResumenPedidosDto> ObtenerResumenPedidosAsync(int usuarioId);
+        Task<List<PedidoDto>> ObtenerPedidosListosAsync(int idUsuario);
+        Task<List<PedidoDto>> ObtenerPedidosEntregadosAsync(int idUsuario);
+        Task<List<PedidoDto>> ObtenerPedidosCanceladosAsync(int idUsuario);
     }
 
    

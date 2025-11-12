@@ -270,12 +270,35 @@ namespace VentaFacil.web.Services.Pedido
 
         public async Task<ServiceResult> MarcarComoListoAsync(int pedidoId)
         {
+            Console.WriteLine($"=== SERVICIO: MarcarComoListoAsync ===");
+            Console.WriteLine($"Buscando pedido ID: {pedidoId}");
+
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
+            Console.WriteLine($"Pedido encontrado - ID: {pedido.Id_Venta}, Estado actual: {pedido.Estado}");
+
             if (pedido.Estado != PedidoEstado.EnPreparacion)
+            {
+                Console.WriteLine($"ERROR: Estado inválido. Esperado: EnPreparacion, Actual: {pedido.Estado}");
                 return ServiceResult.Error("Solo se pueden marcar como listo pedidos en preparación");
+            }
 
             pedido.Estado = PedidoEstado.Listo;
+            pedido.FechaActualizacion = DateTime.Now;
+
+            Console.WriteLine($"Pedido actualizado - Nuevo estado: {pedido.Estado}");
+            Console.WriteLine($"Total de pedidos en memoria: {_pedidosTemporales.Count}");
+
+            
+            if (_pedidosTemporales.TryGetValue(pedidoId, out var pedidoVerificado))
+            {
+                Console.WriteLine($"Pedido verificado en diccionario - Estado: {pedidoVerificado.Estado}");
+            }
+            else
+            {
+                Console.WriteLine($"ERROR: Pedido no encontrado en diccionario después de actualizar");
+            }
+
             return ServiceResult.SuccessResult("Pedido marcado como listo para entregar");
         }
 
@@ -288,16 +311,32 @@ namespace VentaFacil.web.Services.Pedido
 
         public async Task<ServiceResult> CancelarPedidoAsync(int pedidoId, string razon)
         {
+            Console.WriteLine($"=== SERVICIO: CancelarPedidoAsync ===");
+            Console.WriteLine($"Pedido ID: {pedidoId}, Razón: {razon}");
+
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
+            Console.WriteLine($"Pedido encontrado - ID: {pedido.Id_Venta}, Estado actual: {pedido.Estado}");
+
             if (pedido.Estado == PedidoEstado.Entregado)
+            {
+                Console.WriteLine("ERROR: No se puede cancelar pedido entregado");
                 return ServiceResult.Error("No se puede cancelar un pedido ya entregado");
+            }
 
             if (pedido.Estado == PedidoEstado.Cancelado)
+            {
+                Console.WriteLine("ERROR: Pedido ya cancelado");
                 return ServiceResult.Error("El pedido ya está cancelado");
+            }
 
             pedido.Estado = PedidoEstado.Cancelado;
-            pedido.Notas = $"CANCELADO: {razon}";
+
+            // Asegurar que la razón se guarde correctamente
+            pedido.MotivoCancelacion = $"CANCELADO: {razon}";
+            pedido.FechaActualizacion = DateTime.Now;
+
+            Console.WriteLine($"Pedido cancelado - Nuevo estado: {pedido.Estado}, Motivo: {pedido.MotivoCancelacion}");
 
             return ServiceResult.SuccessResult("Pedido cancelado correctamente");
         }
@@ -368,6 +407,36 @@ namespace VentaFacil.web.Services.Pedido
                 TotalEntregados = todos.Count(p => p.Estado == PedidoEstado.Entregado),
                 TotalCancelados = todos.Count(p => p.Estado == PedidoEstado.Cancelado)
             };
+        }
+
+        public Task<List<PedidoDto>> ObtenerPedidosListosAsync(int idUsuario)
+        {
+            var pedidos = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.Listo)
+                .OrderByDescending(p => p.Fecha)
+                .ToList();
+
+            return Task.FromResult(pedidos);
+        }
+
+        public Task<List<PedidoDto>> ObtenerPedidosEntregadosAsync(int idUsuario)
+        {
+            var pedidos = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.Entregado)
+                .OrderByDescending(p => p.Fecha)
+                .ToList();
+
+            return Task.FromResult(pedidos);
+        }
+
+        public Task<List<PedidoDto>> ObtenerPedidosCanceladosAsync(int idUsuario)
+        {
+            var pedidos = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario && p.Estado == PedidoEstado.Cancelado)
+                .OrderByDescending(p => p.Fecha)
+                .ToList();
+
+            return Task.FromResult(pedidos);
         }
     }
     
