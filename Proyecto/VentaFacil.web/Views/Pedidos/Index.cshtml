@@ -1,24 +1,224 @@
 ﻿@{
     ViewData["Title"] = "Pedidos";
-
+    var pedidosBorrador = ViewBag.PedidosBorrador as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
+    var pedidosPendientes = ViewBag.PedidosPendientes as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
+    var todosLosPedidos = ViewBag.TodosLosPedidos as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
 }
 
 <div class="card shadow-sm p-4">
-    <div class="card-header bg-primary text-white">
-        <h4 class="mb-0">📑 Lista de Pedidos</h4>
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-0">📑 Gestión de Pedidos</h4>
+            <small class="opacity-75">Usuario ID: @ViewBag.UsuarioId</small>
+        </div>
+        <a asp-action="Crear" class="btn btn-light btn-sm">
+            ➕ Nuevo Pedido
+        </a>
     </div>
 
     <div class="card-body">
-        <p>
-            <a asp-action="Crear" class="btn btn-success">
-                <i class="lni lni-plus"></i> Nuevo Pedido
-            </a>
-        </p>
+        <!-- Mensajes -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
 
-        <p class="text-muted">📌 Aquí se mostrará la lista de pedidos registrados.</p>
+        <!-- Pedidos en Borrador -->
+        @if (pedidosBorrador.Any())
+        {
+            <div class="mb-4">
+                <h5>📝 Pedidos en Borrador</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Modalidad</th>
+                                <th>Productos</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in pedidosBorrador)
+                            {
+                                <tr>
+                                    <td>#@pedido.Id_Venta</td>
+                                    <td>@(pedido.Cliente ?? "Sin nombre")</td>
+                                    <td>
+                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
+                                        {
+                                            <span class="badge bg-info">🍽️ Mesa @pedido.NumeroMesa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">📦 Para Llevar</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@pedido.Items.Count productos</span>
+                                    </td>
+                                    <td>$@pedido.Total.ToString("N2")</td>
+                                    <td>
+                                        <a asp-action="ContinuarBorrador" asp-route-id="@pedido.Id_Venta" 
+                                           class="btn btn-warning btn-sm">
+                                            ✏️ Continuar
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Pedidos Pendientes (Enviados a Cocina) -->
+        @if (pedidosPendientes.Any())
+        {
+            <div class="mb-4">
+                <h5>🔥 Pedidos Enviados a Cocina</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Modalidad</th>
+                                <th>Productos</th>
+                                <th>Total</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in pedidosPendientes)
+                            {
+                                <tr>
+                                    <td>#@pedido.Id_Venta</td>
+                                    <td>@(pedido.Cliente ?? "Sin nombre")</td>
+                                    <td>
+                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
+                                        {
+                                            <span class="badge bg-info">🍽️ Mesa @pedido.NumeroMesa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">📦 Para Llevar</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@pedido.Items.Count productos</span>
+                                    </td>
+                                    <td>$@pedido.Total.ToString("N2")</td>
+                                    <td>@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <a asp-action="Editar" asp-route-id="@pedido.Id_Venta" 
+                                           class="btn btn-info btn-sm">
+                                            👀 Ver Detalles
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Todos los pedidos (para debugging) -->
+        @if (todosLosPedidos.Any() && false) 
+        {
+            <div class="mb-4">
+                <h5>🔍 Todos los Pedidos (Debug)</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Cliente</th>
+                                <th>Estado</th>
+                                <th>Productos</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in todosLosPedidos)
+                            {
+                                <tr>
+                                    <td>#@pedido.Id_Venta</td>
+                                    <td>@pedido.Id_Usuario</td>
+                                    <td>@(pedido.Cliente ?? "Sin nombre")</td>
+                                    <td><span class="badge bg-secondary">@pedido.Estado</span></td>
+                                    <td>@pedido.Items.Count</td>
+                                    <td>$@pedido.Total.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        @if (!pedidosBorrador.Any() && !pedidosPendientes.Any())
+        {
+            <div class="alert alert-info text-center py-4">
+                <i class="lni lni-cart fs-1 text-muted"></i>
+                <p class="mb-1 fs-5">No hay pedidos registrados</p>
+                <p class="mb-0"><small>Comienza creando un nuevo pedido</small></p>
+            </div>
+        }
+
+        <!-- Información del sistema -->
+        <div class="alert alert-info mt-4">
+            <h6>📋 Flujo de Pedidos</h6>
+            <ul class="mb-0">
+                <li><strong>Borrador:</strong> Pedido en proceso, puedes editarlo</li>
+                <li><strong>Enviado a Cocina:</strong> Pedido guardado, listo para preparación</li>
+                <li><strong>En Preparación:</strong> Pedido en cocina, no editable</li>
+            </ul>
+        </div>
+
+        <!-- Estadísticas rápidas -->
+        <div class="row text-center mt-4">
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="text-primary">@pedidosBorrador.Count</h5>
+                        <small>En Borrador</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="text-warning">@pedidosPendientes.Count</h5>
+                        <small>Enviados a Cocina</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="text-success">0</h5>
+                        <small>En Preparación</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="text-success">0</h5>
+                        <small>Completados</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-@if (TempData["Mensaje"] is string msg && !string.IsNullOrWhiteSpace(msg))
-{
-    <div class="alert alert-success">@msg</div>
-}

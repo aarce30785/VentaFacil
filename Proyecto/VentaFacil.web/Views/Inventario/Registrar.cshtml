@@ -4,40 +4,95 @@
     ViewData["Title"] = "Registrar";
 }
 
-<h1>Registrar insumo</h1>
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Registrar Nuevo Insumo</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="@Url.Action("Listar")">Inventario</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Registrar
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
 
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <div class="card-content">
+                            <form asp-action="Registrar" class="row g-3">
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Registrar">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Nombre" class="control-label"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
+                                <div class="col-md-6">
+                                    <div class="input-style-1">
+                                        <label asp-for="Nombre" class="form-label">Nombre del Insumo</label>
+                                        <input asp-for="Nombre" class="form-control" placeholder="Ingrese el nombre del insumo" />
+                                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="input-style-1">
+                                        <label asp-for="StockActual" class="form-label">Stock Inicial</label>
+                                        <input asp-for="StockActual" class="form-control" type="number" min="0" value="0" />
+                                        <span asp-validation-for="StockActual" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="input-style-1">
+                                        <label asp-for="StockMinimo" class="form-label">Stock Mínimo</label>
+                                        <input asp-for="StockMinimo" class="form-control" type="number" min="0" value="0" />
+                                        <span asp-validation-for="StockMinimo" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="button-group d-flex justify-content-between">
+                                        <a href="@Url.Action("Listar")" class="main-btn light-btn btn-hover">
+                                            <i class="lni lni-arrow-left me-2"></i>Cancelar
+                                        </a>
+                                        <button type="submit" class="main-btn success-btn btn-hover">
+                                            <i class="lni lni-save me-2"></i>Registrar Insumo
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="StockActual" class="control-label"></label>
-                <input asp-for="StockActual" class="form-control" />
-                <span asp-validation-for="StockActual" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="StockMinimo" class="control-label"></label>
-                <input asp-for="StockMinimo" class="form-control" />
-                <span asp-validation-for="StockMinimo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Registrar" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Listar">Volver al inventario</a>
-</div>
+</section>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
+<!-- ========== table components end ========== -->

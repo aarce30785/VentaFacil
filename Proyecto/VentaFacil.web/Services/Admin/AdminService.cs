@@ -5,6 +5,7 @@ using VentaFacil.web.Helpers;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Admin;
+using VentaFacil.web.Models.Response.Usuario;
 
 namespace VentaFacil.web.Services.Admin
 {
@@ -18,79 +19,70 @@ namespace VentaFacil.web.Services.Admin
             _context = context;
         }
 
-        public async Task<RolResponse> GetRolByIdAsync(int id)
+        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina, int cantidadPorPagina, string busqueda = null, int? rolFiltro = null)
         {
-            var rol = await _context.Rol.FindAsync(id);
-
-            if (rol == null)
+            try
             {
-                throw new Exception("Rol no encontrado");
-            }
-            return new RolResponse
-            {
-                Id_Rol = rol.Id_Rol,
-                Nombre = rol.Nombre_Rol,
-                Descripcion = rol.Descripcion
-            };
-        }
+                var query = _context.Usuario
+                    .Include(u => u.RolNavigation)
+                    .AsQueryable();
 
-        public async Task<UsuarioResponse> GetUsuarioByIdAsync(int id)
-        {
-            var usuario = await _context.Usuario
-                .Include(u => u.RolNavigation)
-                .FirstOrDefaultAsync(u => u.Id_Usr == id);
-
-            if (usuario == null)
-            {
-                throw new Exception("Usuario no encontrado");
-            }
-
-            return new UsuarioResponse
-            {
-                Id_Usr = usuario.Id_Usr,
-                Nombre = usuario.Nombre,
-                Correo = usuario.Correo,
-                Estado = usuario.Estado,
-                RolId = usuario.Rol,
-                Rol = usuario.RolNavigation?.Nombre_Rol
-            };
-        }
-
-        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina = 1, int cantidadPorPagina = 10)
-        {
-            var query = _context.Usuario
-                .Include(u => u.RolNavigation)
-                .AsQueryable();
-
-            var totalUsuarios = await query.CountAsync();
-            var usuarios = await query
-                .OrderBy(u => u.Id_Usr) // Agregar ordenamiento
-                .Skip((pagina - 1) * cantidadPorPagina)
-                .Take(cantidadPorPagina)
-                .ToListAsync();
-
-            return new UsuarioListResponse
-            {
-                Usuarios = usuarios.Select(u => new UsuarioResponse
+                // Aplicar filtro de búsqueda
+                if (!string.IsNullOrEmpty(busqueda))
                 {
-                    Id_Usr = u.Id_Usr,
-                    Nombre = u.Nombre,
-                    Correo = u.Correo,
-                    Estado = u.Estado,
-                    RolId = u.Rol,
-                    Rol = u.RolNavigation?.Nombre_Rol
-                }).ToList(),
-                PaginaActual = pagina,
-                TotalPaginas = (int)Math.Ceiling(totalUsuarios / (double)cantidadPorPagina),
-                TotalUsuarios = totalUsuarios
-            };
+                    busqueda = busqueda.Trim().ToLower();
+                    query = query.Where(u =>
+                        u.Nombre.ToLower().Contains(busqueda) ||
+                        u.Correo.ToLower().Contains(busqueda));
+                }
+
+                // Aplicar filtro por rol
+                if (rolFiltro.HasValue && rolFiltro.Value > 0)
+                {
+                    query = query.Where(u => u.Rol == rolFiltro.Value);
+                }
+
+                var totalUsuarios = await query.CountAsync();
+                var totalPaginas = (int)Math.Ceiling(totalUsuarios / (double)cantidadPorPagina);
+
+                var usuarios = await query
+                    .OrderBy(u => u.Nombre)
+                    .Skip((pagina - 1) * cantidadPorPagina)
+                    .Take(cantidadPorPagina)
+                    .Select(u => new UsuarioResponse
+                    {
+                        Id_Usr = u.Id_Usr,
+                        Nombre = u.Nombre,
+                        Correo = u.Correo,
+                        Estado = u.Estado,
+                        RolId = u.Rol,
+                        Rol = u.RolNavigation.Nombre_Rol
+                    })
+                    .ToListAsync();
+
+                return new UsuarioListResponse
+                {
+                    Usuarios = usuarios,
+                    PaginaActual = pagina,
+                    TotalPaginas = totalPaginas,
+                    TotalUsuarios = totalUsuarios,
+                    UsuarioSeleccionado = null,
+                    AccionModal = null,
+                    Busqueda = busqueda,
+                    RolFiltro = rolFiltro
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener usuarios paginados", ex);
+            }
         }
 
         public async Task<bool> CrearUsuarioAsync(UsuarioDto usuarioDto)
         {
             try
             {
-                // Verificar si el correo ya existe
+                
                 var existeCorreo = await _context.Usuario
                     .AnyAsync(u => u.Correo == usuarioDto.Correo);
 
@@ -99,12 +91,12 @@ namespace VentaFacil.web.Services.Admin
                     throw new Exception("El correo electrónico ya está registrado");
                 }
 
-                // Crear nuevo usuario usando PasswordHelper
-                var usuario = new Usuario
+                
+                var usuario = new VentaFacil.web.Models.Usuario
                 {
                     Nombre = usuarioDto.Nombre.Trim(),
                     Correo = usuarioDto.Correo.Trim().ToLower(),
-                    Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena), // Usando el Helper
+                    Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena),
                     Rol = usuarioDto.Rol,
                     Estado = usuarioDto.Estado,
                     FechaCreacion = DateTime.Now,
@@ -130,30 +122,25 @@ namespace VentaFacil.web.Services.Admin
                     .FirstOrDefaultAsync(u => u.Id_Usr == usuarioDto.Id_Usr);
 
                 if (usuario == null)
-                {
                     throw new Exception("Usuario no encontrado");
-                }
 
-                // Verificar si el correo ya existe (excluyendo el usuario actual)
+                
                 var existeCorreo = await _context.Usuario
                     .AnyAsync(u => u.Correo == usuarioDto.Correo && u.Id_Usr != usuarioDto.Id_Usr);
 
                 if (existeCorreo)
-                {
                     throw new Exception("El correo electrónico ya está registrado");
-                }
 
-                // Actualizar datos
+                
                 usuario.Nombre = usuarioDto.Nombre.Trim();
                 usuario.Correo = usuarioDto.Correo.Trim().ToLower();
                 usuario.Rol = usuarioDto.Rol;
                 usuario.Estado = usuarioDto.Estado;
-                
 
-                // Actualizar contraseña solo si se proporcionó una nueva
+                
                 if (!string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
-                    usuario.Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena); // Usando el Helper
+                    usuario.Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena);
                 }
 
                 await _context.SaveChangesAsync();

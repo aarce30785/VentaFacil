@@ -7,20 +7,14 @@ namespace VentaFacil.web.Controllers
 {
     public class ProductoController : Controller
     {
-        private readonly IRegisterProductoService _registerProductoService;
-        private readonly IListProductoService _listProductoService;
-        private readonly IEditProductoService _editProductoService;
+        private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
 
         public ProductoController(
-            IRegisterProductoService registerProductoService,
-            IListProductoService listProductoService,
-            IEditProductoService editProductoService,
+            IProductoService registerProductoService,
             ICategoriaService categoriaService)
         {
-            _registerProductoService = registerProductoService;
-            _listProductoService = listProductoService;
-            _editProductoService = editProductoService;
+            _productoService = registerProductoService;
             _categoriaService = categoriaService;
         }
 
@@ -48,7 +42,7 @@ namespace VentaFacil.web.Controllers
                 return View(producto);
             }
 
-            var resultado = await _registerProductoService.RegisterAsync(producto);
+            var resultado = await _productoService.RegisterAsync(producto);
 
             if (resultado.Success)
             {
@@ -64,14 +58,14 @@ namespace VentaFacil.web.Controllers
 
         public async Task<IActionResult> Listar()
         {
-            var response = await _listProductoService.ListarTodosAsync();
+            var response = await _productoService.ListarTodosAsync();
             return View(response.Productos);
         }
 
         [HttpGet]
         public async Task<IActionResult> Editar(int id)
         {
-            var response = await _listProductoService.ListarTodosAsync();
+            var response = await _productoService.ListarTodosAsync();
             var producto = response.Productos.FirstOrDefault(p => p.Id_Producto == id);
 
             if (producto == null)
@@ -102,7 +96,7 @@ namespace VentaFacil.web.Controllers
                 return View(producto);
             }
 
-            var resultado = await _editProductoService.EditarAsync(producto);
+            var resultado = await _productoService.EditarAsync(producto);
 
             if (resultado.Success)
             {

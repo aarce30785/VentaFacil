@@ -73,6 +73,20 @@ BEGIN
     );
 END;
 
+-- Tabla Inventario
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Inventario]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE Inventario (
+        Id_Inventario INT IDENTITY (1,1),
+        Nombre VARCHAR(255) NOT NULL,
+        StockActual INT NOT NULL,
+        StockMinimo INT NOT NULL,
+        CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
+    );
+END
+GO
+
+
 -- Tabla InventarioMovimiento
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[InventarioMovimiento]') AND type in (N'U'))
 BEGIN
@@ -177,18 +191,7 @@ BEGIN
     );
 END;
 
--- Tabla Inventario
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Inventario]') AND type in (N'U'))
-BEGIN
-    CREATE TABLE Inventario (
-        Id_Inventario INT IDENTITY (1,1),
-        Nombre VARCHAR(255) NOT NULL,
-        StockActual INT NOT NULL,
-        StockMinimo INT NOT NULL,
-        CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
-    );
-END
-GO
+
 
 
 -- Roles base

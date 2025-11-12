@@ -2,52 +2,200 @@
 
 @{
     ViewData["Title"] = "Inventario";
+    Layout = "_LayoutPlantilla";
 }
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["Error"]
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Gestión de Inventario</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Inventario
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="lni lni-warning me-2"></i>
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4>Lista de Insumos</h4>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <a href="@Url.Action("Registrar")" class="main-btn primary-btn btn-hover">
+                                        <i class="lni lni-plus me-2"></i>Registrar Nuevo Insumo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="table-wrapper table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class="min-width"><h6>ID</h6></th>
+                                            <th class="min-width"><h6>Nombre</h6></th>
+                                            <th class="min-width"><h6>Stock Actual</h6></th>
+                                            <th class="min-width"><h6>Stock Mínimo</h6></th>
+                                            <th class="text-center"><h6>Estado</h6></th>
+                                            <th class="text-center"><h6>Acciones</h6></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model != null && Model.Any())
+                                        {
+                                            foreach (var item in Model)
+                                            {
+                                                var estadoClase = item.StockActual <= item.StockMinimo ? "inactive-btn" : "active-btn";
+                                                var estadoTexto = item.StockActual <= item.StockMinimo ? "Bajo Stock" : "Disponible";
+
+                                                <tr>
+                                                    <td class="min-width">
+                                                        <span class="status-btn info-btn">@item.Id_Inventario</span>
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <div class="lead">
+                                                            <div class="lead-image">
+                                                                <img src="assets/images/lead/lead-1.png" alt="" />
+                                                            </div>
+                                                            <div class="lead-text">
+                                                                <p>@item.Nombre</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <span class="status-btn success-btn">@item.StockActual</span>
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <span class="status-btn warning-btn">@item.StockMinimo</span>
+                                                    </td>
+                                                    <td class="min-width text-center">
+                                                        <span class="status-btn @estadoClase">@estadoTexto</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="action d-flex gap-2 justify-content-center align-items-center">
+                                                            <!-- Editar -->
+                                                            <a href="@Url.Action("Editar", new { id = item.Id_Inventario })"
+                                                               class="text-warning action-btn" title="Editar">
+                                                                <i class="lni lni-pencil"></i>
+                                                            </a>
+
+                                                            <!-- Agregar Unidad -->
+                                                            <form asp-action="AgregarUnidad" asp-route-id="@item.Id_Inventario" method="post" class="d-inline">
+                                                                <button type="submit" class="text-success border-0 bg-transparent action-btn" title="Agregar Unidad">
+                                                                    <i class="lni lni-plus"></i>
+                                                                </button>
+                                                            </form>
+
+                                                            <!-- Quitar Unidad -->
+                                                            <form asp-action="QuitarUnidad" asp-route-id="@item.Id_Inventario" method="post" class="d-inline">
+                                                                <button type="submit" class="text-danger border-0 bg-transparent action-btn" title="Quitar Unidad">
+                                                                    <i class="lni lni-minus"></i>
+                                                                </button>
+                                                            </form>
+
+                                                            <!-- Historial -->
+                                                            <a href="@Url.Action("HistorialMovimientos", new { idInventario = item.Id_Inventario })"
+                                                               class="text-info action-btn" title="Historial de Movimientos">
+                                                                <i class="lni lni-agenda" style="font-size:24px;color:powderblue;"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <div class="text-muted">
+                                                        <i class="lni lni-package me-2"></i>
+                                                        No hay insumos registrados en el inventario.
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-}
+</section>
 
-<h1>Inventario</h1>
+<style>
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
 
-<p>
-    <a asp-action="Registrar">Registrar</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Stock Actual</th>
-            <th>Stock Mínimo</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>@item.Id_Inventario</td>
-            <td>@item.Nombre</td>
-            <td>@item.StockActual</td>
-            <td>@item.StockMinimo</td>
-            <td>
-                <a asp-action="Editar" asp-route-id="@item.Id_Inventario" class="btn btn-warning btn-sm">Editar</a>
-                |
-                <form asp-action="AgregarUnidad" asp-route-id="@item.Id_Inventario" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-success btn-sm">+</button>
-                </form>
-                <form asp-action="QuitarUnidad" asp-route-id="@item.Id_Inventario" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">-</button>
-                </form>
-                |
-                <a asp-action="HistorialMovimientos" asp-route-idInventario="@item.Id_Inventario" class="btn btn-info btn-sm">
-                    Historial
-                </a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+        .action-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.text-warning:hover {
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+
+        .action-btn.text-success:hover {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        .action-btn.text-danger:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .action-btn.text-info:hover {
+            background-color: rgba(23, 162, 184, 0.1);
+        }
+
+    form.d-inline {
+        display: inline-block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+</style>
+<!-- ========== table components end ========== -->
