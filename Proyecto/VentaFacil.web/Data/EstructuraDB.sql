@@ -114,6 +114,28 @@ CREATE TABLE Inventario (
     CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
 );
 
+CREATE TABLE Caja (
+        Id_Caja INT IDENTITY(1,1) PRIMARY KEY,
+        Id_Usuario INT NOT NULL,
+        Fecha_Apertura DATETIME NOT NULL DEFAULT GETDATE(),
+        Fecha_Cierre DATETIME NULL,
+        Monto_Inicial DECIMAL(10,2) NOT NULL,
+        Monto DECIMAL(10,2) NULL,
+        Estado VARCHAR(20) NOT NULL,
+        CONSTRAINT FK_Caja_Usuario FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
+    );
+
+CREATE TABLE CajaRetiro (
+    Id_Retiro INT IDENTITY(1,1) PRIMARY KEY,
+    Id_Caja INT NOT NULL,
+    Id_Usuario INT NOT NULL,
+    Monto DECIMAL(10,2) NOT NULL,
+    Motivo VARCHAR(255) NOT NULL,
+    FechaHora DATETIME NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_CajaRetiro_Caja FOREIGN KEY (Id_Caja) REFERENCES Caja(Id_Caja),
+    CONSTRAINT FK_CajaRetiro_Usuario FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
+);
+
 --Datos iniciales
 INSERT INTO Categoria (Nombre, Descripcion)
 VALUES ('Comida', 'Categoria de comida');

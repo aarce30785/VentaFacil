@@ -1,0 +1,165 @@
+﻿@model IEnumerable<VentaFacil.web.Models.Dto.CajaDto>
+
+@{
+    ViewData["Title"] = "Listar";
+    // Suponiendo que solo puede haber una caja abierta por día y usuario
+    var cajaAbierta = Model.FirstOrDefault(c => c.Estado == "Abierta" && c.Fecha_Apertura.Date == DateTime.Now.Date);
+}
+
+<h1>Administrar Caja</h1>
+
+<p>
+    @if (cajaAbierta == null)
+    {
+        <!-- Botón para abrir el modal de abrir caja -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
+            Abrir caja
+        </button>
+    }
+    else
+    {
+        <!-- Botón para cerrar caja -->
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
+            Cerrar caja
+        </button>
+        <!-- Botón para retiro de caja -->
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
+            Retiro de caja
+        </button>
+    }
+</p>
+
+<!-- Modal Abrir Caja -->
+<div class="modal fade" id="abrirCajaModal" tabindex="-1" aria-labelledby="abrirCajaModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="abrirCajaModalLabel">Abrir Caja</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form asp-action="Abrir" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group mb-3">
+                <label for="montoInicial" class="control-label">Monto Inicial</label>
+                <input name="montoInicial" class="form-control" />
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Abrir Caja</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cerrar Caja -->
+<div class="modal fade" id="cerrarCajaModal" tabindex="-1" aria-labelledby="cerrarCajaModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cerrarCajaModalLabel">Cerrar Caja</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro que deseas cerrar la caja?</p>
+                <form asp-action="CerrarConfirmado" method="post">
+            <input type="hidden" name="id" value="@cajaAbierta?.Id_Caja" />
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger">Confirmar cierre</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Retiro de Caja -->
+<div class="modal fade" id="retiroCajaModal" tabindex="-1" aria-labelledby="retiroCajaModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="retiroCajaModalLabel">Retiro de Caja</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form asp-action="Retiro" method="post">
+            <input type="hidden" name="id" value="@cajaAbierta?.Id_Caja" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group mb-3">
+                <label for="monto" class="control-label">Monto a retirar</label>
+                <input name="monto" class="form-control" />
+            </div>
+            <div class="form-group mb-3">
+                <label for="motivo" class="control-label">Motivo</label>
+                <input name="motivo" class="form-control" />
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-warning">Retirar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="retirosModal" tabindex="-1" aria-labelledby="retirosModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="retirosModalLabel">Retiros de Caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="retirosModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Id_Usuario)</th>
+            <th>@Html.DisplayNameFor(model => model.Fecha_Apertura)</th>
+            <th>@Html.DisplayNameFor(model => model.Fecha_Cierre)</th>
+            <th>@Html.DisplayNameFor(model => model.Monto_Inicial)</th>
+            <th>@Html.DisplayNameFor(model => model.Monto)</th>
+            <th>@Html.DisplayNameFor(model => model.Estado)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Id_Usuario)</td>
+            <td>@Html.DisplayFor(modelItem => item.Fecha_Apertura)</td>
+            <td>@Html.DisplayFor(modelItem => item.Fecha_Cierre)</td>
+            <td>@Html.DisplayFor(modelItem => item.Monto_Inicial)</td>
+            <td>@Html.DisplayFor(modelItem => item.Monto)</td>
+            <td>@Html.DisplayFor(modelItem => item.Estado)</td>
+            <td>
+                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
+                    Ver Retiros
+                </button>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $('#retirosModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var cajaId = button.data('caja-id');
+            var modal = $(this);
+            modal.find('.modal-body').load('/Caja/Retiros/' + cajaId);
+        });
+    </script>
+}
