@@ -1,4 +1,8 @@
+
 ﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 using VentaFacil.web.Models;
 
 namespace VentaFacil.web.Data
@@ -18,6 +22,8 @@ namespace VentaFacil.web.Data
         public DbSet<Producto> Producto { get; set; }
         public DbSet<Inventario> Inventario { get; set; }
         public DbSet<InventarioMovimiento> InventarioMovimiento { get; set; }
+        public DbSet<Caja> Caja { get; set; }
+        public DbSet<CajaRetiro> CajaRetiro { get; set; }
 
         // NUEVAS ENTIDADES PARA FACTURACIÓN
         public DbSet<Venta> Venta { get; set; }

@@ -1,0 +1,21 @@
+﻿@model IEnumerable<VentaFacil.web.Models.CajaRetiro>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Monto</th>
+            <th>Motivo</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var retiro in Model)
+        {
+            <tr>
+                <td>@retiro.Monto</td>
+                <td>@retiro.Motivo</td>
+                <td>@retiro.FechaHora</td>
+            </tr>
+        }
+    </tbody>
+</table>
