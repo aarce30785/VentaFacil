@@ -1,4 +1,5 @@
-﻿@model dynamic
+﻿@using static VentaFacil.web.Controllers.FacturacionController
+@model DetalleFacturaViewModel
 @{
     ViewData["Title"] = "Detalle de Factura";
     Layout = "_LayoutPlantilla";
@@ -21,6 +22,13 @@
                 </div>
             }
 
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["Error"]
+                </div>
+            }
+
             <div class="card">
                 <div class="card-header">
                     <h4 class="text-success">✅ Pago Completado Exitosamente</h4>
@@ -31,14 +39,62 @@
                         <h3 class="mt-3">Factura Generada</h3>
                     </div>
 
+                    <!-- Información de la factura -->
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Número de Factura:</strong> @(Model?.NumeroFactura ?? "N/A")</p>
-                            <p><strong>Fecha:</strong> @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p><strong>Número de Factura:</strong> @(Model.Factura?.NumeroFactura ?? "N/A")</p>
+                            <p><strong>Fecha:</strong> @(Model.Factura?.FechaEmision.ToString("dd/MM/yyyy HH:mm") ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm"))</p>
+                            <p><strong>Cliente:</strong> @(Model.Factura?.Cliente ?? "N/A")</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Pedido ID:</strong> @(Model?.PedidoId ?? "N/A")</p>
-                            <p><strong>Total:</strong> @(Model?.Total?.ToString("C") ?? "N/A")</p>
+                            <p><strong>Pedido ID:</strong> @(Model.Factura?.PedidoId != null ? Model.Factura.PedidoId.ToString() : "N/A")</p>
+                            <p><strong>Total:</strong> @(Model.Factura?.Total.ToString("C") ?? "N/A")</p>
+                            <p><strong>Método de Pago:</strong> @(Model.Factura?.MetodoPago.ToString() ?? "N/A")</p>
+                        </div>
+                    </div>
+
+                    <!-- Detalles de los items -->
+                    @if (Model.Factura?.Items != null && Model.Factura.Items.Any())
+                    {
+                        <div class="mt-4">
+                            <h5>Detalles del Pedido</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Unitario</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Factura.Items)
+                                        {
+                                            <tr>
+                                                <td>@item.NombreProducto</td>
+                                                <td>@item.Cantidad</td>
+                                                <td>@item.PrecioUnitario.ToString("C")</td>
+                                                <td>@item.Subtotal.ToString("C")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Información de pago -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Información de Pago</h6>
+                                    <p class="mb-1"><strong>Monto Pagado:</strong> @(Model.Factura?.MontoPagado.ToString("C") ?? "N/A")</p>
+                                    <p class="mb-1"><strong>Moneda:</strong> @(Model.Factura?.Moneda ?? "N/A")</p>
+                                    <p class="mb-1"><strong>Cambio:</strong> @(Model.Factura?.Cambio.ToString("C") ?? "N/A")</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -50,8 +106,11 @@
                 </div>
                 <div class="card-footer">
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button onclick="window.print()" class="btn btn-outline-primary me-md-2">
-                            <i class="fas fa-print me-2"></i>Imprimir Factura
+                        <button id="btnGenerarPdf" class="btn btn-outline-primary me-md-2">
+                            <i class="fas fa-file-pdf me-2"></i>Generar PDF
+                        </button>
+                        <button id="btnDescargarPdf" class="btn btn-outline-success me-md-2" style="display: none;">
+                            <i class="fas fa-download me-2"></i>Descargar PDF
                         </button>
                         <a href="@Url.Action("Index", "Pedidos")" class="btn btn-primary">
                             <i class="fas fa-list me-2"></i>Volver a Pedidos
@@ -59,6 +118,130 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Contenedor para mostrar el PDF -->
+            <div id="pdfViewerContainer" class="mt-4" style="display: none;">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Vista Previa de Factura</h5>
+                        <button type="button" class="btn-close" id="btnCerrarPdf"></button>
+                    </div>
+                    <div class="card-body">
+                        <div id="pdfViewer" style="height: 600px; border: 1px solid #dee2e6;">
+                            <!-- Aquí se mostrará el PDF -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnGenerarPdf = document.getElementById('btnGenerarPdf');
+            const btnDescargarPdf = document.getElementById('btnDescargarPdf');
+            const btnCerrarPdf = document.getElementById('btnCerrarPdf');
+            const pdfViewerContainer = document.getElementById('pdfViewerContainer');
+            const pdfViewer = document.getElementById('pdfViewer');
+
+            let facturaId = @Model.FacturaId;
+
+            btnGenerarPdf.addEventListener('click', function() {
+                generarYMostrarPdf();
+            });
+
+            btnDescargarPdf.addEventListener('click', function() {
+                descargarPdf();
+            });
+
+            btnCerrarPdf.addEventListener('click', function() {
+                pdfViewerContainer.style.display = 'none';
+                btnDescargarPdf.style.display = 'none';
+            });
+
+            function generarYMostrarPdf() {
+                // Mostrar loading
+                btnGenerarPdf.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generando PDF...';
+                btnGenerarPdf.disabled = true;
+
+                // Llamar al endpoint para generar el PDF
+                fetch('@Url.Action("GenerarPdf", "Facturacion")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ facturaId: facturaId })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al generar el PDF');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Crear URL para el blob
+                    const pdfUrl = URL.createObjectURL(blob);
+
+                    // Mostrar el PDF en el visor
+                    mostrarPdfEnVisor(pdfUrl);
+
+                    // Guardar el blob para descargar después
+                    window.pdfBlob = blob;
+
+                    // Mostrar botón de descarga
+                    btnDescargarPdf.style.display = 'inline-block';
+
+                    // Restaurar botón
+                    btnGenerarPdf.innerHTML = '<i class="fas fa-file-pdf me-2"></i>Regenerar PDF';
+                    btnGenerarPdf.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al generar el PDF: ' + error.message);
+
+                    // Restaurar botón
+                    btnGenerarPdf.innerHTML = '<i class="fas fa-file-pdf me-2"></i>Generar PDF';
+                    btnGenerarPdf.disabled = false;
+                });
+            }
+
+            function mostrarPdfEnVisor(pdfUrl) {
+                // Limpiar visor anterior
+                pdfViewer.innerHTML = '';
+
+                // Crear iframe para mostrar el PDF
+                const iframe = document.createElement('iframe');
+                iframe.src = pdfUrl;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+
+                pdfViewer.appendChild(iframe);
+
+                // Mostrar el contenedor
+                pdfViewerContainer.style.display = 'block';
+
+                // Hacer scroll suave hacia el PDF
+                pdfViewerContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function descargarPdf() {
+                if (window.pdfBlob) {
+                    const url = URL.createObjectURL(window.pdfBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `factura-${facturaId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            }
+
+            // Opcional: Generar PDF automáticamente al cargar la página
+            // generarYMostrarPdf();
+        });
+    </script>
+}

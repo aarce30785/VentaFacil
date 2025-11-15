@@ -18,9 +18,12 @@ namespace VentaFacil.web.Models.Dto
         public ModalidadPedido Modalidad { get; set; }
         public int? NumeroMesa { get; set; }
         public List<PedidoItemDto> Items { get; set; } = new List<PedidoItemDto>();
+        public int? FacturaId { get; set; }
 
+        public string? NumeroFactura { get; set; }
+
+        public decimal Descuento { get; set; } = 0m;
         public string Notas { get; set; } = string.Empty;
-
         public DateTime? FechaActualizacion { get; set; }
         public string? MotivoCancelacion { get; set; }
         public string? UsuarioActualizacion { get; set; }
@@ -41,6 +44,21 @@ namespace VentaFacil.web.Models.Dto
         {
             return Items.Any() &&
                    (Modalidad != ModalidadPedido.EnMesa || NumeroMesa.HasValue);
+        }
+
+        // MÉTODO AGREGADO: Verificar si tiene factura
+        public bool TieneFactura()
+        {
+            return FacturaId.HasValue && FacturaId.Value > 0;
+        }
+
+        // NUEVO MÉTODO: Obtener el nombre de la factura para mostrar
+        public string ObtenerNombreFactura()
+        {
+            if (!TieneFactura() || string.IsNullOrEmpty(NumeroFactura))
+                return "Sin factura";
+
+            return NumeroFactura;
         }
 
         public string ObtenerIconoModalidad()

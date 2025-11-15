@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Enums;
@@ -62,9 +63,7 @@ namespace VentaFacil.web.Controllers
             try
             {
                 var usuarioId = ObtenerUsuarioId();
-                var pedido = await _pedidoService.CrearPedidoAsync(usuarioId);
-
-                
+                var pedido = await _pedidoService.CrearPedidoAsync(usuarioId);       
                 var productosResponse = await _productoService.ListarTodosAsync();
                 ViewBag.Productos = productosResponse.Success ? productosResponse.Productos : new List<ProductoDto>();
 
@@ -134,11 +133,7 @@ namespace VentaFacil.web.Controllers
             {
                 var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
 
-                Console.WriteLine($"=== PROCEDER AL PAGO ===");
-                Console.WriteLine($"Pedido ID: {pedidoId}");
-                Console.WriteLine($"Estado actual: {pedido.Estado}");
-
-                // PERMITIR tanto Borrador como Pendiente
+               
                 if (pedido.Estado != PedidoEstado.Borrador && pedido.Estado != PedidoEstado.Pendiente)
                 {
                     TempData["Error"] = $"El pedido no está listo para procesar pago. Estado actual: {pedido.Estado}";
@@ -146,7 +141,7 @@ namespace VentaFacil.web.Controllers
                     return RedirectToAction("Editar", new { id = pedidoId });
                 }
 
-                // Si está en Borrador, cambiarlo a Pendiente
+                
                 if (pedido.Estado == PedidoEstado.Borrador)
                 {
                     var resultadoGuardado = await _pedidoService.GuardarPedidoAsync(pedidoId);
@@ -156,8 +151,7 @@ namespace VentaFacil.web.Controllers
                         return RedirectToAction("Editar", new { id = pedidoId });
                     }
                 }
-
-                // Validar que el pedido cumple con los requisitos para pago
+             
                 var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
                 if (!esValido)
                 {
@@ -186,14 +180,11 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== GUARDAR NUEVO PEDIDO ===");
-                Console.WriteLine($"PedidoId: {pedidoId}, Tipo: {tipoGuardado}");
 
-                // Actualizar datos básicos del pedido
                 var pedido = await _pedidoService.ActualizarClienteAsync(pedidoId, cliente);
                 pedido = await _pedidoService.ActualizarModalidadAsync(pedidoId, modalidad, numeroMesa);
 
-                // Agregar productos si se proporcionaron
+                
                 if (productos != null && productos.Any())
                 {
                     foreach (var item in productos)
@@ -202,7 +193,6 @@ namespace VentaFacil.web.Controllers
                     }
                 }
 
-                // Validar pedido antes de guardar
                 var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
 
                 if (!esValido)
@@ -222,12 +212,8 @@ namespace VentaFacil.web.Controllers
                     if (resultado.Success)
                     {
                         TempData["Success"] = resultado.Message;
-                        Console.WriteLine($"Guardado exitoso - Redirigiendo a pago con pedidoId: {pedidoId}");
-
-                       
                         var pedidoActualizado = await _pedidoService.ObtenerPedidoAsync(pedidoId);
-                        Console.WriteLine($"Estado después de guardar: {pedidoActualizado.Estado}");
-
+                       
                         return RedirectToAction("ProcesarPago", "Facturacion", new { pedidoId });
                     }
                     else
@@ -266,8 +252,6 @@ namespace VentaFacil.web.Controllers
             public int ProductoId { get; set; }
             public int Cantidad { get; set; }
         }
-
-        
 
         // POST: /Pedidos/AgregarProducto
         [HttpPost]
@@ -481,9 +465,6 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== MARCAR COMO LISTO INICIADO ===");
-                Console.WriteLine($"Pedido ID recibido: {request?.PedidoId}");
-                Console.WriteLine($"Request completo: {System.Text.Json.JsonSerializer.Serialize(request)}");
 
                 if (request == null)
                 {
@@ -532,9 +513,6 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== AGREGAR NOTA COCINA ===");
-                Console.WriteLine($"Pedido ID: {request.Id}, Nota: {request.Nota}");
-
                 var resultado = await _pedidoService.AgregarNotaCocinaAsync(request.Id, request.Nota);
 
                 if (resultado.Success)
@@ -564,9 +542,6 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== CANCELAR PEDIDO INICIADO ===");
-                Console.WriteLine($"Pedido ID: {request?.id}, Razón: {request?.razon}");
-
                 if (request == null)
                 {
                     return BadRequest("Request no puede ser null");
@@ -628,29 +603,21 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== INICIAR PREPARACION INICIADO ===");
-                Console.WriteLine($"Pedido ID: {id}");
 
                 var resultado = await _pedidoService.IniciarPreparacionAsync(id);
 
-                Console.WriteLine($"Resultado - Success: {resultado.Success}, Message: {resultado.Message}");
-
                 if (resultado.Success)
                 {
-                    Console.WriteLine("=== INICIAR PREPARACION EXITOSO ===");
+
                     return Json(new { success = true, message = resultado.Message });
                 }
                 else
                 {
-                    Console.WriteLine("=== INICIAR PREPARACION FALLIDO ===");
                     return Json(new { success = false, message = resultado.Message });
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"=== ERROR EN INICIAR PREPARACION ===");
-                Console.WriteLine($"Excepción: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
@@ -721,25 +688,14 @@ namespace VentaFacil.web.Controllers
             {
                 var usuarioId = ObtenerUsuarioId();
 
-                // Obtener todos los pedidos actualizados
                 var pedidosBorrador = await _pedidoService.ObtenerPedidosBorradorAsync(usuarioId);
                 var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
                 var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
 
-                // Filtrar estados específicos desde todosLosPedidos (más confiable)
                 var pedidosListos = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Listo).ToList();
                 var pedidosEntregados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Entregado).ToList();
                 var pedidosCancelados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Cancelado).ToList();
 
-                Console.WriteLine($"=== RESUMEN PEDIDOS ===");
-                Console.WriteLine($"Borrador: {pedidosBorrador.Count}");
-                Console.WriteLine($"En Cocina: {pedidosPendientes.Count}");
-                Console.WriteLine($"Listos: {pedidosListos.Count}");
-                Console.WriteLine($"Entregados: {pedidosEntregados.Count}");
-                Console.WriteLine($"Cancelados: {pedidosCancelados.Count}");
-                Console.WriteLine($"Total: {todosLosPedidos.Count}");
-
-                // Verificar si hay cambios significativos
                 var cambiosSignificativos = todosLosPedidos.Any(p =>
                     p.Estado == PedidoEstado.Listo ||
                     p.Estado == PedidoEstado.Entregado);
@@ -771,30 +727,19 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== INICIAR PREPARACION INICIADO ===");
-                Console.WriteLine($"Pedido ID: {request.PedidoId}");
-
-                
                 var resultado = await _pedidoService.IniciarPreparacionAsync(request.PedidoId);
-
-                Console.WriteLine($"Resultado - Success: {resultado.Success}, Message: {resultado.Message}");
 
                 if (resultado.Success)
                 {
-                    Console.WriteLine("=== INICIAR PREPARACION EXITOSO ===");
                     return Json(new { success = true, message = resultado.Message });
                 }
                 else
                 {
-                    Console.WriteLine("=== INICIAR PREPARACION FALLIDO ===");
                     return Json(new { success = false, message = resultado.Message });
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"=== ERROR EN INICIAR PREPARACION ===");
-                Console.WriteLine($"Excepción: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
@@ -811,25 +756,15 @@ namespace VentaFacil.web.Controllers
         {
             if (User?.Identity?.IsAuthenticated == true)
             {
-                
                 var idClaim = User.FindFirst("UsuarioId") ??
-                             User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ??
-                             User.FindFirst("sub"); 
+                             User.FindFirst(ClaimTypes.NameIdentifier);
 
                 if (idClaim != null && int.TryParse(idClaim.Value, out var usuarioId))
                     return usuarioId;
 
-                
-                var nameClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Name);
-                if (nameClaim != null)
-                {
-                    
-                    return Math.Abs(nameClaim.Value.GetHashCode()) % 1000 + 1;
-                }
+                throw new UnauthorizedAccessException("Usuario no válido");
             }
-
-            
-            return 1;
+            throw new UnauthorizedAccessException("Usuario no autenticado");
         }
     }
 }

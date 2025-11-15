@@ -6,15 +6,17 @@ namespace VentaFacil.web.Models.Response.Factura
     {
         public bool Success { get; set; }
         public string Message { get; set; }
+        public int FacturaId { get; set; }
         public FacturaDto Factura { get; set; }
-        public List<string> Errores { get; set; } = new List<string>();
+        public List<string> Errors { get; set; } = new List<string>();
 
-        public static ResultadoFacturacion Exitoso(FacturaDto factura, string mensaje = "Factura generada exitosamente")
+        public static ResultadoFacturacion Exitoso(FacturaDto factura, string mensaje = "")
         {
             return new ResultadoFacturacion
             {
                 Success = true,
                 Message = mensaje,
+                FacturaId = factura?.Id ?? 0,
                 Factura = factura
             };
         }
@@ -25,7 +27,8 @@ namespace VentaFacil.web.Models.Response.Factura
             {
                 Success = false,
                 Message = mensaje,
-                Errores = errores ?? new List<string>()
+                Errors = errores ?? new List<string>(),
+                FacturaId = 0
             };
         }
     }

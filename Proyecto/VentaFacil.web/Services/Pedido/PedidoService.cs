@@ -6,20 +6,22 @@ using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Enums;
 using VentaFacil.web.Services.Producto;
+using Microsoft.Extensions.Logging;
 
 namespace VentaFacil.web.Services.Pedido
 {
-   
     public class PedidoService : IPedidoService
     {
         private static readonly ConcurrentDictionary<int, PedidoDto> _pedidosTemporales = new();
-        private static int _contadorId= 1;
+        private static int _contadorId = 1;
         private static readonly object _lock = new object();
         private readonly IProductoService _productoService;
+        private readonly ILogger<PedidoService> _logger;
 
-        public PedidoService(IProductoService productoService)
+        public PedidoService(IProductoService productoService, ILogger<PedidoService> logger)
         {
             _productoService = productoService;
+            _logger = logger;
         }
 
         public Task<PedidoDto> CrearPedidoAsync(int idUsuario, string? cliente = null)
@@ -67,7 +69,6 @@ namespace VentaFacil.web.Services.Pedido
             if (producto == null)
                 throw new ArgumentException($"Producto con ID {idProducto} no encontrado");
 
-            
             var itemExistente = pedido.Items.FirstOrDefault(i => i.Id_Producto == idProducto);
 
             if (itemExistente != null)
@@ -141,7 +142,6 @@ namespace VentaFacil.web.Services.Pedido
 
             pedido.Modalidad = modalidad;
 
-            
             if (modalidad == ModalidadPedido.ParaLlevar)
             {
                 pedido.NumeroMesa = null;
@@ -170,15 +170,12 @@ namespace VentaFacil.web.Services.Pedido
         {
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            
             if (!pedido.Items.Any())
                 return false;
 
-            
             if (pedido.Modalidad == ModalidadPedido.EnMesa && (!pedido.NumeroMesa.HasValue || pedido.NumeroMesa <= 0))
                 return false;
 
-            
             if (string.IsNullOrWhiteSpace(pedido.Cliente))
                 return false;
 
@@ -195,23 +192,23 @@ namespace VentaFacil.web.Services.Pedido
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
 
-            Console.WriteLine($"=== GUARDAR PEDIDO SERVICE ===");
-            Console.WriteLine($"Pedido ID: {idPedido}");
-            Console.WriteLine($"Estado antes: {pedido.Estado}");
+            _logger.LogInformation("=== GUARDAR PEDIDO SERVICE ===");
+            _logger.LogInformation("Pedido ID: {PedidoId}", idPedido);
+            _logger.LogInformation("Estado antes: {Estado}", pedido.Estado);
 
             var esValido = await ValidarPedidoParaGuardarAsync(idPedido);
             if (!esValido)
             {
-                Console.WriteLine("VALIDACIÓN FALLIDA");
+                _logger.LogWarning("VALIDACIÓN FALLIDA");
                 return ServiceResult.Error("No se puede guardar el pedido. Verifique que tenga productos, cliente y si es en mesa, número de mesa válido");
             }
 
-            // CAMBIAR ESTADO A PENDIENTE
+            
             pedido.Estado = PedidoEstado.Pendiente;
             pedido.Fecha = DateTime.Now;
 
-            Console.WriteLine($"Estado después: {pedido.Estado}");
-            Console.WriteLine($"=== GUARDADO EXITOSO ===");
+            _logger.LogInformation("Estado después: {Estado}", pedido.Estado);
+            _logger.LogInformation("=== GUARDADO EXITOSO ===");
 
             return ServiceResult.SuccessResult($"Pedido #{pedido.Id_Venta} guardado correctamente. Proceda al pago.", pedido);
         }
@@ -229,7 +226,7 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<bool> PuedeEditarseAsync(int idPedido)
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
-            
+
             return pedido.Estado == PedidoEstado.Borrador;
         }
 
@@ -255,12 +252,13 @@ namespace VentaFacil.web.Services.Pedido
                 .OrderByDescending(p => p.Fecha)
                 .ToList();
 
-            Console.WriteLine($"=== OBTENER PEDIDOS PENDIENTES ===");
-            Console.WriteLine($"Usuario: {idUsuario}");
-            Console.WriteLine($"Total pedidos encontrados: {pedidos.Count}");
+            _logger.LogInformation("=== OBTENER PEDIDOS PENDIENTES ===");
+            _logger.LogInformation("Usuario: {UsuarioId}", idUsuario);
+            _logger.LogInformation("Total pedidos encontrados: {Count}", pedidos.Count);
+
             foreach (var pedido in pedidos)
             {
-                Console.WriteLine($"Pedido #{pedido.Id_Venta} - Estado: {pedido.Estado}");
+                _logger.LogInformation("Pedido #{PedidoId} - Estado: {Estado}", pedido.Id_Venta, pedido.Estado);
             }
 
             return Task.FromResult(pedidos);
@@ -279,40 +277,39 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<List<PedidoDto>> ObtenerPedidosParaCocinaAsync()
         {
             return await Task.FromResult(_pedidosTemporales.Values
-                .Where(p => p.Estado == PedidoEstado.Pendiente || p.Estado == PedidoEstado.EnPreparacion || p.Estado == PedidoEstado.Listo) // AGREGAR Pendiente
+                .Where(p => p.Estado == PedidoEstado.Pendiente || p.Estado == PedidoEstado.EnPreparacion || p.Estado == PedidoEstado.Listo)
                 .OrderBy(p => p.Fecha)
                 .ToList());
         }
 
         public async Task<ServiceResult> MarcarComoListoAsync(int pedidoId)
         {
-            Console.WriteLine($"=== SERVICIO: MarcarComoListoAsync ===");
-            Console.WriteLine($"Buscando pedido ID: {pedidoId}");
+            _logger.LogInformation("=== SERVICIO: MarcarComoListoAsync ===");
+            _logger.LogInformation("Buscando pedido ID: {PedidoId}", pedidoId);
 
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            Console.WriteLine($"Pedido encontrado - ID: {pedido.Id_Venta}, Estado actual: {pedido.Estado}");
+            _logger.LogInformation("Pedido encontrado - ID: {PedidoId}, Estado actual: {Estado}", pedido.Id_Venta, pedido.Estado);
 
             if (pedido.Estado != PedidoEstado.EnPreparacion)
             {
-                Console.WriteLine($"ERROR: Estado inválido. Esperado: EnPreparacion, Actual: {pedido.Estado}");
+                _logger.LogWarning("ERROR: Estado inválido. Esperado: EnPreparacion, Actual: {Estado}", pedido.Estado);
                 return ServiceResult.Error("Solo se pueden marcar como listo pedidos en preparación");
             }
 
             pedido.Estado = PedidoEstado.Listo;
             pedido.FechaActualizacion = DateTime.Now;
 
-            Console.WriteLine($"Pedido actualizado - Nuevo estado: {pedido.Estado}");
-            Console.WriteLine($"Total de pedidos en memoria: {_pedidosTemporales.Count}");
+            _logger.LogInformation("Pedido actualizado - Nuevo estado: {Estado}", pedido.Estado);
+            _logger.LogInformation("Total de pedidos en memoria: {Count}", _pedidosTemporales.Count);
 
-            
             if (_pedidosTemporales.TryGetValue(pedidoId, out var pedidoVerificado))
             {
-                Console.WriteLine($"Pedido verificado en diccionario - Estado: {pedidoVerificado.Estado}");
+                _logger.LogInformation("Pedido verificado en diccionario - Estado: {Estado}", pedidoVerificado.Estado);
             }
             else
             {
-                Console.WriteLine($"ERROR: Pedido no encontrado en diccionario después de actualizar");
+                _logger.LogError("ERROR: Pedido no encontrado en diccionario después de actualizar");
             }
 
             return ServiceResult.SuccessResult("Pedido marcado como listo para entregar");
@@ -327,32 +324,32 @@ namespace VentaFacil.web.Services.Pedido
 
         public async Task<ServiceResult> CancelarPedidoAsync(int pedidoId, string razon)
         {
-            Console.WriteLine($"=== SERVICIO: CancelarPedidoAsync ===");
-            Console.WriteLine($"Pedido ID: {pedidoId}, Razón: {razon}");
+            _logger.LogInformation("=== SERVICIO: CancelarPedidoAsync ===");
+            _logger.LogInformation("Pedido ID: {PedidoId}, Razón: {Razon}", pedidoId, razon);
 
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            Console.WriteLine($"Pedido encontrado - ID: {pedido.Id_Venta}, Estado actual: {pedido.Estado}");
+            _logger.LogInformation("Pedido encontrado - ID: {PedidoId}, Estado actual: {Estado}", pedido.Id_Venta, pedido.Estado);
 
             if (pedido.Estado == PedidoEstado.Entregado)
             {
-                Console.WriteLine("ERROR: No se puede cancelar pedido entregado");
+                _logger.LogWarning("ERROR: No se puede cancelar pedido entregado");
                 return ServiceResult.Error("No se puede cancelar un pedido ya entregado");
             }
 
             if (pedido.Estado == PedidoEstado.Cancelado)
             {
-                Console.WriteLine("ERROR: Pedido ya cancelado");
+                _logger.LogWarning("ERROR: Pedido ya cancelado");
                 return ServiceResult.Error("El pedido ya está cancelado");
             }
 
             pedido.Estado = PedidoEstado.Cancelado;
 
-            // Asegurar que la razón se guarde correctamente
+            
             pedido.MotivoCancelacion = $"CANCELADO: {razon}";
             pedido.FechaActualizacion = DateTime.Now;
 
-            Console.WriteLine($"Pedido cancelado - Nuevo estado: {pedido.Estado}, Motivo: {pedido.MotivoCancelacion}");
+            _logger.LogInformation("Pedido cancelado - Nuevo estado: {Estado}, Motivo: {Motivo}", pedido.Estado, pedido.MotivoCancelacion);
 
             return ServiceResult.SuccessResult("Pedido cancelado correctamente");
         }
@@ -388,26 +385,25 @@ namespace VentaFacil.web.Services.Pedido
         {
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            Console.WriteLine($"=== INICIAR PREPARACION SERVICE ===");
-            Console.WriteLine($"Pedido ID: {pedidoId}");
-            Console.WriteLine($"Estado actual: {pedido.Estado}");
+            _logger.LogInformation("=== INICIAR PREPARACION SERVICE ===");
+            _logger.LogInformation("Pedido ID: {PedidoId}", pedidoId);
+            _logger.LogInformation("Estado actual: {Estado}", pedido.Estado);
 
             if (pedido.Estado != PedidoEstado.Pendiente && pedido.Estado != PedidoEstado.Borrador)
             {
-                Console.WriteLine($"ERROR: Estado inválido. Esperado: Pendiente o Borrador, Actual: {pedido.Estado}");
+                _logger.LogWarning("ERROR: Estado inválido. Esperado: Pendiente o Borrador, Actual: {Estado}", pedido.Estado);
                 return ServiceResult.Error("Solo se pueden iniciar preparación de pedidos pendientes o en borrador");
             }
 
             pedido.Estado = PedidoEstado.EnPreparacion;
             pedido.FechaActualizacion = DateTime.Now;
 
-            Console.WriteLine($"Nuevo estado: {pedido.Estado}");
-            Console.WriteLine($"Total pedidos en memoria: {_pedidosTemporales.Count}");
+            _logger.LogInformation("Nuevo estado: {Estado}", pedido.Estado);
+            _logger.LogInformation("Total pedidos en memoria: {Count}", _pedidosTemporales.Count);
 
-           
             if (_pedidosTemporales.TryGetValue(pedidoId, out var pedidoVerificado))
             {
-                Console.WriteLine($"Pedido verificado - Estado: {pedidoVerificado.Estado}");
+                _logger.LogInformation("Pedido verificado - Estado: {Estado}", pedidoVerificado.Estado);
             }
 
             return ServiceResult.SuccessResult("Preparación del pedido iniciada");
@@ -475,18 +471,61 @@ namespace VentaFacil.web.Services.Pedido
 
         public void VerificarEstadoPedidos(int usuarioId)
         {
-            Console.WriteLine($"=== VERIFICACIÓN ESTADO PEDIDOS ===");
-            Console.WriteLine($"Total pedidos en memoria: {_pedidosTemporales.Count}");
+            _logger.LogInformation("=== VERIFICACIÓN ESTADO PEDIDOS ===");
+            _logger.LogInformation("Total pedidos en memoria: {Count}", _pedidosTemporales.Count);
 
             var pedidosUsuario = _pedidosTemporales.Values.Where(p => p.Id_Usuario == usuarioId).ToList();
-            Console.WriteLine($"Pedidos del usuario {usuarioId}: {pedidosUsuario.Count}");
+            _logger.LogInformation("Pedidos del usuario {UsuarioId}: {Count}", usuarioId, pedidosUsuario.Count);
 
             foreach (var pedido in pedidosUsuario)
             {
-                Console.WriteLine($"Pedido #{pedido.Id_Venta} - Estado: {pedido.Estado} - Cliente: {pedido.Cliente} - Items: {pedido.Items.Count}");
+                _logger.LogInformation("Pedido #{PedidoId} - Estado: {Estado} - Cliente: {Cliente} - Items: {ItemsCount}",
+                    pedido.Id_Venta, pedido.Estado, pedido.Cliente, pedido.Items.Count);
+            }
+        }
+
+        public Task<List<PedidoDto>> ObtenerPedidosConFacturaAsync(int idUsuario)
+        {
+            var pedidos = _pedidosTemporales.Values
+                .Where(p => p.Id_Usuario == idUsuario && p.FacturaId.HasValue && p.FacturaId > 0)
+                .OrderByDescending(p => p.Fecha)
+                .ToList();
+
+            return Task.FromResult(pedidos);
+        }
+
+        public async Task<bool> TieneFacturaAsync(int pedidoId)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+            return pedido.FacturaId.HasValue && pedido.FacturaId > 0;
+        }
+
+        public async Task<int?> ObtenerFacturaIdAsync(int pedidoId)
+        {
+            var pedido = await ObtenerPedidoAsync(pedidoId);
+            return pedido.FacturaId;
+        }
+
+        public async Task ActualizarPedidoConFactura(int pedidoId, int facturaId, string numeroFactura)
+        {
+            try
+            {
+                if (_pedidosTemporales.TryGetValue(pedidoId, out var pedidoEnMemoria))
+                {
+                    pedidoEnMemoria.FacturaId = facturaId;
+                    pedidoEnMemoria.NumeroFactura = numeroFactura; // GUARDAR EL NÚMERO DE FACTURA
+                    _logger.LogInformation("✅ Pedido {PedidoId} actualizado con Factura {FacturaId} - {NumeroFactura}",
+                        pedidoId, facturaId, numeroFactura);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ No se encontró el pedido {PedidoId} en memoria para actualizar con factura", pedidoId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error al actualizar pedido {PedidoId} con factura {FacturaId}", pedidoId, facturaId);
             }
         }
     }
-    
-
 }

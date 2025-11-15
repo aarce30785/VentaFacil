@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Enums;
 using VentaFacil.web.Models.Response.Factura;
 using VentaFacil.web.Services.Facturacion;
+using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
 
 namespace VentaFacil.web.Controllers
@@ -13,15 +15,18 @@ namespace VentaFacil.web.Controllers
     {
         private readonly IFacturacionService _facturacionService;
         private readonly IPedidoService _pedidoService;
+        private readonly IPdfService _pdfService; 
         private readonly ILogger<FacturacionController> _logger;
 
         public FacturacionController(
             IFacturacionService facturacionService,
             IPedidoService pedidoService,
+            IPdfService pdfService, 
             ILogger<FacturacionController> logger)
         {
             _facturacionService = facturacionService;
             _pedidoService = pedidoService;
+            _pdfService = pdfService;
             _logger = logger;
         }
 
@@ -30,15 +35,7 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== PROCESAR PAGO FACTURACION ===");
-                Console.WriteLine($"Pedido ID: {pedidoId}");
-
-               
                 var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
-
-                Console.WriteLine($"Pedido obtenido: {pedido != null}");
-                Console.WriteLine($"Estado del pedido: {pedido?.Estado}");
-                Console.WriteLine($"Items count: {pedido?.Items?.Count}");
 
                 if (pedido == null)
                 {
@@ -49,26 +46,20 @@ namespace VentaFacil.web.Controllers
                 if (pedido.Estado != PedidoEstado.Pendiente && pedido.Estado != PedidoEstado.Listo)
                 {
                     TempData["Error"] = $"El pedido no está en estado válido para pago. Estado actual: {pedido.Estado}";
-                    Console.WriteLine($"ERROR: Estado inválido - {pedido.Estado}");
                     return RedirectToAction("Editar", "Pedidos", new { id = pedidoId });
                 }
 
-                
                 var model = new ProcesarPagoViewModel
                 {
                     Pedido = pedido,
                     PedidoId = pedidoId,
                     Total = pedido.Total,
                     Cliente = pedido.Cliente,
-                    
                 };
-
-                Console.WriteLine("Redirigiendo a vista ProcesarPago con modelo");
                 return View(model);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR en ProcesarPago: {ex.Message}");
                 TempData["Error"] = $"Error al procesar pago: {ex.Message}";
                 return RedirectToAction("Index", "Pedidos");
             }
@@ -80,26 +71,20 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"=== CONFIRMAR PAGO ===");
-                Console.WriteLine($"Pedido ID: {model.PedidoId}");
-                Console.WriteLine($"Método Pago: {model.MetodoPago}");
-                Console.WriteLine($"Monto Pagado: {model.MontoPagado}");
-                Console.WriteLine($"Moneda: {model.Moneda}");
-                Console.WriteLine($"Tasa Cambio: {model.TasaCambio}");
-
-               
                 if (!ModelState.IsValid)
                 {
-                    Console.WriteLine("ModelState inválido");
-
-                   
                     var pedido = await _pedidoService.ObtenerPedidoAsync(model.PedidoId);
                     model.Pedido = pedido;
                     return View("ProcesarPago", model);
                 }
 
-                
                 var pedidoValidacion = await _pedidoService.ObtenerPedidoAsync(model.PedidoId);
+                if (pedidoValidacion.Estado != PedidoEstado.Pendiente && pedidoValidacion.Estado != PedidoEstado.Listo)
+                {
+                    TempData["Warning"] = $"Este pedido ya fue procesado. Estado actual: {pedidoValidacion.Estado}";
+                    return RedirectToAction("Index", "Pedidos");
+                }
+
                 decimal totalPedido = pedidoValidacion.Total;
 
                 if (model.Moneda == "USD")
@@ -120,7 +105,7 @@ namespace VentaFacil.web.Controllers
                     return View("ProcesarPago", model);
                 }
 
-                // Procesar el pago
+      
                 ResultadoFacturacion resultado;
 
                 if (model.Moneda == "USD")
@@ -139,59 +124,47 @@ namespace VentaFacil.web.Controllers
                         model.Moneda);
                 }
 
-                Console.WriteLine($"Resultado facturación - Success: {resultado?.Success}, Message: {resultado?.Message}");
+                bool esExitoso = resultado?.Success == true && resultado.FacturaId > 0;
 
-                if (resultado?.Success == true)
+                if (esExitoso)
                 {
-                    Console.WriteLine("Pago exitoso - Enviando a cocina");
 
-                    
                     var resultadoCocina = await _pedidoService.IniciarPreparacionAsync(model.PedidoId);
-
-                    Console.WriteLine($"Resultado cocina - Success: {resultadoCocina?.Success}, Message: {resultadoCocina?.Message}");
 
                     if (resultadoCocina?.Success == true)
                     {
                         TempData["Success"] = "✅ Pago procesado exitosamente. El pedido ha sido enviado a cocina.";
-
-                        
-                        return RedirectToAction("Index", "Pedidos");
                     }
                     else
                     {
                         TempData["Warning"] = $"⚠️ Pago procesado pero error al enviar a cocina: {resultadoCocina?.Message}";
-
-                       
-                        return RedirectToAction("Index", "Pedidos");
                     }
+
+                    
+                    return RedirectToAction("DetalleFactura", new { facturaId = resultado.FacturaId });
                 }
                 else
                 {
-                    Console.WriteLine($"Error en facturación: {resultado?.Message}");
-
                     
-                    model.Pedido = pedidoValidacion;
                     TempData["Error"] = resultado?.Message ?? "Error desconocido al procesar el pago";
-
-                    if (resultado?.Errores?.Any() == true)
-                    {
-                        TempData["ErrorDetalles"] = string.Join("\n", resultado.Errores);
-                    }
-
                     return View("ProcesarPago", model);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR en ProcesarPago: {ex.Message}");
-
                 
                 var pedido = await _pedidoService.ObtenerPedidoAsync(model.PedidoId);
                 model.Pedido = pedido;
                 TempData["Error"] = $"❌ Error al procesar pago: {ex.Message}";
-
                 return View("ProcesarPago", model);
             }
+        }
+
+        [HttpGet]
+        public IActionResult PagoCompletado(int facturaId)
+        {
+            ViewBag.FacturaId = facturaId;
+            return View();
         }
 
 
@@ -200,47 +173,71 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
+                
+
                 var factura = await _facturacionService.ObtenerFacturaAsync(facturaId);
 
                 if (factura == null)
                 {
+                    _logger.LogWarning($"❌ Factura {facturaId} no encontrada");
                     TempData["Error"] = "Factura no encontrada";
-                    return RedirectToAction("Index", "Pedidos"); 
+                    return RedirectToAction("Index", "Pedidos");
                 }
 
-                return View(factura);
+                
+
+                var viewModel = new DetalleFacturaViewModel
+                {
+                    Factura = factura,
+                    FacturaId = facturaId
+                };
+                var pdfBytes = _pdfService.GenerarFacturaPdf(factura);
+                return View(viewModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener factura {FacturaId}", facturaId);
-                TempData["Error"] = "Error al cargar la factura";
-                return RedirectToAction("Index", "Pedidos"); 
+                _logger.LogError(ex, $"💥 Error crítico al cargar factura {facturaId}");
+                TempData["Error"] = $"Error al cargar la factura: {ex.Message}";
+                return RedirectToAction("Index", "Pedidos");
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> ImprimirFactura(int facturaId)
+        public async Task<IActionResult> GenerarPdf([FromBody] GenerarPdfRequest request)
         {
             try
             {
-                var factura = await _facturacionService.ObtenerFacturaAsync(facturaId);
+
+                var factura = await _facturacionService.ObtenerFacturaAsync(request.FacturaId);
 
                 if (factura == null)
                 {
-                    return Json(new { success = false, message = "Factura no encontrada" });
+                    return NotFound(new { error = "Factura no encontrada" });
                 }
 
-                
-                _logger.LogInformation("Imprimiendo factura {NumeroFactura}", factura.NumeroFactura);
+                var pdfBytes = _pdfService.GenerarFacturaPdf(factura);
 
-                return Json(new { success = true, message = "Factura enviada a impresión" });
+                return File(pdfBytes, "application/pdf", $"factura-{request.FacturaId}.pdf");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al imprimir factura {FacturaId}", facturaId);
-                return Json(new { success = false, message = "Error al imprimir factura" });
+                _logger.LogError(ex, "Error al generar PDF para factura {FacturaId}", request.FacturaId);
+                return BadRequest(new { error = ex.Message });
             }
         }
+
+        public class GenerarPdfRequest
+        {
+            public int FacturaId { get; set; }
+        }
+
+        // ViewModel para DetalleFactura
+        public class DetalleFacturaViewModel
+        {
+            public FacturaDto Factura { get; set; }
+            public int FacturaId { get; set; }
+        }
+
     }
 
     public class ProcesarPagoViewModel
@@ -250,21 +247,50 @@ namespace VentaFacil.web.Controllers
         public decimal Total { get; set; }
 
         [Required(ErrorMessage = "El método de pago es requerido")]
+        [Display(Name = "Método de Pago")]
         public MetodoPago MetodoPago { get; set; }
 
         [Required(ErrorMessage = "El monto pagado es requerido")]
         [Range(0.01, double.MaxValue, ErrorMessage = "El monto debe ser mayor a 0")]
+        [Display(Name = "Monto Pagado")]
         public decimal MontoPagado { get; set; }
 
+        [Display(Name = "Moneda")]
         public string Moneda { get; set; } = "CRC";
 
         [Range(0.01, double.MaxValue, ErrorMessage = "La tasa de cambio debe ser mayor a 0")]
+        [Display(Name = "Tasa de Cambio")]
         public decimal? TasaCambio { get; set; }
 
-        public decimal Cambio => MontoPagado - (Moneda == "USD" ? (Total / (TasaCambio ?? 1)) : Total);
+        [Display(Name = "Cambio")]
+        public decimal Cambio => Math.Max(0, MontoPagado - (Moneda == "USD" ? (Total / (TasaCambio ?? 1)) : Total));
+
         public string Cliente { get; set; }
+
+        [Display(Name = "Modalidad")]
         public ModalidadPedido Modalidad { get; set; }
+
+        [Display(Name = "Número de Mesa")]
         public int? NumeroMesa { get; set; }
+
+        public decimal TotalEnMonedaPago => Moneda == "USD" ? (Total / (TasaCambio ?? 1)) : Total;
+        public bool MostrarTasaCambio => Moneda == "USD";
     }
 
+    public class DetalleFacturaViewModel
+    {
+        public FacturaDto Factura { get; set; } = new FacturaDto();
+        public int FacturaId { get; set; }
+
+        public string NumeroFactura => Factura?.NumeroFactura ?? "N/A";
+        public DateTime FechaEmision => Factura?.FechaEmision ?? DateTime.Now;
+        public string Cliente => Factura?.Cliente ?? "N/A";
+        public decimal Total => Factura?.Total ?? 0;
+        public decimal MontoPagado => Factura?.MontoPagado ?? 0;
+        public decimal Cambio => Factura?.Cambio ?? 0;
+        public string Moneda => Factura?.Moneda ?? "CRC";
+        public string MetodoPago => Factura?.MetodoPago.ToString() ?? "N/A";
+
+        public IEnumerable<ItemFacturaDto> Items => Factura?.Items ?? Enumerable.Empty<ItemFacturaDto>();
+    }
 }

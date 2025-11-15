@@ -279,37 +279,21 @@
                                             Pedidos en proceso de preparación
                                         </p>
                                     </div>
-                                    
                                     <span class="status-btn warning-btn" id="contadorPendientes">@pedidosPendientes.Count en cocina</span>
                                 </div>
                                 <div class="table-wrapper table-responsive">
                                     <table class="table striped-table">
                                         <thead>
                                             <tr>
-                                                <th class="min-width">
-                                                    <h6>ID</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Cliente</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Modalidad</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Productos</h6>
-                                                </th>
-                                                <th class="text-end">
-                                                    <h6>Total</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Fecha</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Estado</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Acciones</h6>
-                                                </th>
+                                                <th class="min-width"><h6>ID</h6></th>
+                                                <th><h6>Cliente</h6></th>
+                                                <th><h6>Modalidad</h6></th>
+                                                <th class="text-center"><h6>Productos</h6></th>
+                                                <th class="text-end"><h6>Total</h6></th>
+                                                <th class="text-center"><h6>Fecha</h6></th>
+                                                <th class="text-center"><h6>Factura</h6></th> <!-- COLUMNA FACTURA -->
+                                                <th class="text-center"><h6>Estado</h6></th>
+                                                <th class="text-center"><h6>Acciones</h6></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -353,6 +337,24 @@
                                                         <small class="text-muted">@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</small>
                                                     </td>
                                                     <td class="text-center">
+                                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
+                                                        {
+                                                            <span class="badge bg-success">
+                                                                <i class="lni lni-checkmark-circle me-1"></i>
+                                                                Facturado
+                                                            </span>
+                                                            <br />
+                                                            <small class="text-muted">#@pedido.NumeroFactura</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning">
+                                                                <i class="lni lni-time me-1"></i>
+                                                                Sin factura
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-center">
                                                         <span class="status-btn @GetBadgeClass(pedido.Estado)" id="estado-@pedido.Id_Venta">
                                                             @GetEstadoText(pedido.Estado)
                                                         </span>
@@ -392,7 +394,7 @@
                                             Pedidos terminados y listos para entregar
                                         </p>
                                     </div>
-                                    
+
                                     <span class="status-btn success-btn" id="contadorListos">@pedidosListos.Count listos</span>
                                 </div>
                                 <div class="table-wrapper table-responsive">
@@ -419,6 +421,9 @@
                                                 </th>
                                                 <th class="text-center">
                                                     <h6>Fecha Listo</h6>
+                                                </th>
+                                                <th class="text-center">
+                                                    <h6>Factura</h6>
                                                 </th>
                                                 <th class="text-center">
                                                     <h6>Acciones</h6>
@@ -469,6 +474,29 @@
                                                         <small class="text-muted">@(pedido.FechaActualizacion?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</small>
                                                     </td>
                                                     <td class="text-center">
+                                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
+                                                        {
+                                                            <div class="d-flex flex-column align-items-center">
+                                                                <span class="badge bg-success mb-1">
+                                                                    <i class="lni lni-checkmark-circle me-1"></i>
+                                                                    FACT-@pedido.NumeroFactura
+                                                                </span>
+                                                                <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = pedido.Id_Venta })"
+                                                                   class="btn btn-sm btn-outline-primary mt-1"
+                                                                   title="Descargar Factura PDF">
+                                                                    <i class="lni lni-download"></i> PDF
+                                                                </a>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning">
+                                                                <i class="lni lni-time me-1"></i>
+                                                                Sin factura
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-center">
                                                         <div class="action">
                                                             <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
                                                                class="text-info me-2" title="Ver detalles">
@@ -500,7 +528,7 @@
                                             Pedidos completados y entregados al cliente
                                         </p>
                                     </div>
-                                   
+
                                     <span class="status-btn info-btn" id="contadorEntregados">@pedidosEntregados.Count entregados</span>
                                 </div>
                                 <div class="table-wrapper table-responsive">
@@ -527,6 +555,9 @@
                                                 </th>
                                                 <th class="text-center">
                                                     <h6>Fecha Entrega</h6>
+                                                </th>
+                                                <th class="text-center">
+                                                    <h6>Factura</h6>
                                                 </th>
                                                 <th class="text-center">
                                                     <h6>Acciones</h6>
@@ -577,12 +608,27 @@
                                                         <small class="text-muted">@(pedido.FechaActualizacion?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</small>
                                                     </td>
                                                     <td class="text-center">
-                                                        <div class="action">
-                                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
-                                                               class="text-info" title="Ver detalles">
-                                                                <i class="lni lni-eye"></i>
-                                                            </a>
-                                                        </div>
+                                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
+                                                        {
+                                                            <div class="d-flex flex-column align-items-center">
+                                                                <span class="badge bg-success mb-1">
+                                                                    <i class="lni lni-checkmark-circle me-1"></i>
+                                                                    FACT-@pedido.FacturaId
+                                                                </span>
+                                                                <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = pedido.Id_Venta })"
+                                                                   class="btn btn-sm btn-outline-primary mt-1"
+                                                                   title="Descargar Factura PDF">
+                                                                    <i class="lni lni-download"></i> PDF
+                                                                </a>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning">
+                                                                <i class="lni lni-time me-1"></i>
+                                                                Sin factura
+                                                            </span>
+                                                        }
                                                     </td>
                                                 </tr>
                                             }

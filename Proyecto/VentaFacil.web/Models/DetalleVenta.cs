@@ -19,7 +19,7 @@ namespace VentaFacil.web.Models
         public decimal PrecioUnitario { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
-        public decimal Descuento { get; set; }
+        public decimal? Descuento { get; set; }
 
         // Navigation properties
         [ForeignKey("Id_Venta")]

@@ -32,43 +32,55 @@ namespace VentaFacil.web.Services.Facturacion
         {
             try
             {
-                _logger.LogInformation("Generando factura para pedido {PedidoId}", pedidoId);
+                _logger.LogInformation("🔧 Generando factura para pedido {PedidoId}", pedidoId);
 
-                // 1. Obtener y validar el pedido
                 var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
                 var errores = ValidarPedidoParaFacturacion(pedido);
 
                 if (errores.Any())
                 {
+                    _logger.LogWarning("❌ Validación fallida para pedido {PedidoId}: {Errores}", pedidoId, string.Join(", ", errores));
                     return ResultadoFacturacion.Error("No se puede generar la factura", errores);
                 }
 
-                // 2. Crear la venta en la base de datos
+                
                 var venta = await CrearVentaDesdePedido(pedido, metodoPago, moneda);
+                _logger.LogInformation("✅ Venta creada - ID: {VentaId}", venta.Id_Venta);
 
-                // 3. Crear los detalles de venta
+                
                 await CrearDetallesVenta(venta.Id_Venta, pedido);
+                _logger.LogInformation("✅ Detalles de venta creados");
 
-                // 4. Crear la factura
-                var factura = await CrearFactura(venta.Id_Venta, pedido.Total);
+                
+                var factura = await CrearFactura(
+                    venta.Id_Venta,
+                    pedido.Total,
+                    pedido.Cliente,
+                    montoPagado,
+                    moneda,
+                    metodoPago
+                );
 
-                // 5. Crear el DTO de respuesta
-                var facturaDto = await CrearFacturaDto(factura.Id_Factura, pedido, montoPagado, moneda, metodoPago);
+                
+                if (factura?.Id_Factura > 0)
+                {
+                    var facturaDto = await ObtenerFacturaAsync(factura.Id_Factura);
 
-                _logger.LogInformation("Factura {FacturaId} generada exitosamente", factura.Id_Factura);
+                    _logger.LogInformation("🎯 Retornando ResultadoFacturacion - FacturaId: {FacturaId}, DTO Id: {DtoId}, Success: true",
+                        factura.Id_Factura, facturaDto?.Id);
 
-                return ResultadoFacturacion.Exitoso(facturaDto, "Factura generada exitosamente");
+                    return ResultadoFacturacion.Exitoso(facturaDto, "Factura generada exitosamente");
+                }
+                else
+                {
+                    _logger.LogError("💥 No se pudo crear la factura en la base de datos");
+                    return ResultadoFacturacion.Error("Error al crear la factura en la base de datos");
+                }
             }
             catch (Exception ex)
             {
-                // LOG DETALLADO DEL ERROR
-                _logger.LogError(ex, "Error completo al generar factura para pedido {PedidoId}", pedidoId);
-
-                // Obtener el error interno
-                var innerException = ex.InnerException != null ? ex.InnerException.Message : "No hay inner exception";
-                _logger.LogError("Inner Exception: {InnerException}", innerException);
-
-                return ResultadoFacturacion.Error($"Error al generar factura: {ex.Message}. Inner: {innerException}");
+                _logger.LogError(ex, "💥 Error completo al generar factura para pedido {PedidoId}", pedidoId);
+                return ResultadoFacturacion.Error($"Error al generar factura: {ex.Message}");
             }
         }
 
@@ -79,28 +91,33 @@ namespace VentaFacil.web.Services.Facturacion
                 _logger.LogInformation("Generando factura en dólares para pedido {PedidoId}", pedidoId);
 
                 var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
-
                 var errores = ValidarPedidoParaFacturacion(pedido);
+
                 if (errores.Any())
                 {
                     return ResultadoFacturacion.Error("No se puede generar la factura", errores);
                 }
 
-                // Calcular total en dólares
+                
                 var totalDolares = pedido.Total / tasaCambio;
-                var cambio = montoPagado - totalDolares;
 
-                // Crear venta y factura
+                
                 var venta = await CrearVentaDesdePedido(pedido, MetodoPago.Efectivo, "USD");
                 await CrearDetallesVenta(venta.Id_Venta, pedido);
-                var factura = await CrearFactura(venta.Id_Venta, pedido.Total);
 
-                // Crear DTO con información de conversión
-                var facturaDto = await CrearFacturaDto(factura.Id_Factura, pedido, montoPagado, "USD", MetodoPago.Efectivo);
-                facturaDto.TasaCambio = tasaCambio;
-                facturaDto.TotalColones = pedido.Total;
-                facturaDto.TotalDolares = totalDolares;
-                facturaDto.Cambio = cambio;
+                
+                var factura = await CrearFactura(
+                    venta.Id_Venta,
+                    pedido.Total,
+                    pedido.Cliente,
+                    montoPagado, 
+                    "USD",
+                    MetodoPago.Efectivo,
+                    tasaCambio  
+                );
+
+                
+                var facturaDto = await ObtenerFacturaAsync(factura.Id_Factura);
 
                 _logger.LogInformation("Factura en dólares {FacturaId} generada exitosamente", factura.Id_Factura);
 
@@ -120,34 +137,52 @@ namespace VentaFacil.web.Services.Facturacion
                 var factura = await _context.Factura
                     .Include(f => f.Venta)
                         .ThenInclude(v => v.Detalles)
-                        .ThenInclude(d => d.Producto)
-                    .Include(f => f.Venta)
-                        .ThenInclude(v => v.Usuario)
+                            .ThenInclude(d => d.Producto)
                     .FirstOrDefaultAsync(f => f.Id_Factura == facturaId);
 
-                if (factura == null) return null;
+                if (factura == null)
+                    return null;
 
-                return new FacturaDto
+                var venta = factura.Venta;
+
+                
+                var subtotal = venta.Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
+                var totalDescuentos = venta.Detalles.Sum(d => d.Descuento ?? 0);
+                var impuestos = venta.Total - subtotal + totalDescuentos;
+
+                var facturaDto = new FacturaDto
                 {
                     Id = factura.Id_Factura,
                     PedidoId = factura.Id_Venta,
-                    NumeroFactura = $"F-{factura.Id_Factura:000000}",
+                    NumeroFactura = $"F-{factura.Id_Factura:0000}",
                     FechaEmision = factura.FechaEmision,
+                    Cliente = factura.Cliente ?? "Cliente Generico",
+                    Subtotal = subtotal,
+                    Impuestos = impuestos > 0 ? impuestos : 0,
                     Total = factura.Total,
-                    Items = factura.Venta.Detalles.Select(d => new ItemFacturaDto
+                    MontoPagado = factura.MontoPagado,
+                    Cambio = factura.Cambio,
+                    Moneda = factura.Moneda,
+                    MetodoPago = Enum.Parse<MetodoPago>(factura.MetodoPago),
+                    TasaCambio = factura.TasaCambio,
+                    EstadoFactura = factura.Estado ? EstadoFactura.Activa : EstadoFactura.Anulada,
+                    Items = venta.Detalles.Select(d => new ItemFacturaDto
                     {
                         ProductoId = d.Id_Producto,
-                        NombreProducto = d.Producto?.Nombre ?? "Producto no encontrado",
+                        NombreProducto = d.Producto?.Nombre ?? "Producto no disponible",
                         Cantidad = d.Cantidad,
                         PrecioUnitario = d.PrecioUnitario,
-                        Subtotal = d.PrecioUnitario * d.Cantidad - d.Descuento
+                        Subtotal = d.Cantidad * d.PrecioUnitario - (d.Descuento ?? 0),
+                        Descuento = d.Descuento
                     }).ToList()
                 };
+
+                return facturaDto;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener factura {FacturaId}", facturaId);
-                return null;
+                throw;
             }
         }
 
@@ -212,7 +247,7 @@ namespace VentaFacil.web.Services.Facturacion
                 Fecha = DateTime.Now,
                 Total = pedido.Total,
                 MetodoPago = metodoPago.ToString(),
-                Id_Usuario = usuarioId, // Usar el ID del usuario autenticado
+                Id_Usuario = usuarioId, 
                 Estado = true
             };
 
@@ -224,65 +259,53 @@ namespace VentaFacil.web.Services.Facturacion
 
         private async Task CrearDetallesVenta(int ventaId, PedidoDto pedido)
         {
-            foreach (var item in pedido.Items)
+            var detalles = pedido.Items.Select(item => new DetalleVenta
             {
-                var detalle = new DetalleVenta
-                {
-                    Id_Venta = ventaId,
-                    Id_Producto = item.Id_Producto,
-                    Cantidad = item.Cantidad,
-                    PrecioUnitario = item.PrecioUnitario,
-                    Descuento = 0
-                };
+                Id_Venta = ventaId,
+                Id_Producto = item.Id_Producto,
+                Cantidad = item.Cantidad,
+                PrecioUnitario = item.PrecioUnitario,
+                Descuento = item.Descuento
+            }).ToList();
 
-                _context.DetalleVenta.Add(detalle);
-            }
-
+            _context.DetalleVenta.AddRange(detalles);
             await _context.SaveChangesAsync();
         }
 
-        private async Task<Factura> CrearFactura(int ventaId, decimal total)
+        private async Task<Factura> CrearFactura(int ventaId, decimal total, string cliente,
+            decimal montoPagado, string moneda, MetodoPago metodoPago, decimal? tasaCambio = null)
         {
             var factura = new Factura
             {
                 Id_Venta = ventaId,
                 FechaEmision = DateTime.Now,
                 Total = total,
-                Estado = true
+                Cliente = cliente,
+                Estado = true,
+                MontoPagado = montoPagado,
+                Moneda = moneda,
+                MetodoPago = metodoPago.ToString(),
+                TasaCambio = tasaCambio
             };
 
-            _context.Factura.Add(factura); // CORREGIDO: Cambiado de Facturas a Factura
+            factura.CalcularCambio();
+            _context.Factura.Add(factura);
             await _context.SaveChangesAsync();
 
-            return factura;
-        }
+            var numeroFactura = $"F-{factura.Id_Factura:0000}";
 
-        private async Task<FacturaDto> CrearFacturaDto(int facturaId, PedidoDto pedido, decimal montoPagado, string moneda, MetodoPago metodoPago)
-        {
-            var factura = await ObtenerFacturaAsync(facturaId);
-
-            if (factura != null)
-            {
-                factura.Cliente = pedido.Cliente;
-                factura.MetodoPago = metodoPago;
-                factura.MontoPagado = montoPagado;
-                factura.Moneda = moneda;
-                factura.Cambio = montoPagado - factura.Total;
-                factura.EstadoFactura = EstadoFactura.Pagada;
-
-                // Calcular impuestos (13% de IVA como ejemplo)
-                factura.Impuestos = factura.Total * 0.13m;
-                factura.Subtotal = factura.Total - factura.Impuestos;
-            }
+            
+            await _pedidoService.ActualizarPedidoConFactura(ventaId, factura.Id_Factura, numeroFactura);
 
             return factura;
         }
+
 
         private async Task<int> ObtenerUsuarioIdAutenticado()
         {
             try
             {
-                // PRIMERO intentar desde Session (más confiable)
+                
                 var usuarioIdSession = _httpContextAccessor.HttpContext?.Session.GetInt32("UsuarioId");
                 if (usuarioIdSession.HasValue && usuarioIdSession.Value > 0)
                 {
@@ -290,7 +313,7 @@ namespace VentaFacil.web.Services.Facturacion
                     return usuarioIdSession.Value;
                 }
 
-                // SEGUNDO intentar desde Claims
+                
                 var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("UsuarioId");
                 if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
@@ -298,7 +321,7 @@ namespace VentaFacil.web.Services.Facturacion
                     return userId;
                 }
 
-                // TERCERO usar un usuario por defecto (TEMPORAL)
+               
                 var usuarioDefault = await _context.Usuario
                     .Where(u => u.Estado)
                     .OrderBy(u => u.Id_Usr)

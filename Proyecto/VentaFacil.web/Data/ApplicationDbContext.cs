@@ -62,7 +62,8 @@ namespace VentaFacil.web.Data
                 entity.HasOne(u => u.RolNavigation)
                       .WithMany(r => r.Usuarios)
                       .HasForeignKey(u => u.Rol)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired();
             });
 
             modelBuilder.Entity<InventarioMovimiento>(entity =>
@@ -73,98 +74,11 @@ namespace VentaFacil.web.Data
                       .HasColumnName("Tipo_Movimiento");
             });
 
-            // NUEVAS CONFIGURACIONES PARA FACTURACIÓN
-            ConfigureFacturacionEntities(modelBuilder);
+            
+
+            
         }
 
-        private void ConfigureFacturacionEntities(ModelBuilder modelBuilder)
-        {
-            // Configurar entidad Venta
-            modelBuilder.Entity<Venta>(entity =>
-            {
-                entity.HasKey(v => v.Id_Venta);
-                entity.Property(v => v.Fecha)
-                      .IsRequired();
-                entity.Property(v => v.Total)
-                      .HasColumnType("decimal(10,2)")
-                      .IsRequired();
-                entity.Property(v => v.MetodoPago)
-                      .HasMaxLength(255)
-                      .IsRequired(false);
-                entity.Property(v => v.Estado)
-                      .HasDefaultValue(true);
-
-                // CONFIGURACIÓN EXPLÍCITA DE LA RELACIÓN CON USUARIO
-                entity.HasOne(v => v.Usuario)
-                      .WithMany() // Usuario no tiene colección de Ventas
-                      .HasForeignKey(v => v.Id_Usuario) // Clave foránea en Venta
-                      .HasPrincipalKey(u => u.Id_Usr)   // Clave principal en Usuario
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                // MAPEAR EXPLÍCITAMENTE LA COLUMNA
-                entity.Property(v => v.Id_Usuario)
-                      .HasColumnName("Id_Usuario")
-                      .IsRequired();
-            });
-
-            // Configurar entidad Factura
-            modelBuilder.Entity<Factura>(entity =>
-            {
-                entity.HasKey(f => f.Id_Factura);
-                entity.Property(f => f.FechaEmision)
-                      .IsRequired();
-                entity.Property(f => f.Total)
-                      .HasColumnType("decimal(10,2)")
-                      .IsRequired();
-                entity.Property(f => f.Estado)
-                      .HasDefaultValue(true);
-
-                // Relación con Venta (uno a uno)
-                entity.HasOne(f => f.Venta)
-                      .WithOne(v => v.Factura)
-                      .HasForeignKey<Factura>(f => f.Id_Venta)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // Configurar entidad DetalleVenta
-            modelBuilder.Entity<DetalleVenta>(entity =>
-            {
-                entity.HasKey(d => d.Id_Detalle);
-                entity.Property(d => d.Cantidad)
-                      .IsRequired();
-                entity.Property(d => d.PrecioUnitario)
-                      .HasColumnType("decimal(10,2)")
-                      .IsRequired();
-                entity.Property(d => d.Descuento)
-                      .HasColumnType("decimal(10,2)")
-                      .HasDefaultValue(0);
-
-                // Relación con Venta
-                entity.HasOne(d => d.Venta)
-                      .WithMany(v => v.Detalles)
-                      .HasForeignKey(d => d.Id_Venta)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                // Relación con Producto
-                entity.HasOne(d => d.Producto)
-                      .WithMany()
-                      .HasForeignKey(d => d.Id_Producto)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // Configurar entidad Producto (si no está configurada)
-            modelBuilder.Entity<Producto>(entity =>
-            {
-                entity.HasKey(p => p.Id_Producto);
-                entity.Property(p => p.Nombre)
-                      .IsRequired()
-                      .HasMaxLength(255);
-                entity.Property(p => p.Precio)
-                      .HasColumnType("decimal(10,2)")
-                      .IsRequired();
-                entity.Property(p => p.Estado)
-                      .HasDefaultValue(true);
-            });
-        }
+      
     }
 }
