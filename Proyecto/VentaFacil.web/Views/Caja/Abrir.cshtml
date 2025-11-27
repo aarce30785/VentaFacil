@@ -1,0 +1,32 @@
+﻿@model VentaFacil.web.Models.Dto.CajaDto
+
+@{
+    ViewData["Title"] = "Abrir";
+}
+
+<h1>Abrir Caja</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Abrir">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Monto_Inicial" class="control-label"></label>
+                <input asp-for="Monto_Inicial" class="form-control" />
+                <span asp-validation-for="Monto_Inicial" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Abrir Caja" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Listar">Volver a la lista</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

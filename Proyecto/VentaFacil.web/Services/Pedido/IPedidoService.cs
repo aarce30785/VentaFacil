@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using VentaFacil.web.Models.Dto;
+﻿using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 
 namespace VentaFacil.web.Services.Pedido
@@ -12,21 +11,30 @@ namespace VentaFacil.web.Services.Pedido
         Task<PedidoDto> ActualizarCantidadProductoAsync(int idPedido, int idDetalle, int cantidad);
         Task<PedidoDto> EliminarProductoAsync(int idPedido, int idDetalle);
         Task<PedidoDto> ActualizarModalidadAsync(int idPedido, ModalidadPedido modalidad, int? numeroMesa = null);
-        Task<ResultadoPedido> GuardarPedidoAsync(int idPedido);
-        Task<ResultadoPedido> GuardarComoBorradorAsync(int idPedido);
+        Task<PedidoDto> ActualizarClienteAsync(int pedidoId, string cliente);
+        Task<ServiceResult> GuardarPedidoAsync(int idPedido);
+        Task<ServiceResult> GuardarComoBorradorAsync(int idPedido);
         Task<bool> PuedeEditarseAsync(int idPedido);
         Task<List<PedidoDto>> ObtenerPedidosBorradorAsync(int idUsuario);
-        Task<List<PedidoDto>> BuscarPedidosAsync(int idUsuario, string criterio);
-        Task<ResultadoPedido> CancelarPedidoAsync(int idPedido, string motivoCancelacion);
-
         Task<List<PedidoDto>> ObtenerPedidosPendientesAsync(int idUsuario);
         Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario);
+        Task<bool> ValidarPedidoParaGuardarAsync(int pedidoId);
+        Task<bool> ValidarModalidadMesaAsync(int pedidoId);
+        Task<List<PedidoDto>> ObtenerPedidosParaCocinaAsync();
+        Task<ServiceResult> MarcarComoListoAsync(int pedidoId);
+        Task<ServiceResult> AgregarNotaCocinaAsync(int pedidoId, string nota);
+        Task<ServiceResult> CancelarPedidoAsync(int pedidoId, string razon);
+        Task<List<PedidoDto>> BuscarPedidosAsync(string termino);
+        Task<ServiceResult> MarcarComoEntregadoAsync(int pedidoId);
+        Task<ServiceResult> IniciarPreparacionAsync(int pedidoId);
+
+        Task<ResumenPedidosDto> ObtenerResumenPedidosAsync(int usuarioId);
+        Task<List<PedidoDto>> ObtenerPedidosListosAsync(int idUsuario);
+        Task<List<PedidoDto>> ObtenerPedidosEntregadosAsync(int idUsuario);
+        Task<List<PedidoDto>> ObtenerPedidosCanceladosAsync(int idUsuario);
+        void VerificarEstadoPedidos(int usuarioId);
+        Task ActualizarPedidoConFactura(int ventaId, int id_Factura, string numeroFactura);
     }
 
-    public class ResultadoPedido
-    {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public PedidoDto? Pedido { get; set; }
-    }
+   
 }

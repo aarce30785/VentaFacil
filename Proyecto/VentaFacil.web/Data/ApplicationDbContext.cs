@@ -1,9 +1,9 @@
-﻿
-using Microsoft.Data.SqlClient;
+
+﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 using VentaFacil.web.Models;
-using VentaFacil.web.Models.Dto;
 
 namespace VentaFacil.web.Data
 {
@@ -15,20 +15,26 @@ namespace VentaFacil.web.Data
 
         }
 
+        // Entidades existentes
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Rol> Rol { get; set; }
         public DbSet<Categoria> Categoria { get; set; }
         public DbSet<Producto> Producto { get; set; }
         public DbSet<Inventario> Inventario { get; set; }
         public DbSet<InventarioMovimiento> InventarioMovimiento { get; set; }
+        public DbSet<Caja> Caja { get; set; }
+        public DbSet<CajaRetiro> CajaRetiro { get; set; }
+
+        // NUEVAS ENTIDADES PARA FACTURACIÓN
+        public DbSet<Venta> Venta { get; set; }
+        public DbSet<Factura> Factura { get; set; }
+        public DbSet<DetalleVenta> DetalleVenta { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            
-
-            // Configurar entidad Rol
+            // Configuraciones existentes...
             modelBuilder.Entity<Rol>(entity =>
             {
                 entity.HasKey(r => r.Id_Rol);
@@ -39,7 +45,6 @@ namespace VentaFacil.web.Data
                       .HasMaxLength(200);
             });
 
-            // Configurar entidad Usuario
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.HasKey(u => u.Id_Usr);
@@ -54,27 +59,26 @@ namespace VentaFacil.web.Data
                 entity.Property(u => u.Estado)
                       .HasDefaultValue(true);
 
-                // Configurar relación con Rol
                 entity.HasOne(u => u.RolNavigation)
                       .WithMany(r => r.Usuarios)
                       .HasForeignKey(u => u.Rol)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired();
             });
 
             modelBuilder.Entity<InventarioMovimiento>(entity =>
             {
                 entity.Property(e => e.Id_Inventario)
-                      .HasColumnName("Id_Inventario"); 
-
+                      .HasColumnName("Id_Inventario");
                 entity.Property(e => e.Tipo_Movimiento)
-                      .HasColumnName("Tipo_Movimiento"); 
+                      .HasColumnName("Tipo_Movimiento");
             });
+
+            
+
+            
         }
-        //public DbSet<VentaFacil.web.Models.Dto.InventarioDto> InventarioDto { get; set; } = default!;
-        //public DbSet<VentaFacil.web.Models.Dto.InventarioMovimientoDto> InventarioMovimientoDto { get; set; } = default!;
-        //public DbSet<VentaFacil.web.Models.Dto.ProductoDto> ProductoDto { get; set; } = default!;
 
-        
+      
     }
-
 }

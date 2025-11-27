@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Enums;
@@ -18,6 +19,43 @@ namespace VentaFacil.web.Controllers
             _productoService = productoService;
         }
 
+        // GET: /Pedidos/Index
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                var usuarioId = ObtenerUsuarioId();
+
+                _pedidoService.VerificarEstadoPedidos(usuarioId);
+
+                var pedidosBorrador = await _pedidoService.ObtenerPedidosBorradorAsync(usuarioId);
+                var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
+                var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
+
+
+                var pedidosListos = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Listo).ToList();
+                var pedidosEntregados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Entregado).ToList();
+                var pedidosCancelados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Cancelado).ToList();
+
+                ViewBag.PedidosBorrador = pedidosBorrador;
+                ViewBag.PedidosPendientes = pedidosPendientes;
+                ViewBag.PedidosListos = pedidosListos;
+                ViewBag.PedidosEntregados = pedidosEntregados;
+                ViewBag.PedidosCancelados = pedidosCancelados;
+                ViewBag.TodosLosPedidos = todosLosPedidos;
+                ViewBag.UsuarioId = usuarioId;
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al cargar pedidos: {ex.Message}";
+                return View();
+            }
+        }
+
+
         // GET: /Pedidos/Crear
         [HttpGet]
         public async Task<IActionResult> Crear()
@@ -25,10 +63,11 @@ namespace VentaFacil.web.Controllers
             try
             {
                 var usuarioId = ObtenerUsuarioId();
-                var pedido = await _pedidoService.CrearPedidoAsync(usuarioId);
+                var pedido = await _pedidoService.CrearPedidoAsync(usuarioId);       
+                var productosResponse = await _productoService.ListarTodosAsync();
+                ViewBag.Productos = productosResponse.Success ? productosResponse.Productos : new List<ProductoDto>();
 
-                TempData["PedidoId"] = pedido.Id_Venta;
-                return RedirectToAction("Editar", new { id = pedido.Id_Venta });
+                return View(pedido);
             }
             catch (Exception ex)
             {
@@ -45,7 +84,7 @@ namespace VentaFacil.web.Controllers
             {
                 var pedido = await _pedidoService.ObtenerPedidoAsync(id);
 
-
+                
                 var usuarioId = ObtenerUsuarioId();
                 if (pedido.Id_Usuario != usuarioId)
                 {
@@ -53,7 +92,7 @@ namespace VentaFacil.web.Controllers
                     return RedirectToAction("Index");
                 }
 
-
+               
                 var productosResponse = await _productoService.ListarTodosAsync();
                 ViewBag.Productos = productosResponse.Success ? productosResponse.Productos : new List<ProductoDto>();
 
@@ -69,6 +108,149 @@ namespace VentaFacil.web.Controllers
                 TempData["Error"] = $"Error al cargar pedido: {ex.Message}";
                 return RedirectToAction("Index");
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Cocina()
+        {
+            try
+            {
+                var pedidosCocina = await _pedidoService.ObtenerPedidosParaCocinaAsync();
+                return View(pedidosCocina);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al cargar pedidos de cocina: {ex.Message}";
+                return View(new List<PedidoDto>());
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcederAlPago(int pedidoId)
+        {
+            try
+            {
+                var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
+
+               
+                if (pedido.Estado != PedidoEstado.Borrador && pedido.Estado != PedidoEstado.Pendiente)
+                {
+                    TempData["Error"] = $"El pedido no está listo para procesar pago. Estado actual: {pedido.Estado}";
+                    Console.WriteLine($"ERROR: Estado inválido - {pedido.Estado}");
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+
+                
+                if (pedido.Estado == PedidoEstado.Borrador)
+                {
+                    var resultadoGuardado = await _pedidoService.GuardarPedidoAsync(pedidoId);
+                    if (!resultadoGuardado.Success)
+                    {
+                        TempData["Error"] = resultadoGuardado.Message;
+                        return RedirectToAction("Editar", new { id = pedidoId });
+                    }
+                }
+             
+                var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
+                if (!esValido)
+                {
+                    TempData["Error"] = "No se puede proceder al pago. Verifique que: \n" +
+                                       "- Tenga al menos un producto \n" +
+                                       "- Tenga un cliente asignado \n" +
+                                       "- Si es en mesa, tenga un número de mesa válido";
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+
+                Console.WriteLine("Redirigiendo a Facturación...");
+                return RedirectToAction("ProcesarPago", "Facturacion", new { pedidoId });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR en ProcederAlPago: {ex.Message}");
+                TempData["Error"] = $"Error al proceder al pago: {ex.Message}";
+                return RedirectToAction("Editar", new { id = pedidoId });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarNuevoPedido(int pedidoId, string cliente, ModalidadPedido modalidad,
+            int? numeroMesa, string tipoGuardado, List<ItemPedido> productos)
+        {
+            try
+            {
+
+                var pedido = await _pedidoService.ActualizarClienteAsync(pedidoId, cliente);
+                pedido = await _pedidoService.ActualizarModalidadAsync(pedidoId, modalidad, numeroMesa);
+
+                
+                if (productos != null && productos.Any())
+                {
+                    foreach (var item in productos)
+                    {
+                        await _pedidoService.AgregarProductoAsync(pedidoId, item.ProductoId, item.Cantidad);
+                    }
+                }
+
+                var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
+
+                if (!esValido)
+                {
+                    TempData["Error"] = "No se puede guardar el pedido. Verifique que: \n" +
+                                       "- Tenga al menos un producto \n" +
+                                       "- Tenga un cliente asignado \n" +
+                                       "- Si es en mesa, tenga un número de mesa válido";
+                    return RedirectToAction("Editar", new { id = pedidoId }); 
+                }
+
+                if (tipoGuardado == "completo")
+                {
+                    
+                    var resultado = await _pedidoService.GuardarPedidoAsync(pedidoId);
+
+                    if (resultado.Success)
+                    {
+                        TempData["Success"] = resultado.Message;
+                        var pedidoActualizado = await _pedidoService.ObtenerPedidoAsync(pedidoId);
+                       
+                        return RedirectToAction("ProcesarPago", "Facturacion", new { pedidoId });
+                    }
+                    else
+                    {
+                        TempData["Error"] = resultado.Message;
+                        return RedirectToAction("Editar", new { id = pedidoId }); 
+                    }
+                }
+                else
+                {
+                    
+                    var resultado = await _pedidoService.GuardarComoBorradorAsync(pedidoId);
+
+                    if (resultado.Success)
+                    {
+                        TempData["Success"] = resultado.Message;
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        TempData["Error"] = resultado.Message;
+                        return RedirectToAction("Editar", new { id = pedidoId }); 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR en GuardarNuevoPedido: {ex.Message}");
+                TempData["Error"] = $"Error al guardar pedido: {ex.Message}";
+                return RedirectToAction("Editar", new { id = pedidoId }); 
+            }
+        }
+
+        public class ItemPedido
+        {
+            public int ProductoId { get; set; }
+            public int Cantidad { get; set; }
         }
 
         // POST: /Pedidos/AgregarProducto
@@ -150,21 +332,28 @@ namespace VentaFacil.web.Controllers
         // POST: /Pedidos/ActualizarModalidad
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ActualizarModalidad(int pedidoId, ModalidadPedido modalidad, int? numeroMesa, string cliente)
+        public async Task<IActionResult> ActualizarModalidad(int pedidoId, ModalidadPedido modalidad, int? numeroMesa)
         {
             try
             {
                 var pedido = await _pedidoService.ActualizarModalidadAsync(pedidoId, modalidad, numeroMesa);
 
-                // Actualizar el cliente
-                pedido.Cliente = cliente;
-                // Nota: El servicio ActualizarModalidadAsync no actualiza el cliente, así que debemos hacerlo aquí o en el servicio.
-                // Como estamos en memoria, podemos actualizarlo directamente.
-                // Pero es mejor tener un método en el servicio para actualizar la cabecera.
-
-                var mensaje = modalidad == ModalidadPedido.EnMesa
-                    ? $"Modalidad actualizada a 'En Mesa' (Mesa {numeroMesa})"
-                    : "Modalidad actualizada a 'Para Llevar'";
+                string mensaje;
+                if (modalidad == ModalidadPedido.EnMesa)
+                {
+                    if (numeroMesa.HasValue && numeroMesa > 0)
+                    {
+                        mensaje = $"Modalidad actualizada a 'En Mesa' (Mesa {numeroMesa})";
+                    }
+                    else
+                    {
+                        mensaje = "Modalidad actualizada a 'En Mesa'. Recuerde asignar un número de mesa.";
+                    }
+                }
+                else
+                {
+                    mensaje = "Modalidad actualizada a 'Para Llevar'";
+                }
 
                 TempData["Success"] = mensaje;
                 return RedirectToAction("Editar", new { id = pedidoId });
@@ -181,32 +370,7 @@ namespace VentaFacil.web.Controllers
             }
         }
 
-        // POST: /Pedidos/GuardarPedido
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GuardarPedido(int pedidoId)
-        {
-            try
-            {
-                var resultado = await _pedidoService.GuardarPedidoAsync(pedidoId);
-
-                if (resultado.Success)
-                {
-                    TempData["Success"] = resultado.Message;
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    TempData["Error"] = resultado.Message;
-                    return RedirectToAction("Editar", new { id = pedidoId });
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error al guardar pedido: {ex.Message}";
-                return RedirectToAction("Editar", new { id = pedidoId });
-            }
-        }
+        
 
         // POST: /Pedidos/GuardarBorrador
         [HttpPost]
@@ -235,66 +399,7 @@ namespace VentaFacil.web.Controllers
             }
         }
 
-        // POST: /Pedidos/Cancelar (NUEVA ACCIÓN PE06)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Cancelar(int pedidoId, string motivoCancelacion)
-        {
-            try
-            {
-                var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
-                var usuarioId = ObtenerUsuarioId();
-
-                if (pedido.Id_Usuario != usuarioId)
-                {
-                    TempData["Error"] = "No tiene permisos para cancelar este pedido";
-                    return RedirectToAction("Index");
-                }
-
-                var resultado = await _pedidoService.CancelarPedidoAsync(pedidoId, motivoCancelacion);
-
-                if (resultado.Success)
-                {
-                    TempData["Success"] = resultado.Message;
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    TempData["Error"] = resultado.Message;
-                    return RedirectToAction("Editar", new { id = pedidoId });
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error al cancelar pedido: {ex.Message}";
-                return RedirectToAction("Editar", new { id = pedidoId });
-            }
-        }
-
-        // GET: /Pedidos/Index
-        [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            try
-            {
-                var usuarioId = ObtenerUsuarioId();
-                var pedidosBorrador = await _pedidoService.ObtenerPedidosBorradorAsync(usuarioId);
-                var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
-                var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
-
-                ViewBag.PedidosBorrador = pedidosBorrador;
-                ViewBag.PedidosPendientes = pedidosPendientes;
-                ViewBag.TodosLosPedidos = todosLosPedidos;
-                ViewBag.UsuarioId = usuarioId; // Para debugging
-
-                return View();
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error al cargar pedidos: {ex.Message}";
-                return View();
-            }
-        }
+        
 
         // GET: /Pedidos/ContinuarBorrador/{id}
         [HttpGet]
@@ -326,81 +431,340 @@ namespace VentaFacil.web.Controllers
             }
         }
 
-        // NUEVA ACCIÓN PE05: Búsqueda de pedidos por ID o cliente
-        // POST: /Pedidos/Buscar
         [HttpPost]
-        public async Task<IActionResult> Buscar(string criterio)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActualizarCliente(int pedidoId, string cliente)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(cliente))
+                {
+                    TempData["Error"] = "El nombre del cliente es requerido";
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+
+                var pedido = await _pedidoService.ActualizarClienteAsync(pedidoId, cliente);
+                TempData["Success"] = "Cliente actualizado correctamente";
+                return RedirectToAction("Editar", new { id = pedidoId });
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("Editar", new { id = pedidoId });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al actualizar cliente: {ex.Message}";
+                return RedirectToAction("Editar", new { id = pedidoId });
+            }
+        }
+
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarcarComoListo([FromBody] MarcarListoRequest request)
+        {
+            try
+            {
+
+                if (request == null)
+                {
+                    Console.WriteLine("ERROR: Request es null");
+                    return BadRequest("Request no puede ser null");
+                }
+
+                if (request.PedidoId <= 0)
+                {
+                    Console.WriteLine("ERROR: PedidoId inválido");
+                    return BadRequest("PedidoId inválido");
+                }
+
+                var resultado = await _pedidoService.MarcarComoListoAsync(request.PedidoId);
+
+                Console.WriteLine($"Resultado - Success: {resultado.Success}, Message: {resultado.Message}");
+
+                if (resultado.Success)
+                {
+                    Console.WriteLine("=== MARCAR COMO LISTO EXITOSO ===");
+                    return Json(new { success = true, message = resultado.Message });
+                }
+                else
+                {
+                    Console.WriteLine("=== MARCAR COMO LISTO FALLIDO ===");
+                    return Json(new { success = false, message = resultado.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"=== ERROR EN MARCAR COMO LISTO ===");
+                Console.WriteLine($"Excepción: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        public class MarcarListoRequest
+        {
+            public int PedidoId { get; set; }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AgregarNotaCocina([FromBody] NotaCocinaRequest request)
+        {
+            try
+            {
+                var resultado = await _pedidoService.AgregarNotaCocinaAsync(request.Id, request.Nota);
+
+                if (resultado.Success)
+                {
+                    return Json(new { success = true, message = resultado.Message });
+                }
+                else
+                {
+                    return Json(new { success = false, message = resultado.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+        public class NotaCocinaRequest
+        {
+            public int Id { get; set; }
+            public string Nota { get; set; }
+        }
+
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelarPedido([FromBody] CancelarPedidoRequest request)
+        {
+            try
+            {
+                if (request == null)
+                {
+                    return BadRequest("Request no puede ser null");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.razon))
+                {
+                    return BadRequest("La razón de cancelación es requerida");
+                }
+
+                var resultado = await _pedidoService.CancelarPedidoAsync(request.id, request.razon);
+
+                Console.WriteLine($"Resultado del servicio - Success: {resultado.Success}, Message: {resultado.Message}");
+
+                if (resultado.Success)
+                {
+                    // Verificar que el pedido se canceló correctamente
+                    var pedidoCancelado = await _pedidoService.ObtenerPedidoAsync(request.id);
+                    Console.WriteLine($"Pedido después de cancelar - Estado: {pedidoCancelado.Estado}, Motivo: {pedidoCancelado.MotivoCancelacion}");
+
+                    return Json(new { success = true, message = resultado.Message });
+                }
+                else
+                {
+                    return Json(new { success = false, message = resultado.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cancelar pedido: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        public class CancelarPedidoRequest
+        {
+            public int id { get; set; }
+            public string razon { get; set; }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Buscar(string termino)
+        {
+            try
+            {
+                var resultado = await _pedidoService.BuscarPedidosAsync(termino);
+                return Json(new { success = true, pedidos = resultado });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> IniciarPreparacion(int id)
+        {
+            try
+            {
+
+                var resultado = await _pedidoService.IniciarPreparacionAsync(id);
+
+                if (resultado.Success)
+                {
+
+                    return Json(new { success = true, message = resultado.Message });
+                }
+                else
+                {
+                    return Json(new { success = false, message = resultado.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarcarComoEntregado([FromBody] MarcarListoRequest request)
+        {
+            try
+            {
+                var resultado = await _pedidoService.MarcarComoEntregadoAsync(request.PedidoId);
+
+                if (resultado.Success)
+                {
+                    return Json(new { success = true, message = "Pedido marcado como entregado" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = resultado.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerPedidosCocina()
+        {
+            try
+            {
+                var pedidos = await _pedidoService.ObtenerPedidosParaCocinaAsync();
+                
+                return Json(new { actualizado = true, count = pedidos.Count });
+            }
+            catch (Exception)
+            {
+                return Json(new { actualizado = false });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerEstado(int id)
+        {
+            try
+            {
+                var pedido = await _pedidoService.ObtenerPedidoAsync(id);
+                return Json(new
+                {
+                    success = true,
+                    estado = pedido.Estado.ToString(),
+                    puedeIniciarPreparacion = pedido.Estado == PedidoEstado.Borrador || pedido.Estado == PedidoEstado.Pendiente,
+                    puedeMarcarListo = pedido.Estado == PedidoEstado.EnPreparacion,
+                    puedeMarcarEntregado = pedido.Estado == PedidoEstado.Listo
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerResumenPedidos()
         {
             try
             {
                 var usuarioId = ObtenerUsuarioId();
 
-                // 1. Obtener todas las listas necesarias para Index (mantener la estructura)
                 var pedidosBorrador = await _pedidoService.ObtenerPedidosBorradorAsync(usuarioId);
                 var pedidosPendientes = await _pedidoService.ObtenerPedidosPendientesAsync(usuarioId);
                 var todosLosPedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
 
-                ViewBag.PedidosBorrador = pedidosBorrador;
-                ViewBag.PedidosPendientes = pedidosPendientes;
-                ViewBag.TodosLosPedidos = todosLosPedidos;
-                ViewBag.UsuarioId = usuarioId;
+                var pedidosListos = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Listo).ToList();
+                var pedidosEntregados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Entregado).ToList();
+                var pedidosCancelados = todosLosPedidos.Where(p => p.Estado == PedidoEstado.Cancelado).ToList();
 
-                // Si el criterio está vacío, simplemente mostramos el Index normal
-                if (string.IsNullOrWhiteSpace(criterio))
+                var cambiosSignificativos = todosLosPedidos.Any(p =>
+                    p.Estado == PedidoEstado.Listo ||
+                    p.Estado == PedidoEstado.Entregado);
+
+                return Json(new
                 {
-                    TempData["Error"] = "Ingrese un criterio de búsqueda (ID o Nombre de cliente).";
-                    return View("Index");
-                }
-
-                // 2. Realizar la búsqueda de PE05
-                var resultados = await _pedidoService.BuscarPedidosAsync(usuarioId, criterio);
-
-                if (!resultados.Any())
-                {
-                    // Escenario 2: Pedido no encontrado
-                    TempData["Error"] = $"Pedido no encontrado para el criterio: '{criterio}'";
-                }
-                else
-                {
-                    // Escenario 1: Asignar resultados a un ViewBag específico
-                    ViewBag.PedidosBusqueda = resultados;
-                    TempData["Success"] = $"Se encontraron {resultados.Count} pedidos para el criterio '{criterio}'.";
-                }
-
-                // 3. Devolver la vista Index
-                return View("Index");
+                    actualizado = true,
+                    cambiosSignificativos = cambiosSignificativos,
+                    estadisticas = new
+                    {
+                        borrador = pedidosBorrador.Count,
+                        enCocina = pedidosPendientes.Count,
+                        listos = pedidosListos.Count,
+                        entregados = pedidosEntregados.Count,
+                        cancelados = pedidosCancelados.Count
+                    }
+                });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Error al buscar pedidos: {ex.Message}";
-                return RedirectToAction("Index");
+                Console.WriteLine($"ERROR en ObtenerResumenPedidos: {ex.Message}");
+                return Json(new { actualizado = false, error = ex.Message });
             }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> IniciarPreparacion([FromBody] MarcarListoRequest request)
+        {
+            try
+            {
+                var resultado = await _pedidoService.IniciarPreparacionAsync(request.PedidoId);
+
+                if (resultado.Success)
+                {
+                    return Json(new { success = true, message = resultado.Message });
+                }
+                else
+                {
+                    return Json(new { success = false, message = resultado.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult LimpiarTempData()
+        {
+            TempData.Remove("Error");
+            TempData.Remove("ErrorDetalles");
+            return Ok();
         }
 
         private int ObtenerUsuarioId()
         {
             if (User?.Identity?.IsAuthenticated == true)
             {
-                // Buscar el claim que contiene el ID del usuario
                 var idClaim = User.FindFirst("UsuarioId") ??
-                                 User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ??
-                                 User.FindFirst("sub"); // Para JWT tokens
+                             User.FindFirst(ClaimTypes.NameIdentifier);
 
                 if (idClaim != null && int.TryParse(idClaim.Value, out var usuarioId))
                     return usuarioId;
 
-                // Si no se puede parsear, buscar por nombre de usuario (solo para desarrollo)
-                var nameClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Name);
-                if (nameClaim != null)
-                {
-                    // Esto es solo para desarrollo - en producción deberías tener el ID real
-                    return Math.Abs(nameClaim.Value.GetHashCode()) % 1000 + 1;
-                }
+                throw new UnauthorizedAccessException("Usuario no válido");
             }
-
-            // Para desarrollo, retornar un ID por defecto
-            // En producción, esto debería redirigir al login
-            return 1;
+            throw new UnauthorizedAccessException("Usuario no autenticado");
         }
     }
 }

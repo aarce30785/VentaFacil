@@ -10,22 +10,20 @@ namespace VentaFacil.web.Models
         [Key]
         [Column("Id_Venta")]
         public int Id_Venta { get; set; }
-
-        [Column("Fecha")]
         public DateTime Fecha { get; set; }
-
-        [Column("Total", TypeName = "decimal(10,2)")]
         public decimal Total { get; set; }
-
-        // En el SQL existe; para PE1 no lo usaremos (puede quedar null)
-        [Column("MetodoPago")]
-        public string? MetodoPago { get; set; }
-
-        // En tu tabla es BIT; lo mapeamos a bool (false = pendiente)
-        [Column("Estado")]
+        public string MetodoPago { get; set; }
         public bool Estado { get; set; }
 
-        [Column("Id_Usuario")]
-        public int Id_Usuario { get; set; }
+        [Column("Id_Usuario")]  // ← MAPEAR A LA COLUMNA CORRECTA
+        public int? Id_Usuario { get; set; }
+
+        // Navigation properties
+        [ForeignKey("Id_Usuario")]
+        public virtual Usuario? Usuario { get; set; }
+        public virtual Factura Factura { get; set; }
+        public virtual ICollection<DetalleVenta> Detalles { get; set; } = new List<DetalleVenta>();
+
+
     }
 }

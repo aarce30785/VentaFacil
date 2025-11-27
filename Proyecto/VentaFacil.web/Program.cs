@@ -1,16 +1,23 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Polly;
 using VentaFacil.web.Data;
 using VentaFacil.web.Services;
-using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Admin;
+using VentaFacil.web.Services.Caja;
+using VentaFacil.web.Services.Categoria;
+using VentaFacil.web.Services.Facturacion;
+using VentaFacil.web.Services.Inventario;
+using VentaFacil.web.Services.Inventario;
+using VentaFacil.web.Services.Movimiento;
+using VentaFacil.web.Services.Movimiento;
+using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
 using VentaFacil.web.Services.Usuario;
-using VentaFacil.web.Services.Inventario;
-using VentaFacil.web.Services.Movimiento;
+
 
 namespace VentaFacil.web
 {
@@ -80,7 +87,7 @@ namespace VentaFacil.web
                 options.Cookie.IsEssential = true;
             });
 
-            // Configurar autenticaci�n con cookies
+            // Configurar autenticación con cookies
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                .AddCookie(options =>
                {
@@ -104,7 +111,7 @@ namespace VentaFacil.web
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             });
 
-            // Configurar autorizaci�n
+            // Configurar autorización
             builder.Services.AddAuthorization();
 
 
@@ -116,10 +123,13 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IProductoService, ProductoService>();
             builder.Services.AddScoped<IInventarioService, InventarioService>();
             builder.Services.AddScoped<IMovimientoService, MovimientoService>();
+            builder.Services.AddScoped<IFacturacionService, FacturacionService>();
+            builder.Services.AddScoped<ICajaService, CajaService>();
+            builder.Services.AddScoped<IPdfService, PdfService>();
+            builder.Services.AddHttpContextAccessor();
 
+            // Configurar sesión
 
-            // Configurar sesi�n
-            
 
             var app = builder.Build();
 
@@ -176,7 +186,6 @@ namespace VentaFacil.web
 
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseSession();
 
             app.MapControllerRoute(
@@ -189,36 +198,94 @@ namespace VentaFacil.web
         private static void InitializeDatabase(IConfiguration configuration)
         {
             string connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("No se encontr� la cadena de conexi�n 'DefaultConnection'.");
+                ?? throw new InvalidOperationException("No se encontró la cadena de conexión 'DefaultConnection'.");
 
-            // Conexi�n a master
+            // Conexión a master
             string masterConnection = connectionString.Replace("Database=VentaFacilDB;", "Database=master;");
-            using (var connMaster = new SqlConnection(masterConnection))
+
+            var policy = Policy
+                .Handle<SqlException>()
+                .Or<InvalidOperationException>()
+                .WaitAndRetry(
+                    retryCount: 5,
+                    sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        Console.WriteLine($"Intento {retryCount} de conexión a SQL Server falló. Reintentando en {timeSpan.Seconds} segundos...");
+                        Console.WriteLine($"Error: {exception.Message}");
+                    });
+
+            policy.Execute(() =>
             {
-                connMaster.Open();
-                using var cmd = new SqlCommand(
-                    "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'VentaFacilDB') CREATE DATABASE VentaFacilDB;",
-                    connMaster);
-                cmd.ExecuteNonQuery();
-            }
-
-            // Conexi�n a la DB reci�n creada
-            using (var connDb = new SqlConnection(connectionString))
-            {
-                connDb.Open();
-
-                string scriptPath = "/app/init/init.sql";
-                if (!File.Exists(scriptPath))
-                    throw new FileNotFoundException($"No se encontr� el archivo de inicializaci�n en {scriptPath}");
-
-                string script = File.ReadAllText(scriptPath);
-                var batches = script.Split(new[] { "GO" }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var batch in batches)
+                using (var connMaster = new SqlConnection(masterConnection))
                 {
-                    using var cmd = new SqlCommand(batch, connDb);
-                    cmd.ExecuteNonQuery();
+                    connMaster.Open();
+                    Console.WriteLine("✅ Conexión a SQL Server exitosa");
+
+                    // Verificar si la base de datos existe
+                    using var cmdCheckDb = new SqlCommand(
+                        "SELECT COUNT(*) FROM sys.databases WHERE name = 'VentaFacilDB'",
+                        connMaster);
+                    var dbExists = (int)cmdCheckDb.ExecuteScalar() > 0;
+
+                    if (!dbExists)
+                    {
+                        Console.WriteLine("Creando base de datos VentaFacilDB...");
+                        using var cmdCreateDb = new SqlCommand(
+                            "CREATE DATABASE VentaFacilDB;",
+                            connMaster);
+                        cmdCreateDb.ExecuteNonQuery();
+                        Console.WriteLine("✅ Base de datos creada");
+
+                        // ✅ ESPERAR UN POCO MÁS DESPUÉS DE CREAR LA BD
+                        Thread.Sleep(3000);
+                    }
                 }
-            }
+            });
+
+            // ✅ ESPERAR ANTES DE CONECTAR A LA NUEVA BD
+            Thread.Sleep(2000);
+
+            // Conexión a la DB específica
+            policy.Execute(() =>
+            {
+                using (var connDb = new SqlConnection(connectionString))
+                {
+                    connDb.Open();
+                    Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
+
+                    string scriptPath = "/app/init/init.sql";
+                    if (!File.Exists(scriptPath))
+                        throw new FileNotFoundException($"No se encontró el archivo de inicialización en {scriptPath}");
+
+                    string script = File.ReadAllText(scriptPath);
+
+                    // Dividir por punto y coma
+                    var batches = script.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                                      .Where(b => !string.IsNullOrWhiteSpace(b))
+                                      .Select(b => b.Trim());
+
+                    foreach (var batch in batches)
+                    {
+                        if (!string.IsNullOrWhiteSpace(batch))
+                        {
+                            using var cmd = new SqlCommand(batch, connDb);
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error ejecutando batch: {batch.Substring(0, Math.Min(50, batch.Length))}...");
+                                Console.WriteLine($"Error: {ex.Message}");
+                                // No lanzar excepción para batches individuales, continuar con los demás
+                            }
+                        }
+                    }
+
+                    Console.WriteLine("✅ Scripts SQL ejecutados");
+                }
+            });
 
             // Seeder para crear usuario admin
             DbSeeder.Seed(connectionString);
@@ -233,11 +300,11 @@ namespace VentaFacil.web
                 string connectionString = configuration.GetConnectionString("DefaultConnection");
                 if (string.IsNullOrEmpty(connectionString))
                 {
-                    Console.WriteLine("=== ADVERTENCIA: No hay cadena de conexi�n configurada ===");
+                    Console.WriteLine("=== ADVERTENCIA: No hay cadena de conexión configurada ===");
                     return;
                 }
 
-                Console.WriteLine($"=== INTENTANDO CONEXI�N CON: {connectionString} ===");
+                Console.WriteLine($"=== INTENTANDO CONEXIÓN CON: {connectionString} ===");
 
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
@@ -246,7 +313,7 @@ namespace VentaFacil.web
                 using var cmd = new SqlCommand("SELECT DB_NAME()", connection);
                 var dbName = cmd.ExecuteScalar();
 
-                Console.WriteLine($"=== CONEXI�N A BD EXITOSA - Base de datos: {dbName} ===");
+                Console.WriteLine($"=== CONEXIÓN A BD EXITOSA - Base de datos: {dbName} ===");
 
                 // Verificar tablas
                 using var cmdTables = new SqlCommand(
@@ -257,7 +324,7 @@ namespace VentaFacil.web
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"=== ERROR DE CONEXI�N A BD: {ex.Message} ===");
+                Console.WriteLine($"=== ERROR DE CONEXIÓN A BD: {ex.Message} ===");
                 Console.WriteLine($"=== StackTrace: {ex.StackTrace} ===");
             }
         }
