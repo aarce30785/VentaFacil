@@ -26,7 +26,6 @@ namespace VentaFacil.web.Models.Dto
         public decimal Descuento { get; set; } = 0m;
         public string Notas { get; set; } = string.Empty;
         public DateTime? FechaActualizacion { get; set; }
-        public string? MotivoCancelacion { get; set; }
         public string? UsuarioActualizacion { get; set; }
         public TimeSpan? TiempoPreparacion
         {
