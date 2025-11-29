@@ -4,7 +4,7 @@ namespace VentaFacil.web.Models.Dto
 {
     public class FacturaDto
     {
-        public int Id { get; set; }
+        public int Id_Factura { get; set; }
         public int PedidoId { get; set; }
         public string NumeroFactura { get; set; }
         public DateTime FechaEmision { get; set; }
@@ -26,5 +26,6 @@ namespace VentaFacil.web.Models.Dto
 
         public EstadoFactura EstadoFactura { get; set; }
         public List<ItemFacturaDto> Items { get; set; } = new();
+        public List<PagoFacturaDto> Pagos { get; set; } = new();
     }
 }

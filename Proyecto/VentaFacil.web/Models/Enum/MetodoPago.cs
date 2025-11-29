@@ -2,11 +2,12 @@
 {
     public enum MetodoPago
     {
-        Efectivo,
-        TarjetaCredito,
-        TarjetaDebito,
-        SinpeMovil,
-        Transferencia,
-        EfectivoDolares
+        Efectivo = 0,
+        TarjetaCredito = 1,
+        TarjetaDebito = 2,
+        SinpeMovil = 3,
+        Transferencia = 4,
+        EfectivoDolares = 5,
+        Mixto = 6
     }
 }

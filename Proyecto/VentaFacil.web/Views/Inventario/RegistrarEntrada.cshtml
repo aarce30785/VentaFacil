@@ -1,0 +1,93 @@
+@model VentaFacil.web.Models.ViewModel.RegistrarEntradaViewModel
+
+@{
+    ViewData["Title"] = "Registrar Entrada";
+    Layout = "_LayoutPlantilla";
+}
+
+<section class="section">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Registrar Entrada de Insumos</h2>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="@Url.Action("Listar")">Inventario</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Registrar Entrada
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card-style mb-30">
+                    <div class="card-content">
+                        <form asp-action="RegistrarEntrada" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="select-style-1">
+                                        <label asp-for="IdInventario">Seleccionar Insumo</label>
+                                        <div class="select-position">
+                                            <select asp-for="IdInventario" asp-items="Model.Inventarios" class="form-control">
+                                                <option value="">-- Seleccione un insumo --</option>
+                                            </select>
+                                        </div>
+                                        <span asp-validation-for="IdInventario" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="input-style-1">
+                                        <label asp-for="Cantidad">Cantidad a Ingresar</label>
+                                        <input asp-for="Cantidad" type="number" min="1" placeholder="Ej: 50" />
+                                        <span asp-validation-for="Cantidad" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="input-style-1">
+                                        <label asp-for="Observaciones">Observaciones</label>
+                                        <textarea asp-for="Observaciones" rows="3" placeholder="Ej: Compra mensual a proveedor X"></textarea>
+                                        <span asp-validation-for="Observaciones" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="button-group d-flex justify-content-between pt-4">
+                                        <a href="@Url.Action("Listar")" class="main-btn light-btn btn-hover">
+                                            <i class="lni lni-arrow-left me-2"></i> Cancelar
+                                        </a>
+                                        <button type="submit" class="main-btn success-btn btn-hover">
+                                            <i class="lni lni-plus me-2"></i> Registrar Entrada
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

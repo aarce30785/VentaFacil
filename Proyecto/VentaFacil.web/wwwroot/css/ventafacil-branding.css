@@ -1,0 +1,334 @@
+/* ============================================
+   VentaFacil - Custom Branding Styles
+   ============================================ */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Poppins:ital,wght@0,400;0,600;1,400&display=swap');
+
+/* ============================================
+   CSS Variables - Color Palette
+   ============================================ */
+:root {
+    /* Colores principales */
+    --color-primario: #6D4C41;
+    /* Café tierra */
+    --color-secundario: #81C784;
+    /* Verde hoja */
+    --color-acento: #FFD54F;
+    /* Amarillo maíz */
+    --color-fondo: #FFFDE7;
+    /* Marfil claro */
+    --color-texto: #424242;
+    /* Gris oscuro */
+    --color-error: #E57373;
+    /* Rojo suave */
+
+    /* Variaciones de colores */
+    --color-primario-hover: #5D3E35;
+    --color-secundario-hover: #66BB6A;
+    --color-acento-hover: #FFC107;
+
+    /* Tipografías */
+    --font-primaria: 'Merriweather', serif;
+    --font-secundaria: 'Poppins', sans-serif;
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+
+/* Títulos Primarios - Merriweather Bold */
+h1,
+.h1 {
+    font-family: var(--font-primaria);
+    font-weight: 700;
+    color: var(--color-primario);
+}
+
+/* Títulos Secundarios - Poppins SemiBold */
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+    font-family: var(--font-secundaria);
+    font-weight: 600;
+    color: var(--color-primario);
+}
+
+/* Texto Plano - Poppins Regular */
+body,
+p,
+span,
+div,
+label,
+input,
+textarea,
+select,
+button {
+    font-family: var(--font-secundaria);
+    font-weight: 400;
+    color: var(--color-texto);
+}
+
+/* Acentos y enlaces - Poppins Italic */
+a,
+.link,
+.accent-text {
+    font-family: var(--font-secundaria);
+    font-style: italic;
+    color: var(--color-primario);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover,
+.link:hover {
+    color: var(--color-primario-hover);
+}
+
+/* ============================================
+   Background Colors
+   ============================================ */
+body {
+    background-color: var(--color-fondo);
+}
+
+.card,
+.card-style {
+    background-color: #FFFFFF;
+    border: 1px solid rgba(109, 76, 65, 0.1);
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+/* Botón Primario */
+.btn-primary,
+.main-btn.primary-btn {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+    color: #FFFFFF;
+}
+
+.btn-primary:hover,
+.main-btn.primary-btn:hover {
+    background-color: var(--color-primario-hover);
+    border-color: var(--color-primario-hover);
+}
+
+/* Botón Secundario */
+.btn-secondary,
+.main-btn.secondary-btn {
+    background-color: var(--color-secundario);
+    border-color: var(--color-secundario);
+    color: #FFFFFF;
+}
+
+.btn-secondary:hover,
+.main-btn.secondary-btn:hover {
+    background-color: var(--color-secundario-hover);
+    border-color: var(--color-secundario-hover);
+}
+
+/* Botón de Acento */
+.btn-accent {
+    background-color: var(--color-acento);
+    border-color: var(--color-acento);
+    color: var(--color-texto);
+}
+
+.btn-accent:hover {
+    background-color: var(--color-acento-hover);
+    border-color: var(--color-acento-hover);
+}
+
+/* Botón de Error/Advertencia */
+.btn-danger,
+.btn-warning {
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+    color: #FFFFFF;
+}
+
+/* ============================================
+   Sidebar Customization
+   ============================================ */
+.sidebar-nav-wrapper {
+    background-color: var(--color-primario);
+}
+
+/* Texto del sidebar en marfil claro */
+.sidebar-nav-wrapper .sidebar-nav .nav-link,
+.sidebar-nav-wrapper .sidebar-nav .nav-link .text,
+.sidebar-nav-wrapper .sidebar-nav a,
+.sidebar-nav-wrapper .sidebar-nav a .text {
+    color: var(--color-fondo) !important;
+    /* Marfil claro #FFFDE7 */
+    font-style: normal;
+}
+
+/* Íconos del sidebar */
+.sidebar-nav-wrapper .sidebar-nav .nav-link .icon,
+.sidebar-nav-wrapper .sidebar-nav a .icon,
+.sidebar-nav-wrapper .sidebar-nav .icon i {
+    color: var(--color-acento) !important;
+    /* Amarillo maíz para íconos */
+}
+
+/* Hover y active states */
+.sidebar-nav-wrapper .sidebar-nav .nav-link:hover,
+.sidebar-nav-wrapper .sidebar-nav .nav-link.active,
+.sidebar-nav-wrapper .sidebar-nav a:hover {
+    background-color: var(--color-primario-hover);
+    color: #FFFFFF !important;
+}
+
+.sidebar-nav-wrapper .sidebar-nav .nav-link:hover .text,
+.sidebar-nav-wrapper .sidebar-nav .nav-link.active .text,
+.sidebar-nav-wrapper .sidebar-nav a:hover .text {
+    color: #FFFFFF !important;
+}
+
+/* Dropdown nav items */
+.sidebar-nav-wrapper .dropdown-nav li a {
+    color: var(--color-fondo) !important;
+    padding-left: 3rem;
+}
+
+.sidebar-nav-wrapper .dropdown-nav li a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF !important;
+}
+
+/* Dividers en sidebar */
+.sidebar-nav-wrapper .divider hr {
+    border-color: rgba(255, 253, 231, 0.2);
+}
+
+/* ============================================
+   Status Badges
+   ============================================ */
+.status-btn.success-btn,
+.badge-success {
+    background-color: var(--color-secundario);
+}
+
+.status-btn.warning-btn,
+.badge-warning {
+    background-color: var(--color-acento);
+    color: var(--color-texto);
+}
+
+.status-btn.danger-btn,
+.badge-danger {
+    background-color: var(--color-error);
+}
+
+.status-btn.info-btn,
+.badge-info {
+    background-color: var(--color-primario);
+}
+
+/* ============================================
+   Alerts
+   ============================================ */
+.alert-success {
+    background-color: rgba(129, 199, 132, 0.1);
+    border-color: var(--color-secundario);
+    color: var(--color-texto);
+}
+
+.alert-warning {
+    background-color: rgba(255, 213, 79, 0.1);
+    border-color: var(--color-acento);
+    color: var(--color-texto);
+}
+
+.alert-danger {
+    background-color: rgba(229, 115, 115, 0.1);
+    border-color: var(--color-error);
+    color: var(--color-texto);
+}
+
+/* ============================================
+   Form Elements
+   ============================================ */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 0.2rem rgba(109, 76, 65, 0.25);
+}
+
+/* ============================================
+   Tables
+   ============================================ */
+.table thead th {
+    background-color: var(--color-primario);
+    color: var(--color-fondo) !important;
+    /* Marfil claro para mejor contraste */
+    font-weight: 600;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(109, 76, 65, 0.05);
+}
+
+/* ============================================
+   Breadcrumbs
+   ============================================ */
+.breadcrumb-item a {
+    color: var(--color-primario);
+}
+
+.breadcrumb-item.active {
+    color: var(--color-texto);
+}
+
+/* ============================================
+   Icon Colors
+   ============================================ */
+.icon-primary {
+    color: var(--color-primario);
+}
+
+.icon-secondary {
+    color: var(--color-secundario);
+}
+
+.icon-accent {
+    color: var(--color-acento);
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.text-primary-custom {
+    color: var(--color-primario) !important;
+}
+
+.text-secondary-custom {
+    color: var(--color-secundario) !important;
+}
+
+.text-accent-custom {
+    color: var(--color-acento) !important;
+}
+
+.bg-primary-custom {
+    background-color: var(--color-primario) !important;
+}
+
+.bg-secondary-custom {
+    background-color: var(--color-secundario) !important;
+}
+
+.bg-accent-custom {
+    background-color: var(--color-acento) !important;
+}

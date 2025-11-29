@@ -25,6 +25,8 @@ namespace VentaFacil.web.Services.Admin
             {
                 var query = _context.Usuario
                     .Include(u => u.RolNavigation)
+
+                    .Where(u => u.Estado) // Solo usuarios activos
                     .AsQueryable();
 
                 // Aplicar filtro de búsqueda
@@ -164,7 +166,9 @@ namespace VentaFacil.web.Services.Admin
                     throw new Exception("Usuario no encontrado");
                 }
 
-                _context.Usuario.Remove(usuario);
+                // Soft delete: Cambiar estado a inactivo en lugar de eliminar
+                usuario.Estado = false;
+                _context.Usuario.Update(usuario);
                 await _context.SaveChangesAsync();
 
                 return true;

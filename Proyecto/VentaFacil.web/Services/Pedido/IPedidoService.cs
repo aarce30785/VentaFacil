@@ -15,25 +15,17 @@ namespace VentaFacil.web.Services.Pedido
         Task<ServiceResult> GuardarPedidoAsync(int idPedido);
         Task<ServiceResult> GuardarComoBorradorAsync(int idPedido);
         Task<bool> PuedeEditarseAsync(int idPedido);
-        Task<List<PedidoDto>> ObtenerPedidosBorradorAsync(int idUsuario);
-        Task<List<PedidoDto>> ObtenerPedidosPendientesAsync(int idUsuario);
         Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario);
         Task<bool> ValidarPedidoParaGuardarAsync(int pedidoId);
-        Task<bool> ValidarModalidadMesaAsync(int pedidoId);
         Task<List<PedidoDto>> ObtenerPedidosParaCocinaAsync();
         Task<ServiceResult> MarcarComoListoAsync(int pedidoId);
         Task<ServiceResult> AgregarNotaCocinaAsync(int pedidoId, string nota);
         Task<ServiceResult> CancelarPedidoAsync(int pedidoId, string razon);
-        Task<List<PedidoDto>> BuscarPedidosAsync(string termino);
         Task<ServiceResult> MarcarComoEntregadoAsync(int pedidoId);
         Task<ServiceResult> IniciarPreparacionAsync(int pedidoId);
 
-        Task<ResumenPedidosDto> ObtenerResumenPedidosAsync(int usuarioId);
-        Task<List<PedidoDto>> ObtenerPedidosListosAsync(int idUsuario);
-        Task<List<PedidoDto>> ObtenerPedidosEntregadosAsync(int idUsuario);
-        Task<List<PedidoDto>> ObtenerPedidosCanceladosAsync(int idUsuario);
-        void VerificarEstadoPedidos(int usuarioId);
         Task ActualizarPedidoConFactura(int ventaId, int id_Factura, string numeroFactura);
+        Task<ResumenPedidosDto> ObtenerResumenPedidosAsync(int usuarioId);
     }
 
    

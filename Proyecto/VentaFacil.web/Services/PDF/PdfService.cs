@@ -9,7 +9,7 @@ using System.Linq;
 using VentaFacil.web.Data;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
-
+        
 namespace VentaFacil.web.Services.PDF
 {
     public class PdfService : IPdfService
@@ -25,22 +25,30 @@ namespace VentaFacil.web.Services.PDF
             _logger = logger;
         }
 
-        public byte[] GenerarFacturaPdf(FacturaDto facturaDto)
+        public byte[] GenerarFacturaPdf(FacturaDto facturaDto, IElement footer, bool esCopia = false)
         {
             using (var memoryStream = new MemoryStream())
             {
-               
+
                 var document = new Document(PageSize.A4, 50, 50, 50, 50);
                 var writer = PdfWriter.GetInstance(document, memoryStream);
 
                 document.Open();
 
                 
+                if (esCopia)
+                {
+                    PdfContentByte canvas = writer.DirectContentUnder;
+                    ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER,
+                        new Phrase("COPIA", FontFactory.GetFont(FontFactory.HELVETICA, 60, Font.BOLD, BaseColor.LIGHT_GRAY)),
+                        297.5f, 421, 45);
+                }
+
                 var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18);
                 var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
                 var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
 
-                
+
                 var title = new Paragraph("FACTURA", titleFont)
                 {
                     Alignment = Element.ALIGN_CENTER,
@@ -48,7 +56,7 @@ namespace VentaFacil.web.Services.PDF
                 };
                 document.Add(title);
 
-                
+
                 var empresaTable = new PdfPTable(2)
                 {
                     WidthPercentage = 100,
@@ -56,7 +64,7 @@ namespace VentaFacil.web.Services.PDF
                 };
                 empresaTable.SetWidths(new float[] { 1, 1 });
 
-                
+
                 var empresaCell = new PdfPCell(new Phrase("VENTA FÁCIL\nDirección: Tu Dirección\nTeléfono: (123) 456-7890\nEmail: info@ventafacil.com", normalFont))
                 {
                     Border = Rectangle.NO_BORDER,
@@ -64,7 +72,7 @@ namespace VentaFacil.web.Services.PDF
                 };
                 empresaTable.AddCell(empresaCell);
 
-                
+
                 var facturaInfo = $"Factura #: {facturaDto.NumeroFactura}\n" +
                                 $"Fecha: {facturaDto.FechaEmision:dd/MM/yyyy}\n" +
                                 $"Estado: {facturaDto.EstadoFactura}";
@@ -77,7 +85,7 @@ namespace VentaFacil.web.Services.PDF
 
                 document.Add(empresaTable);
 
-                
+
                 if (!string.IsNullOrEmpty(facturaDto.Cliente))
                 {
                     var clienteSection = new Paragraph("INFORMACIÓN DEL CLIENTE", headerFont)
@@ -95,7 +103,7 @@ namespace VentaFacil.web.Services.PDF
                     document.Add(clienteParagraph);
                 }
 
-               
+
                 var itemsSection = new Paragraph("DETALLES DEL PEDIDO", headerFont)
                 {
                     SpacingBefore = 10f,
@@ -112,14 +120,14 @@ namespace VentaFacil.web.Services.PDF
                         SpacingAfter = 20f
                     };
 
-                    
+
                     var widths = columnCount == 5 ?
                         new float[] { 3, 1, 1, 1, 1 } :
                         new float[] { 3, 1, 1, 1 };
 
                     itemsTable.SetWidths(widths);
 
-                   
+
                     itemsTable.AddCell(new PdfPCell(new Phrase("Producto", headerFont)));
                     itemsTable.AddCell(new PdfPCell(new Phrase("Cantidad", headerFont)));
                     itemsTable.AddCell(new PdfPCell(new Phrase("Precio Unit.", headerFont)));
@@ -131,7 +139,7 @@ namespace VentaFacil.web.Services.PDF
 
                     itemsTable.AddCell(new PdfPCell(new Phrase("Subtotal", headerFont)));
 
-                    
+
                     foreach (var item in facturaDto.Items)
                     {
                         itemsTable.AddCell(new PdfPCell(new Phrase(item.NombreProducto ?? "N/A", normalFont)));
@@ -150,7 +158,7 @@ namespace VentaFacil.web.Services.PDF
                     document.Add(itemsTable);
                 }
 
-                
+
                 var totalesTable = new PdfPTable(2)
                 {
                     WidthPercentage = 50,
@@ -183,86 +191,80 @@ namespace VentaFacil.web.Services.PDF
                     HorizontalAlignment = Element.ALIGN_RIGHT
                 });
 
-                document.Add(totalesTable);
-
-                
-                var pagoSection = new Paragraph("INFORMACIÓN DE PAGO", headerFont)
+                if (footer != null)
                 {
-                    SpacingBefore = 10f,
-                    SpacingAfter = 10f
-                };
-                document.Add(pagoSection);
-
-                var pagoInfo = $"Método: {facturaDto.MetodoPago}\n" +
-                              $"Monto: {facturaDto.MontoPagado.ToString("C")}\n" +
-                              $"Moneda: {facturaDto.Moneda}\n" +
-                              $"Cambio: {facturaDto.Cambio.ToString("C")}\n" +
-                              $"Fecha: {facturaDto.FechaEmision:dd/MM/yyyy HH:mm}";
-
-                var pagoParagraph = new Paragraph(pagoInfo, normalFont);
-                document.Add(pagoParagraph);
-
-                
-                var footer = new Paragraph("Gracias por su compra", normalFont)
-                {
-                    Alignment = Element.ALIGN_CENTER,
-                    SpacingBefore = 30f
-                };
-                document.Add(footer);
+                    document.Add(footer);
+                }
 
                 document.Close();
 
-                var pdfBytes = memoryStream.ToArray();
-
-               
-                GuardarCopiaEnArchivo(facturaDto, pdfBytes);
-                GuardarEnBaseDeDatos(facturaDto, pdfBytes);
-
-                return pdfBytes;
+                return memoryStream.ToArray();
             }
         }
 
-        private void GuardarCopiaEnArchivo(FacturaDto facturaDto, byte[] pdfBytes)
+        public byte[] GenerarFacturaPdf(FacturaDto facturaDto)
         {
-            try
-            {
-                var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "facturas");
-
-                if (!Directory.Exists(uploadsPath))
-                {
-                    Directory.CreateDirectory(uploadsPath);
-                }
-
-                var fileName = $"Factura-{facturaDto.NumeroFactura}-{DateTime.Now:yyyyMMddHHmmss}.pdf";
-                var filePath = Path.Combine(uploadsPath, fileName);
-
-                File.WriteAllBytes(filePath, pdfBytes);
-
-                _logger.LogInformation($"PDF guardado en: {filePath}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al guardar copia del PDF en el servidor");
-            }
+            return GenerarFacturaPdf(facturaDto, null, false);
         }
 
-        private void GuardarEnBaseDeDatos(FacturaDto facturaDto, byte[] pdfBytes)
+        public byte[] GenerarHistorialMovimientosPdf(List<InventarioMovimientoDto> movimientos, string nombreInsumo)
         {
-            try
+            using (var memoryStream = new MemoryStream())
             {
-                var factura = _context.Factura.Find(facturaDto.Id);
-                if (factura != null)
-                {
-                    factura.PdfData = pdfBytes;
-                    factura.PdfFileName = $"Factura-{facturaDto.NumeroFactura}.pdf";
-                    _context.SaveChanges();
+                var document = new Document(PageSize.A4, 50, 50, 50, 50);
+                var writer = PdfWriter.GetInstance(document, memoryStream);
 
-                    _logger.LogInformation($"PDF guardado en BD para factura: {facturaDto.NumeroFactura}");
+                document.Open();
+
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
+                var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10);
+                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 9);
+
+                // Título
+                var title = new Paragraph($"Historial de Movimientos - {nombreInsumo}", titleFont)
+                {
+                    Alignment = Element.ALIGN_CENTER,
+                    SpacingAfter = 20f
+                };
+                document.Add(title);
+
+                // Información de fecha
+                var dateInfo = new Paragraph($"Fecha de generación: {DateTime.Now:dd/MM/yyyy HH:mm}", normalFont)
+                {
+                    Alignment = Element.ALIGN_RIGHT,
+                    SpacingAfter = 10f
+                };
+                document.Add(dateInfo);
+
+                // Tabla
+                var table = new PdfPTable(5)
+                {
+                    WidthPercentage = 100,
+                    SpacingBefore = 10f
+                };
+                table.SetWidths(new float[] { 1, 2, 1, 2, 1 });
+
+                // Encabezados
+                table.AddCell(new PdfPCell(new Phrase("ID", headerFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
+                table.AddCell(new PdfPCell(new Phrase("Tipo", headerFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
+                table.AddCell(new PdfPCell(new Phrase("Cantidad", headerFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
+                table.AddCell(new PdfPCell(new Phrase("Fecha", headerFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
+                table.AddCell(new PdfPCell(new Phrase("Usuario", headerFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
+
+                // Datos
+                foreach (var mov in movimientos)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(mov.Id_Movimiento.ToString(), normalFont)));
+                    table.AddCell(new PdfPCell(new Phrase(mov.Tipo_Movimiento, normalFont)));
+                    table.AddCell(new PdfPCell(new Phrase(mov.Cantidad.ToString(), normalFont)));
+                    table.AddCell(new PdfPCell(new Phrase(mov.Fecha.ToString("dd/MM/yyyy HH:mm"), normalFont)));
+                    table.AddCell(new PdfPCell(new Phrase(mov.Id_Usuario.ToString(), normalFont)));
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al guardar PDF en base de datos");
+
+                document.Add(table);
+
+                document.Close();
+                return memoryStream.ToArray();
             }
         }
     }
