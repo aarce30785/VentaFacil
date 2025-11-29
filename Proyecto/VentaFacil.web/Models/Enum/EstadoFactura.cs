@@ -5,6 +5,7 @@
         Activa,
         Anulada,
         Pendiente,
-        Pagada
+        Pagada,
+        NotaCredito
     }
 }

@@ -29,7 +29,8 @@ namespace VentaFacil.web.Services.Inventario
                     Id_Inventario = inv.Id_Inventario,
                     Nombre = inv.Nombre,
                     StockActual = inv.StockActual,
-                    StockMinimo = inv.StockMinimo
+                    StockMinimo = inv.StockMinimo,
+                    UnidadMedida = inv.UnidadMedida
                 });
             }
             return dtos;
@@ -45,7 +46,8 @@ namespace VentaFacil.web.Services.Inventario
                 Id_Inventario = inv.Id_Inventario,
                 Nombre = inv.Nombre,
                 StockActual = inv.StockActual,
-                StockMinimo = inv.StockMinimo
+                StockMinimo = inv.StockMinimo,
+                UnidadMedida = inv.UnidadMedida
             };
         }
 
@@ -56,15 +58,40 @@ namespace VentaFacil.web.Services.Inventario
             {
                 Nombre = dto.Nombre,
                 StockActual = dto.StockActual,
-                StockMinimo = dto.StockMinimo
+                StockMinimo = dto.StockMinimo,
+                UnidadMedida = dto.UnidadMedida
             };
             _context.Inventario.Add(inventario);
             await _context.SaveChangesAsync();
+
+            // Si hay stock inicial, registrar movimiento y auditoría
+            if (dto.StockActual > 0)
+            {
+                var usuarioId = 1; // Default system user or similar if not available in context here
+                // Note: In a real scenario, we might want to pass the user ID to this method.
+                // For now, we'll assume a system action or handle it if we can access HttpContext, 
+                // but this service doesn't seem to have HttpContextAccessor injected. 
+                // We will use 1 as a fallback or "System".
+
+                var movimiento = new InventarioMovimiento
+                {
+                    Id_Inventario = inventario.Id_Inventario,
+                    Tipo_Movimiento = "Inventario Inicial",
+                    Cantidad = dto.StockActual,
+                    Fecha = DateTime.Now,
+                    Id_Usuario = usuarioId
+                };
+                _context.InventarioMovimiento.Add(movimiento);
+                await _context.SaveChangesAsync();
+
+                await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, inventario.Id_Inventario, 0, dto.StockActual, "Inventario Inicial", "Creación de Inventario", usuarioId);
+            }
+
             return true;
         }
 
         // Editar inventario existente
-        public async Task<bool> EditarAsync(InventarioDto dto)
+        public async Task<bool> EditarAsync(InventarioDto dto, int idUsuario)
         {
             var inventario = await _context.Inventario.FindAsync(dto.Id_Inventario);
             if (inventario == null) return false;
@@ -73,20 +100,24 @@ namespace VentaFacil.web.Services.Inventario
             inventario.Nombre = dto.Nombre;
             inventario.StockActual = dto.StockActual;
             inventario.StockMinimo = dto.StockMinimo;
+            inventario.UnidadMedida = dto.UnidadMedida;
             await _context.SaveChangesAsync();
 
             if (diferencia != 0)
             {
+                var stockAnterior = inventario.StockActual - diferencia;
                 var movimiento = new InventarioMovimiento
                 {
                     Id_Inventario = dto.Id_Inventario,
                     Tipo_Movimiento = diferencia > 0 ? "Ajuste Entrada" : "Ajuste Salida",
                     Cantidad = Math.Abs(diferencia),
                     Fecha = DateTime.Now,
-                    Id_Usuario = 1 // Asignar el ID del usuario correspondiente
+                    Id_Usuario = idUsuario 
                 };
                 _context.InventarioMovimiento.Add(movimiento);
                 await _context.SaveChangesAsync();
+
+                await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, movimiento.Id_Inventario, stockAnterior, inventario.StockActual, movimiento.Tipo_Movimiento, "Ajuste de Inventario", idUsuario);
             }
 
             return true;
@@ -102,11 +133,12 @@ namespace VentaFacil.web.Services.Inventario
             return true;
         }
 
-        public async Task<bool> AgregarUnidadAsync(int id)
+        public async Task<bool> AgregarUnidadAsync(int id, int idUsuario)
         {
             var inventario = await _context.Inventario.FindAsync(id);
             if (inventario == null) return false;
 
+            var stockAnterior = inventario.StockActual;
             inventario.StockActual += 1;
             await _context.SaveChangesAsync();
 
@@ -117,20 +149,23 @@ namespace VentaFacil.web.Services.Inventario
                 Tipo_Movimiento = "Entrada",
                 Cantidad = 1,
                 Fecha = DateTime.Now,
-                Id_Usuario = 1 // Asignar el ID del usuario correspondiente
+                Id_Usuario = idUsuario // Asignar el ID del usuario correspondiente
             };
             _context.InventarioMovimiento.Add(movimiento);
             await _context.SaveChangesAsync();
 
+            await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, movimiento.Id_Inventario, stockAnterior, inventario.StockActual, movimiento.Tipo_Movimiento, "Agregar Unidad Rápida", idUsuario);
+
             return true;
         }
 
-        public async Task<bool> QuitarUnidadAsync(int id)
+        public async Task<bool> QuitarUnidadAsync(int id, int idUsuario)
         {
             var inventario = await _context.Inventario.FindAsync(id);
             if (inventario == null) return false;
             if (inventario.StockActual > 0)
             {
+                var stockAnterior = inventario.StockActual;
                 inventario.StockActual -= 1;
                 await _context.SaveChangesAsync();
 
@@ -141,14 +176,59 @@ namespace VentaFacil.web.Services.Inventario
                     Tipo_Movimiento = "Salida",
                     Cantidad = 1,
                     Fecha = DateTime.Now,
-                    Id_Usuario = 1 // Asignar el ID del usuario correspondiente 
+                    Id_Usuario = idUsuario // Asignar el ID del usuario correspondiente 
                 };
                 _context.InventarioMovimiento.Add(movimiento);
                 await _context.SaveChangesAsync();
 
+                await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, movimiento.Id_Inventario, stockAnterior, inventario.StockActual, movimiento.Tipo_Movimiento, "Quitar Unidad Rápida", idUsuario);
+
                 return true;
             }
             return false;
+        }
+
+        public async Task<bool> RegistrarEntradaAsync(int idInventario, int cantidad, string observaciones, int idUsuario)
+        {
+            var inventario = await _context.Inventario.FindAsync(idInventario);
+            if (inventario == null) return false;
+
+            var stockAnterior = inventario.StockActual;
+            inventario.StockActual += cantidad;
+            await _context.SaveChangesAsync();
+
+            var movimiento = new InventarioMovimiento
+            {
+                Id_Inventario = idInventario,
+                Tipo_Movimiento = "Entrada",
+                Cantidad = cantidad,
+                Fecha = DateTime.Now,
+                Id_Usuario = idUsuario,
+                Observaciones = observaciones
+            };
+            _context.InventarioMovimiento.Add(movimiento);
+            await _context.SaveChangesAsync();
+
+            await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, movimiento.Id_Inventario, stockAnterior, inventario.StockActual, movimiento.Tipo_Movimiento, observaciones ?? "Registro de Entrada", idUsuario);
+
+            return true;
+        }
+        private async Task RegistrarAuditoriaAsync(int idMovimiento, int idInventario, int cantidadAnterior, int cantidadNueva, string tipoNuevo, string motivo, int idUsuario)
+        {
+            var auditoria = new InventarioMovimientoAuditoria
+            {
+                Id_Movimiento = idMovimiento,
+                Id_Inventario = idInventario,
+                CantidadAnterior = cantidadAnterior,
+                CantidadNueva = cantidadNueva,
+                TipoMovimientoAnterior = "Stock Anterior",
+                TipoMovimientoNuevo = tipoNuevo,
+                MotivoCambio = motivo,
+                Id_UsuarioResponsable = idUsuario,
+                FechaCambio = DateTime.Now
+            };
+            _context.InventarioMovimientoAuditoria.Add(auditoria);
+            await _context.SaveChangesAsync();
         }
     }
 }

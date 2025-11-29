@@ -138,40 +138,7 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Configurar el modal según la acción
-        function configurarModal(accion) {
-            const form = document.getElementById('usuarioForm');
 
-            if (accion === 'ver') {
-                // Deshabilitar todos los inputs en modo ver
-                form.querySelectorAll('input, select, textarea').forEach(element => {
-                    element.setAttribute('readonly', true);
-                    element.setAttribute('disabled', true);
-                });
-
-                // Ocultar botón guardar
-                const btnGuardar = document.getElementById('btnGuardarUsuario');
-                if (btnGuardar) btnGuardar.style.display = 'none';
-            } else {
-                // Configurar el envío del formulario para crear/editar
-                configurarSubmitForm(accion);
-            }
-        }
-
-        // Inicializar cuando el modal se muestra
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('usuarioModal');
-            if (modal) {
-                modal.addEventListener('shown.bs.modal', function() {
-                    const accion = '@accionModal';
-                    configurarModal(accion);
-                });
-            }
-        });
-    </script>
-}
 
 
 

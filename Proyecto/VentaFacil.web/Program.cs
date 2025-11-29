@@ -27,6 +27,12 @@ namespace VentaFacil.web
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.WebHost.UseShutdownTimeout(TimeSpan.FromMinutes(10));
+            builder.Host.ConfigureHostOptions(options =>
+            {
+                options.ShutdownTimeout = TimeSpan.FromMinutes(5);
+            });
+
             bool isRunningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
             var environment = builder.Environment;
@@ -82,7 +88,7 @@ namespace VentaFacil.web
 
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(5);
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
@@ -94,7 +100,7 @@ namespace VentaFacil.web
                    options.LoginPath = "/Login/InicioSesion";
                    options.AccessDeniedPath = "/Login/AccessDenied";
                    options.LogoutPath = "/Login/Logout";
-                   options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                    options.SlidingExpiration = true;
                    options.Cookie.Name = "VentaFacil.Auth";
                    options.Cookie.HttpOnly = true;
@@ -132,6 +138,15 @@ namespace VentaFacil.web
 
 
             var app = builder.Build();
+
+            var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+            lifetime.ApplicationStopping.Register(() => {
+                Console.WriteLine("🛑 APPLICATION STOPPING - Shutdown requested");
+            });
+
+            lifetime.ApplicationStopped.Register(() => {
+                Console.WriteLine("🛑 APPLICATION STOPPED");
+            });
 
             if (isRunningInContainer)
             {

@@ -7,6 +7,7 @@ namespace VentaFacil.web.Models
     public class DetalleVenta
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id_Detalle { get; set; }
 
         public int Id_Venta { get; set; }
@@ -21,11 +22,10 @@ namespace VentaFacil.web.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal? Descuento { get; set; }
 
-        // Navigation properties
         [ForeignKey("Id_Venta")]
-        public virtual Venta Venta { get; set; }
+        public virtual Venta? Venta { get; set; }
 
         [ForeignKey("Id_Producto")]
-        public virtual Producto Producto { get; set; }
+        public virtual Producto? Producto { get; set; }
     }
 }

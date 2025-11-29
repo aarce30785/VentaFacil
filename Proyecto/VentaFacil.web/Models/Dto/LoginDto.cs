@@ -4,5 +4,6 @@
     {
         public string Correo { get; set; }
         public string Contrasena { get; set; }
+        public bool Recordarme { get; set; }
     }
 }

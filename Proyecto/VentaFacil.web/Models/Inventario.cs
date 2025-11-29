@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VentaFacil.web.Models.Enum;
 
 namespace VentaFacil.web.Models
 {
@@ -19,5 +20,8 @@ namespace VentaFacil.web.Models
 
         [Required]
         public int StockMinimo { get; set; }
+
+        [Required]
+        public UnidadMedida UnidadMedida { get; set; }
     }
 }

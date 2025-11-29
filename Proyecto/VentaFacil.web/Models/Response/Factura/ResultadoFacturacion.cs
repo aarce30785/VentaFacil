@@ -16,7 +16,7 @@ namespace VentaFacil.web.Models.Response.Factura
             {
                 Success = true,
                 Message = mensaje,
-                FacturaId = factura?.Id ?? 0,
+                FacturaId = factura?.Id_Factura ?? 0,
                 Factura = factura
             };
         }

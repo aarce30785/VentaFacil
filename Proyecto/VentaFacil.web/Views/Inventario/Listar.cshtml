@@ -44,6 +44,14 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="lni lni-checkmark-circle me-2"></i>
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
 
         <div class="tables-wrapper">
             <div class="row">
@@ -55,9 +63,12 @@
                                     <h4>Lista de Insumos</h4>
                                 </div>
                                 <div class="col-md-6 text-end">
-                                    <a href="@Url.Action("Registrar")" class="main-btn primary-btn btn-hover">
-                                        <i class="lni lni-plus me-2"></i>Registrar Nuevo Insumo
+                                    <a href="@Url.Action("RegistrarEntrada")" class="main-btn success-btn btn-hover me-2">
+                                        <i class="lni lni-download me-2"></i>Registrar Entrada
                                     </a>
+                                    <button type="button" class="main-btn primary-btn btn-hover" data-bs-toggle="modal" data-bs-target="#createModal">
+                                        <i class="lni lni-plus me-2"></i>Registrar Nuevo Insumo
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -68,6 +79,7 @@
                                         <tr>
                                             <th class="min-width"><h6>ID</h6></th>
                                             <th class="min-width"><h6>Nombre</h6></th>
+                                            <th class="min-width"><h6>Unidad</h6></th>
                                             <th class="min-width"><h6>Stock Actual</h6></th>
                                             <th class="min-width"><h6>Stock Mínimo</h6></th>
                                             <th class="text-center"><h6>Estado</h6></th>
@@ -97,6 +109,9 @@
                                                         </div>
                                                     </td>
                                                     <td class="min-width">
+                                                        <p>@item.UnidadMedida</p>
+                                                    </td>
+                                                    <td class="min-width">
                                                         <span class="status-btn success-btn">@item.StockActual</span>
                                                     </td>
                                                     <td class="min-width">
@@ -108,10 +123,15 @@
                                                     <td>
                                                         <div class="action d-flex gap-2 justify-content-center align-items-center">
                                                             <!-- Editar -->
-                                                            <a href="@Url.Action("Editar", new { id = item.Id_Inventario })"
-                                                               class="text-warning action-btn" title="Editar">
+                                                            <button type="button" class="text-warning border-0 bg-transparent action-btn" title="Editar"
+                                                                    data-bs-toggle="modal" data-bs-target="#editModal"
+                                                                    data-id="@item.Id_Inventario"
+                                                                    data-nombre="@item.Nombre"
+                                                                    data-unidad="@((int)item.UnidadMedida)"
+                                                                    data-stock="@item.StockActual"
+                                                                    data-minimo="@item.StockMinimo">
                                                                 <i class="lni lni-pencil"></i>
-                                                            </a>
+                                                            </button>
 
                                                             <!-- Agregar Unidad -->
                                                             <form asp-action="AgregarUnidad" asp-route-id="@item.Id_Inventario" method="post" class="d-inline">
@@ -140,7 +160,7 @@
                                         else
                                         {
                                             <tr>
-                                                <td colspan="6" class="text-center py-4">
+                                                <td colspan="7" class="text-center py-4">
                                                     <div class="text-muted">
                                                         <i class="lni lni-package me-2"></i>
                                                         No hay insumos registrados en el inventario.
@@ -158,6 +178,109 @@
         </div>
     </div>
 </section>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">Registrar Nuevo Insumo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm" asp-action="Registrar" method="post">
+                    <div id="createErrors" class="alert alert-danger d-none"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="Nombre" class="form-label">Nombre del Insumo</label>
+                                <input type="text" id="Nombre" name="Nombre" class="form-control" placeholder="Ingrese el nombre del insumo" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="select-style-1">
+                                <label for="UnidadMedida" class="form-label">Unidad de Medida</label>
+                                <div class="select-position">
+                                    <select id="UnidadMedida" name="UnidadMedida" class="form-control" asp-items="Html.GetEnumSelectList<VentaFacil.web.Models.Enum.UnidadMedida>()" required>
+                                        <option value="">Seleccione una unidad</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="StockActual" class="form-label">Stock Inicial</label>
+                                <input type="number" id="StockActual" name="StockActual" class="form-control" min="0" value="0" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="StockMinimo" class="form-label">Stock Mínimo</label>
+                                <input type="number" id="StockMinimo" name="StockMinimo" class="form-control" min="0" value="0" required />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="main-btn light-btn btn-hover" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="main-btn success-btn btn-hover" onclick="submitForm('createForm')">Registrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Editar Insumo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" asp-action="Editar" method="post">
+                    <div id="editErrors" class="alert alert-danger d-none"></div>
+                    <input type="hidden" id="Edit_Id_Inventario" name="Id_Inventario" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="Edit_Nombre" class="form-label">Nombre del Insumo</label>
+                                <input type="text" id="Edit_Nombre" name="Nombre" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="select-style-1">
+                                <label for="Edit_UnidadMedida" class="form-label">Unidad de Medida</label>
+                                <div class="select-position">
+                                    <select id="Edit_UnidadMedida" name="UnidadMedida" class="form-control" asp-items="Html.GetEnumSelectList<VentaFacil.web.Models.Enum.UnidadMedida>()" required>
+                                        <option value="">Seleccione una unidad</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="Edit_StockActual" class="form-label">Stock Actual</label>
+                                <input type="number" id="Edit_StockActual" name="StockActual" class="form-control" min="0" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label for="Edit_StockMinimo" class="form-label">Stock Mínimo</label>
+                                <input type="number" id="Edit_StockMinimo" name="StockMinimo" class="form-control" min="0" required />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="main-btn light-btn btn-hover" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="main-btn primary-btn btn-hover" onclick="submitForm('editForm')">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
     .action-btn {
@@ -198,4 +321,60 @@
         padding: 0 !important;
     }
 </style>
-<!-- ========== table components end ========== -->
+
+@section Scripts {
+    <script>
+        var editModal = document.getElementById('editModal');
+        editModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var nombre = button.getAttribute('data-nombre');
+            var unidad = button.getAttribute('data-unidad');
+            var stock = button.getAttribute('data-stock');
+            var minimo = button.getAttribute('data-minimo');
+
+            var modal = this;
+            modal.querySelector('#Edit_Id_Inventario').value = id;
+            modal.querySelector('#Edit_Nombre').value = nombre;
+            modal.querySelector('#Edit_UnidadMedida').value = unidad;
+            modal.querySelector('#Edit_StockActual').value = stock;
+            modal.querySelector('#Edit_StockMinimo').value = minimo;
+        });
+
+        function submitForm(formId) {
+            var form = document.getElementById(formId);
+            var formData = new FormData(form);
+            var errorDiv = document.getElementById(formId === 'createForm' ? 'createErrors' : 'editErrors');
+            errorDiv.classList.add('d-none');
+            errorDiv.innerHTML = '';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    errorDiv.classList.remove('d-none');
+                    if (data.errors) {
+                        data.errors.forEach(error => {
+                            errorDiv.innerHTML += `<p class="mb-0">${error}</p>`;
+                        });
+                    } else {
+                        errorDiv.innerHTML = '<p class="mb-0">Ocurrió un error inesperado.</p>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorDiv.classList.remove('d-none');
+                errorDiv.innerHTML = '<p class="mb-0">Ocurrió un error de conexión.</p>';
+            });
+        }
+    </script>
+}

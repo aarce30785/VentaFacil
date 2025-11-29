@@ -59,6 +59,7 @@ CREATE TABLE Inventario (
     Nombre VARCHAR(255) NOT NULL,
     StockActual INT NOT NULL,
     StockMinimo INT NOT NULL,
+    UnidadMedida INT NOT NULL,
     CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
 );
 
@@ -70,6 +71,7 @@ CREATE TABLE InventarioMovimiento (
     Cantidad INT NOT NULL,
     Fecha DATETIME,
     Id_Usuario INT NOT NULL,
+    Observaciones VARCHAR(1024),
     CONSTRAINT IMov_Pk PRIMARY KEY (Id_Movimiento),
     CONSTRAINT IMovInv_Fk FOREIGN KEY (Id_Inventario) REFERENCES Inventario(Id_Inventario),
     CONSTRAINT IMovUsr_Fk FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
@@ -94,18 +96,32 @@ CREATE TABLE Factura (
     Cliente VARCHAR(255),
     FechaEmision DATETIME,
     Total DECIMAL(10,2),
-    -- ✅ NUEVOS CAMPOS PARA PAGO Y CAMBIO
+    
     MontoPagado DECIMAL(10,2) DEFAULT 0,
     Cambio DECIMAL(10,2) DEFAULT 0,
     Moneda VARCHAR(3) DEFAULT 'CRC',
     MetodoPago VARCHAR(20) DEFAULT 'Efectivo',
     TasaCambio DECIMAL(10,4) NULL,
-    --
-    Estado BIT DEFAULT 1,
+    Estado INT DEFAULT 0, 
+    Justificacion VARCHAR(MAX) NULL, 
+    FacturaOriginalId INT NULL, 
     PdfData VARBINARY(MAX) NULL,        
     PdfFileName VARCHAR(255) NULL,    
     CONSTRAINT Fac_Pk PRIMARY KEY (Id_Factura),
-    CONSTRAINT FVen_Fk FOREIGN KEY (Id_Venta) REFERENCES Venta(Id_Venta)
+    CONSTRAINT FVen_Fk FOREIGN KEY (Id_Venta) REFERENCES Venta(Id_Venta),
+    CONSTRAINT FK_Factura_Original FOREIGN KEY (FacturaOriginalId) REFERENCES Factura(Id_Factura)
+);
+
+-- Tabla PagoFactura
+CREATE TABLE PagoFactura (
+    Id INT IDENTITY(1,1),
+    FacturaId INT NOT NULL,
+    MetodoPago VARCHAR(20) NOT NULL,
+    Monto DECIMAL(10,2) NOT NULL,
+    Moneda VARCHAR(3) DEFAULT 'CRC' NOT NULL,
+    TasaCambio DECIMAL(10,4) NULL,
+    CONSTRAINT PK_PagoFactura PRIMARY KEY (Id),
+    CONSTRAINT FK_PagoFactura_Factura FOREIGN KEY (FacturaId) REFERENCES Factura(Id_Factura) ON DELETE CASCADE
 );
 
 -- Tabla DetalleVenta
@@ -177,6 +193,23 @@ CREATE TABLE CajaRetiro (
     FechaHora DATETIME NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_CajaRetiro_Caja FOREIGN KEY (Id_Caja) REFERENCES Caja(Id_Caja),
     CONSTRAINT FK_CajaRetiro_Usuario FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
+);
+
+-- Tabla InventarioMovimientoAuditoria
+CREATE TABLE InventarioMovimientoAuditoria (
+    Id_Auditoria INT IDENTITY(1,1) PRIMARY KEY,
+    Id_Movimiento INT NOT NULL,
+    Id_Inventario INT NOT NULL,
+    CantidadAnterior INT NOT NULL,
+    CantidadNueva INT NOT NULL,
+    TipoMovimientoAnterior VARCHAR(255),
+    TipoMovimientoNuevo VARCHAR(255),
+    MotivoCambio VARCHAR(1024),
+    FechaCambio DATETIME DEFAULT GETDATE(),
+    Id_UsuarioResponsable INT NOT NULL,
+    CONSTRAINT FK_Auditoria_Movimiento FOREIGN KEY (Id_Movimiento) REFERENCES InventarioMovimiento(Id_Movimiento),
+    CONSTRAINT FK_Auditoria_Inventario FOREIGN KEY (Id_Inventario) REFERENCES Inventario(Id_Inventario),
+    CONSTRAINT FK_Auditoria_Usuario FOREIGN KEY (Id_UsuarioResponsable) REFERENCES Usuario(Id_Usr)
 );
 
 -- Roles base

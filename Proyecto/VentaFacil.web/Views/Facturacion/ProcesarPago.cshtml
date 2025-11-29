@@ -6,147 +6,395 @@
     Layout = "_LayoutPlantilla";
 }
 
-<div class="container">
-    <h2>Procesar Pago</h2>
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --success-color: #10b981;
+    }
 
+    .checkout-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .payment-card {
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .payment-sidebar {
+        background: #f8fafc;
+        padding: 2rem;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .payment-main {
+        padding: 3rem;
+    }
+
+    .order-summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px dashed #cbd5e1;
+    }
+
+    .order-summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .total-display {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -0.025em;
+    }
+
+    .payment-method-option {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .payment-method-option:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .payment-method-option.active {
+        border-color: var(--primary-color);
+        background: #eef2ff;
+    }
+
+    .payment-method-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: var(--primary-color);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .input-lg-custom {
+        font-size: 1.25rem;
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .btn-pay {
+        background: var(--success-color);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 1.125rem;
+        width: 100%;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-pay:hover {
+        background: #059669;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+    }
+
+    .change-display {
+        background: #1e293b;
+        color: #fff;
+        padding: 1.5rem;
+        border-radius: 16px;
+        text-align: center;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="checkout-container">
     @if (Model?.Pedido != null)
     {
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Detalles del Pedido #@Model.PedidoId</h5>
+        <div class="payment-card">
+            <div class="row g-0">
+                <!-- Sidebar: Resumen del Pedido -->
+                <div class="col-lg-4 payment-sidebar">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="avatar bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <i class="lni lni-cart text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Resumen del Pedido</h6>
+                            <small class="text-muted">#@Model.PedidoId</small>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p><strong>Cliente:</strong> @Model.Cliente</p>
-                        <p><strong>Modalidad:</strong> @Model.Modalidad</p>
-                        @if (Model.Modalidad == ModalidadPedido.EnMesa)
-                        {
-                            <p><strong>Mesa:</strong> @Model.NumeroMesa</p>
-                        }
 
-                        <h6>Productos:</h6>
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.Pedido.Items)
+                    <div class="mb-4">
+                        <div class="p-3 bg-white rounded-3 shadow-sm mb-3">
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Cliente</small>
+                            <div class="fw-bold text-dark">@Model.Cliente</div>
+                        </div>
+                        <div class="p-3 bg-white rounded-3 shadow-sm">
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Modalidad</small>
+                            <div class="d-flex align-items-center">
+                                @if (Model.Modalidad == ModalidadPedido.EnMesa)
                                 {
-                                    <tr>
-                                        <td>@item.NombreProducto</td>
-                                        <td>@item.Cantidad</td>
-                                        <td>@item.PrecioUnitario.ToString("C")</td>
-                                        <td>@item.Subtotal.ToString("C")</td>
-                                    </tr>
+                                    <i class="lni lni-restaurant me-2 text-info"></i>
+                                    <span>Mesa @Model.NumeroMesa</span>
                                 }
-                            </tbody>
-                        </table>
+                                else
+                                {
+                                    <i class="lni lni-takeaway me-2 text-warning"></i>
+                                    <span>Para Llevar</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
 
-                        <div class="text-end">
-                            <h5>Total: @Model.Total.ToString("C")</h5>
+                    <h6 class="fw-bold mb-3">Productos</h6>
+                    <div class="order-items mb-4" style="max-height: 300px; overflow-y: auto;">
+                        @foreach (var item in Model.Pedido.Items)
+                        {
+                            <div class="order-summary-item">
+                                <div>
+                                    <div class="fw-medium">@item.NombreProducto</div>
+                                    <small class="text-muted">x @item.Cantidad</small>
+                                </div>
+                                <div class="fw-bold">@item.Subtotal.ToString("C")</div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="fw-bold">@Model.Total.ToString("C")</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-lg">Total a Pagar</span>
+                            <span class="fw-bold text-primary text-xl">@Model.Total.ToString("C")</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-6">
-                <!-- Formulario de pago -->
-                <form id="pagoForm" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="PedidoId" />
-                    <input type="hidden" asp-for="Total" />
-                    <input type="hidden" asp-for="Cliente" />
+                <!-- Main: Formulario de Pago -->
+                <div class="col-lg-8 payment-main">
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <h2 class="fw-bold mb-0">Finalizar Pago</h2>
+                        <a href="@Url.Action("Editar", "Pedidos", new { id = Model.PedidoId })" class="btn btn-light rounded-pill px-4">
+                            <i class="lni lni-arrow-left me-2"></i> Volver
+                        </a>
+                    </div>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Información de Pago</h5>
+                    <form id="pagoForm" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="PedidoId" />
+                        <input type="hidden" asp-for="Total" />
+                        <input type="hidden" asp-for="Cliente" />
+                        <!-- Hidden input para el método de pago seleccionado -->
+                        <input type="hidden" asp-for="MetodoPago" id="inputMetodoPago" />
+
+                        <h5 class="fw-bold mb-3">Método de Pago</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="payment-method-option" onclick="seleccionarMetodo('Efectivo', this)">
+                                    <div class="payment-method-icon">
+                                        <i class="lni lni-money-protection"></i>
+                                    </div>
+                                    <span class="fw-medium">Efectivo</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="payment-method-option" onclick="seleccionarMetodo('Tarjeta', this)">
+                                    <div class="payment-method-icon">
+                                        <i class="lni lni-credit-cards"></i>
+                                    </div>
+                                    <span class="fw-medium">Tarjeta</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="payment-method-option" onclick="seleccionarMetodo('Transferencia', this)">
+                                    <div class="payment-method-icon">
+                                        <i class="lni lni-mobile"></i>
+                                    </div>
+                                    <span class="fw-medium">Transferencia</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="payment-method-option" onclick="seleccionarMetodo('Mixto', this)">
+                                    <div class="payment-method-icon">
+                                        <i class="lni lni-layers"></i>
+                                    </div>
+                                    <span class="fw-medium">Mixto</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <!-- Método de Pago -->
-                            <div class="form-group mb-3">
-                                <label asp-for="MetodoPago" class="form-label">Método de Pago *</label>
-                                <select asp-for="MetodoPago" class="form-control" required>
-                                    <option value="">Seleccione método</option>
-                                    <option value="Efectivo">Efectivo</option>
-                                    <option value="Tarjeta">Tarjeta</option>
-                                    <option value="Transferencia">Transferencia</option>
-                                </select>
-                                <span asp-validation-for="MetodoPago" class="text-danger"></span>
+                        <span asp-validation-for="MetodoPago" class="text-danger d-block mb-3"></span>
+
+                        <!-- SECCIÓN PAGO ÚNICO -->
+                        <div id="singlePaymentSection">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Moneda</label>
+                                    <select asp-for="Moneda" class="form-select form-select-lg" id="monedaSelect" style="border-radius: 12px;">
+                                        <option value="CRC">🇨🇷 Colones (₡)</option>
+                                        <option value="USD">🇺🇸 Dólares ($)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6" id="tasaCambioGroup" style="display: none;">
+                                    <label asp-for="TasaCambio" class="form-label fw-bold">Tasa de Cambio</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">₡</span>
+                                        <input asp-for="TasaCambio" type="number" step="0.01" class="form-control form-control-lg border-start-0" style="border-radius: 0 12px 12px 0;" placeholder="0.00" />
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Moneda -->
-                            <div class="form-group mb-3">
-                                <label asp-for="Moneda" class="form-label">Moneda</label>
-                                <select asp-for="Moneda" class="form-control" id="monedaSelect">
-                                    <option value="CRC">Colones (₡)</option>
-                                    <option value="USD">Dólares ($)</option>
-                                </select>
-                            </div>
-
-                            <!-- Tasa de Cambio (solo para USD) -->
-                            <div class="form-group mb-3" id="tasaCambioGroup" style="display: none;">
-                                <label asp-for="TasaCambio" class="form-label">Tasa de Cambio (₡ por $) *</label>
-                                <input asp-for="TasaCambio" type="number" step="0.01" class="form-control" />
-                                <span asp-validation-for="TasaCambio" class="text-danger"></span>
-                            </div>
-
-                            <!-- Monto Pagado -->
-                            <div class="form-group mb-3">
-                                <label asp-for="MontoPagado" class="form-label">Monto Pagado *</label>
-                                <input asp-for="MontoPagado" type="number" step="0.01" class="form-control" required />
+                            <div class="mb-4">
+                                <label asp-for="MontoPagado" class="form-label fw-bold">Monto Recibido</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px; font-size: 1.5rem;" id="simboloMoneda">₡</span>
+                                    <input asp-for="MontoPagado" type="number" step="0.01" class="form-control input-lg-custom border-start-0" placeholder="0.00" />
+                                </div>
                                 <span asp-validation-for="MontoPagado" class="text-danger"></span>
                             </div>
-
-                            <!-- Cambio -->
-                            <div class="form-group mb-3">
-                                <label class="form-label">Cambio</label>
-                                <input type="text" class="form-control" id="cambioDisplay" readonly />
-                                <small class="form-text text-muted" id="cambioMensaje"></small>
-                            </div>
                         </div>
-                    </div>
 
-                    <div class="mt-3">
-                        <button type="button" class="btn btn-success btn-lg" id="btnConfirmarPago" data-bs-toggle="modal" data-bs-target="#confirmacionModal">
-                            Confirmar Pago
-                        </button>
-                        <a href="@Url.Action("Editar", "Pedidos", new { id = Model.PedidoId })" class="btn btn-secondary">Volver al Pedido</a>
-                    </div>
-                </form>
+                        <!-- SECCIÓN PAGO MIXTO -->
+                        <div id="splitPaymentSection" style="display: none;">
+                            <div class="card bg-light border-0 mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">Agregar Pago</h6>
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Método</label>
+                                            <select id="splitMetodo" class="form-select">
+                                                <option value="Efectivo">Efectivo</option>
+                                                <option value="Tarjeta">Tarjeta</option>
+                                                <option value="Transferencia">Transferencia</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label small">Moneda</label>
+                                            <select id="splitMoneda" class="form-select">
+                                                <option value="CRC">CRC</option>
+                                                <option value="USD">USD</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2" id="splitTasaGroup" style="display:none;">
+                                            <label class="form-label small">Tasa</label>
+                                            <input type="number" id="splitTasa" class="form-control" placeholder="Tasa" step="0.01">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Monto</label>
+                                            <input type="number" id="splitMonto" class="form-control" placeholder="0.00" step="0.01">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-primary w-100" id="btnAddPayment">
+                                                <i class="lni lni-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mb-4">
+                                <table class="table table-hover" id="paymentsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Método</th>
+                                            <th>Monto</th>
+                                            <th>Conv. (CRC)</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                    <tfoot class="table-light fw-bold">
+                                        <tr>
+                                            <td colspan="2" class="text-end">Total Pagado:</td>
+                                            <td id="splitTotalPaid">₡0.00</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" class="text-end">Restante:</td>
+                                            <td id="splitRemaining" class="text-danger">@Model.Total.ToString("C")</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            
+                            <!-- Container for hidden inputs -->
+                            <div id="hiddenPaymentsContainer"></div>
+                        </div>
+
+                        <div class="change-display">
+                            <small class="text-uppercase text-white-50 fw-bold ls-1">Cambio a Devolver</small>
+                            <div class="display-4 fw-bold mt-1" id="cambioDisplay">₡0.00</div>
+                            <div id="cambioMensaje" class="mt-2 badge bg-white text-dark">Esperando monto...</div>
+                        </div>
+
+                        <div class="mt-5">
+                            <button type="button" class="btn-pay" id="btnConfirmarPago">
+                                Confirmar y Facturar
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <!-- Modal de Confirmación -->
-        <div class="modal fade" id="confirmacionModal" tabindex="-1" aria-labelledby="confirmacionModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="confirmacionModalLabel">Confirmar Pago</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center">
-                            <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
-                            <h4>¿Está seguro de procesar el pago?</h4>
-                            <p><strong>Pedido #@Model.PedidoId</strong></p>
-                            <p><strong>Cliente:</strong> @Model.Cliente</p>
-                            <p><strong>Total:</strong> @Model.Total.ToString("C")</p>
-                            <p><strong>Método de Pago:</strong> <span id="modalMetodoPago"></span></p>
-                            <p><strong>Monto Pagado:</strong> <span id="modalMontoPagado"></span></p>
-                            <p><strong>Cambio:</strong> <span id="modalCambio"></span></p>
+        <!-- Modal Confirmación -->
+        <div class="modal fade" id="confirmacionModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+                    <div class="modal-body p-5 text-center">
+                        <div class="mb-4">
+                            <div class="avatar-lg bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="lni lni-checkmark-circle fs-1"></i>
+                            </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-success" id="btnProcesarPago">
-                            <i class="fas fa-credit-card me-2"></i>Procesar Pago
-                        </button>
+                        <h3 class="fw-bold mb-2">Confirmar Pago</h3>
+                        <p class="text-muted mb-4">Verifica los detalles antes de procesar.</p>
+
+                        <div class="bg-light p-4 rounded-3 mb-4 text-start">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Total Pedido:</span>
+                                <span class="fw-bold">@Model.Total.ToString("C")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Método:</span>
+                                <span class="fw-bold" id="modalMetodoPago"></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Recibido Total:</span>
+                                <span class="fw-bold" id="modalMontoPagado"></span>
+                            </div>
+                            <div class="border-top pt-2 mt-2 d-flex justify-content-between">
+                                <span class="fw-bold text-dark">Cambio:</span>
+                                <span class="fw-bold text-success" id="modalCambio"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success btn-lg rounded-pill" id="btnProcesarPago">
+                                <i class="lni lni-printer me-2"></i> Procesar y Facturar
+                            </button>
+                            <button type="button" class="btn btn-light btn-lg rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,112 +402,249 @@
     }
     else
     {
-        <div class="alert alert-danger">
-            <h4>Error</h4>
-            <p>No se pudo cargar la información del pedido.</p>
-            <a href="@Url.Action("Index", "Pedidos")" class="btn btn-primary">Volver a Pedidos</a>
+        <div class="alert alert-danger shadow-sm border-0 rounded-3 p-4 text-center">
+            <i class="lni lni-warning fs-1 mb-3 d-block"></i>
+            <h4 class="fw-bold">Error al cargar el pedido</h4>
+            <p class="text-muted mb-4">No se pudo recuperar la información necesaria.</p>
+            <a href="@Url.Action("Index", "Pedidos")" class="btn btn-primary rounded-pill px-4">Volver al Inicio</a>
         </div>
     }
 </div>
 
 @section Scripts {
     <script>
+        let pagos = [];
+        const totalPedido = @Model.Total;
+
+        function seleccionarMetodo(metodo, elemento) {
+            // Actualizar input hidden
+            document.getElementById('inputMetodoPago').value = metodo;
+            
+            // Actualizar estilos visuales
+            document.querySelectorAll('.payment-method-option').forEach(el => el.classList.remove('active'));
+            elemento.classList.add('active');
+            
+            if (metodo === 'Mixto') {
+                $('#singlePaymentSection').hide();
+                $('#splitPaymentSection').fadeIn();
+                // Limpiar validaciones de pago único
+                $('#MontoPagado').prop('required', false);
+            } else {
+                $('#splitPaymentSection').hide();
+                $('#singlePaymentSection').fadeIn();
+                $('#MontoPagado').prop('required', true);
+            }
+            
+            calcularCambio();
+        }
+
         $(document).ready(function() {
-            // Mostrar/ocultar tasa de cambio según moneda
+            // Inicializar selección
+            var metodoActual = $('#inputMetodoPago').val();
+            if(metodoActual) {
+                var el = document.querySelector(`.payment-method-option[onclick*='${metodoActual}']`);
+                if(el) {
+                    el.classList.add('active');
+                    if (metodoActual === 'Mixto') {
+                        $('#singlePaymentSection').hide();
+                        $('#splitPaymentSection').show();
+                        $('#MontoPagado').prop('required', false);
+                    }
+                }
+            }
+
+            // --- Lógica Pago Único ---
             $('#monedaSelect').change(function() {
-                if ($(this).val() === 'USD') {
-                    $('#tasaCambioGroup').show();
+                var esUSD = $(this).val() === 'USD';
+                if (esUSD) {
+                    $('#tasaCambioGroup').fadeIn();
                     $('#TasaCambio').prop('required', true);
+                    $('#simboloMoneda').text('$');
                 } else {
-                    $('#tasaCambioGroup').hide();
+                    $('#tasaCambioGroup').fadeOut();
                     $('#TasaCambio').prop('required', false);
+                    $('#simboloMoneda').text('₡');
                 }
                 calcularCambio();
             }).trigger('change');
 
-            // Calcular cambio en tiempo real
-            $('#MontoPagado, #TasaCambio, #monedaSelect, #MetodoPago').on('input change', function() {
+            $('#MontoPagado, #TasaCambio').on('input change', function() {
                 calcularCambio();
             });
 
-            function calcularCambio() {
-                var total = @Model.Total;
-                var moneda = $('#monedaSelect').val();
-                var montoPagado = parseFloat($('#MontoPagado').val()) || 0;
-                var tasaCambio = parseFloat($('#TasaCambio').val()) || 1;
-
-                var totalEnMoneda = moneda === 'USD' ? total / tasaCambio : total;
-                var cambio = montoPagado - totalEnMoneda;
-
-                var simboloMoneda = moneda === 'USD' ? '$' : '₡';
-                var cambioTexto = (cambio >= 0 ? simboloMoneda : 'Falta: ' + simboloMoneda) + Math.abs(cambio).toFixed(2);
-
-                $('#cambioDisplay').val(cambioTexto);
-
-                if (cambio >= 0) {
-                    $('#cambioMensaje').text('Cambio a devolver').removeClass('text-danger').addClass('text-success');
+            // --- Lógica Pago Mixto ---
+            $('#splitMoneda').change(function() {
+                if ($(this).val() === 'USD') {
+                    $('#splitTasaGroup').show();
                 } else {
-                    $('#cambioMensaje').text('Falta por pagar').removeClass('text-success').addClass('text-danger');
+                    $('#splitTasaGroup').hide();
+                }
+            });
+
+            $('#btnAddPayment').click(function() {
+                const metodo = $('#splitMetodo').val();
+                const moneda = $('#splitMoneda').val();
+                const monto = parseFloat($('#splitMonto').val()) || 0;
+                const tasa = parseFloat($('#splitTasa').val()) || 1;
+
+                if (monto <= 0) {
+                    alert('Ingrese un monto válido');
+                    return;
+                }
+                if (moneda === 'USD' && tasa <= 0) {
+                    alert('Ingrese una tasa de cambio válida');
+                    return;
                 }
 
-                // Actualizar información del modal
-                $('#modalMetodoPago').text($('#MetodoPago option:selected').text());
-                $('#modalMontoPagado').text(simboloMoneda + montoPagado.toFixed(2));
+                pagos.push({
+                    MetodoPago: metodo,
+                    Moneda: moneda,
+                    Monto: monto,
+                    TasaCambio: moneda === 'USD' ? tasa : null
+                });
+
+                actualizarTablaPagos();
+                
+                // Limpiar inputs
+                $('#splitMonto').val('');
+                if(moneda === 'USD') $('#splitTasa').val('');
+            });
+
+            window.eliminarPago = function(index) {
+                pagos.splice(index, 1);
+                actualizarTablaPagos();
+            };
+
+            function actualizarTablaPagos() {
+                const tbody = $('#paymentsTable tbody');
+                tbody.empty();
+                $('#hiddenPaymentsContainer').empty();
+
+                let totalPagadoCRC = 0;
+
+                pagos.forEach((pago, index) => {
+                    const montoCRC = pago.Moneda === 'USD' ? pago.Monto * pago.TasaCambio : pago.Monto;
+                    totalPagadoCRC += montoCRC;
+
+                    const row = `
+                        <tr>
+                            <td>${pago.MetodoPago}</td>
+                            <td>${pago.Moneda} ${pago.Monto.toFixed(2)}</td>
+                            <td>₡${montoCRC.toFixed(2)}</td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPago(${index})">
+                                    <i class="lni lni-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+
+                    // Hidden inputs for binding
+                    $('#hiddenPaymentsContainer').append(`
+                        <input type="hidden" name="Pagos[${index}].MetodoPago" value="${pago.MetodoPago}" />
+                        <input type="hidden" name="Pagos[${index}].Monto" value="${pago.Monto}" />
+                        <input type="hidden" name="Pagos[${index}].Moneda" value="${pago.Moneda}" />
+                        <input type="hidden" name="Pagos[${index}].TasaCambio" value="${pago.TasaCambio || ''}" />
+                    `);
+                });
+
+                $('#splitTotalPaid').text('₡' + totalPagadoCRC.toFixed(2));
+                const restante = totalPedido - totalPagadoCRC;
+                const restanteElem = $('#splitRemaining');
+                restanteElem.text('₡' + Math.max(0, restante).toFixed(2));
+                
+                if (restante <= 0.01) {
+                    restanteElem.removeClass('text-danger').addClass('text-success');
+                } else {
+                    restanteElem.removeClass('text-success').addClass('text-danger');
+                }
+
+                calcularCambio();
+            }
+
+            // --- Cálculo General ---
+            function calcularCambio() {
+                const metodo = $('#inputMetodoPago').val();
+                let totalPagadoCRC = 0;
+
+                if (metodo === 'Mixto') {
+                    pagos.forEach(pago => {
+                        totalPagadoCRC += pago.Moneda === 'USD' ? pago.Monto * pago.TasaCambio : pago.Monto;
+                    });
+                } else {
+                    const moneda = $('#monedaSelect').val();
+                    const monto = parseFloat($('#MontoPagado').val()) || 0;
+                    const tasa = parseFloat($('#TasaCambio').val()) || 1;
+                    totalPagadoCRC = moneda === 'USD' ? monto * tasa : monto;
+                }
+
+                const cambio = totalPagadoCRC - totalPedido;
+                const cambioTexto = '₡' + Math.abs(cambio).toFixed(2);
+
+                $('#cambioDisplay').text((cambio >= 0 ? '' : '-') + cambioTexto);
+
+                if (cambio >= 0) {
+                    $('#cambioMensaje').text('Cambio a devolver').removeClass('bg-danger text-white').addClass('bg-success text-white');
+                } else {
+                    $('#cambioMensaje').text('Monto insuficiente').removeClass('bg-success text-white').addClass('bg-danger text-white');
+                }
+
+                // Modal info update
+                $('#modalMetodoPago').text(metodo || 'No seleccionado');
+                $('#modalMontoPagado').text('₡' + totalPagadoCRC.toFixed(2));
                 $('#modalCambio').text(cambioTexto);
             }
 
-            // Validar formulario antes de mostrar el modal
+            // --- Confirmación ---
             $('#btnConfirmarPago').click(function(e) {
                 e.preventDefault();
-
-                // Validar campos requeridos
-                var metodoPago = $('#MetodoPago').val();
-                var montoPagado = parseFloat($('#MontoPagado').val()) || 0;
-                var moneda = $('#monedaSelect').val();
-                var tasaCambio = parseFloat($('#TasaCambio').val()) || 1;
-
-                if (!metodoPago) {
-                    alert('Por favor seleccione un método de pago');
+                
+                const metodo = $('#inputMetodoPago').val();
+                if (!metodo) {
+                    alert('⚠️ Por favor seleccione un método de pago');
                     return;
                 }
 
-                if (montoPagado <= 0) {
-                    alert('Por favor ingrese un monto válido');
+                let totalPagadoCRC = 0;
+
+                if (metodo === 'Mixto') {
+                    if (pagos.length === 0) {
+                        alert('⚠️ Agregue al menos un pago');
+                        return;
+                    }
+                    pagos.forEach(pago => {
+                        totalPagadoCRC += pago.Moneda === 'USD' ? pago.Monto * pago.TasaCambio : pago.Monto;
+                    });
+                } else {
+                    const moneda = $('#monedaSelect').val();
+                    const monto = parseFloat($('#MontoPagado').val()) || 0;
+                    const tasa = parseFloat($('#TasaCambio').val()) || 1;
+                    
+                    if (monto <= 0) {
+                        alert('⚠️ Ingrese un monto válido');
+                        return;
+                    }
+                    if (moneda === 'USD' && tasa <= 0) {
+                        alert('⚠️ Ingrese una tasa de cambio válida');
+                        return;
+                    }
+                    totalPagadoCRC = moneda === 'USD' ? monto * tasa : monto;
+                }
+
+                if (totalPagadoCRC < totalPedido - 0.01) {
+                    alert('⚠️ El monto pagado es insuficiente');
                     return;
                 }
 
-                if (moneda === 'USD' && tasaCambio <= 0) {
-                    alert('Por favor ingrese una tasa de cambio válida');
-                    return;
-                }
-
-                // Calcular si el monto es suficiente
-                var total = @Model.Total;
-                var totalEnMoneda = moneda === 'USD' ? total / tasaCambio : total;
-
-                if (montoPagado < totalEnMoneda) {
-                    alert('El monto pagado es insuficiente. Por favor ingrese un monto mayor.');
-                    return;
-                }
-
-                // Mostrar modal si todo está correcto
                 $('#confirmacionModal').modal('show');
             });
 
-            // Procesar pago cuando se confirma en el modal
             $('#btnProcesarPago').click(function() {
-                // Deshabilitar botón para evitar doble clic
                 $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Procesando...');
-
-                // Enviar formulario
                 $('#pagoForm').attr('action', '@Url.Action("ProcesarPago", "Facturacion")');
                 $('#pagoForm').submit();
             });
-
-            // Calcular cambio inicial
-            calcularCambio();
         });
-
     </script>
-    
 }

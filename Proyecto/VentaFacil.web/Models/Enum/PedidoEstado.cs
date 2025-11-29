@@ -1,4 +1,4 @@
-﻿namespace VentaFacil.web.Models.Enums
+﻿namespace VentaFacil.web.Models.Enum
 {
     public enum PedidoEstado
     {

@@ -57,6 +57,18 @@
                                     </div>
                                 </div>
 
+                                <div class="col-md-6">
+                                    <div class="select-style-1">
+                                        <label asp-for="UnidadMedida" class="form-label">Unidad de Medida</label>
+                                        <div class="select-position">
+                                            <select asp-for="UnidadMedida" class="form-control" asp-items="Html.GetEnumSelectList<VentaFacil.web.Models.Enum.UnidadMedida>()">
+                                                <option value="">Seleccione una unidad</option>
+                                            </select>
+                                        </div>
+                                        <span asp-validation-for="UnidadMedida" class="text-danger"></span>
+                                    </div>
+                                </div>
+
                                 <div class="col-md-3">
                                     <div class="input-style-1">
                                         <label asp-for="StockActual" class="form-label">Stock Actual</label>

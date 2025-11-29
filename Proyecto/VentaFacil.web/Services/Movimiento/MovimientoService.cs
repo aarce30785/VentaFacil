@@ -5,14 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
 using VentaFacil.web.Models.Dto;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using VentaFacil.web.Data;
-using VentaFacil.web.Models.Dto;
+using VentaFacil.web.Models;
 
 namespace VentaFacil.web.Services.Movimiento
 {
@@ -50,6 +43,59 @@ namespace VentaFacil.web.Services.Movimiento
                     Id_Usuario = m.Id_Usuario
                 })
                 .ToListAsync();
+        }
+
+        public async Task<bool> CorregirMovimientoAsync(int idMovimiento, int nuevaCantidad, string nuevoTipo, string motivo, int idUsuario)
+        {
+            var movimiento = await _context.InventarioMovimiento.FindAsync(idMovimiento);
+            if (movimiento == null) return false;
+
+            var inventario = await _context.Inventario.FindAsync(movimiento.Id_Inventario);
+            if (inventario == null) return false;
+
+            
+            bool esEntradaAnterior = movimiento.Tipo_Movimiento == "Entrada" || 
+                                     movimiento.Tipo_Movimiento == "Inventario Inicial" || 
+                                     movimiento.Tipo_Movimiento == "Ajuste Entrada";
+            
+            int efectoAnterior = esEntradaAnterior ? movimiento.Cantidad : -movimiento.Cantidad;
+
+            
+            bool esEntradaNueva = nuevoTipo == "Entrada" || 
+                                  nuevoTipo == "Inventario Inicial" || 
+                                  nuevoTipo == "Ajuste Entrada";
+
+            int nuevoEfecto = esEntradaNueva ? nuevaCantidad : -nuevaCantidad;
+
+            
+            int stockAnterior = inventario.StockActual;
+
+           
+            inventario.StockActual = inventario.StockActual - efectoAnterior + nuevoEfecto;
+
+            if (inventario.StockActual < 0) return false; 
+
+            
+            var auditoria = new InventarioMovimientoAuditoria
+            {
+                Id_Movimiento = movimiento.Id_Movimiento,
+                Id_Inventario = movimiento.Id_Inventario,
+                CantidadAnterior = stockAnterior,
+                CantidadNueva = inventario.StockActual,
+                TipoMovimientoAnterior = movimiento.Tipo_Movimiento,
+                TipoMovimientoNuevo = nuevoTipo,
+                MotivoCambio = motivo,
+                Id_UsuarioResponsable = idUsuario,
+                FechaCambio = DateTime.Now
+            };
+            _context.InventarioMovimientoAuditoria.Add(auditoria);
+
+            // Actualizar movimiento
+            movimiento.Cantidad = nuevaCantidad;
+            movimiento.Tipo_Movimiento = nuevoTipo;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

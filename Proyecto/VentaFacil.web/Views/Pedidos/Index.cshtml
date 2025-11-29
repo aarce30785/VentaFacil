@@ -1,14 +1,136 @@
-﻿@using VentaFacil.web.Models.Enums
+﻿@model VentaFacil.web.Controllers.PedidosIndexViewModel
+@using VentaFacil.web.Models.Enum
 @{
     Layout = "_LayoutPlantilla";
     ViewData["Title"] = "Pedidos";
-    var pedidosBorrador = ViewBag.PedidosBorrador as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
-    var pedidosPendientes = ViewBag.PedidosPendientes as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
-    var pedidosListos = ViewBag.PedidosListos as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
-    var pedidosEntregados = ViewBag.PedidosEntregados as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
-    var pedidosCancelados = ViewBag.PedidosCancelados as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
-    var todosLosPedidos = ViewBag.TodosLosPedidos as List<VentaFacil.web.Models.Dto.PedidoDto> ?? new List<VentaFacil.web.Models.Dto.PedidoDto>();
+    var pedidosBorrador = Model.PedidosBorrador;
+    var pedidosPendientes = Model.PedidosPendientes;
+    var pedidosListos = Model.PedidosListos;
+    var pedidosEntregados = Model.PedidosEntregados;
+    var pedidosCancelados = Model.PedidosCancelados;
+    var todosLosPedidos = Model.TodosLosPedidos;
 }
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .premium-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .stat-card {
+        position: relative;
+        padding: 1.5rem;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+
+    .table-container {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .premium-table thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem;
+    }
+
+    .premium-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .premium-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .premium-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .status-badge {
+        padding: 0.35em 0.8em;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        border: none;
+        background: transparent;
+    }
+
+    .action-btn:hover {
+        background-color: #f1f5f9;
+        transform: scale(1.1);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #f8fafc;
+        border-radius: 16px;
+        border: 2px dashed #cbd5e1;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 
 <!-- ========== table components start ========== -->
 <section class="table-components">
@@ -18,1214 +140,755 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="title">
-                        <h2>Gestión de Pedidos</h2>
+                        <h2 class="fw-bold text-dark">Gestión de Pedidos</h2>
+                        <p class="text-muted text-sm">Administra y monitorea el flujo de pedidos en tiempo real</p>
                     </div>
                 </div>
-                <!-- end col -->
                 <div class="col-md-6">
                     <div class="breadcrumb-wrapper">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
-                                    <a href="#0">Dashboard</a>
-                                </li>
-                                <li class="breadcrumb-item active" aria-current="page">
-                                    Pedidos
-                                </li>
+                                <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Pedidos</li>
                             </ol>
                         </nav>
                     </div>
                 </div>
-                <!-- end col -->
             </div>
-            <!-- end row -->
         </div>
-        <!-- ========== title-wrapper end ========== -->
-        <!-- ========== tables-wrapper start ========== -->
-        <div class="tables-wrapper">
-            <div class="row">
-                <div class="col-lg-12">
-                    <!-- Alertas del sistema -->
-                    @if (TempData["Success"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            @TempData["Success"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @TempData["Error"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
 
-                    <!-- Header de acciones -->
-                    <div class="card-style mb-30">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="title">
-                                    <h6>Resumen del Sistema</h6>
-                                    <p class="text-sm mb-0">
-                                        Usuario: <strong>@User.Identity?.Name</strong>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <div class="d-flex justify-content-end align-items-center gap-2">
-                                    <span class="badge bg-light text-dark" id="contadorTiempo">
-                                        <i class="lni lni-timer"></i>
-                                        Actualizado: <span id="tiempoActualizado">ahora</span>
-                                    </span>
-                                    <a asp-action="Crear" class="main-btn primary-btn btn-hover">
-                                        <i class="lni lni-plus"></i> Nuevo Pedido
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Estadísticas rápidas -->
-                    <div class="row">
-                        <div class="col-xl-2 col-lg-4 col-md-6 col-sm-6">
-                            <div class="card-style mb-30">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon bg-primary bg-opacity-10 text-primary">
-                                        <i class="lni lni-draft"></i>
-                                    </div>
-                                    <div class="content ms-3">
-                                        <h4 class="mb-1" id="estadisticaBorrador">@pedidosBorrador.Count</h4>
-                                        <span class="text-sm text-medium">En Borrador</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-lg-4 col-md-6 col-sm-6">
-                            <div class="card-style mb-30">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon bg-warning bg-opacity-10 text-warning">
-                                        <i class="lni lni-chef-hat"></i>
-                                    </div>
-                                    <div class="content ms-3">
-                                        <h4 class="mb-1" id="estadisticaCocina">@pedidosPendientes.Count</h4>
-                                        <span class="text-sm text-medium">En Cocina</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-lg-4 col-md-6 col-sm-6">
-                            <div class="card-style mb-30">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon bg-info bg-opacity-10 text-info">
-                                        <i class="lni lni-checkmark-circle"></i>
-                                    </div>
-                                    <div class="content ms-3">
-                                        <h4 class="mb-1" id="estadisticaListos">@pedidosListos.Count</h4>
-                                        <span class="text-sm text-medium">Listos</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-lg-4 col-md-6 col-sm-6">
-                            <div class="card-style mb-30">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon bg-success bg-opacity-10 text-success">
-                                        <i class="lni lni-delivery"></i>
-                                    </div>
-                                    <div class="content ms-3">
-                                        <h4 class="mb-1" id="estadisticaEntregados">@pedidosEntregados.Count</h4>
-                                        <span class="text-sm text-medium">Entregados</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-lg-4 col-md-6 col-sm-6">
-                            <div class="card-style mb-30">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon bg-danger bg-opacity-10 text-danger">
-                                        <i class="lni lni-close"></i>
-                                    </div>
-                                    <div class="content ms-3">
-                                        <h4 class="mb-1" id="estadisticaCancelados">@pedidosCancelados.Count</h4>
-                                        <span class="text-sm text-medium">Cancelados</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-lg-4 col-md-6 col-sm-6">
-                            <div class="card-style mb-30">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon bg-secondary bg-opacity-10 text-secondary">
-                                        <i class="lni lni-cart-full"></i>
-                                    </div>
-                                    <div class="content ms-3">
-                                        <h4 class="mb-1">@todosLosPedidos.Count</h4>
-                                        <span class="text-sm text-medium">Total</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pedidos en Borrador -->
-                    <div id="seccionBorrador">
-                        @if (pedidosBorrador.Any())
-                        {
-                            <div class="card-style mb-30">
-                                <div class="title d-flex justify-content-between align-items-center mb-30">
-                                    <div>
-                                        <h6 class="mb-1">📝 Pedidos en Borrador</h6>
-                                        <p class="text-sm mb-0">
-                                            Pedidos en proceso de edición
-                                        </p>
-                                    </div>
-                                    
-                                    <span class="status-btn active-btn" id="contadorBorrador">@pedidosBorrador.Count pendientes</span>
-                                </div>
-                                <div class="table-wrapper table-responsive">
-                                    <table class="table striped-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="min-width">
-                                                    <h6>ID</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Cliente</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Modalidad</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Productos</h6>
-                                                </th>
-                                                <th class="text-end">
-                                                    <h6>Total</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Acciones</h6>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var pedido in pedidosBorrador)
-                                            {
-                                                <tr id="pedido-@pedido.Id_Venta" data-estado="@pedido.Estado">
-                                                    <td class="min-width">
-                                                        <p class="fw-bold text-primary">#@pedido.Id_Venta</p>
-                                                    </td>
-                                                    <td>
-                                                        @if (string.IsNullOrEmpty(pedido.Cliente))
-                                                        {
-                                                            <span class="text-muted">Sin nombre</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            @pedido.Cliente
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
-                                                        {
-                                                            <span class="status-btn info-btn">
-                                                                <i class="lni lni-restaurant me-1"></i> Mesa @pedido.NumeroMesa
-                                                            </span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="status-btn close-btn">
-                                                                <i class="lni lni-takeaway me-1"></i> Para Llevar
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-primary rounded-pill">@pedido.Items.Count</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <p class="fw-bold text-success">$@pedido.Total.ToString("N2")</p>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="action">
-                                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
-                                                               class="text-warning me-2" title="Continuar editando">
-                                                                <i class="lni lni-pencil"></i>
-                                                            </a>
-                                                            <button class="text-success me-2" onclick="iniciarPreparacion(@pedido.Id_Venta)" title="Enviar a cocina">
-                                                                <i class="lni lni-chef-hat"></i>
-                                                            </button>
-                                                            <button class="text-danger" onclick="cancelarPedido(@pedido.Id_Venta)" title="Cancelar pedido">
-                                                                <i class="lni lni-close"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Pedidos Pendientes (Enviados a Cocina) -->
-                    <div id="seccionPendientes">
-                        @if (pedidosPendientes.Any())
-                        {
-                            <div class="card-style mb-30">
-                                <div class="title d-flex justify-content-between align-items-center mb-30">
-                                    <div>
-                                        <h6 class="mb-1">🔥 Pedidos Enviados a Cocina</h6>
-                                        <p class="text-sm mb-0">
-                                            Pedidos en proceso de preparación
-                                        </p>
-                                    </div>
-                                    <span class="status-btn warning-btn" id="contadorPendientes">@pedidosPendientes.Count en cocina</span>
-                                </div>
-                                <div class="table-wrapper table-responsive">
-                                    <table class="table striped-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="min-width"><h6>ID</h6></th>
-                                                <th><h6>Cliente</h6></th>
-                                                <th><h6>Modalidad</h6></th>
-                                                <th class="text-center"><h6>Productos</h6></th>
-                                                <th class="text-end"><h6>Total</h6></th>
-                                                <th class="text-center"><h6>Fecha</h6></th>
-                                                <th class="text-center"><h6>Factura</h6></th> <!-- COLUMNA FACTURA -->
-                                                <th class="text-center"><h6>Estado</h6></th>
-                                                <th class="text-center"><h6>Acciones</h6></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var pedido in pedidosPendientes)
-                                            {
-                                                <tr id="pedido-@pedido.Id_Venta" data-estado="@pedido.Estado">
-                                                    <td class="min-width">
-                                                        <p class="fw-bold text-primary">#@pedido.Id_Venta</p>
-                                                    </td>
-                                                    <td>
-                                                        @if (string.IsNullOrEmpty(pedido.Cliente))
-                                                        {
-                                                            <span class="text-muted">Sin nombre</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            @pedido.Cliente
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
-                                                        {
-                                                            <span class="status-btn info-btn">
-                                                                <i class="lni lni-restaurant me-1"></i> Mesa @pedido.NumeroMesa
-                                                            </span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="status-btn close-btn">
-                                                                <i class="lni lni-takeaway me-1"></i> Para Llevar
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-primary rounded-pill">@pedido.Items.Count</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <p class="fw-bold text-success">$@pedido.Total.ToString("N2")</p>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
-                                                        {
-                                                            <span class="badge bg-success">
-                                                                <i class="lni lni-checkmark-circle me-1"></i>
-                                                                Facturado
-                                                            </span>
-                                                            <br />
-                                                            <small class="text-muted">#@pedido.NumeroFactura</small>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-warning">
-                                                                <i class="lni lni-time me-1"></i>
-                                                                Sin factura
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="status-btn @GetBadgeClass(pedido.Estado)" id="estado-@pedido.Id_Venta">
-                                                            @GetEstadoText(pedido.Estado)
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="action">
-                                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
-                                                               class="text-info me-2" title="Ver detalles">
-                                                                <i class="lni lni-eye"></i>
-                                                            </a>
-                                                            <button class="text-success me-2" onclick="marcarComoListo(@pedido.Id_Venta)" title="Marcar como listo">
-                                                                <i class="lni lni-checkmark-circle"></i>
-                                                            </button>
-                                                            <button class="text-danger" onclick="cancelarPedido(@pedido.Id_Venta)" title="Cancelar pedido">
-                                                                <i class="lni lni-close"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Pedidos Listos -->
-                    <div id="seccionListos">
-                        @if (pedidosListos.Any())
-                        {
-                            <div class="card-style mb-30">
-                                <div class="title d-flex justify-content-between align-items-center mb-30">
-                                    <div>
-                                        <h6 class="mb-1">✅ Pedidos Listos</h6>
-                                        <p class="text-sm mb-0">
-                                            Pedidos terminados y listos para entregar
-                                        </p>
-                                    </div>
-
-                                    <span class="status-btn success-btn" id="contadorListos">@pedidosListos.Count listos</span>
-                                </div>
-                                <div class="table-wrapper table-responsive">
-                                    <table class="table striped-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="min-width">
-                                                    <h6>ID</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Cliente</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Modalidad</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Productos</h6>
-                                                </th>
-                                                <th class="text-end">
-                                                    <h6>Total</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Fecha Pedido</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Fecha Listo</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Factura</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Acciones</h6>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var pedido in pedidosListos)
-                                            {
-                                                <tr id="pedido-@pedido.Id_Venta" data-estado="@pedido.Estado">
-                                                    <td class="min-width">
-                                                        <p class="fw-bold text-primary">#@pedido.Id_Venta</p>
-                                                    </td>
-                                                    <td>
-                                                        @if (string.IsNullOrEmpty(pedido.Cliente))
-                                                        {
-                                                            <span class="text-muted">Sin nombre</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            @pedido.Cliente
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
-                                                        {
-                                                            <span class="status-btn info-btn">
-                                                                <i class="lni lni-restaurant me-1"></i> Mesa @pedido.NumeroMesa
-                                                            </span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="status-btn close-btn">
-                                                                <i class="lni lni-takeaway me-1"></i> Para Llevar
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-primary rounded-pill">@pedido.Items.Count</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <p class="fw-bold text-success">$@pedido.Total.ToString("N2")</p>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@(pedido.FechaActualizacion?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
-                                                        {
-                                                            <div class="d-flex flex-column align-items-center">
-                                                                <span class="badge bg-success mb-1">
-                                                                    <i class="lni lni-checkmark-circle me-1"></i>
-                                                                    FACT-@pedido.NumeroFactura
-                                                                </span>
-                                                                <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = pedido.Id_Venta })"
-                                                                   class="btn btn-sm btn-outline-primary mt-1"
-                                                                   title="Descargar Factura PDF">
-                                                                    <i class="lni lni-download"></i> PDF
-                                                                </a>
-                                                            </div>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-warning">
-                                                                <i class="lni lni-time me-1"></i>
-                                                                Sin factura
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="action">
-                                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
-                                                               class="text-info me-2" title="Ver detalles">
-                                                                <i class="lni lni-eye"></i>
-                                                            </a>
-                                                            <button class="text-success" onclick="marcarEntregado(@pedido.Id_Venta)" title="Marcar como entregado">
-                                                                <i class="lni lni-checkmark-circle"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Pedidos Entregados -->
-                    <div id="seccionEntregados">
-                        @if (pedidosEntregados.Any())
-                        {
-                            <div class="card-style mb-30">
-                                <div class="title d-flex justify-content-between align-items-center mb-30">
-                                    <div>
-                                        <h6 class="mb-1">📦 Pedidos Entregados</h6>
-                                        <p class="text-sm mb-0">
-                                            Pedidos completados y entregados al cliente
-                                        </p>
-                                    </div>
-
-                                    <span class="status-btn info-btn" id="contadorEntregados">@pedidosEntregados.Count entregados</span>
-                                </div>
-                                <div class="table-wrapper table-responsive">
-                                    <table class="table striped-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="min-width">
-                                                    <h6>ID</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Cliente</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Modalidad</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Productos</h6>
-                                                </th>
-                                                <th class="text-end">
-                                                    <h6>Total</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Fecha Pedido</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Fecha Entrega</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Factura</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Acciones</h6>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var pedido in pedidosEntregados)
-                                            {
-                                                <tr id="pedido-@pedido.Id_Venta" data-estado="@pedido.Estado">
-                                                    <td class="min-width">
-                                                        <p class="fw-bold text-primary">#@pedido.Id_Venta</p>
-                                                    </td>
-                                                    <td>
-                                                        @if (string.IsNullOrEmpty(pedido.Cliente))
-                                                        {
-                                                            <span class="text-muted">Sin nombre</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            @pedido.Cliente
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
-                                                        {
-                                                            <span class="status-btn info-btn">
-                                                                <i class="lni lni-restaurant me-1"></i> Mesa @pedido.NumeroMesa
-                                                            </span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="status-btn close-btn">
-                                                                <i class="lni lni-takeaway me-1"></i> Para Llevar
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-primary rounded-pill">@pedido.Items.Count</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <p class="fw-bold text-success">$@pedido.Total.ToString("N2")</p>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@(pedido.FechaActualizacion?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
-                                                        {
-                                                            <div class="d-flex flex-column align-items-center">
-                                                                <span class="badge bg-success mb-1">
-                                                                    <i class="lni lni-checkmark-circle me-1"></i>
-                                                                    FACT-@pedido.FacturaId
-                                                                </span>
-                                                                <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = pedido.Id_Venta })"
-                                                                   class="btn btn-sm btn-outline-primary mt-1"
-                                                                   title="Descargar Factura PDF">
-                                                                    <i class="lni lni-download"></i> PDF
-                                                                </a>
-                                                            </div>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-warning">
-                                                                <i class="lni lni-time me-1"></i>
-                                                                Sin factura
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Pedidos Cancelados -->
-                    <div id="seccionCancelados">
-                        @if (pedidosCancelados.Any())
-                        {
-                            <div class="card-style mb-30">
-                                <div class="title d-flex justify-content-between align-items-center mb-30">
-                                    <div>
-                                        <h6 class="mb-1">❌ Pedidos Cancelados</h6>
-                                        <p class="text-sm mb-0">
-                                            Pedidos que han sido cancelados
-                                        </p>
-                                    </div>
-                                    
-                                    <span class="status-btn danger-btn" id="contadorCancelados">@pedidosCancelados.Count cancelados</span>
-                                </div>
-                                <div class="table-wrapper table-responsive">
-                                    <table class="table striped-table">
-                                        <thead>
-                                            <tr>
-                                                <th class="min-width">
-                                                    <h6>ID</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Cliente</h6>
-                                                </th>
-                                                <th>
-                                                    <h6>Modalidad</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Productos</h6>
-                                                </th>
-                                                <th class="text-end">
-                                                    <h6>Total</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Fecha Pedido</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Fecha Cancelación</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Motivo</h6>
-                                                </th>
-                                                <th class="text-center">
-                                                    <h6>Acciones</h6>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var pedido in pedidosCancelados)
-                                            {
-                                                <tr id="pedido-@pedido.Id_Venta" data-estado="@pedido.Estado">
-                                                    <td class="min-width">
-                                                        <p class="fw-bold text-primary">#@pedido.Id_Venta</p>
-                                                    </td>
-                                                    <td>
-                                                        @if (string.IsNullOrEmpty(pedido.Cliente))
-                                                        {
-                                                            <span class="text-muted">Sin nombre</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            @pedido.Cliente
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
-                                                        {
-                                                            <span class="status-btn info-btn">
-                                                                <i class="lni lni-restaurant me-1"></i> Mesa @pedido.NumeroMesa
-                                                            </span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="status-btn close-btn">
-                                                                <i class="lni lni-takeaway me-1"></i> Para Llevar
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-primary rounded-pill">@pedido.Items.Count</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <p class="fw-bold text-danger">$@pedido.Total.ToString("N2")</p>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@(pedido.FechaActualizacion?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <small class="text-muted">@(pedido.MotivoCancelacion ?? "Sin especificar")</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="action">
-                                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta"
-                                                               class="text-info" title="Ver detalles">
-                                                                <i class="lni lni-eye"></i>
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    @if (!pedidosBorrador.Any() && !pedidosPendientes.Any() && !pedidosListos.Any() && !pedidosEntregados.Any() && !pedidosCancelados.Any())
-                    {
-                        <div class="card-style text-center py-5" id="sinPedidos">
-                            <div class="mb-4">
-                                <i class="lni lni-cart-full text-muted" style="font-size: 4rem;"></i>
-                            </div>
-                            <h4 class="text-muted mb-3">No hay pedidos registrados</h4>
-                            <p class="text-muted mb-4">Comienza creando un nuevo pedido para el cliente</p>
-                            <a asp-action="Crear" class="main-btn primary-btn btn-hover">
-                                <i class="lni lni-plus me-2"></i> Crear Primer Pedido
-                            </a>
-                        </div>
-                    }
-
-                    <!-- Información del sistema -->
-                    <div class="card-style">
-                        <div class="alert alert-info mb-0">
-                            <div class="d-flex">
-                                <div class="me-3">
-                                    <i class="lni lni-information fs-4 text-info"></i>
-                                </div>
-                                <div>
-                                    <h6 class="alert-heading mb-2">📋 Flujo de Pedidos</h6>
-                                    <ul class="mb-0 ps-3 text-sm">
-                                        <li><strong class="text-dark">Borrador:</strong> Pedido en proceso, puedes editarlo completamente</li>
-                                        <li><strong class="text-dark">En Preparación:</strong> Pedido en cocina, no se puede modificar</li>
-                                        <li><strong class="text-dark">Listo:</strong> Pedido terminado, listo para entregar</li>
-                                        <li><strong class="text-dark">Entregado:</strong> Pedido completado y entregado al cliente</li>
-                                        <li><strong class="text-dark">Cancelado:</strong> Pedido que ha sido cancelado por algún motivo</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Alertas del sistema -->
-                    @if (TempData["Success"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            @TempData["Success"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @TempData["Error"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-
-                    <!-- Botón para ver facturas recientes (opcional) -->
-                    @if (TempData["FacturaId"] != null)
-                    {
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>✅ Pago procesado exitosamente. ¿Desea ver la factura?</span>
-                                <a href="@Url.Action("DetalleFactura", "Facturacion", new { facturaId = TempData["FacturaId"] })"
-                                   class="btn btn-sm btn-outline-primary ms-3">
-                                    <i class="lni lni-receipt me-1"></i> Ver Factura
-                                </a>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
+        <!-- Alertas -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="border-left: 4px solid #10b981 !important;">
+                <div class="d-flex align-items-center">
+                    <i class="lni lni-checkmark-circle fs-4 me-2"></i>
+                    <div>@TempData["Success"]</div>
                 </div>
-                <!-- end col -->
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <!-- end row -->
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-left: 4px solid #ef4444 !important;">
+                <div class="d-flex align-items-center">
+                    <i class="lni lni-warning fs-4 me-2"></i>
+                    <div>@TempData["Error"]</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <!-- Header Actions -->
+        <div class="premium-card mb-4 p-4">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <i class="lni lni-user fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Bienvenido, @User.Identity?.Name</h6>
+                            <p class="text-sm text-muted mb-0">Panel de Control</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="position-relative">
+                        <input type="text" id="searchInput" class="form-control rounded-pill ps-5 py-2" placeholder="Buscar por ID o Cliente...">
+                        <i class="lni lni-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="d-flex justify-content-end align-items-center gap-3">
+                        <span class="badge bg-light text-dark border px-3 py-2" id="contadorTiempo">
+                            <i class="lni lni-timer me-1"></i>
+                            Actualizado: <span id="tiempoActualizado">ahora</span>
+                        </span>
+                        <a asp-action="Crear" class="main-btn primary-btn btn-hover rounded-pill px-4">
+                            <i class="lni lni-plus me-2"></i> Nuevo Pedido
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <!-- ========== tables-wrapper end ========== -->
+
+        <!-- Stats Grid -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-2 col-lg-4 col-md-6">
+                <div class="premium-card stat-card">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="lni lni-draft"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold" id="estadisticaBorrador">@pedidosBorrador.Count</h3>
+                        <span class="text-sm text-muted">Borradores</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-6">
+                <div class="premium-card stat-card">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="lni lni-chef-hat"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold" id="estadisticaCocina">@pedidosPendientes.Count</h3>
+                        <span class="text-sm text-muted">En Cocina</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-6">
+                <div class="premium-card stat-card">
+                    <div class="stat-icon bg-info bg-opacity-10 text-info">
+                        <i class="lni lni-checkmark-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold" id="estadisticaListos">@pedidosListos.Count</h3>
+                        <span class="text-sm text-muted">Listos</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-6">
+                <div class="premium-card stat-card">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success">
+                        <i class="lni lni-delivery"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold" id="estadisticaEntregados">@pedidosEntregados.Count</h3>
+                        <span class="text-sm text-muted">Entregados</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-6">
+                <div class="premium-card stat-card">
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="lni lni-close"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold" id="estadisticaCancelados">@pedidosCancelados.Count</h3>
+                        <span class="text-sm text-muted">Cancelados</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-6">
+                <div class="premium-card stat-card">
+                    <div class="stat-icon bg-secondary bg-opacity-10 text-secondary">
+                        <i class="lni lni-stats-up"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">@todosLosPedidos.Count</h3>
+                        <span class="text-sm text-muted">Total</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pedidos en Borrador -->
+        @if (pedidosBorrador.Any())
+        {
+            <div class="table-container animate-fade-in" id="seccionBorrador">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">📝 Pedidos en Borrador</h5>
+                        <p class="text-sm text-muted mb-0">Pedidos en proceso de creación</p>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">@pedidosBorrador.Count pendientes</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table premium-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Modalidad</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in pedidosBorrador)
+                            {
+                                <tr id="pedido-@pedido.Id_Venta">
+                                    <td><span class="fw-bold text-primary">#@pedido.Id_Venta</span></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                <i class="lni lni-user text-muted"></i>
+                                            </div>
+                                            <span class="fw-medium">@(string.IsNullOrEmpty(pedido.Cliente) ? "Sin nombre" : pedido.Cliente)</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">
+                                                <i class="lni lni-restaurant me-1"></i> Mesa @pedido.NumeroMesa
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
+                                                <i class="lni lni-takeaway me-1"></i> Para Llevar
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-secondary rounded-pill">@pedido.Items.Count</span></td>
+                                    <td class="text-end"><span class="fw-bold text-dark">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta" class="action-btn text-primary" title="Editar">
+                                                <i class="lni lni-pencil"></i>
+                                            </a>
+                                            <button class="action-btn text-success" onclick="iniciarPreparacion(@pedido.Id_Venta)" title="Enviar a cocina">
+                                                <i class="lni lni-chef-hat"></i>
+                                            </button>
+                                            <button class="action-btn text-danger" onclick="cancelarPedido(@pedido.Id_Venta)" title="Cancelar">
+                                                <i class="lni lni-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Pedidos en Cocina -->
+        @if (pedidosPendientes.Any())
+        {
+            <div class="table-container animate-fade-in" id="seccionPendientes">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">🔥 En Cocina</h5>
+                        <p class="text-sm text-muted mb-0">Pedidos en preparación</p>
+                    </div>
+                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3">@pedidosPendientes.Count en proceso</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table premium-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Modalidad</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Hora</th>
+                                <th class="text-center">Factura</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in pedidosPendientes)
+                            {
+                                <tr id="pedido-@pedido.Id_Venta">
+                                    <td><span class="fw-bold text-primary">#@pedido.Id_Venta</span></td>
+                                    <td><span class="fw-medium">@(string.IsNullOrEmpty(pedido.Cliente) ? "Sin nombre" : pedido.Cliente)</span></td>
+                                    <td>
+                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info">Mesa @pedido.NumeroMesa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning bg-opacity-10 text-warning">Para Llevar</span>
+                                        }
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-secondary rounded-pill">@pedido.Items.Count</span></td>
+                                    <td class="text-end"><span class="fw-bold text-dark">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-center"><small class="text-muted">@pedido.Fecha.ToString("HH:mm")</small></td>
+                                    <td class="text-center">
+                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                                <i class="lni lni-checkmark-circle me-1"></i> Facturado
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">
+                                                <i class="lni lni-timer me-1"></i> Pendiente
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta" class="action-btn text-info" title="Ver detalles">
+                                                <i class="lni lni-eye"></i>
+                                            </a>
+                                            <button class="action-btn text-success" onclick="marcarComoListo(@pedido.Id_Venta)" title="Marcar Listo">
+                                                <i class="lni lni-checkmark-circle"></i>
+                                            </button>
+                                            <button class="action-btn text-danger" onclick="cancelarPedido(@pedido.Id_Venta)" title="Cancelar">
+                                                <i class="lni lni-close"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Pedidos Listos -->
+        @if (pedidosListos.Any())
+        {
+            <div class="table-container animate-fade-in" id="seccionListos">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">✅ Pedidos Listos</h5>
+                        <p class="text-sm text-muted mb-0">Listos para entregar al cliente</p>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">@pedidosListos.Count listos</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table premium-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Modalidad</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Factura</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in pedidosListos)
+                            {
+                                <tr id="pedido-@pedido.Id_Venta">
+                                    <td><span class="fw-bold text-primary">#@pedido.Id_Venta</span></td>
+                                    <td><span class="fw-medium">@pedido.Cliente</span></td>
+                                    <td>
+                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info">Mesa @pedido.NumeroMesa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning bg-opacity-10 text-warning">Para Llevar</span>
+                                        }
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-secondary rounded-pill">@pedido.Items.Count</span></td>
+                                    <td class="text-end"><span class="fw-bold text-dark">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-center">
+                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
+                                        {
+                                            <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = pedido.Id_Venta })" 
+                                               class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                <i class="lni lni-download me-1"></i> PDF
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning bg-opacity-10 text-warning">Pendiente</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a asp-action="Editar" asp-route-id="@pedido.Id_Venta" class="action-btn text-info" title="Ver">
+                                                <i class="lni lni-eye"></i>
+                                            </a>
+                                            <button class="action-btn text-success" onclick="marcarEntregado(@pedido.Id_Venta)" title="Entregar">
+                                                <i class="lni lni-checkmark-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Pedidos Entregados -->
+        @if (pedidosEntregados.Any())
+        {
+            <div class="table-container animate-fade-in" id="seccionEntregados">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">📦 Historial de Entregas</h5>
+                        <p class="text-sm text-muted mb-0">Pedidos completados recientemente</p>
+                    </div>
+                    <span class="badge bg-light text-dark border rounded-pill px-3">@pedidosEntregados.Count entregados</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table premium-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Modalidad</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Factura</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in pedidosEntregados)
+                            {
+                                <tr id="pedido-@pedido.Id_Venta">
+                                    <td><span class="fw-bold text-muted">#@pedido.Id_Venta</span></td>
+                                    <td><span class="fw-medium text-muted">@pedido.Cliente</span></td>
+                                    <td>
+                                        @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
+                                        {
+                                            <span class="badge bg-light text-muted border">Mesa @pedido.NumeroMesa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border">Para Llevar</span>
+                                        }
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-light text-muted border rounded-pill">@pedido.Items.Count</span></td>
+                                    <td class="text-end"><span class="fw-bold text-muted">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-center">
+                                        @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
+                                        {
+                                            <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = pedido.Id_Venta })" 
+                                               class="text-primary" title="Descargar PDF">
+                                                <i class="lni lni-download"></i>
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Empty State -->
+        @if (!pedidosBorrador.Any() && !pedidosPendientes.Any() && !pedidosListos.Any() && !pedidosEntregados.Any() && !pedidosCancelados.Any())
+        {
+            <div class="empty-state animate-fade-in">
+                <div class="mb-4">
+                    <div class="avatar-lg bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="lni lni-cart-full fs-1"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark mb-2">No hay pedidos activos</h3>
+                <p class="text-muted mb-4">Comienza creando un nuevo pedido para ver la actividad aquí.</p>
+                <a asp-action="Crear" class="main-btn primary-btn btn-hover rounded-pill px-5 py-3">
+                    <i class="lni lni-plus me-2"></i> Crear Primer Pedido
+                </a>
+            </div>
+        }
     </div>
-    <!-- end container -->
 </section>
-<!-- ========== table components end ========== -->
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modalTitle">Confirmación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-question-circle fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted" id="modalMessage">¿Estás seguro de realizar esta acción?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="btnConfirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-warning fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0 text-muted" id="errorMessage">Ha ocurrido un error inesperado.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancelar -->
+<div class="modal fade" id="modalCancelarPedido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">Cancelar Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="text-center mb-4">
+                    <div class="avatar-lg bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <i class="lni lni-warning fs-2"></i>
+                    </div>
+                    <p class="text-muted">¿Estás seguro de que deseas cancelar este pedido? Esta acción no se puede deshacer.</p>
+                </div>
+                <form id="formCancelarPedido">
+                    <input type="hidden" id="cancelarPedidoId" />
+                    <div class="mb-3">
+                        <label for="razonCancelacion" class="form-label fw-bold text-muted text-sm">Motivo de cancelación</label>
+                        <textarea class="form-control" id="razonCancelacion" rows="3" placeholder="Ej. Cliente cambió de opinión..." required></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger rounded-pill py-2 fw-bold">Confirmar Cancelación</button>
+                        <button type="button" class="btn btn-light rounded-pill py-2" data-bs-dismiss="modal">Volver</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-    @Html.AntiForgeryToken()
     <script>
-        let ultimaActualizacion = new Date();
-        let isUpdating = false;
+        // Variables globales para el modal
+        let confirmModal;
+        let errorModal;
+        let cancelModal;
+        let currentAction = null;
 
-        function actualizarTiempoActualizado() {
-            const ahora = new Date();
-            const diferencia = Math.floor((ahora - ultimaActualizacion) / 1000);
+        document.addEventListener('DOMContentLoaded', function() {
+            confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            cancelModal = new bootstrap.Modal(document.getElementById('modalCancelarPedido'));
+            
+            // Configurar form de cancelación
+            document.getElementById('formCancelarPedido').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const id = document.getElementById('cancelarPedidoId').value;
+                const razon = document.getElementById('razonCancelacion').value;
+                const btn = this.querySelector('button[type="submit"]');
+                
+                if(!razon.trim()) return;
 
-            if (diferencia < 60) {
-                document.getElementById('tiempoActualizado').textContent = 'hace unos segundos';
-            } else if (diferencia < 3600) {
-                const minutos = Math.floor(diferencia / 60);
-                document.getElementById('tiempoActualizado').textContent = `hace ${minutos} minuto${minutos > 1 ? 's' : ''}`;
-            } else {
-                document.getElementById('tiempoActualizado').textContent = 'hace más de 1 hora';
-            }
-        }
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...';
 
-        // Función para obtener el token anti-forgery
-        function getAntiForgeryToken() {
-            // Buscar el token en diferentes ubicaciones
-            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
-            if (tokenElement) {
-                return tokenElement.value;
-            }
-
-            // Si no se encuentra, buscar en forms
-            const forms = document.querySelectorAll('form');
-            for (let form of forms) {
-                const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
-                if (tokenInput) {
-                    return tokenInput.value;
-                }
-            }
-
-            console.error('No se pudo encontrar el token anti-forgery');
-            return '';
-        }
-
-                async function marcarComoListo(pedidoId) {
-            if (isUpdating) return;
-
-            if (confirm('¿Confirmar que este pedido está listo para entregar?')) {
-                isUpdating = true;
                 try {
-                    const response = await fetch('/Pedidos/MarcarComoListo', {
+                    const response = await fetch('@Url.Action("CancelarPedido", "Pedidos")', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ PedidoId: pedidoId })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pedidoId: id, razon: razon })
                     });
-
-                    console.log('Respuesta status:', response.status);
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Resultado:', result);
-
-                        if (result.success) {
-                            
-                            mostrarMensaje('Pedido marcado como listo correctamente', 'success');
-
-                            
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
-
-                        } else {
-                            mostrarMensaje('Error: ' + result.message, 'error');
-                        }
+                    
+                    const data = await response.json();
+                    
+                    if(data.success) {
+                        location.reload();
                     } else {
-                        const errorText = await response.text();
-                        console.error('Error response:', errorText);
-                        throw new Error(`Error ${response.status}: ${errorText}`);
+                        throw new Error(data.message || 'Error al cancelar');
                     }
                 } catch (error) {
-                    console.error('Error completo:', error);
-                    mostrarMensaje('Error al procesar la solicitud: ' + error.message, 'error');
+                    console.error(error);
+                    cancelModal.hide();
+                    showError(error.message || 'Ocurrió un error al cancelar el pedido.');
                 } finally {
-                    isUpdating = false;
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
-            }
-        }
+            });
+            
+            // Configurar el botón de confirmación
+            document.getElementById('btnConfirmAction').addEventListener('click', async function() {
+                if (currentAction) {
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...';
+                    
+                    try {
+                        await currentAction();
+                        confirmModal.hide();
+                    } catch (error) {
+                        console.error(error);
+                        confirmModal.hide();
+                        showError('Ocurrió un error al procesar la solicitud.');
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                        currentAction = null;
+                    }
+                }
+            });
 
-        async function marcarEntregado(pedidoId) {
-            if (isUpdating) return;
+            // Lógica de Búsqueda
+            const searchInput = document.getElementById('searchInput');
+            if(searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    const value = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('.premium-table tbody tr');
+                    let hasVisible = false;
 
-            if (confirm('¿Estás seguro de que quieres marcar este pedido como entregado?')) {
-                isUpdating = true;
-                try {
-                    const response = await fetch('/Pedidos/MarcarComoEntregado', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ PedidoId: pedidoId })
-                    });
-
-                    console.log('Respuesta status:', response.status);
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Resultado:', result);
-
-                        if (result.success) {
-                            mostrarMensaje('Pedido marcado como entregado correctamente', 'success');
-
-                            
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
-
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if(text.indexOf(value) > -1) {
+                            row.style.display = '';
+                            hasVisible = true;
                         } else {
-                            mostrarMensaje('Error: ' + result.message, 'error');
+                            row.style.display = 'none';
                         }
-                    } else {
-                        const errorText = await response.text();
-                        console.error('Error response:', errorText);
-                        throw new Error(`Error ${response.status}: ${errorText}`);
+                    });
+                });
+            }
+
+            // Iniciar polling
+            iniciarPolling();
+        });
+
+        // Polling para actualizaciones automáticas
+        let lastStats = null;
+        function iniciarPolling() {
+            setInterval(async () => {
+                try {
+                    const response = await fetch('@Url.Action("ObtenerResumenPedidos", "Pedidos")');
+                    if(response.ok) {
+                        const data = await response.json();
+                        if(data.actualizado) {
+                            verificarCambios(data.estadisticas);
+                            actualizarTiempo();
+                        }
                     }
                 } catch (error) {
-                    console.error('Error completo:', error);
-                    mostrarMensaje('Error al procesar la solicitud: ' + error.message, 'error');
-                } finally {
-                    isUpdating = false;
+                    console.error("Error polling:", error);
                 }
-            }
+            }, 10000); // Cada 10 segundos
         }
 
-               async function cancelarPedido(pedidoId) {
-            if (isUpdating) return;
-
-            const razon = prompt('Ingrese el motivo de la cancelación:');
-            if (razon === null) return; 
-            if (razon.trim() === '') {
-                mostrarMensaje('Debe ingresar un motivo para cancelar el pedido', 'error');
+        function verificarCambios(nuevasEstadisticas) {
+            if(!lastStats) {
+                lastStats = nuevasEstadisticas;
                 return;
             }
 
-            if (confirm('¿Está seguro de que desea cancelar este pedido?')) {
-                isUpdating = true;
-                try {
-                    console.log('Enviando cancelación - Pedido ID:', pedidoId, 'Razón:', razon);
+            // Comparar si hubo cambios en los contadores
+            const cambio = 
+                lastStats.totalBorrador !== nuevasEstadisticas.totalBorrador ||
+                lastStats.totalEnCocina !== nuevasEstadisticas.totalEnCocina ||
+                lastStats.totalListos !== nuevasEstadisticas.totalListos ||
+                lastStats.totalEntregados !== nuevasEstadisticas.totalEntregados ||
+                lastStats.totalCancelados !== nuevasEstadisticas.totalCancelados;
 
-                    const response = await fetch('/Pedidos/CancelarPedido', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            id: pedidoId,
-                            razon: razon
-                        })
-                    });
+            if(cambio) {
+                console.log("Cambios detectados, recargando...");
+                location.reload();
+            }
+        }
 
-                    console.log('Respuesta status:', response.status);
+        // Actualizar contador de tiempo
+        function actualizarTiempo() {
+            const ahora = new Date();
+            const hora = ahora.toLocaleTimeString();
+            document.getElementById('tiempoActualizado').innerText = hora;
+        }
+        setInterval(actualizarTiempo, 60000);
 
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Resultado JSON:', result);
+        // Helper para mostrar confirmación
+        function showConfirm(title, message, action) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            currentAction = action;
+            confirmModal.show();
+        }
 
-                        if (result.success) {
-                            mostrarMensaje(result.message, 'success');
+        // Helper para mostrar error
+        function showError(message) {
+            document.getElementById('errorMessage').innerText = message;
+            errorModal.show();
+        }
 
-                            
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
+        // Funciones de acción
+        function iniciarPreparacion(id) {
+            showConfirm(
+                'Enviar a Cocina',
+                `¿Deseas enviar el pedido #${id} a cocina para su preparación?`,
+                async () => {
+                    try {
+                        const response = await fetch('@Url.Action("IniciarPreparacion", "Pedidos")', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pedidoId: id })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if(data.success) {
+                            location.reload();
                         } else {
-                            mostrarMensaje('Error: ' + result.message, 'error');
+                            throw new Error(data.message || 'Error al enviar a cocina');
                         }
-                    } else {
-                        const errorText = await response.text();
-                        console.error('Error response:', errorText);
-                        throw new Error(`Error ${response.status}: ${errorText}`);
+                    } catch (error) {
+                        console.error(error);
+                        throw error;
                     }
-                } catch (error) {
-                    console.error('Error completo:', error);
-                    mostrarMensaje('Error al cancelar el pedido: ' + error.message, 'error');
-                } finally {
-                    isUpdating = false;
                 }
-            }
+            );
         }
 
-        async function iniciarPreparacion(pedidoId) {
-            if (isUpdating) return;
-
-            if (confirm('¿Iniciar preparación de este pedido en cocina?')) {
-                isUpdating = true;
-                try {
-                    const token = getAntiForgeryToken();
-                    console.log('Enviando IniciarPreparacion para pedido:', pedidoId);
-
-                    const response = await fetch('/Pedidos/IniciarPreparacion', {
+        function marcarComoListo(id) {
+            showConfirm(
+                'Marcar como Listo',
+                `¿El pedido #${id} está listo para ser entregado?`,
+                async () => {
+                    const response = await fetch('@Url.Action("MarcarComoListo", "Pedidos")', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': token
-                        },
-                        body: JSON.stringify({ PedidoId: pedidoId }) 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pedidoId: id })
                     });
-
-                    console.log('Respuesta status:', response.status);
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Resultado:', result);
-
-                        if (result.success) {
-                            
-                            const fila = document.getElementById(`pedido-${pedidoId}`);
-                            if (fila) {
-                                fila.remove();
-                            }
-
-                            await actualizarContadores();
-
-                            mostrarMensaje('Preparación iniciada correctamente', 'success');
-                        } else {
-                            mostrarMensaje('Error: ' + result.message, 'error');
-                        }
-                    } else {
-                        const errorText = await response.text();
-                        console.error('Error response:', errorText);
-                        throw new Error(`Error ${response.status}: ${errorText}`);
-                    }
-                } catch (error) {
-                    console.error('Error completo:', error);
-                    mostrarMensaje('Error al iniciar preparación: ' + error.message, 'error');
-                } finally {
-                    isUpdating = false;
+                    if(response.ok) location.reload();
+                    else throw new Error('Error en la respuesta');
                 }
-            }
+            );
         }
 
-        async function actualizarContadores() {
-            try {
-                const response = await fetch('/Pedidos/ObtenerResumenPedidos');
-                if (!response.ok) throw new Error('Error en la respuesta');
-
-                const data = await response.json();
-
-                if (data.actualizado) {
-                    // Actualizar contadores de estadísticas
-                    actualizarElementoTexto('estadisticaBorrador', data.estadisticas.borrador);
-                    actualizarElementoTexto('estadisticaCocina', data.estadisticas.enCocina);
-                    actualizarElementoTexto('estadisticaListos', data.estadisticas.listos);
-                    actualizarElementoTexto('estadisticaEntregados', data.estadisticas.entregados);
-                    actualizarElementoTexto('estadisticaCancelados', data.estadisticas.cancelados);
-
-                    // Actualizar contadores de secciones
-                    actualizarContadorSeccion('contadorBorrador', data.estadisticas.borrador, 'pendientes');
-                    actualizarContadorSeccion('contadorPendientes', data.estadisticas.enCocina, 'en cocina');
-                    actualizarContadorSeccion('contadorListos', data.estadisticas.listos, 'listos');
-                    actualizarContadorSeccion('contadorEntregados', data.estadisticas.entregados, 'entregados');
-                    actualizarContadorSeccion('contadorCancelados', data.estadisticas.cancelados, 'cancelados');
-
-                    // Ocultar/mostrar secciones vacías
-                    actualizarVisibilidadSecciones(data.estadisticas);
-
-                    ultimaActualizacion = new Date();
-                    actualizarTiempoActualizado();
+        function marcarEntregado(id) {
+            showConfirm(
+                'Confirmar Entrega',
+                `¿Confirmas que el pedido #${id} ha sido entregado al cliente?`,
+                async () => {
+                    const response = await fetch('@Url.Action("MarcarComoEntregado", "Pedidos")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pedidoId: id })
+                    });
+                    if(response.ok) location.reload();
+                    else throw new Error('Error en la respuesta');
                 }
-            } catch (error) {
-                console.error('Error actualizando contadores:', error);
-            }
+            );
         }
 
-        function actualizarElementoTexto(elementId, texto) {
-            const elemento = document.getElementById(elementId);
-            if (elemento) {
-                elemento.textContent = texto;
-            }
+        function cancelarPedido(id) {
+            document.getElementById('cancelarPedidoId').value = id;
+            document.getElementById('razonCancelacion').value = '';
+            cancelModal.show();
         }
-
-        function actualizarContadorSeccion(elementId, cantidad, texto) {
-            const elemento = document.getElementById(elementId);
-            if (elemento) {
-                elemento.textContent = `${cantidad} ${texto}`;
-            }
-        }
-
-        function actualizarVisibilidadSecciones(estadisticas) {
-            const secciones = {
-                'seccionBorrador': estadisticas.borrador > 0,
-                'seccionPendientes': estadisticas.enCocina > 0,
-                'seccionListos': estadisticas.listos > 0,
-                'seccionEntregados': estadisticas.entregados > 0,
-                'seccionCancelados': estadisticas.cancelados > 0
-            };
-
-            for (const [seccionId, tieneElementos] of Object.entries(secciones)) {
-                const seccion = document.getElementById(seccionId);
-                if (seccion) {
-                    seccion.style.display = tieneElementos ? 'block' : 'none';
-                }
-            }
-
-            
-            const sinPedidos = document.getElementById('sinPedidos');
-            const totalPedidos = Object.values(estadisticas).reduce((a, b) => a + b, 0);
-            if (sinPedidos) {
-                sinPedidos.style.display = totalPedidos === 0 ? 'block' : 'none';
-            }
-        }
-
-        function mostrarMensaje(mensaje, tipo) {
-            
-            const alertClass = tipo === 'success' ? 'alert-success' : 'alert-danger';
-            const alertHtml = `
-                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                    ${mensaje}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-
-            const container = document.querySelector('.tables-wrapper .row .col-lg-12');
-            if (container) {
-                container.insertAdjacentHTML('afterbegin', alertHtml);
-
-                setTimeout(() => {
-                    const alert = container.querySelector('.alert');
-                    if (alert) {
-                        const bsAlert = new bootstrap.Alert(alert);
-                        bsAlert.close();
-                    }
-                }, 5000);
-            }
-        }
-
-        async function verificarCambiosCompletos() {
-            if (isUpdating) return;
-
-            try {
-                const response = await fetch('/Pedidos/ObtenerResumenPedidos');
-                if (!response.ok) throw new Error('Error en la respuesta');
-
-                const data = await response.json();
-
-                if (data.actualizado && data.cambiosSignificativos) {
-                    console.log('Cambios significativos detectados, recargando página...');
-                    location.reload();
-                } else if (data.actualizado) {
-                    await actualizarContadores();
-                }
-            } catch (error) {
-                console.error('Error verificando cambios:', error);
-            }
-        }
-
-        function actualizarManual() {
-            document.getElementById('tiempoActualizado').textContent = 'actualizando...';
-            verificarCambiosCompletos();
-        }
-
-        // Actualizar contadores cada 30 segundos
-        setInterval(actualizarContadores, 30000);
-
-        // Verificar cambios completos cada 60 segundos
-        setInterval(verificarCambiosCompletos, 60000);
-
-        // Actualizar contador de tiempo cada minuto
-        setInterval(actualizarTiempoActualizado, 60000);
-
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            actualizarTiempoActualizado();
-            // Verificar cambios después de 5 segundos de cargar la página
-            setTimeout(actualizarContadores, 5000);
-        });
     </script>
-}
-
-@functions {
-    private string GetBadgeClass(PedidoEstado estado)
-    {
-        return estado switch
-        {
-            PedidoEstado.Borrador => "secondary-btn",
-            PedidoEstado.EnPreparacion => "warning-btn",
-            PedidoEstado.Listo => "success-btn",
-            PedidoEstado.Entregado => "info-btn",
-            PedidoEstado.Cancelado => "danger-btn",
-            _ => "secondary-btn"
-        };
-    }
-
-    private string GetEstadoText(PedidoEstado estado)
-    {
-        return estado switch
-        {
-            PedidoEstado.Borrador => "Borrador",
-            PedidoEstado.EnPreparacion => "En Cocina",
-            PedidoEstado.Listo => "Listo",
-            PedidoEstado.Entregado => "Entregado",
-            PedidoEstado.Cancelado => "Cancelado",
-            _ => estado.ToString()
-        };
-    }
 }

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using VentaFacil.web.Models.Enum;
-using VentaFacil.web.Models.Enums;
-
 namespace VentaFacil.web.Models.Dto
 {
     public class PedidoDto
@@ -38,6 +36,8 @@ namespace VentaFacil.web.Models.Dto
                 return null;
             }
         }
+
+        public List<EstadoPedidoDto> HistorialEstados { get; internal set; }
 
         // Método para validar si el pedido puede ser guardado
         public bool PuedeSerGuardado()

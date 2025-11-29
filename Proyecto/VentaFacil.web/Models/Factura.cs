@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VentaFacil.web.Models.Enum;
 
 namespace VentaFacil.web.Models
 {
@@ -7,20 +8,19 @@ namespace VentaFacil.web.Models
     public class Factura
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id_Factura { get; set; }
 
         public int Id_Venta { get; set; }
 
-        public DateTime FechaEmision { get; set; }
+        [StringLength(255)]
+        public string Cliente { get; set; } = string.Empty;
 
-        public string? Cliente { get; set; }
+        public DateTime FechaEmision { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal Total { get; set; }
 
-        public bool Estado { get; set; } = true;
-
-       
         [Column(TypeName = "decimal(10,2)")]
         public decimal MontoPagado { get; set; }
 
@@ -35,28 +35,26 @@ namespace VentaFacil.web.Models
 
         [Column(TypeName = "decimal(10,4)")]
         public decimal? TasaCambio { get; set; }
-
         
+        public EstadoFactura Estado { get; set; } = EstadoFactura.Activa;
+
+        public string? Justificacion { get; set; }
+
+        public int? FacturaOriginalId { get; set; }
+
         public byte[]? PdfData { get; set; }
 
-        [MaxLength(255)]
+        [StringLength(255)]
         public string? PdfFileName { get; set; }
 
-        // Navigation properties
         [ForeignKey("Id_Venta")]
-        public virtual Venta Venta { get; set; }
+        public virtual Venta? Venta { get; set; }
 
-       
+        public virtual ICollection<PagoFactura> Pagos { get; set; } = new List<PagoFactura>();
+
         public void CalcularCambio()
         {
-            decimal totalEnMonedaPago = Total;
-
-            if (Moneda == "USD" && TasaCambio.HasValue)
-            {
-                totalEnMonedaPago = Total / TasaCambio.Value;
-            }
-
-            Cambio = Math.Max(0, MontoPagado - totalEnMonedaPago);
+            Cambio = Math.Max(0, MontoPagado - Total);
         }
     }
 }
