@@ -28,6 +28,9 @@ namespace VentaFacil.web.Data
         public DbSet<DetalleVenta> DetalleVenta { get; set; }
         public DbSet<PagoFactura> PagoFactura { get; set; }
 
+        public DbSet<Nomina> Nomina { get; set; }
+        public DbSet<Planilla> Planilla { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

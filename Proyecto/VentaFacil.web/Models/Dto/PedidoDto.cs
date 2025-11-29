@@ -15,6 +15,7 @@ namespace VentaFacil.web.Models.Dto
         public string? Cliente { get; set; }
         public ModalidadPedido Modalidad { get; set; }
         public int? NumeroMesa { get; set; }
+        public string? MotivoCancelacion { get; set; }
         public List<PedidoItemDto> Items { get; set; } = new List<PedidoItemDto>();
         public int? FacturaId { get; set; }
 
@@ -23,7 +24,6 @@ namespace VentaFacil.web.Models.Dto
         public decimal Descuento { get; set; } = 0m;
         public string Notas { get; set; } = string.Empty;
         public DateTime? FechaActualizacion { get; set; }
-        public string? MotivoCancelacion { get; set; }
         public string? UsuarioActualizacion { get; set; }
         public TimeSpan? TiempoPreparacion
         {
