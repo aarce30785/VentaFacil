@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Git\\DesarrolloSistemas\\Proyecto\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\data\\dbseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\data\\dbseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\git\\desarrollosistemas\\proyecto\\ventafacil.web\\views\\caja\\listar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\caja\\listar.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -43,19 +47,31 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Listar.cshtml",
-              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Listar.cshtml",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\Listar.cshtml",
-              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Listar.cshtml",
-              "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\Listar.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-12T22:24:05.327Z",
+              "Title": "DbSeeder.cs",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Data\\DbSeeder.cs",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Data\\DbSeeder.cs",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Data\\DbSeeder.cs",
+              "RelativeToolTip": "VentaFacil.web\\Data\\DbSeeder.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-12T23:55:55.786Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "Listar.cshtml",
+              "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "ToolTip": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\Listar.cshtml",
+              "ViewState": "AgIAAIoAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-12T22:24:05.327Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "CajaService.cs",
               "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Caja\\CajaService.cs",
               "RelativeDocumentMoniker": "VentaFacil.web\\Services\\Caja\\CajaService.cs",
@@ -63,12 +79,11 @@
               "RelativeToolTip": "VentaFacil.web\\Services\\Caja\\CajaService.cs",
               "ViewState": "AgIAADgAAAAAAAAAAAAIwCcAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-12T22:20:27.994Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-12T22:20:27.994Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "ICajaService.cs",
               "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Services\\Caja\\ICajaService.cs",
               "RelativeDocumentMoniker": "VentaFacil.web\\Services\\Caja\\ICajaService.cs",
@@ -76,12 +91,11 @@
               "RelativeToolTip": "VentaFacil.web\\Services\\Caja\\ICajaService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwA4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-12T22:20:01.506Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-12T22:20:01.506Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Cerrar.cshtml",
               "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Cerrar.cshtml",
               "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\Cerrar.cshtml",
@@ -89,12 +103,11 @@
               "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\Cerrar.cshtml",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-12T22:19:21.267Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-12T22:19:21.267Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Retiro.cshtml",
               "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\Retiro.cshtml",
               "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\Retiro.cshtml",
@@ -102,12 +115,11 @@
               "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\Retiro.cshtml",
               "ViewState": "AgIAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-12T22:14:46.357Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-12T22:14:46.357Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "_RetirosCajaPartial.cshtml",
               "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Views\\Caja\\_RetirosCajaPartial.cshtml",
               "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Caja\\_RetirosCajaPartial.cshtml",
@@ -115,12 +127,11 @@
               "RelativeToolTip": "VentaFacil.web\\Views\\Caja\\_RetirosCajaPartial.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-12T22:14:21.802Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-12T22:14:21.802Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "CajaController.cs",
               "DocumentMoniker": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\Controllers\\CajaController.cs",
               "RelativeDocumentMoniker": "VentaFacil.web\\Controllers\\CajaController.cs",
@@ -128,8 +139,7 @@
               "RelativeToolTip": "VentaFacil.web\\Controllers\\CajaController.cs",
               "ViewState": "AgIAADYAAAAAAAAAAAAowEsAAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-12T22:13:37.826Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-12T22:13:37.826Z"
             }
           ]
         }
