@@ -45,14 +45,46 @@
                 <div class="col-lg-12">
                     <div class="card-style mb-30">
                         <div class="card-header">
-                            <div class="row">
-                                <div class="col-md-6">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
                                     <h4>Movimientos de Insumos</h4>
                                 </div>
-                                <div class="col-md-6 text-end">
-                                    <a href="@Url.Action("Listar")" class="main-btn light-btn btn-hover">
-                                        <i class="lni lni-arrow-left me-2"></i>Volver al Inventario
-                                    </a>
+                                <div class="col-md-8 text-end">
+                                    <form method="get" class="d-flex gap-2 justify-content-end align-items-center flex-wrap">
+                                        <input type="hidden" name="idInventario" value="@ViewBag.IdInventario" />
+                                        
+                                        <input type="date" name="fechaInicio" class="form-control form-control-sm" style="width: 130px;" 
+                                               value="@(ViewBag.FechaInicio != null ? ((DateTime)ViewBag.FechaInicio).ToString("yyyy-MM-dd") : "")" placeholder="Inicio">
+                                        
+                                        <input type="date" name="fechaFin" class="form-control form-control-sm" style="width: 130px;" 
+                                               value="@(ViewBag.FechaFin != null ? ((DateTime)ViewBag.FechaFin).ToString("yyyy-MM-dd") : "")" placeholder="Fin">
+                                        
+                                        <select name="tipoMovimiento" class="form-select form-select-sm" style="width: 120px;">
+                                            <option value="">Todos</option>
+                                            <!option value="Entrada" @(ViewBag.TipoMovimiento == "Entrada" ? "selected" : "")>Entrada</!option>
+                                            <!option value="Salida" @(ViewBag.TipoMovimiento == "Salida" ? "selected" : "")>Salida</!option>
+                                        </select>
+                                        
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Filtrar">
+                                            <i class="lni lni-funnel"></i>
+                                        </button>
+
+                                        <div class="vr mx-1"></div>
+
+                                        <a href="@Url.Action("ExportarHistorialPdf", new { idInventario = ViewBag.IdInventario, fechaInicio = ViewBag.FechaInicio, fechaFin = ViewBag.FechaFin, tipoMovimiento = ViewBag.TipoMovimiento })" 
+                                           class="btn btn-sm btn-danger" title="Exportar PDF" target="_blank">
+                                            <i class="lni lni-download"></i> PDF
+                                        </a>
+                                        
+                                        <a href="@Url.Action("ExportarHistorialExcel", new { idInventario = ViewBag.IdInventario, fechaInicio = ViewBag.FechaInicio, fechaFin = ViewBag.FechaFin, tipoMovimiento = ViewBag.TipoMovimiento })" 
+                                           class="btn btn-sm btn-success" title="Exportar Excel" target="_blank">
+                                            <i class="lni lni-download"></i> Excel
+                                        </a>
+
+                                        <a href="@Url.Action("Listar")" class="btn btn-sm btn-light" title="Volver">
+                                            <i class="lni lni-arrow-left"></i>
+                                        </a>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -66,6 +98,7 @@
                                             <th class="min-width"><h6>Cantidad</h6></th>
                                             <th class="min-width"><h6>Fecha</h6></th>
                                             <th class="min-width"><h6>ID Usuario</h6></th>
+                                            <th class="min-width"><h6>Acciones</h6></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -91,13 +124,27 @@
                                                     <td class="min-width">
                                                         <span class="status-btn active-btn">@item.Id_Usuario</span>
                                                     </td>
+                                                    <td class="min-width">
+                                                        @if (User.IsInRole("Administrador") || User.IsInRole("EncargadoInventario"))
+                                                        {
+                                                            <a href="@Url.Action("CorregirMovimiento", new { id = item.Id_Movimiento })" 
+                                                               class="btn btn-sm btn-warning" 
+                                                               title="Corregir movimiento">
+                                                                <i class="lni lni-pencil"></i>
+                                                            </a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">-</span>
+                                                        }
+                                                    </td>
                                                 </tr>
                                             }
                                         }
                                         else
                                         {
                                             <tr>
-                                                <td colspan="5" class="text-center py-4">
+                                                <td colspan="6" class="text-center py-4">
                                                     <div class="text-muted">
                                                         <i class="lni lni-history me-2"></i>
                                                         No hay movimientos registrados para este insumo.

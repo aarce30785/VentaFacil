@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VentaFacil.web.Models
@@ -8,6 +7,7 @@ namespace VentaFacil.web.Models
     public class Venta
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("Id_Venta")]
         public int Id_Venta { get; set; }
 
@@ -17,15 +17,20 @@ namespace VentaFacil.web.Models
         [Column("Total", TypeName = "decimal(10,2)")]
         public decimal Total { get; set; }
 
-        // En el SQL existe; para PE1 no lo usaremos (puede quedar null)
         [Column("MetodoPago")]
-        public string? MetodoPago { get; set; }
+        public string MetodoPago { get; set; }
 
-        // En tu tabla es BIT; lo mapeamos a bool (false = pendiente)
         [Column("Estado")]
         public bool Estado { get; set; }
 
-        [Column("Id_Usuario")]
-        public int Id_Usuario { get; set; }
+        public int Id_Usuario { get; set; } // Cambiado de nullable a required
+
+        // Navigation properties
+        [ForeignKey("Id_Usuario")]
+        public virtual Usuario Usuario { get; set; }
+
+        public virtual Factura Factura { get; set; }
+
+        public virtual ICollection<DetalleVenta> Detalles { get; set; } = new List<DetalleVenta>();
     }
 }

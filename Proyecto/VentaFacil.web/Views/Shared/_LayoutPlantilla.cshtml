@@ -1,15 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="~/Plantilla/images/favicon.svg" type="image/x-icon" />
     <title>@ViewData["Title"] - VentaFacil.web</title>
 
-    <!-- SOLO UNA VERSIÓN DE BOOTSTRAP -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" rel="stylesheet">
-
-    <!-- CSS de la plantilla (verifica que no incluya bootstrap) -->
+    <!-- ========== All CSS files linkup ========= -->
+    <link rel="stylesheet" href="~/Plantilla/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/Plantilla/css/lineicons.css" />
     <link rel="stylesheet" href="~/Plantilla/css/materialdesignicons.min.css" />
     <link rel="stylesheet" href="~/Plantilla/css/fullcalendar.css" />
@@ -17,41 +16,52 @@
 
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ventafacil-branding.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <!-- Token ANTIFORGERY aquí -->
-    @Html.AntiForgeryToken()
+    <!-- ======== Preloader =========== -->
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+    <!-- ======== Preloader =========== -->
 
-    <div class="wrapper">
-        <!-- Sidebar Dinámico -->
+    <!-- Sidebar -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        @await Html.PartialAsync("_SideBar")
+    }
+
+    <div class="overlay"></div>
+
+    <!-- ======== main-wrapper start =========== -->
+    <main class="main-wrapper">
+        <!-- Header -->
         @if (User.Identity.IsAuthenticated)
         {
             @await Html.PartialAsync("_TopBar")
-            @await Html.PartialAsync("_SideBar")
         }
 
-        <div class="main-panel">
-            <!-- Contenido Principal -->
-            <div class="content pt-5">
+        <!-- ========== section start ========== -->
+        <section class="section">
+            <div class="container-fluid">
+                <!-- Token ANTIFORGERY aquí -->
+                @Html.AntiForgeryToken()
+                
                 @RenderBody()
             </div>
-        </div>
-    </div>
+            <!-- end container -->
+        </section>
+        <!-- ========== section end ========== -->
 
-    <!-- MODAL DEBE ESTAR FUERA DEL WRAPPER PARA EVITAR PROBLEMAS -->
-    
+        <!-- Footer -->
+        @await Html.PartialAsync("_Footer")
+    </main>
+    <!-- ======== main-wrapper end =========== -->
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - VentaFacil.web
-        </div>
-    </footer>
-
-    <!-- SCRIPTS EN ORDEN CORRECTO -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Scripts de la plantilla -->
+    <!-- ========= All Javascript files linkup ======== -->
+    <script src="~/Plantilla/js/bootstrap.bundle.min.js"></script>
     <script src="~/Plantilla/js/Chart.min.js"></script>
     <script src="~/Plantilla/js/dynamic-pie-chart.js"></script>
     <script src="~/Plantilla/js/moment.min.js"></script>
@@ -60,23 +70,36 @@
     <script src="~/Plantilla/js/world-merc.js"></script>
     <script src="~/Plantilla/js/polyfill.js"></script>
     <script src="~/Plantilla/js/main.js"></script>
+    
+    <!-- JQuery (Required for some existing views/scripts) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Scripts de las vistas -->
     @await RenderSectionAsync("Scripts", required: false)
 
-    <!-- Script de inicialización global -->
+    <!-- Script de inicialización global y compatibilidad BS4 -> BS5 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('=== VERIFICACIÓN DE CARGA ===');
-            console.log('jQuery:', typeof $ !== 'undefined');
             console.log('Bootstrap:', typeof bootstrap !== 'undefined');
-            console.log('Modal element:', document.getElementById('usuarioModal'));
-            console.log('Token antiforgery:', document.querySelector('input[name="__RequestVerificationToken"]') ? 'Sí' : 'No');
 
-            // Verificar funciones globales
-            console.log('abrirModalCrear:', typeof abrirModalCrear);
-            console.log('abrirModalEditar:', typeof abrirModalEditar);
-            console.log('abrirModalVer:', typeof abrirModalVer);
+            // Compatibilidad para data-dismiss (BS4) -> data-bs-dismiss (BS5)
+            document.querySelectorAll('[data-dismiss="modal"]').forEach(function(el) {
+                el.setAttribute('data-bs-dismiss', 'modal');
+            });
+            
+            // Compatibilidad para data-toggle (BS4) -> data-bs-toggle (BS5)
+            document.querySelectorAll('[data-toggle="tooltip"]').forEach(function(el) {
+                el.setAttribute('data-bs-toggle', 'tooltip');
+                new bootstrap.Tooltip(el);
+            });
+             document.querySelectorAll('[data-toggle="dropdown"]').forEach(function(el) {
+                el.setAttribute('data-bs-toggle', 'dropdown');
+                new bootstrap.Dropdown(el);
+            });
+            document.querySelectorAll('[data-toggle="collapse"]').forEach(function(el) {
+                el.setAttribute('data-bs-toggle', 'collapse');
+            });
         });
     </script>
 </body>

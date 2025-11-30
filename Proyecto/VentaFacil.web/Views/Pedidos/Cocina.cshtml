@@ -1,0 +1,449 @@
+﻿@model List<VentaFacil.web.Models.Dto.PedidoDto>
+@using VentaFacil.web.Models.Enum
+
+@{
+    Layout = "_LayoutPlantilla";
+    ViewData["Title"] = "KDS - Cocina";
+    var pedidosEnPreparacion = Model.Where(p => p.Estado == PedidoEstado.EnPreparacion).OrderBy(p => p.Fecha).ToList();
+    var pedidosListos = Model.Where(p => p.Estado == PedidoEstado.Listo).OrderByDescending(p => p.Fecha).ToList();
+}
+
+<style>
+    :root {
+        --kds-bg: #f1f5f9;
+        --card-bg: #ffffff;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --accent-color: #4f46e5;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+    }
+
+    body {
+        background-color: var(--kds-bg);
+    }
+
+    .kds-header {
+        background: #fff;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .kds-stats-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .kds-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #e2e8f0;
+        transition: transform 0.2s;
+    }
+
+    .kds-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .kds-card-header {
+        padding: 1rem;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-prep { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .header-ready { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+
+    .kds-card-body {
+        padding: 1rem;
+        flex-grow: 1;
+        overflow-y: auto;
+        max-height: 400px;
+    }
+
+    .kds-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .kds-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-qty {
+        background: #f1f5f9;
+        color: #1e293b;
+        font-weight: 800;
+        font-size: 1.1rem;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .item-details {
+        flex-grow: 1;
+    }
+
+    .item-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    .item-notes {
+        font-size: 0.85rem;
+        color: var(--danger-color);
+        margin-top: 0.25rem;
+        font-style: italic;
+        background: #fef2f2;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .kds-card-footer {
+        padding: 1rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .timer-badge {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.2);
+    }
+
+    .timer-normal { color: #1e293b; }
+    .timer-warning { color: #d97706; font-weight: 800; }
+    .timer-danger { color: #dc2626; font-weight: 800; animation: pulse 2s infinite; }
+
+    @@keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+
+    .btn-action {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-ready {
+        background: var(--success-color);
+        color: white;
+    }
+    .btn-ready:hover { background: #059669; }
+
+    .btn-deliver {
+        background: var(--info-color);
+        color: white;
+    }
+    .btn-deliver:hover { background: #2563eb; }
+
+    .empty-kds {
+        text-align: center;
+        padding: 4rem;
+        color: var(--text-secondary);
+    }
+</style>
+
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="kds-header d-flex justify-content-between align-items-center sticky-top z-index-999">
+        <div class="d-flex align-items-center gap-4">
+            <h3 class="fw-bold mb-0 text-dark"><i class="lni lni-chef-hat me-2 text-primary"></i>Cocina</h3>
+            
+            <div class="d-flex gap-3">
+                <div class="kds-stats-card">
+                    <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning">
+                        <i class="lni lni-timer fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">@pedidosEnPreparacion.Count</h5>
+                        <small class="text-muted">En Preparación</small>
+                    </div>
+                </div>
+                <div class="kds-stats-card">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success">
+                        <i class="lni lni-checkmark-circle fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">@pedidosListos.Count</h5>
+                        <small class="text-muted">Listos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-3 align-items-center">
+            <div class="input-group" style="width: 300px;">
+                <span class="input-group-text bg-white border-end-0"><i class="lni lni-search"></i></span>
+                <input type="text" id="filtroKds" class="form-control border-start-0" placeholder="Filtrar por #, cliente..." onkeyup="filtrarPedidos()">
+            </div>
+            <button class="btn btn-light border rounded-circle p-2" onclick="location.reload()" title="Actualizar">
+                <i class="lni lni-reload"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="p-4">
+        @if (!pedidosEnPreparacion.Any() && !pedidosListos.Any())
+        {
+            <div class="empty-kds">
+                <i class="lni lni-dinner text-muted opacity-25" style="font-size: 5rem;"></i>
+                <h3 class="mt-4 fw-bold">Todo tranquilo por ahora</h3>
+                <p>No hay pedidos activos en cocina.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4" id="contenedorPedidos">
+                <!-- Pedidos en Preparación -->
+                @foreach (var pedido in pedidosEnPreparacion)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6 pedido-item" data-texto="@pedido.Id_Venta @pedido.Cliente @pedido.NumeroMesa">
+                        <div class="kds-card">
+                            <div class="kds-card-header header-prep">
+                                <div>
+                                    <h5 class="mb-0 fw-bold">#@pedido.Id_Venta</h5>
+                                    <small>@pedido.Cliente</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="timer-badge" data-start="@pedido.Fecha.ToString("yyyy-MM-ddTHH:mm:ss")">00:00</div>
+                                    <small>
+                                        @if(pedido.Modalidad == ModalidadPedido.EnMesa) { <i class="lni lni-restaurant"></i> @:Mesa @pedido.NumeroMesa
+                                        } else { <i class="lni lni-takeaway"></i> @:Llevar
+                                        }
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="kds-card-body">
+                                @if (!string.IsNullOrEmpty(pedido.Notas))
+                                {
+                                    <div class="alert alert-warning p-2 mb-3 text-sm">
+                                        <i class="lni lni-warning me-1"></i> <strong>Nota:</strong> @pedido.Notas
+                                    </div>
+                                }
+
+                                @foreach (var item in pedido.Items)
+                                {
+                                    <div class="kds-item">
+                                        <div class="item-qty">@item.Cantidad</div>
+                                        <div class="item-details">
+                                            <div class="item-name">@item.NombreProducto</div>
+                                            @if (!string.IsNullOrEmpty(item.Notas))
+                                            {
+                                                <div class="item-notes">@item.Notas</div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="kds-card-footer">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-light border flex-grow-0" onclick="agregarNota(@pedido.Id_Venta)" title="Agregar Nota">
+                                        <i class="lni lni-pencil"></i>
+                                    </button>
+                                    <button class="btn-action btn-ready" onclick="marcarListo(@pedido.Id_Venta)">
+                                        <i class="lni lni-checkmark-circle me-2"></i> Listo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Pedidos Listos -->
+                @foreach (var pedido in pedidosListos)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6 pedido-item" data-texto="@pedido.Id_Venta @pedido.Cliente @pedido.NumeroMesa">
+                        <div class="kds-card border-success">
+                            <div class="kds-card-header header-ready">
+                                <div>
+                                    <h5 class="mb-0 fw-bold">#@pedido.Id_Venta</h5>
+                                    <small>@pedido.Cliente</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="badge bg-white text-success fw-bold"><i class="lni lni-checkmark"></i> LISTO</div>
+                                    <div class="mt-1 small">
+                                        @if(pedido.Modalidad == ModalidadPedido.EnMesa) { <i class="lni lni-restaurant"></i> @:Mesa @pedido.NumeroMesa
+                                        } else { <i class="lni lni-takeaway"></i> @:Llevar
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kds-card-body opacity-75">
+                                @foreach (var item in pedido.Items)
+                                {
+                                    <div class="kds-item">
+                                        <div class="item-qty bg-success bg-opacity-10 text-success">@item.Cantidad</div>
+                                        <div class="item-details">
+                                            <div class="item-name">@item.NombreProducto</div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="kds-card-footer">
+                                <button class="btn-action btn-deliver" onclick="marcarEntregado(@pedido.Id_Venta)">
+                                    <i class="lni lni-delivery me-2"></i> Entregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Nota -->
+<div class="modal fade" id="modalNota" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Agregar Nota de Cocina</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="pedidoIdNota">
+                <textarea class="form-control form-control-lg" id="textoNota" rows="3" placeholder="Escribe una nota..."></textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="guardarNota()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- Timers Logic ---
+        function updateTimers() {
+            const now = new Date();
+            document.querySelectorAll('.timer-badge').forEach(el => {
+                const start = new Date(el.dataset.start);
+                const diff = Math.floor((now - start) / 1000); // seconds
+                
+                const mins = Math.floor(diff / 60);
+                const secs = diff % 60;
+                
+                el.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                // Visual Alerts
+                el.className = 'timer-badge'; // reset
+                if (mins >= 20) el.classList.add('timer-danger');
+                else if (mins >= 10) el.classList.add('timer-warning');
+                else el.classList.add('timer-normal');
+            });
+        }
+        
+        setInterval(updateTimers, 1000);
+        updateTimers(); // initial call
+
+        // --- Filtering ---
+        function filtrarPedidos() {
+            const term = document.getElementById('filtroKds').value.toLowerCase();
+            document.querySelectorAll('.pedido-item').forEach(el => {
+                const text = el.dataset.texto.toLowerCase();
+                el.style.display = text.includes(term) ? 'block' : 'none';
+            });
+        }
+
+        // --- Actions ---
+        function getCsrfToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        }
+
+        async function marcarListo(id) {
+            if(!confirm('¿Pedido #' + id + ' listo?')) return;
+            
+            try {
+                const res = await fetch('/Pedidos/MarcarComoListo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pedidoId: id })
+                });
+                if(res.ok) location.reload();
+                else alert('Error al actualizar');
+            } catch(e) { console.error(e); }
+        }
+
+        async function marcarEntregado(id) {
+            if(!confirm('¿Pedido #' + id + ' entregado?')) return;
+            
+            try {
+                const res = await fetch('/Pedidos/MarcarComoEntregado', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pedidoId: id })
+                });
+                if(res.ok) location.reload();
+                else alert('Error al actualizar');
+            } catch(e) { console.error(e); }
+        }
+
+        function agregarNota(id) {
+            document.getElementById('pedidoIdNota').value = id;
+            document.getElementById('textoNota').value = '';
+            new bootstrap.Modal(document.getElementById('modalNota')).show();
+        }
+
+        async function guardarNota() {
+            const id = document.getElementById('pedidoIdNota').value;
+            const nota = document.getElementById('textoNota').value;
+            
+            try {
+                const res = await fetch('/Pedidos/AgregarNotaCocina', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: parseInt(id), nota: nota })
+                });
+                if(res.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al guardar nota');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // Auto refresh every 30s
+        setInterval(() => {
+            // Simple reload for now, could be optimized to check for changes first
+            location.reload();
+        }, 30000);
+    </script>
+}

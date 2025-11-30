@@ -2,6 +2,7 @@
 
 namespace VentaFacil.web.Models.Dto
 {
+    using VentaFacil.web.Models.Enum;
     public class InventarioDto
     {
         [Key]
@@ -17,5 +18,8 @@ namespace VentaFacil.web.Models.Dto
 
         [Display(Name = "Stock Mínimo")]
         public int StockMinimo { get; set; }
+
+        [Display(Name = "Unidad de Medida")]
+        public UnidadMedida UnidadMedida { get; set; }
     }
 }
