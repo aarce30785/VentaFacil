@@ -1,0 +1,142 @@
+@model VentaFacil.web.Models.Dto.InventarioMovimientoDto
+@{
+    ViewData["Title"] = "Corregir Movimiento";
+    Layout = "_LayoutPlantilla";
+}
+
+<div class="container-fluid">
+    <div class="title-wrapper pt-30">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="title">
+                    <h2>Corregir Movimiento de Inventario</h2>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Inventario" asp-action="Listar">Inventario</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                Corregir Movimiento
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card-style mb-30">
+                <h6 class="mb-25">Información del Movimiento</h6>
+                
+                <div class="alert alert-warning" role="alert">
+                    <i class="lni lni-warning"></i>
+                    <strong>Advertencia:</strong> Esta acción modificará el stock del inventario y quedará registrada en la auditoría.
+                </div>
+
+                <form asp-action="CorregirMovimiento" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id_Movimiento" value="@Model.Id_Movimiento" />
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="input-style-1">
+                                <label>ID Movimiento</label>
+                                <input type="text" value="@Model.Id_Movimiento" class="form-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="input-style-1">
+                                <label>ID Inventario</label>
+                                <input type="text" value="@Model.Id_Inventario" class="form-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label>Cantidad Actual</label>
+                                <input type="text" value="@Model.Cantidad" class="form-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label>Tipo Actual</label>
+                                <input type="text" value="@Model.Tipo_Movimiento" class="form-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label>Nueva Cantidad <span class="text-danger">*</span></label>
+                                <input type="number" name="Cantidad" class="form-control" value="@Model.Cantidad" min="1" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="select-style-1">
+                                <label>Nuevo Tipo <span class="text-danger">*</span></label>
+                                <div class="select-position">
+                                    <select name="Tipo_Movimiento" class="form-control" required>
+                                        @{
+                                            var tiposEstandar = new[] { "Entrada", "Salida" };
+                                            var tipoActual = Model.Tipo_Movimiento;
+                                            var esTipoEstandar = tiposEstandar.Contains(tipoActual);
+                                        }
+
+                                        @if (!esTipoEstandar)
+                                        {
+                                            <option value="@tipoActual" selected>@tipoActual</option>
+                                        }
+
+                                        @foreach (var tipo in tiposEstandar)
+                                        {
+                                            if (tipo == tipoActual)
+                                            {
+                                                <option value="@tipo" selected>@tipo</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@tipo">@tipo</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="input-style-1">
+                                <label>Motivo de la Corrección <span class="text-danger">*</span></label>
+                                <textarea name="Motivo" class="form-control" rows="3" placeholder="Explique el motivo de la corrección..." required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="button-group d-flex justify-content-end flex-wrap">
+                                <a asp-action="Listar" class="main-btn light-btn btn-hover m-1">
+                                    <i class="lni lni-arrow-left"></i> Cancelar
+                                </a>
+                                <button type="submit" class="main-btn primary-btn btn-hover m-1">
+                                    <i class="lni lni-checkmark"></i> Guardar Corrección
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
