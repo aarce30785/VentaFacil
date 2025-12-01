@@ -53,8 +53,8 @@ namespace VentaFacil.web.Controllers
 
                 var authProperties = new AuthenticationProperties
                 {
-                    IsPersistent = false,
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
+                    IsPersistent = loginDto.Recordarme,
+                    ExpiresUtc = loginDto.Recordarme ? DateTimeOffset.UtcNow.AddDays(30) : DateTimeOffset.UtcNow.AddMinutes(30)
                 };
 
                 await HttpContext.SignInAsync(

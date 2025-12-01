@@ -1,11 +1,31 @@
-﻿namespace VentaFacil.web.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace VentaFacil.web.Models
 {
-    internal class DetalleVenta
+    [Table("DetalleVenta")]
+    public class DetalleVenta
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id_Detalle { get; set; }
+
         public int Id_Venta { get; set; }
+
         public int Id_Producto { get; set; }
+
         public int Cantidad { get; set; }
+
+        [Column(TypeName = "decimal(10,2)")]
         public decimal PrecioUnitario { get; set; }
-        public decimal Descuento { get; set; }
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? Descuento { get; set; }
+
+        [ForeignKey("Id_Venta")]
+        public virtual Venta? Venta { get; set; }
+
+        [ForeignKey("Id_Producto")]
+        public virtual Producto? Producto { get; set; }
     }
 }

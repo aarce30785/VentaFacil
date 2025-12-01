@@ -564,16 +564,59 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                // Necesitarías implementar un método de eliminación en tu servicio
-                // Por ahora, redirigimos a la lista
-                TempData["MensajeError"] = "Funcionalidad de eliminación no implementada";
+                var resultado = await _productoService.EliminarAsync(id);
+
+                if (resultado.Success)
+                    TempData["MensajeExito"] = "Producto eliminado correctamente.";
+                else
+                    TempData["MensajeError"] = resultado.Message;
             }
             catch (Exception ex)
             {
                 TempData["MensajeError"] = $"Error al eliminar el producto: {ex.Message}";
             }
 
-            return RedirectToAction("Index", new { busqueda, categoriaFiltro, pagina });
+            return RedirectToAction("IndexProductos", new { busqueda, categoriaFiltro, pagina });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeshabilitarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1)
+        {
+            try
+            {
+                var resultado = await _productoService.DeshabilitarAsync(id);
+
+                if (resultado.Success)
+                    TempData["MensajeExito"] = "Producto deshabilitado correctamente.";
+                else
+                    TempData["MensajeError"] = resultado.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = $"Error al deshabilitar el producto: {ex.Message}";
+            }
+
+            return RedirectToAction("IndexProductos", new { busqueda, categoriaFiltro, pagina });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> HabilitarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1)
+        {
+            try
+            {
+                var resultado = await _productoService.HabilitarAsync(id);
+
+                if (resultado.Success)
+                    TempData["MensajeExito"] = "Producto habilitado correctamente.";
+                else
+                    TempData["MensajeError"] = resultado.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = $"Error al habilitar el producto: {ex.Message}";
+            }
+
+            return RedirectToAction("IndexProductos", new { busqueda, categoriaFiltro, pagina });
         }
     }
 }

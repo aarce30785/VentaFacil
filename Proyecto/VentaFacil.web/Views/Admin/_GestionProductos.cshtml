@@ -148,6 +148,25 @@
                                    title="Eliminar">
                                     <i class="lni lni-trash-can"></i>
                                 </a>
+
+                                <!-- Deshabilitar -->
+                                @if (producto.Estado)
+                                {
+                                    <a class="text-secondary" href="javascript:void(0);"
+                                       onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
+                                       title="Deshabilitar">
+                                        <i class="lni lni-ban"></i>
+                                    </a>
+                                }
+                                <!-- Habilitar -->
+                                @if (!producto.Estado)
+                                {
+                                    <a class="text-success" href="javascript:void(0);"
+                                       onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
+                                       title="Habilitar">
+                                        <i class="lni lni-checkmark-circle"></i>
+                                    </a>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -435,24 +454,22 @@
 
     function confirmarEliminacionProducto(productoId, nombreProducto) {
         if (confirm(`¿Está seguro que desea eliminar el producto "${nombreProducto}"?`)) {
-            fetch(`@Url.Action("EliminarProducto", "Admin")?id=${productoId}`, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    mostrarMensajeExito('Producto eliminado correctamente');
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    mostrarErrorGeneral('Error al eliminar el producto');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarErrorGeneral('Error de conexión');
-            });
+            window.location.href = '@Url.Action("EliminarProducto", "Admin")'
+                + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+        }
+    }
+
+    function confirmarDeshabilitacionProducto(productoId, nombreProducto) {
+        if (confirm(`¿Está seguro que desea deshabilitar el producto "${nombreProducto}"?`)) {
+            window.location.href = '@Url.Action("DeshabilitarProducto", "Admin")'
+                + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+        }
+    }
+
+    function confirmarHabilitacionProducto(productoId, nombreProducto) {
+        if (confirm(`¿Está seguro que desea habilitar el producto "${nombreProducto}"?`)) {
+            window.location.href = '@Url.Action("HabilitarProducto", "Admin")'
+                + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
         }
     }
 </script>

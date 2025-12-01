@@ -21,7 +21,6 @@ namespace VentaFacil.web.Services.Producto
             {
                 var productos = await _context.Producto
                     .AsNoTracking()
-                    .Where(p => p.Estado)
                     .ToListAsync();
 
                 response.Success = true;
@@ -176,5 +175,117 @@ namespace VentaFacil.web.Services.Producto
             }
         }
 
+        public async Task<EditProductoResponse> EliminarAsync(int idProducto)
+        {
+            var response = new EditProductoResponse();
+
+            try
+            {
+                var producto = await _context.Producto
+                    .FirstOrDefaultAsync(p => p.Id_Producto == idProducto);
+
+                if (producto == null)
+                {
+                    response.Success = false;
+                    response.Message = "Producto no encontrado.";
+                    return response;
+                }
+
+                // Eliminación física
+                _context.Producto.Remove(producto);
+                await _context.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = "Producto eliminado correctamente.";
+                response.ProductoId = producto.Id_Producto;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error al eliminar producto: {ex.Message}";
+            }
+
+            return response;
+        }
+
+        public async Task<EditProductoResponse> DeshabilitarAsync(int idProducto)
+        {
+            var response = new EditProductoResponse();
+
+            try
+            {
+                var producto = await _context.Producto
+                    .FirstOrDefaultAsync(p => p.Id_Producto == idProducto);
+
+                if (producto == null)
+                {
+                    response.Success = false;
+                    response.Message = "Producto no encontrado.";
+                    return response;
+                }
+
+                if (!producto.Estado)
+                {
+                    response.Success = false;
+                    response.Message = "El producto ya está deshabilitado.";
+                    response.ProductoId = producto.Id_Producto;
+                    return response;
+                }
+
+                producto.Estado = false;
+                await _context.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = "Producto deshabilitado correctamente.";
+                response.ProductoId = producto.Id_Producto;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error al deshabilitar producto: {ex.Message}";
+            }
+
+            return response;
+        }
+
+        public async Task<EditProductoResponse> HabilitarAsync(int idProducto)
+        {
+            var response = new EditProductoResponse();
+
+            try
+            {
+                var producto = await _context.Producto
+                    .FirstOrDefaultAsync(p => p.Id_Producto == idProducto);
+
+                if (producto == null)
+                {
+                    response.Success = false;
+                    response.Message = "Producto no encontrado.";
+                    return response;
+                }
+
+                if (producto.Estado)
+                {
+                    response.Success = false;
+                    response.Message = "El producto ya está habilitado.";
+                    response.ProductoId = producto.Id_Producto;
+                    return response;
+                }
+
+                producto.Estado = true;
+                await _context.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = "Producto habilitado correctamente.";
+                response.ProductoId = producto.Id_Producto;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error al habilitar producto: {ex.Message}";
+            }
+
+            return response;
+        }
     }
 }

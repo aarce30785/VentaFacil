@@ -24,5 +24,7 @@ namespace VentaFacil.web.Models
         public int Rol { get; set; }
 
         public Rol? RolNavigation { get; set; }
+
+        public virtual ICollection<Venta> Ventas { get; set; } = new List<Venta>();
     }
 }

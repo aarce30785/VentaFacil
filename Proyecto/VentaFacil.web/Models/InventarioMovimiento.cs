@@ -35,5 +35,7 @@ namespace VentaFacil.web.Models
         // Propiedad de navegación
         [ForeignKey("Id_Inventario")]
         public Inventario Inventario { get; set; }
+
+        public string Observaciones { get; set; }
     }
 }
