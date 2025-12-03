@@ -23,8 +23,7 @@ namespace VentaFacil.web.Models
 
         public DateTime FechaFinal { get; set; }
 
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal HorasTrabajadas { get; set; }
+        public int HorasTrabajadas { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal HorasExtras { get; set; }

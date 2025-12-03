@@ -19,6 +19,18 @@ CREATE TABLE Usuario (
     CONSTRAINT UsrRol_Fk FOREIGN KEY (Rol) REFERENCES Rol(Id_Rol)
 );
 
+--Tabla Nómina
+CREATE TABLE Nomina (
+    Id_Nomina INT IDENTITY(1,1) PRIMARY KEY,
+    FechaInicio DATETIME NOT NULL,
+    FechaFinal DATETIME NOT NULL,
+    FechaGeneracion DATETIME NOT NULL DEFAULT GETDATE(),
+    Estado VARCHAR(20) NOT NULL,
+    TotalBruto DECIMAL(10,2) NOT NULL,
+    TotalDeducciones DECIMAL(10,2) NOT NULL,
+    TotalNeto DECIMAL(10,2) NOT NULL
+);
+
 -- Tabla Planilla
 CREATE TABLE Planilla (
     Id_Planilla INT IDENTITY (1,1),
@@ -26,9 +38,24 @@ CREATE TABLE Planilla (
     FechaInicio DATETIME,
     FechaFinal DATETIME,
     HorasTrabajadas INT,
+    -- Campo original
     Salario DECIMAL(10,2),
+
+    -- NUEVAS COLUMNAS Sprint 4
+    Bonificaciones     DECIMAL(10,2) NULL,
+    Deducciones        DECIMAL(10,2) NULL,
+    EstadoRegistro     VARCHAR(50)   NULL,
+    HorasExtras        DECIMAL(10,2) NULL,
+    Id_Nomina          INT           NULL,
+    SalarioBruto       DECIMAL(10,2) NULL,
+    SalarioNeto        DECIMAL(10,2) NULL,
+    Observaciones      VARCHAR(400)  NULL,
+
     CONSTRAINT Plan_Pk PRIMARY KEY (Id_Planilla),
-    CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr)
+    CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr)
+        REFERENCES Usuario(Id_Usr),
+    CONSTRAINT FK_Planilla_Nomina FOREIGN KEY (Id_Nomina)
+        REFERENCES Nomina(Id_Nomina)
 );
 
 -- Tabla Categoria

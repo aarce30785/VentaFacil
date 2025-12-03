@@ -265,44 +265,52 @@ namespace VentaFacil.web.Services.Planilla
 
             try
             {
+                // Valores por defecto
+                int pagina = filtros.Pagina <= 0 ? 1 : filtros.Pagina;
+                int cantidad = filtros.CantidadPorPagina <= 0 ? 10 : filtros.CantidadPorPagina;
+
                 var query = _context.Nomina.AsQueryable();
 
                 // Filtros
                 if (filtros.FechaInicio.HasValue)
-                {
                     query = query.Where(n => n.FechaInicio >= filtros.FechaInicio.Value);
-                }
 
                 if (filtros.FechaFinal.HasValue)
-                {
                     query = query.Where(n => n.FechaFinal <= filtros.FechaFinal.Value);
-                }
 
                 if (!string.IsNullOrEmpty(filtros.Estado))
-                {
                     query = query.Where(n => n.Estado == filtros.Estado);
-                }
 
                 if (filtros.Id_Usr.HasValue)
-                {
                     query = query.Where(n => n.Planillas.Any(p => p.Id_Usr == filtros.Id_Usr.Value));
+
+                // Total
+                int totalRegistros = await query.CountAsync();
+
+                // Si no hay registros
+                if (totalRegistros == 0)
+                {
+                    response.Success = true;
+                    response.Message = "Consulta exitosa (sin resultados).";
+                    response.Nominas = new List<Nomina>();
+                    response.PaginaActual = 1;
+                    response.TotalPaginas = 1;
+                    return response;
                 }
 
-                // Paginación
-                int totalRegistros = await query.CountAsync();
-                int totalPaginas = (int)Math.Ceiling((double)totalRegistros / filtros.CantidadPorPagina);
+                int totalPaginas = (int)Math.Ceiling((double)totalRegistros / cantidad);
 
                 var nominas = await query
                     .OrderByDescending(n => n.FechaGeneracion)
-                    .Skip((filtros.Pagina - 1) * filtros.CantidadPorPagina)
-                    .Take(filtros.CantidadPorPagina)
+                    .Skip((pagina - 1) * cantidad)
+                    .Take(cantidad)
                     .AsNoTracking()
                     .ToListAsync();
 
                 response.Success = true;
                 response.Message = "Consulta exitosa.";
                 response.Nominas = nominas;
-                response.PaginaActual = filtros.Pagina;
+                response.PaginaActual = pagina;
                 response.TotalPaginas = totalPaginas;
             }
             catch (Exception ex)
@@ -310,9 +318,42 @@ namespace VentaFacil.web.Services.Planilla
                 response.Success = false;
                 response.Message = "Error al consultar nóminas: " + ex.Message;
                 response.Nominas = new List<Nomina>();
+                response.PaginaActual = 1;
+                response.TotalPaginas = 1;
             }
 
             return response;
+        }
+        public async Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasParaExtrasAsync()
+        {
+            var planillas = await _context.Planilla
+                .Select(p => new PlanillaListadoDto
+                {
+                    Id_Planilla = p.Id_Planilla,
+                    FechaInicio = p.FechaInicio,
+                    FechaFinal = p.FechaFinal,
+                    NombreUsuario = "Usuario " + p.Id_Usr, // temporal, lo corregimos después
+                    EstadoRegistro = p.EstadoRegistro
+                })
+                .OrderByDescending(p => p.Id_Planilla)
+                .ToListAsync();
+
+            return planillas;
+        }
+
+        public async Task<IEnumerable<NominaListadoDto>> ObtenerNominasGeneradasAsync()
+        {
+            return await _context.Nomina
+                .Where(n => n.Estado == "Generada")
+                .OrderByDescending(n => n.Id_Nomina)
+                .Select(n => new NominaListadoDto
+                {
+                    Id_Nomina = n.Id_Nomina,
+                    FechaInicio = n.FechaInicio,
+                    FechaFinal = n.FechaFinal,
+                    Estado = n.Estado
+                })
+                .ToListAsync();
         }
     }
 }

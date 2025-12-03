@@ -17,6 +17,7 @@ using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
 using VentaFacil.web.Services.Usuario;
+using VentaFacil.web.Services.Planilla;
 
 
 namespace VentaFacil.web
@@ -127,6 +128,7 @@ namespace VentaFacil.web
             builder.Services.AddScoped<ICajaService, CajaService>();
             builder.Services.AddScoped<IPdfService, PdfService>();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IPlanillaService, PlanillaService>();
 
             // Configurar sesión
 
