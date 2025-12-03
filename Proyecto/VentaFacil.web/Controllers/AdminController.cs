@@ -460,38 +460,31 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GuardarProducto(
             [FromForm] ProductoDto productoDto,
+            IFormFile ImagenFile, 
             [FromForm] string busqueda = null,
             [FromForm] int? categoriaFiltro = null,
             [FromForm] int pagina = 1)
         {
             try
             {
-                Console.WriteLine($"Datos producto recibidos - ID: {productoDto.Id_Producto}, Nombre: {productoDto.Nombre}, Precio: {productoDto.Precio}");
-
-                if (!ModelState.IsValid)
+                // Guardar imagen si se envió
+                if (ImagenFile != null && ImagenFile.Length > 0)
                 {
-                    var errors = ModelState
-                        .Where(ms => ms.Value.Errors.Any())
-                        .SelectMany(ms => ms.Value.Errors
-                            .Where(e => !string.IsNullOrEmpty(e.ErrorMessage))
-                            .Select(e => new { Field = ms.Key, Message = e.ErrorMessage }))
-                        .ToList();
-
-                    var errorMessages = errors.Select(e => e.Message).Distinct().ToList();
-                    var fieldErrors = errors.ToDictionary(e => e.Field, e => e.Message);
-
-                    Console.WriteLine($"Errores de validación producto: {string.Join(", ", errorMessages)}");
-
-                    return BadRequest(new
+                    var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/productos");
+                    if (!Directory.Exists(imagesPath))
                     {
-                        success = false,
-                        message = "Error de validación",
-                        errors = errorMessages,
-                        fieldErrors = fieldErrors
-                    });
+                        Directory.CreateDirectory(imagesPath);
+                    }
+                    var fileName = Guid.NewGuid() + Path.GetExtension(ImagenFile.FileName);
+                    var filePath = Path.Combine(imagesPath, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ImagenFile.CopyToAsync(stream);
+                    }
+                    productoDto.Imagen = "/images/productos/" + fileName;
                 }
 
-                // Manejar los diferentes tipos de respuesta
+                // Resto del método igual...
                 bool success;
                 string message;
 

@@ -10,6 +10,7 @@
         "ver" => "Ver Producto",
         _ => "Producto"
     };
+    var mostrarImagen = !string.IsNullOrEmpty(Model.Imagen) && (ViewBag.AccionModal == "editar" || ViewBag.AccionModal == "ver");
 }
 
 <div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
@@ -20,7 +21,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form id="productoForm" method="post" asp-action="GuardarProducto">
+            <form id="productoForm" enctype="multipart/form-data" method="post" asp-action="GuardarProducto">
                 @Html.AntiForgeryToken()
 
                 <!-- Campos ocultos para mantener el estado -->
@@ -104,6 +105,24 @@
                             <span class="badge @(Model.Estado ? "bg-success" : "bg-secondary")">
                                 @(Model.Estado ? "Activo" : "Inactivo")
                             </span>
+                        </div>
+                    }
+
+                    <!-- Imagen actual -->
+                    @if (mostrarImagen)
+                    {
+                        <div class="mb-3 text-center">
+                            <label class="form-label">Imagen actual</label><br />
+                            <img src="@Model.Imagen" alt="Imagen del producto" style="max-width:200px;max-height:200px;" />
+                        </div>
+                    }
+
+                    <!-- Campo para subir nueva imagen si corresponde -->
+                    @if (ViewBag.AccionModal == "editar" || ViewBag.AccionModal == "crear")
+                    {
+                        <div class="mb-3">
+                            <label for="ImagenFile" class="form-label">Cambiar imagen</label>
+                            <input type="file" class="form-control" id="ImagenFile" name="ImagenFile" accept="image/*" />
                         </div>
                     }
                 </div>

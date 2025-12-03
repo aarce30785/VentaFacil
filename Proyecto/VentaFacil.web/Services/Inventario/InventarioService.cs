@@ -5,6 +5,7 @@ using VentaFacil.web.Data;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 using System;
+using System.Linq;
 
 namespace VentaFacil.web.Services.Inventario
 {
@@ -67,11 +68,8 @@ namespace VentaFacil.web.Services.Inventario
             // Si hay stock inicial, registrar movimiento y auditoría
             if (dto.StockActual > 0)
             {
-                var usuarioId = 1; // Default system user or similar if not available in context here
-                // Note: In a real scenario, we might want to pass the user ID to this method.
-                // For now, we'll assume a system action or handle it if we can access HttpContext, 
-                // but this service doesn't seem to have HttpContextAccessor injected. 
-                // We will use 1 as a fallback or "System".
+                var usuarioId = 1; 
+                // Usaremos 1 como un fallback o "Sistema".
 
                 var movimiento = new InventarioMovimiento
                 {
@@ -229,6 +227,20 @@ namespace VentaFacil.web.Services.Inventario
             };
             _context.InventarioMovimientoAuditoria.Add(auditoria);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<InventarioDto>> ObtenerStockMinimoAsync()
+        {
+            return await _context.Inventario
+                .Where(i => i.StockActual <= i.StockMinimo)
+                .Select(i => new InventarioDto
+                {
+                    Id_Inventario = i.Id_Inventario,
+                    Nombre = i.Nombre,
+                    StockActual = i.StockActual,
+                    StockMinimo = i.StockMinimo
+                })
+                .ToListAsync();
         }
     }
 }

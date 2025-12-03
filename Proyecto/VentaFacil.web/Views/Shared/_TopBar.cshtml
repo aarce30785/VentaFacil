@@ -31,25 +31,13 @@
             <div class="col-lg-7 col-md-7 col-6">
                 <div class="header-right">
                     <!-- notification start -->
-                    <div class="notification-box ml-15 d-none d-md-flex">
+                    <div class="notification-box ml-15 d-none d-md-flex" id="notificacionStock">
                         <button class="dropdown-toggle" type="button" id="notification" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="lni lni-alarm"></i>
-                            <span class="badge bg-danger">3</span>
+                            <span class="badge bg-danger" id="badgeStock" style="display:none"></span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notification">
-                            <li>
-                                <a href="#">
-                                    <div class="d-flex align-items-center">
-                                        <div class="icon">
-                                            <i class="lni lni-alarm text-warning"></i>
-                                        </div>
-                                        <div class="content">
-                                            <h6>Stock bajo en inventario</h6>
-                                            <p class="text-sm text-muted">Hace 5 minutos</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notification" id="listaNotificacionesStock">
+                            <!-- Aquí se llenarán las notificaciones -->
                         </ul>
                     </div>
                     <!-- notification end -->
@@ -129,3 +117,81 @@
         </div>
     </div>
 </div>
+
+<div id="stock-alert" class="alert alert-warning fade" style="display:none; position:fixed; top:70px; right:30px; z-index:1050;">
+    <!-- El mensaje se llenará dinámicamente -->
+</div>
+
+@section Scripts {
+<script>
+    async function cargarNotificacionesStock() {
+        const response = await fetch('@Url.Action("NotificacionesStockMinimo", "Inventario")');
+        const data = await response.json();
+        const badge = document.getElementById('badgeStock');
+        const lista = document.getElementById('listaNotificacionesStock');
+        lista.innerHTML = '';
+        if (data.length > 0) {
+            badge.style.display = '';
+            badge.textContent = data.length;
+            data.forEach(item => {
+                lista.innerHTML += `
+                    <li>
+                        <a href="#">
+                            <div class="d-flex align-items-center">
+                                <div class="icon">
+                                    <i class="lni lni-alarm text-warning"></i>
+                                </div>
+                                <div class="content">
+                                    <h6>Stock mínimo: ${item.Nombre}</h6>
+                                    <p class="text-sm text-muted">Stock actual: ${item.StockActual}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </li>`;
+            });
+        } else {
+            badge.style.display = 'none';
+            lista.innerHTML = `<li><span class="dropdown-item text-muted">Sin notificaciones</span></li>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarNotificacionesStock);
+
+    // Actualiza el badge cada 30 segundos
+    setInterval(cargarNotificacionesStock, 30000);
+
+    // También actualiza al abrir el dropdown
+    document.getElementById('notification').addEventListener('show.bs.dropdown', cargarNotificacionesStock);
+</script>
+<script>
+    async function checkStockMinimo() {
+        const response = await fetch('/Inventario/NotificacionesStockMinimo');
+        if (response.ok) {
+            const inventarios = await response.json();
+            const alertDiv = document.getElementById('stock-alert');
+            if (inventarios.length > 0) {
+                let nombres = inventarios.map(i => i.Nombre || i.nombre).join(', ');
+                alertDiv.innerText = '¡Atención! El stock está bajo el mínimo para: ' + nombres;
+                alertDiv.style.display = 'block';
+                alertDiv.classList.add('show');
+                setTimeout(() => {
+                    alertDiv.classList.remove('show');
+                    alertDiv.style.display = 'none';
+                }, 5000);
+            } else {
+                alertDiv.classList.remove('show');
+                alertDiv.style.display = 'none';
+            }
+        }
+    }
+    // Llama a la función al cargar la página y cada vez que se actualice el stock
+    window.onload = checkStockMinimo;
+    setInterval(checkStockMinimo, 30000); // Opcional: actualiza cada 30 segundos
+</script>
+@if (TempData["StockUpdated"] != null)
+{
+    <script>
+        window.onload = function() { checkStockMinimo(); }
+    </script>
+}
+}
