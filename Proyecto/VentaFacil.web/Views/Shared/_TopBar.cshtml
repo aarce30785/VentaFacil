@@ -32,7 +32,9 @@
                 <div class="header-right">
                     <!-- notification start -->
                     <div class="notification-box ml-15 d-none d-md-flex" id="notificacionStock">
-                        <button class="dropdown-toggle" type="button" id="notification" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="dropdown-toggle" type="button" id="notification"
+                                onclick="window.location.href='@Url.Action("NotificacionesStockMinimo", "Inventario")'"
+                                aria-expanded="false">
                             <i class="lni lni-alarm"></i>
                             <span class="badge bg-danger" id="badgeStock" style="display:none"></span>
                         </button>
@@ -125,7 +127,7 @@
 @section Scripts {
 <script>
     async function cargarNotificacionesStock() {
-        const response = await fetch('@Url.Action("NotificacionesStockMinimo", "Inventario")');
+        const response = await fetch('@Url.Action("NotificacionesStockMinimoJson", "Inventario")');
         const data = await response.json();
         const badge = document.getElementById('badgeStock');
         const lista = document.getElementById('listaNotificacionesStock');
@@ -136,14 +138,14 @@
             data.forEach(item => {
                 lista.innerHTML += `
                     <li>
-                        <a href="#">
+                        <a href="@Url.Action("NotificacionesStockMinimo", "Inventario")">
                             <div class="d-flex align-items-center">
                                 <div class="icon">
                                     <i class="lni lni-alarm text-warning"></i>
                                 </div>
                                 <div class="content">
-                                    <h6>Stock mínimo: ${item.Nombre}</h6>
-                                    <p class="text-sm text-muted">Stock actual: ${item.StockActual}</p>
+                                    <h6>Stock mínimo: ${item.nombre ?? item.Nombre}</h6>
+                                    <p class="text-sm text-muted">Stock actual: ${item.stockActual ?? item.StockActual}</p>
                                 </div>
                             </div>
                         </a>

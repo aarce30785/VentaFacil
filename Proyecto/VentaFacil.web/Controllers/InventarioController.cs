@@ -321,5 +321,19 @@ namespace VentaFacil.web.Controllers
             TempData["Error"] = "No se pudo corregir el movimiento.";
             return RedirectToAction(nameof(Listar));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> NotificacionesStockMinimo()
+        {
+            var notificaciones = await _inventarioService.ObtenerStockMinimoAsync();
+            return View(notificaciones);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> NotificacionesStockMinimoJson()
+        {
+            var notificaciones = await _inventarioService.ObtenerStockMinimoAsync();
+            return Json(notificaciones);
+        }
     }
 }

@@ -1,0 +1,21 @@
+﻿@model List<VentaFacil.web.Models.Dto.InventarioDto>
+
+<h2>Notificaciones de Stock Mínimo</h2>
+
+@if (Model != null && Model.Any())
+{
+    <ul class="list-group">
+        @foreach (var item in Model)
+        {
+            <li class="list-group-item list-group-item-warning">
+                <strong>@item.Nombre</strong> tiene el stock actual igual o menor al mínimo (@item.StockActual / mínimo: @item.StockMinimo).
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="alert alert-success">
+        No hay productos con stock mínimo.
+    </div>
+}
