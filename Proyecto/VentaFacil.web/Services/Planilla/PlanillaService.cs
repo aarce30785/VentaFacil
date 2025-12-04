@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
+using VentaFacil.web.Models.Response;
 using VentaFacil.web.Models.Response.Planilla;
 
 namespace VentaFacil.web.Services.Planilla
@@ -25,6 +26,17 @@ namespace VentaFacil.web.Services.Planilla
 
             try
             {
+                // Validaciones
+                if (dto.FechaFinal.HasValue)
+                {
+                    if (dto.FechaFinal.Value < dto.FechaInicio)
+                    {
+                        response.Success = false;
+                        response.Message = "Hora de salida inválida: La hora de salida no puede ser anterior a la de entrada.";
+                        return response;
+                    }
+                }
+
                 Models.Planilla planilla;
 
                 // Tarifa base simulada para el cálculo (esto vendría de configuración o usuario en un caso real)
@@ -41,7 +53,6 @@ namespace VentaFacil.web.Services.Planilla
                     }
 
                     // Actualizar datos
-                    planilla.HorasTrabajadas = dto.HorasTrabajadas;
                     planilla.FechaInicio = dto.FechaInicio;
                     planilla.FechaFinal = dto.FechaFinal;
                 }
@@ -53,8 +64,6 @@ namespace VentaFacil.web.Services.Planilla
                         Id_Usr = dto.Id_Usr,
                         FechaInicio = dto.FechaInicio,
                         FechaFinal = dto.FechaFinal,
-                        HorasTrabajadas = dto.HorasTrabajadas,
-                        EstadoRegistro = "Pendiente",
                         HorasExtras = 0,
                         Bonificaciones = 0,
                         Deducciones = 0,
@@ -63,13 +72,28 @@ namespace VentaFacil.web.Services.Planilla
                     _context.Planilla.Add(planilla);
                 }
 
-                // Cálculo simple de salario bruto base
-                planilla.SalarioBruto = planilla.HorasTrabajadas * tarifaPorHora;
+                // Cálculo de horas y estado
+                if (planilla.FechaFinal.HasValue)
+                {
+                    TimeSpan duracion = planilla.FechaFinal.Value - planilla.FechaInicio;
+                    planilla.HorasTrabajadas = (int)duracion.TotalHours;
+                    planilla.EstadoRegistro = "Completada";
+                    planilla.SalarioBruto = (decimal)duracion.TotalHours * tarifaPorHora;
+                }
+                else
+                {
+                    planilla.HorasTrabajadas = 0;
+                    planilla.EstadoRegistro = "Incompleta";
+                    planilla.SalarioBruto = 0;
+                }
 
                 await _context.SaveChangesAsync();
 
                 response.Success = true;
-                response.Message = "Horas registradas correctamente.";
+                response.Message = planilla.EstadoRegistro == "Incompleta" 
+                    ? "Jornada registrada como incompleta." 
+                    : "Jornada registrada correctamente.";
+                
                 response.Id_Planilla = planilla.Id_Planilla;
                 response.HorasTrabajadas = planilla.HorasTrabajadas;
                 response.FechaInicio = planilla.FechaInicio;
@@ -101,6 +125,28 @@ namespace VentaFacil.web.Services.Planilla
 
                 // Tarifa simulada para extras
                 decimal tarifaExtra = 3500m;
+
+                // Validar límite legal de horas extras (Ej: Máximo 4 horas por día o 12 horas totales de jornada)
+                // Asumimos un máximo de 4 horas extras por jornada para este ejemplo
+                decimal maxHorasExtras = 4;
+                if (dto.HorasExtras > maxHorasExtras)
+                {
+                    response.Success = false;
+                    response.Message = "Horas extras exceden límite legal (Máximo 4 horas permitidas).";
+                    return response;
+                }
+
+                // Validar horario (Turno)
+                // Si el usuario tiene turno definido, verificar que las extras sean fuera de ese turno
+                // Esta validación es compleja si no tenemos la fecha/hora exacta de las extras, 
+                // pero podemos validar que si hay extras, la jornada total (Trabajadas + Extras) sea coherente.
+                
+                // Cargar usuario para ver turno
+                var usuario = await _context.Usuario.FindAsync(planilla.Id_Usr);
+                if (usuario != null && usuario.HoraEntrada.HasValue && usuario.HoraSalida.HasValue)
+                {
+                    // Lógica opcional: Si se quisiera validar contra el reloj
+                }
 
                 planilla.HorasExtras = dto.HorasExtras;
                 planilla.Bonificaciones = dto.MontoBonificaciones;
@@ -155,6 +201,85 @@ namespace VentaFacil.web.Services.Planilla
                     return response;
                 }
 
+                // VALIDACIÓN: Verificar si hay jornadas incompletas
+                var jornadasIncompletas = planillasParaNomina.Where(p => p.EstadoRegistro == "Incompleta").ToList();
+                if (jornadasIncompletas.Any())
+                {
+                    response.Success = false;
+                    response.Message = "No se puede generar la nómina porque existen jornadas incompletas. Por favor revise los registros de los colaboradores.";
+                    return response;
+                }
+
+                // =================================================================================
+                // CÁLCULO AUTOMÁTICO DE DEDUCCIONES
+                // =================================================================================
+                
+                // 1. Obtener Configuraciones
+                var deduccionesLey = await _context.DeduccionLey.Where(d => d.Activo).ToListAsync();
+                var tramosRenta = await _context.ImpuestoRenta.Where(i => i.Anio == 2025).OrderBy(i => i.LimiteInferior).ToListAsync();
+
+                foreach (var planilla in planillasParaNomina)
+                {
+                    decimal salarioBruto = planilla.SalarioBruto;
+                    decimal totalDeduccionesEmpleado = 0;
+
+                    // 2. Calcular Cargas Sociales (SEM, IVM, LPT, etc.)
+                    foreach (var ded in deduccionesLey)
+                    {
+                        if (ded.Porcentaje > 0)
+                        {
+                            decimal monto = salarioBruto * (ded.Porcentaje / 100m);
+                            totalDeduccionesEmpleado += monto;
+                        }
+                    }
+
+                    // 3. Calcular Impuesto de Renta
+                    decimal salarioNetoPreRenta = salarioBruto - totalDeduccionesEmpleado;
+                    decimal impuestoRenta = 0;
+
+                    if (tramosRenta.Any())
+                    {
+                        foreach (var tramo in tramosRenta)
+                        {
+                            if (salarioNetoPreRenta > tramo.LimiteInferior)
+                            {
+                                decimal baseCalculo = 0;
+                                if (tramo.LimiteSuperior.HasValue)
+                                {
+                                    // Tramo intermedio
+                                    if (salarioNetoPreRenta > tramo.LimiteSuperior.Value)
+                                    {
+                                        baseCalculo = tramo.LimiteSuperior.Value - tramo.LimiteInferior;
+                                    }
+                                    else
+                                    {
+                                        baseCalculo = salarioNetoPreRenta - tramo.LimiteInferior;
+                                    }
+                                }
+                                else
+                                {
+                                    // Último tramo (Exceso de...)
+                                    baseCalculo = salarioNetoPreRenta - tramo.LimiteInferior;
+                                }
+
+                                if (baseCalculo > 0)
+                                {
+                                    impuestoRenta += baseCalculo * (tramo.Porcentaje / 100m);
+                                }
+                            }
+                        }
+                    }
+
+                    totalDeduccionesEmpleado += impuestoRenta;
+
+                    planilla.Deducciones = totalDeduccionesEmpleado;
+                    planilla.SalarioNeto = salarioBruto - totalDeduccionesEmpleado;
+                }
+
+                // =================================================================================
+                // CREACIÓN DE NÓMINA
+                // =================================================================================
+
                 // Crear Encabezado de Nómina
                 var nomina = new Nomina
                 {
@@ -164,7 +289,7 @@ namespace VentaFacil.web.Services.Planilla
                     Estado = "Generada",
                     TotalBruto = planillasParaNomina.Sum(p => p.SalarioBruto),
                     TotalDeducciones = planillasParaNomina.Sum(p => p.Deducciones),
-                    TotalNeto = planillasParaNomina.Sum(p => p.SalarioNeto) // Inicialmente puede ser igual al bruto si no hay deducciones
+                    TotalNeto = planillasParaNomina.Sum(p => p.SalarioNeto)
                 };
 
                 _context.Nomina.Add(nomina);
@@ -177,15 +302,10 @@ namespace VentaFacil.web.Services.Planilla
                     item.EstadoRegistro = "Procesado";
                 }
 
-                // Recalcular totales por seguridad
-                nomina.TotalBruto = planillasParaNomina.Sum(p => p.SalarioBruto);
-                nomina.TotalDeducciones = planillasParaNomina.Sum(p => p.Deducciones);
-                nomina.TotalNeto = planillasParaNomina.Sum(p => p.SalarioBruto) - nomina.TotalDeducciones;
-
                 await _context.SaveChangesAsync();
 
                 response.Success = true;
-                response.Message = "Nómina generada exitosamente.";
+                response.Message = "Nómina generada exitosamente (Deducciones aplicadas automáticamente).";
                 response.Id_Nomina = nomina.Id_Nomina;
                 response.TotalBruto = nomina.TotalBruto;
                 response.TotalDeducciones = nomina.TotalDeducciones;
@@ -200,15 +320,14 @@ namespace VentaFacil.web.Services.Planilla
             return response;
         }
 
-        public async Task<AplicarDeduccionesResponse> AplicarDeduccionesAsync(AplicarDeduccionesDto dto)
+        public async Task<BaseResponse> RevertirNominaAsync(int idNomina)
         {
-            var response = new AplicarDeduccionesResponse();
-
+            var response = new BaseResponse();
             try
             {
                 var nomina = await _context.Nomina
                     .Include(n => n.Planillas)
-                    .FirstOrDefaultAsync(n => n.Id_Nomina == dto.Id_Nomina);
+                    .FirstOrDefaultAsync(n => n.Id_Nomina == idNomina);
 
                 if (nomina == null)
                 {
@@ -217,45 +336,33 @@ namespace VentaFacil.web.Services.Planilla
                     return response;
                 }
 
-                int registrosAfectados = 0;
-                decimal totalDeduccionesAplicadas = 0;
-
-                foreach (var planilla in nomina.Planillas)
+                if (nomina.Estado == "Anulada")
                 {
-                    // Cálculo de deducciones
-                    decimal montoCCSS = planilla.SalarioBruto * dto.PorcentajeCCSS;
-                    decimal montoRenta = planilla.SalarioBruto * dto.PorcentajeImpuestoRenta;
-                    decimal totalDeduccionLinea = montoCCSS + montoRenta;
-
-                    planilla.Deducciones = totalDeduccionLinea;
-
-                    if (dto.RecalcularSalariosNetos)
-                    {
-                        planilla.SalarioNeto = planilla.SalarioBruto - planilla.Deducciones;
-                    }
-
-                    registrosAfectados++;
-                    totalDeduccionesAplicadas += totalDeduccionLinea;
+                    response.Success = false;
+                    response.Message = "La nómina ya se encuentra anulada.";
+                    return response;
                 }
 
-                // Actualizar totales de la nómina
-                nomina.TotalDeducciones = nomina.Planillas.Sum(p => p.Deducciones);
-                nomina.TotalNeto = nomina.Planillas.Sum(p => p.SalarioNeto);
+                // Cambiar estado de la nómina
+                nomina.Estado = "Anulada";
+
+                // Liberar las planillas asociadas
+                foreach (var planilla in nomina.Planillas)
+                {
+                    planilla.Id_Nomina = null;
+                    planilla.EstadoRegistro = "Completada"; // Regresar a estado previo
+                }
 
                 await _context.SaveChangesAsync();
 
                 response.Success = true;
-                response.Message = "Deducciones aplicadas correctamente.";
-                response.Id_Nomina = nomina.Id_Nomina;
-                response.RegistrosAfectados = registrosAfectados;
-                response.TotalDeduccionesAplicadas = totalDeduccionesAplicadas;
+                response.Message = "Nómina revertida/anulada correctamente. Las jornadas han sido liberadas.";
             }
             catch (Exception ex)
             {
                 response.Success = false;
-                response.Message = "Error al aplicar deducciones: " + ex.Message;
+                response.Message = "Error al revertir la nómina: " + ex.Message;
             }
-
             return response;
         }
 
@@ -278,11 +385,40 @@ namespace VentaFacil.web.Services.Planilla
                 if (filtros.FechaFinal.HasValue)
                     query = query.Where(n => n.FechaFinal <= filtros.FechaFinal.Value);
 
+                // Filtro por Tipo de Periodo
+                if (!string.IsNullOrEmpty(filtros.TipoPeriodo))
+                {
+                    DateTime now = DateTime.Now;
+                    if (filtros.TipoPeriodo == "Mensual")
+                    {
+                        var inicioMes = new DateTime(now.Year, now.Month, 1);
+                        query = query.Where(n => n.FechaInicio >= inicioMes);
+                    }
+                    else if (filtros.TipoPeriodo == "Trimestral")
+                    {
+                        var inicioTrimestre = now.AddMonths(-3);
+                        query = query.Where(n => n.FechaInicio >= inicioTrimestre);
+                    }
+                    else if (filtros.TipoPeriodo == "Anual")
+                    {
+                        var inicioAnio = new DateTime(now.Year, 1, 1);
+                        query = query.Where(n => n.FechaInicio >= inicioAnio);
+                    }
+                }
+
                 if (!string.IsNullOrEmpty(filtros.Estado))
                     query = query.Where(n => n.Estado == filtros.Estado);
 
                 if (filtros.Id_Usr.HasValue)
                     query = query.Where(n => n.Planillas.Any(p => p.Id_Usr == filtros.Id_Usr.Value));
+
+                // Filtro por Nombre/Correo de Usuario
+                if (!string.IsNullOrEmpty(filtros.BusquedaUsuario))
+                {
+                    query = query.Where(n => n.Planillas.Any(p => 
+                        p.Usuario.Nombre.Contains(filtros.BusquedaUsuario) || 
+                        p.Usuario.Correo.Contains(filtros.BusquedaUsuario)));
+                }
 
                 // Total
                 int totalRegistros = await query.CountAsync();
@@ -324,6 +460,7 @@ namespace VentaFacil.web.Services.Planilla
 
             return response;
         }
+
         public async Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasParaExtrasAsync()
         {
             var planillas = await _context.Planilla
@@ -354,6 +491,49 @@ namespace VentaFacil.web.Services.Planilla
                     Estado = n.Estado
                 })
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<VentaFacil.web.Models.Usuario>> ObtenerUsuariosAsync()
+        {
+            return await _context.Usuario
+                .Where(u => u.Estado)
+                .OrderBy(u => u.Nombre)
+                .ToListAsync();
+        }
+
+        public async Task<NominaDetalleDto> ObtenerDetalleNominaParaExportarAsync(int idNomina)
+        {
+            var nomina = await _context.Nomina
+                .Include(n => n.Planillas)
+                .ThenInclude(p => p.Usuario)
+                .FirstOrDefaultAsync(n => n.Id_Nomina == idNomina);
+
+            if (nomina == null) return null;
+
+            var dto = new NominaDetalleDto
+            {
+                Id_Nomina = nomina.Id_Nomina,
+                FechaInicio = nomina.FechaInicio,
+                FechaFinal = nomina.FechaFinal,
+                FechaGeneracion = nomina.FechaGeneracion,
+                Estado = nomina.Estado,
+                TotalBruto = nomina.TotalBruto,
+                TotalDeducciones = nomina.TotalDeducciones,
+                TotalNeto = nomina.TotalNeto,
+                Detalles = nomina.Planillas.Select(p => new PlanillaDetalleItemDto
+                {
+                    NombreUsuario = p.Usuario.Nombre,
+                    Identificacion = p.Usuario.Correo, // Usando correo como ID secundario
+                    HorasTrabajadas = p.HorasTrabajadas,
+                    HorasExtras = p.HorasExtras,
+                    Bonificaciones = p.Bonificaciones,
+                    SalarioBruto = p.SalarioBruto,
+                    Deducciones = p.Deducciones,
+                    SalarioNeto = p.SalarioNeto
+                }).ToList()
+            };
+
+            return dto;
         }
     }
 }

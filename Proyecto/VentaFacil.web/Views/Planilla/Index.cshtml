@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Gestión de Planilla";
+    Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
+}
+
+<div class="container-fluid p-0">
+    <div class="mb-4">
+        <h1 class="h3 d-inline align-middle">Gestión de Planilla</h1>
+        <p class="text-muted">Panel de control para la administración de personal y pagos.</p>
+    </div>
+
+    <div class="row">
+        <!-- Gestión Diaria -->
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Gestión Diaria</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a asp-controller="Planilla" asp-action="RegistrarHoras" class="btn btn-outline-primary text-start p-3">
+                            <i class="align-middle me-2" data-feather="clock"></i> 
+                            <strong>Registro de Jornada</strong>
+                            <div class="small text-muted mt-1">Registre entradas y salidas de los colaboradores.</div>
+                        </a>
+                        <a asp-controller="Planilla" asp-action="RegistrarExtrasBonos" class="btn btn-outline-warning text-start p-3">
+                            <i class="align-middle me-2" data-feather="star"></i> 
+                            <strong>Extras y Bonificaciones</strong>
+                            <div class="small text-muted mt-1">Agregue horas extras o bonos a las planillas activas.</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión Mensual -->
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Gestión Mensual</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a asp-controller="Planilla" asp-action="GenerarNomina" class="btn btn-outline-success text-start p-3">
+                            <i class="align-middle me-2" data-feather="dollar-sign"></i> 
+                            <strong>Generar Nómina</strong>
+                            <div class="small text-muted mt-1">Procese el pago final del periodo (Cálculo automático de deducciones).</div>
+                        </a>
+                        <a asp-controller="Planilla" asp-action="Consultar" class="btn btn-outline-info text-start p-3">
+                            <i class="align-middle me-2" data-feather="file-text"></i> 
+                            <strong>Historial de Nóminas</strong>
+                            <div class="small text-muted mt-1">Consulte, exporte o anule nóminas anteriores.</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

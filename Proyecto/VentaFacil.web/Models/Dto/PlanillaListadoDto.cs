@@ -13,10 +13,10 @@
         public string EstadoRegistro { get; set; }
 
         public DateTime FechaInicio { get; set; }
-        public DateTime FechaFinal { get; set; }
+        public DateTime? FechaFinal { get; set; }
 
         // Esto se mostrará en el combo "Planilla (Periodo)"
         public string Periodo =>
-            $"{FechaInicio:dd/MM/yyyy} - {FechaFinal:dd/MM/yyyy}";
+            $"{FechaInicio:dd/MM/yyyy} - {(FechaFinal.HasValue ? FechaFinal.Value.ToString("dd/MM/yyyy") : "Pendiente")}";
     }
 }

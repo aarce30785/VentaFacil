@@ -21,7 +21,7 @@ namespace VentaFacil.web.Models
 
         public DateTime FechaInicio { get; set; }
 
-        public DateTime FechaFinal { get; set; }
+        public DateTime? FechaFinal { get; set; }
 
         public int HorasTrabajadas { get; set; }
 
