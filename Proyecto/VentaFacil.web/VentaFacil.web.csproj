@@ -27,4 +27,8 @@
     <PackageReference Include="Polly" Version="8.6.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\productos\" />
+  </ItemGroup>
+
 </Project>
