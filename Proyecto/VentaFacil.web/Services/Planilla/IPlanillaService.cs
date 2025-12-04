@@ -11,5 +11,7 @@ namespace VentaFacil.web.Services.Planilla
         Task<AplicarDeduccionesResponse> AplicarDeduccionesAsync(AplicarDeduccionesDto dto);
         Task<RegistrarExtrasBonosResponse> RegistrarExtrasBonosAsync(RegistrarExtrasBonosDto dto);
         Task<NominaConsultaResponse> ConsultarNominasAsync(NominaConsultaDto filtros);
+        Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasParaExtrasAsync();
+        Task<IEnumerable<NominaListadoDto>> ObtenerNominasGeneradasAsync();
     }
 }

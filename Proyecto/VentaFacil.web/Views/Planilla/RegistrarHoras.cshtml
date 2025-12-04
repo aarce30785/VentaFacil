@@ -1,0 +1,102 @@
+﻿@using VentaFacil.web.Models.Dto
+@model RegistrarHorasDto
+
+@{
+    ViewData["Title"] = "Registrar Horas";
+    Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Registrar Horas</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Consultar", "PlanillaUI")">Planilla</a></li>
+                    <li class="breadcrumb-item active">Registrar Horas</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Formulario de Registro</h3>
+                    </div>
+
+                    <form asp-controller="PlanillaUI" asp-action="RegistrarHoras" method="post">
+                        <div class="card-body">
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            @if (Model != null && Model.Id_Planilla.HasValue)
+                            {
+                                <input type="hidden" asp-for="Id_Planilla" />
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="Id_Usr">Empleado</label>
+                                <select asp-for="Id_Usr" class="form-control" asp-items="ViewBag.Usuarios">
+                                    <option value="">-- Seleccione un Empleado --</option>
+                                </select>
+                                <span asp-validation-for="Id_Usr" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="FechaInicio">Fecha Inicio</label>
+                                        <input asp-for="FechaInicio" type="date" class="form-control" />
+                                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="FechaFinal">Fecha Final</label>
+                                        <input asp-for="FechaFinal" type="date" class="form-control" />
+                                        <span asp-validation-for="FechaFinal" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="HorasTrabajadas">Horas Trabajadas</label>
+                                        <input asp-for="HorasTrabajadas" type="number" step="1" class="form-control" placeholder="0" />
+                                        <span asp-validation-for="HorasTrabajadas" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Observaciones">Observaciones (Opcional)</label>
+                                        <input asp-for="Observaciones" class="form-control" placeholder="Comentarios adicionales..." />
+                                        <span asp-validation-for="Observaciones" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Guardar Registro
+                            </button>
+                            <a href="@Url.Action("Consultar", "PlanillaUI")" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
