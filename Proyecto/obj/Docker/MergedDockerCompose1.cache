@@ -1,4 +1,4 @@
-name: dockercompose15169299182936299497
+name: dockercompose12855291052257485576
 services:
   sqlserver:
     container_name: ventafacil-db
@@ -25,23 +25,23 @@ services:
         target: /var/opt/mssql
         volume: {}
       - type: bind
-        source: C:\Git\DesarrolloSistemas\Proyecto\log
+        source: C:\VentaFacil\Proyecto\log
         target: /var/opt/mssql/log
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Git\DesarrolloSistemas\Proyecto\secrets
+        source: C:\VentaFacil\Proyecto\secrets
         target: /var/opt/mssql/secrets
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Git\DesarrolloSistemas\Proyecto\init
+        source: C:\VentaFacil\Proyecto\init
         target: /app/init
         bind:
           create_host_path: true
   ventafacil.web:
     build:
-      context: C:\Git\DesarrolloSistemas\Proyecto
+      context: C:\VentaFacil\Proyecto
       dockerfile: VentaFacil.web/Dockerfile
       args:
         BUILD_CONFIGURATION: Debug
@@ -98,62 +98,62 @@ services:
     tty: true
     volumes:
       - type: bind
-        source: C:\Git\DesarrolloSistemas\Proyecto\dataprotection_keys
+        source: C:\VentaFacil\Proyecto\dataprotection_keys
         target: /app/keys
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Git\DesarrolloSistemas\Proyecto\uploads
+        source: C:\VentaFacil\Proyecto\uploads
         target: /wwwroot/uploads
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Users\anton\AppData\Roaming\Microsoft\UserSecrets
+        source: C:\Users\mija2\AppData\Roaming\Microsoft\UserSecrets
         target: /home/app/.microsoft/usersecrets
         read_only: true
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Users\anton\AppData\Roaming\Microsoft\UserSecrets
+        source: C:\Users\mija2\AppData\Roaming\Microsoft\UserSecrets
         target: /root/.microsoft/usersecrets
         read_only: true
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Users\anton\AppData\Roaming\ASP.NET\Https
+        source: C:\Users\mija2\AppData\Roaming\ASP.NET\Https
         target: /home/app/.aspnet/https
         read_only: true
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Users\anton\AppData\Roaming\ASP.NET\Https
+        source: C:\Users\mija2\AppData\Roaming\ASP.NET\Https
         target: /root/.aspnet/https
         read_only: true
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Users\anton/.aspnet/https
+        source: C:\Users\mija2/.aspnet/https
         target: /https
         read_only: true
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Git\DesarrolloSistemas\Proyecto\VentaFacil.web
+        source: C:\VentaFacil\Proyecto\VentaFacil.web
         target: /app
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Git\DesarrolloSistemas\Proyecto
+        source: C:\VentaFacil\Proyecto
         target: /src
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Users\anton\vsdbg\vs2017u5
+        source: C:\Users\mija2\vsdbg\vs2017u5
         target: /remote_debugger
         bind:
           create_host_path: true
       - type: bind
-        source: C:\Users\anton\.nuget\packages
+        source: C:\Users\mija2\.nuget\packages
         target: /.nuget/packages
         read_only: true
         bind:
@@ -178,8 +178,8 @@ services:
           create_host_path: true
 networks:
   default:
-    name: dockercompose15169299182936299497_default
+    name: dockercompose12855291052257485576_default
     driver: bridge
 volumes:
   sqlserver_data:
-    name: dockercompose15169299182936299497_sqlserver_data
+    name: dockercompose12855291052257485576_sqlserver_data

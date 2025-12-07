@@ -1,0 +1,101 @@
+﻿@using VentaFacil.web.Models.Dto
+@model GenerarNominaDto
+
+@{
+    ViewData["Title"] = "Generar Nómina";
+    Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Generar Nómina</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Consultar", "Planilla")">Planilla</a></li>
+                    <li class="breadcrumb-item active">Generar Nómina</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h5><i class="icon fas fa-check"></i> Éxito</h5>
+                @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h5><i class="icon fas fa-ban"></i> Error</h5>
+                @TempData["Error"]
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Parámetros de Generación</h3>
+                    </div>
+
+                    <form asp-controller="Planilla" asp-action="GenerarNomina" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="FechaInicio">Fecha Inicio</label>
+                                        <input asp-for="FechaInicio" type="date" class="form-control" />
+                                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="FechaFinal">Fecha Final</label>
+                                        <input asp-for="FechaFinal" type="date" class="form-control" />
+                                        <span asp-validation-for="FechaFinal" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input asp-for="IncluirSoloUsuariosActivos" class="form-check-input" type="checkbox" />
+                                    <label asp-for="IncluirSoloUsuariosActivos" class="form-check-label">
+                                        Incluir solo usuarios activos
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-cogs"></i> Generar Nómina
+                            </button>
+                            <a href="@Url.Action("Consultar", "Planilla")" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

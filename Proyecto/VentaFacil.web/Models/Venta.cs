@@ -23,9 +23,9 @@ namespace VentaFacil.web.Models
         [Column("Estado")]
         public bool Estado { get; set; }
 
-        public int Id_Usuario { get; set; } // Cambiado de nullable a required
+        public int Id_Usuario { get; set; } 
 
-        // Navigation properties
+     
         [ForeignKey("Id_Usuario")]
         public virtual Usuario Usuario { get; set; }
 
