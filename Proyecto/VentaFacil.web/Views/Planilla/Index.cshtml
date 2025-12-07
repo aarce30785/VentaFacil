@@ -1,59 +1,173 @@
 @{
     ViewData["Title"] = "Gestión de Planilla";
-    Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
+    Layout = "_LayoutPlantilla";
 }
 
-<div class="container-fluid p-0">
-    <div class="mb-4">
-        <h1 class="h3 d-inline align-middle">Gestión de Planilla</h1>
-        <p class="text-muted">Panel de control para la administración de personal y pagos.</p>
-    </div>
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
 
-    <div class="row">
-        <!-- Gestión Diaria -->
-        <div class="col-12 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Gestión Diaria</h5>
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .premium-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .menu-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        height: 100%;
+    }
+
+    .menu-card-content {
+        padding: 2rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .menu-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .premium-card:hover .menu-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .menu-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+    }
+
+    .menu-desc {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="title-wrapper pt-30 mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="title">
+                    <h2 class="fw-bold text-dark">Gestión de Planilla</h2>
+                    <p class="text-muted text-sm">Control centralizado de nómina y personal</p>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a asp-controller="Planilla" asp-action="RegistrarHoras" class="btn btn-outline-primary text-start p-3">
-                            <i class="align-middle me-2" data-feather="clock"></i> 
-                            <strong>Registro de Jornada</strong>
-                            <div class="small text-muted mt-1">Registre entradas y salidas de los colaboradores.</div>
-                        </a>
-                        <a asp-controller="Planilla" asp-action="RegistrarExtrasBonos" class="btn btn-outline-warning text-start p-3">
-                            <i class="align-middle me-2" data-feather="star"></i> 
-                            <strong>Extras y Bonificaciones</strong>
-                            <div class="small text-muted mt-1">Agregue horas extras o bonos a las planillas activas.</div>
-                        </a>
-                    </div>
+            </div>
+             <div class="col-md-6">
+                 <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Planilla</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Gestión Mensual -->
-        <div class="col-12 col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Gestión Mensual</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a asp-controller="Planilla" asp-action="GenerarNomina" class="btn btn-outline-success text-start p-3">
-                            <i class="align-middle me-2" data-feather="dollar-sign"></i> 
-                            <strong>Generar Nómina</strong>
-                            <div class="small text-muted mt-1">Procese el pago final del periodo (Cálculo automático de deducciones).</div>
-                        </a>
-                        <a asp-controller="Planilla" asp-action="Consultar" class="btn btn-outline-info text-start p-3">
-                            <i class="align-middle me-2" data-feather="file-text"></i> 
-                            <strong>Historial de Nóminas</strong>
-                            <div class="small text-muted mt-1">Consulte, exporte o anule nóminas anteriores.</div>
-                        </a>
+    <!-- Menú Principal -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h5 class="fw-bold text-muted mb-3 ps-2 border-start border-4 border-primary">Gestión Diaria</h5>
+        </div>
+        
+        <!-- Registro Horas -->
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Planilla" asp-action="RegistrarHoras" class="menu-card-link">
+                <div class="premium-card">
+                    <div class="menu-card-content">
+                        <div class="menu-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="lni lni-timer"></i>
+                        </div>
+                        <h3 class="menu-title">Registro de Jornada</h3>
+                        <p class="menu-desc">Control de asistencia y horas trabajadas</p>
                     </div>
                 </div>
-            </div>
+            </a>
+        </div>
+
+        <!-- Extras y Bonos -->
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Planilla" asp-action="RegistrarExtrasBonos" class="menu-card-link">
+                <div class="premium-card">
+                    <div class="menu-card-content">
+                        <div class="menu-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="lni lni-star"></i>
+                        </div>
+                        <h3 class="menu-title">Extras y Bonificaciones</h3>
+                        <p class="menu-desc">Gestión de horas extras e incentivos</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <h5 class="fw-bold text-muted mb-3 ps-2 border-start border-4 border-success">Gestión Mensual</h5>
+        </div>
+
+        <!-- Generar Nómina -->
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Planilla" asp-action="GenerarNomina" class="menu-card-link">
+                <div class="premium-card">
+                    <div class="menu-card-content">
+                        <div class="menu-icon bg-success bg-opacity-10 text-success">
+                            <i class="lni lni-wallet"></i>
+                        </div>
+                        <h3 class="menu-title">Generar Nómina</h3>
+                        <p class="menu-desc">Cálculo y procesamiento de pagos</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Historial -->
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="Planilla" asp-action="Consultar" class="menu-card-link">
+                <div class="premium-card">
+                    <div class="menu-card-content">
+                        <div class="menu-icon bg-info bg-opacity-10 text-info">
+                            <i class="lni lni-agenda"></i>
+                        </div>
+                        <h3 class="menu-title">Historial de Nóminas</h3>
+                        <p class="menu-desc">Consulta y reportes de pagos anteriores</p>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 </div>

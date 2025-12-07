@@ -18,15 +18,22 @@ namespace VentaFacil.web.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // Limpieza proactiva de duplicados antes de cargar
+            await LimpiarDuplicados();
+
             var deducciones = await _context.DeduccionLey.ToListAsync();
             var impuestos = await _context.ImpuestoRenta.OrderBy(i => i.LimiteInferior).ToListAsync();
 
             if (!deducciones.Any())
             {
-                // Inicializar si está vacío (Seed básico)
                 await InicializarValores();
                 deducciones = await _context.DeduccionLey.ToListAsync();
-                impuestos = await _context.ImpuestoRenta.OrderBy(i => i.LimiteInferior).ToListAsync();
+            }
+
+            if (!impuestos.Any())
+            {
+                 await InicializarValores();
+                 impuestos = await _context.ImpuestoRenta.OrderBy(i => i.LimiteInferior).ToListAsync();
             }
 
             ViewBag.Deducciones = deducciones;
@@ -69,7 +76,6 @@ namespace VentaFacil.web.Controllers
             }
             else
             {
-                // Crear nuevo si ID es 0 (opcional, por ahora solo editamos existentes)
                 if (id == 0)
                 {
                     var nuevoImpuesto = new ImpuestoRenta
@@ -93,16 +99,18 @@ namespace VentaFacil.web.Controllers
 
         private async Task InicializarValores()
         {
-            if (!_context.DeduccionLey.Any())
-            {
-                _context.DeduccionLey.AddRange(
-                    new DeduccionLey { Nombre = "SEM", Porcentaje = 5.50m, Activo = true },
-                    new DeduccionLey { Nombre = "IVM", Porcentaje = 4.17m, Activo = true },
-                    new DeduccionLey { Nombre = "LPT", Porcentaje = 1.00m, Activo = true }
-                );
-            }
+            // Seed Deducciones de forma segura
+            if (!await _context.DeduccionLey.AnyAsync(d => d.Nombre == "SEM"))
+                _context.DeduccionLey.Add(new DeduccionLey { Nombre = "SEM", Porcentaje = 5.50m, Activo = true });
 
-            if (!_context.ImpuestoRenta.Any())
+            if (!await _context.DeduccionLey.AnyAsync(d => d.Nombre == "IVM"))
+                _context.DeduccionLey.Add(new DeduccionLey { Nombre = "IVM", Porcentaje = 4.17m, Activo = true });
+            
+            if (!await _context.DeduccionLey.AnyAsync(d => d.Nombre == "LPT"))
+                _context.DeduccionLey.Add(new DeduccionLey { Nombre = "LPT", Porcentaje = 1.00m, Activo = true });
+
+            // Seed Impuestos de forma segura (verificando el primer tramo)
+            if (!await _context.ImpuestoRenta.AnyAsync(i => i.Anio == 2025))
             {
                 _context.ImpuestoRenta.AddRange(
                     new ImpuestoRenta { Anio = 2025, LimiteInferior = 0, LimiteSuperior = 922000, Porcentaje = 0 },
@@ -114,6 +122,44 @@ namespace VentaFacil.web.Controllers
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        private async Task LimpiarDuplicados()
+        {
+            // 1. Limpiar Deducciones Duplicadas
+            // Agrupar por nombre, ordenar por ID descendente (mantener el más reciente o el primero, aquí el último creado)
+            // En realidad, para configuración base, deberíamos mantener el ID más bajo (el original)
+            
+            var deducciones = await _context.DeduccionLey.ToListAsync();
+            var duplicadosDeducciones = deducciones
+                .GroupBy(d => d.Nombre)
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g.OrderBy(d => d.Id).Skip(1)) // Saltamos el primero (ID más bajo), borramos el resto
+                .ToList();
+
+            if (duplicadosDeducciones.Any())
+            {
+                _context.DeduccionLey.RemoveRange(duplicadosDeducciones);
+            }
+
+            // 2. Limpiar Impuestos Duplicados
+            // Asumimos que la unicidad es Anio + LimiteInferior
+            var impuestos = await _context.ImpuestoRenta.ToListAsync();
+            var duplicadosImpuestos = impuestos
+                .GroupBy(i => new { i.Anio, i.LimiteInferior })
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g.OrderBy(i => i.Id).Skip(1))
+                .ToList();
+
+            if (duplicadosImpuestos.Any())
+            {
+                _context.ImpuestoRenta.RemoveRange(duplicadosImpuestos);
+            }
+
+            if (duplicadosDeducciones.Any() || duplicadosImpuestos.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
