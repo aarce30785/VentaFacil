@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Enum;
+using VentaFacil.web.Models.Configuracion;
 
 namespace VentaFacil.web.Data
 {
@@ -30,6 +31,14 @@ namespace VentaFacil.web.Data
 
         public DbSet<Nomina> Nomina { get; set; }
         public DbSet<Planilla> Planilla { get; set; }
+
+        // CONFIGURACIÓN
+        public DbSet<DeduccionLey> DeduccionLey { get; set; }
+        public DbSet<ImpuestoRenta> ImpuestoRenta { get; set; }
+
+        // BONIFICACIONES
+        public DbSet<Bonificacion> Bonificacion { get; set; }
+        public DbSet<BonificacionAuditoria> BonificacionAuditoria { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {}
+    "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {}
   },
   "projects": {
-    "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {
+    "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
+        "projectUniqueName": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
         "projectName": "VentaFacil.web",
-        "projectPath": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
-        "packagesPath": "C:\\Users\\anton\\.nuget\\packages\\",
-        "outputPath": "C:\\Git\\DesarrolloSistemas\\Proyecto\\VentaFacil.web\\obj\\",
+        "projectPath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
+        "packagesPath": "C:\\Users\\mija2\\.nuget\\packages\\",
+        "outputPath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\anton\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\mija2\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -67,6 +66,10 @@
               "target": "Package",
               "version": "[8.0.20, )"
             },
+            "Microsoft.Exchange.WebServices": {
+              "target": "Package",
+              "version": "[2.2.0, )"
+            },
             "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
               "target": "Package",
               "version": "[1.22.1, )"
@@ -78,6 +81,18 @@
             "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore": {
               "target": "Package",
               "version": "[8.0.7, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.6.4, )"
+            },
+            "itext.bouncy-castle-adapter": {
+              "target": "Package",
+              "version": "[9.4.0, )"
+            },
+            "itext7": {
+              "target": "Package",
+              "version": "[9.4.0, )"
             }
           },
           "imports": [

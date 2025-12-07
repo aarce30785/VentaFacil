@@ -10,7 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="iTextSharp" Version="5.5.13.4" />
+    <PackageReference Include="itext.bouncy-castle-adapter" Version="9.4.0" />
+    <PackageReference Include="itext7" Version="9.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -25,6 +26,10 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="8.0.7" />
     <PackageReference Include="Polly" Version="8.6.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\images\productos\" />
   </ItemGroup>
 
 </Project>

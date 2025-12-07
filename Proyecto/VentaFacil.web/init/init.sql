@@ -1,4 +1,4 @@
-﻿-- Tabla Rol
+-- Tabla Rol
 CREATE TABLE Rol (
     Id_Rol INT IDENTITY (1,1),
     Nombre_Rol VARCHAR(20),
@@ -19,6 +19,18 @@ CREATE TABLE Usuario (
     CONSTRAINT UsrRol_Fk FOREIGN KEY (Rol) REFERENCES Rol(Id_Rol)
 );
 
+--Tabla Nómina
+CREATE TABLE Nomina (
+    Id_Nomina INT IDENTITY(1,1) PRIMARY KEY,
+    FechaInicio DATETIME NOT NULL,
+    FechaFinal DATETIME NOT NULL,
+    FechaGeneracion DATETIME NOT NULL DEFAULT GETDATE(),
+    Estado VARCHAR(20) NOT NULL,
+    TotalBruto DECIMAL(10,2) NOT NULL,
+    TotalDeducciones DECIMAL(10,2) NOT NULL,
+    TotalNeto DECIMAL(10,2) NOT NULL
+);
+
 -- Tabla Planilla
 CREATE TABLE Planilla (
     Id_Planilla INT IDENTITY (1,1),
@@ -26,9 +38,24 @@ CREATE TABLE Planilla (
     FechaInicio DATETIME,
     FechaFinal DATETIME,
     HorasTrabajadas INT,
+    -- Campo original
     Salario DECIMAL(10,2),
+
+    -- NUEVAS COLUMNAS Sprint 4
+    Bonificaciones     DECIMAL(10,2) NULL,
+    Deducciones        DECIMAL(10,2) NULL,
+    EstadoRegistro     VARCHAR(50)   NULL,
+    HorasExtras        DECIMAL(10,2) NULL,
+    Id_Nomina          INT           NULL,
+    SalarioBruto       DECIMAL(10,2) NULL,
+    SalarioNeto        DECIMAL(10,2) NULL,
+    Observaciones      VARCHAR(400)  NULL,
+
     CONSTRAINT Plan_Pk PRIMARY KEY (Id_Planilla),
-    CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr)
+    CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr)
+        REFERENCES Usuario(Id_Usr),
+    CONSTRAINT FK_Planilla_Nomina FOREIGN KEY (Id_Nomina)
+        REFERENCES Nomina(Id_Nomina)
 );
 
 -- Tabla Categoria
@@ -212,6 +239,71 @@ CREATE TABLE InventarioMovimientoAuditoria (
     CONSTRAINT FK_Auditoria_Usuario FOREIGN KEY (Id_UsuarioResponsable) REFERENCES Usuario(Id_Usr)
 );
 
+-- Tabla DeduccionLey
+CREATE TABLE DeduccionLey (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(50) NOT NULL,
+    Porcentaje DECIMAL(5,2) NOT NULL,
+    Activo BIT DEFAULT 1
+);
+
+-- Tabla ImpuestoRenta
+CREATE TABLE ImpuestoRenta (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Anio INT NOT NULL,
+    LimiteInferior DECIMAL(18,2) NOT NULL,
+    LimiteSuperior DECIMAL(18,2) NULL,
+    Porcentaje DECIMAL(5,2) NOT NULL
+);
+
+-- Tabla Bonificacion
+CREATE TABLE Bonificacion (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Id_Planilla INT NOT NULL,
+    Monto DECIMAL(10,2) NOT NULL,
+    Motivo VARCHAR(255) NOT NULL,
+    Fecha DATETIME NOT NULL,
+    FechaRegistro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Bonificacion_Planilla FOREIGN KEY (Id_Planilla) REFERENCES Planilla(Id_Planilla)
+);
+
+-- Tabla BonificacionAuditoria
+CREATE TABLE BonificacionAuditoria (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Id_Bonificacion INT NOT NULL,
+    MontoAnterior DECIMAL(10,2) NOT NULL,
+    MontoNuevo DECIMAL(10,2) NOT NULL,
+    MotivoCambio VARCHAR(1024) NULL,
+    FechaCambio DATETIME DEFAULT GETDATE(),
+    Id_UsuarioResponsable INT NOT NULL,
+    CONSTRAINT FK_BonificacionAuditoria_Bonificacion FOREIGN KEY (Id_Bonificacion) REFERENCES Bonificacion(Id),
+    CONSTRAINT FK_BonificacionAuditoria_Usuario FOREIGN KEY (Id_UsuarioResponsable) REFERENCES Usuario(Id_Usr)
+);
+
+-- Alterar Tabla Usuario para Horario
+-- Alterar Tabla Usuario para Horario
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraEntrada' AND Object_ID = Object_ID(N'Usuario'))
+BEGIN
+    ALTER TABLE Usuario ADD HoraEntrada TIME NULL
+END
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraSalida' AND Object_ID = Object_ID(N'Usuario'))
+BEGIN
+    ALTER TABLE Usuario ADD HoraSalida TIME NULL
+END
+
 -- Roles base
 INSERT INTO Rol (Nombre_Rol, Descripcion) VALUES ('Administrador', 'Acceso completo al sistema');
 INSERT INTO Rol (Nombre_Rol, Descripcion) VALUES ('Cajero', 'Acceso a ventas y caja');
+
+-- Seed Deducciones
+INSERT INTO DeduccionLey (Nombre, Porcentaje, Activo) VALUES ('SEM', 5.50, 1);
+INSERT INTO DeduccionLey (Nombre, Porcentaje, Activo) VALUES ('IVM', 4.17, 1);
+INSERT INTO DeduccionLey (Nombre, Porcentaje, Activo) VALUES ('LPT', 1.00, 1);
+
+-- Seed Impuesto Renta 2025
+INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 0, 922000, 0);
+INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 922000, 1363000, 10);
+INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 1363000, 2374000, 15);
+INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 2374000, 4745000, 20);
+INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 4745000, NULL, 25);
