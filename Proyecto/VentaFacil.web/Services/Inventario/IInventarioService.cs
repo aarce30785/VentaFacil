@@ -16,5 +16,6 @@ namespace VentaFacil.web.Services.Inventario
         Task<bool> RegistrarEntradaAsync(int idInventario, int cantidad, string observaciones, int idUsuario);
         Task<bool> RegistrarSalidaAsync(int idInventario, int cantidad, string observaciones, int idUsuario);
         Task<List<InventarioDto>> ObtenerStockMinimoAsync();
+        Task<List<InventarioDto>> GetStockMinimoAsync();
     }
 }

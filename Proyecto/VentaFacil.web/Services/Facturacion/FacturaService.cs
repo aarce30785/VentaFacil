@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
@@ -6,6 +9,7 @@ using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Response.Factura;
 using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
+using VentaFacil.web.Services.Caja;
 
 namespace VentaFacil.web.Services.Facturacion
 {
@@ -17,6 +21,7 @@ namespace VentaFacil.web.Services.Facturacion
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPdfService _pdfService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly ICajaService _cajaService;
 
         public FacturacionService(
             IPedidoService pedidoService,
@@ -24,7 +29,8 @@ namespace VentaFacil.web.Services.Facturacion
             ILogger<FacturacionService> logger,
             IHttpContextAccessor httpContextAccessor,
             IPdfService pdfService,
-            IServiceProvider serviceProvider) 
+            IServiceProvider serviceProvider,
+            ICajaService cajaService) 
         {
             _pedidoService = pedidoService;
             _context = context;
@@ -32,6 +38,7 @@ namespace VentaFacil.web.Services.Facturacion
             _httpContextAccessor = httpContextAccessor;
             _pdfService = pdfService;
             _serviceProvider = serviceProvider;
+            _cajaService = cajaService;
         }
 
         public async Task<ResultadoFacturacion> GenerarFacturaAsync(int pedidoId, MetodoPago metodoPago, decimal montoPagado, string moneda = "CRC")
@@ -56,7 +63,26 @@ namespace VentaFacil.web.Services.Facturacion
                 
                 var facturaDto = await ObtenerFacturaCompletaAsync(factura.Id_Factura);
 
-               
+                // --- AGREGAR MOVIMIENTOS DE CAJA ---
+                if (metodoPago == MetodoPago.Efectivo)
+                {
+                    // Obtener la caja abierta (sin filtrar por usuario)
+                    var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+                    if (caja != null)
+                    {
+                        // Registrar ingreso del monto pagado (positivo)
+                        await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, montoPagado, "Ingreso por venta en efectivo");
+                        // Registrar retiro del vuelto si aplica (negativo)
+                        var vuelto = montoPagado - factura.Total;
+                        if (vuelto > 0)
+                        {
+                            await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, -vuelto, "Retiro de vuelto entregado al cliente");
+                        }
+                    }
+                }
+                // --- FIN MOVIMIENTOS DE CAJA ---
+
+                
                 _logger.LogInformation("🔍 Factura generada - ID en entidad: {IdEntidad}, ID en DTO: {IdDto}",
                     factura.Id_Factura, facturaDto?.Id_Factura);
 
@@ -373,6 +399,32 @@ namespace VentaFacil.web.Services.Facturacion
             }
 
             return (true, string.Empty);
+        }
+
+        public async Task<decimal> GetVentasDiaAsync()
+        {
+            var hoy = DateTime.Today;
+            return await _context.Venta
+                .Where(v => v.Fecha.Date == hoy)
+                .SumAsync(v => v.Total);
+        }
+
+        public async Task<decimal> GetVentasSemanaAsync()
+        {
+            var hoy = DateTime.Today;
+            var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+            return await _context.Venta
+                .Where(v => v.Fecha.Date >= inicioSemana && v.Fecha.Date <= hoy)
+                .SumAsync(v => v.Total);
+        }
+
+        public async Task<decimal> GetVentasMesAsync()
+        {
+            var hoy = DateTime.Today;
+            var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+            return await _context.Venta
+                .Where(v => v.Fecha.Date >= inicioMes && v.Fecha.Date <= hoy)
+                .SumAsync(v => v.Total);
         }
 
         #region Métodos Privados

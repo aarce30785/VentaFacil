@@ -11,5 +11,7 @@ namespace VentaFacil.web.Services.Caja
         Task<CajaRetiro> RegistrarRetiroAsync(int idCaja, int idUsuario, decimal monto, string motivo);
         Task<List<VentaFacil.web.Models.Caja>> ListarCajasAsync(); 
         Task<List<CajaRetiro>> ObtenerRetirosPorCajaAsync(int idCaja);
+        Task<decimal> GetIngresosRecientesAsync();
+        Task<decimal> GetGastosRecientesAsync();
     }
 }

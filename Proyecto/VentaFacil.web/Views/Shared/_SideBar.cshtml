@@ -1,5 +1,4 @@
-﻿
-<aside class="sidebar-nav-wrapper">
+﻿<aside class="sidebar-nav-wrapper">
     <div class="navbar-logo">
         <a asp-controller="Home" asp-action="Index">
             <h3 class="text-white mb-0" style="font-family: 'Merriweather', serif; font-weight: 700;">
@@ -11,24 +10,13 @@
 
     <nav class="sidebar-nav">
         <ul>
-            <li class="nav-item nav-item-has-children">
-                <a href="#0"
-                   class="collapsed"
-                   data-bs-toggle="collapse"
-                   data-bs-target="#ddmenu_1"
-                   aria-controls="ddmenu_1"
-                   aria-expanded="false"
-                   aria-label="Toggle navigation">
+            <li class="nav-item">
+                <a asp-controller="Home" asp-action="Index">
                     <span class="icon">
                         <i class="fas fa-tachometer-alt"></i>
                     </span>
                     <span class="text">Dashboard</span>
                 </a>
-                <ul id="ddmenu_1" class="collapse dropdown-nav">
-                    <li>
-                        <a asp-controller="Home" asp-action="Index"> Resumen </a>
-                    </li>
-                </ul>
             </li>
             
             <li class="nav-item nav-item-has-children">

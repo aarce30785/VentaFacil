@@ -270,5 +270,22 @@ namespace VentaFacil.web.Services.Inventario
                 })
                 .ToListAsync();
         }
+
+        public async Task<List<InventarioDto>> GetStockMinimoAsync()
+        {
+            var inventarios = await _context.Inventario
+                .Where(i => i.StockActual <= i.StockMinimo)
+                .Select(i => new InventarioDto
+                {
+                    Id_Inventario = i.Id_Inventario,
+                    Nombre = i.Nombre,
+                    StockActual = i.StockActual,
+                    StockMinimo = i.StockMinimo,
+                    UnidadMedida = i.UnidadMedida
+                })
+                .ToListAsync();
+
+            return inventarios;
+        }
     }
 }

@@ -2,6 +2,10 @@
 using VentaFacil.web.Data;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Producto;
+using VentaFacil.web.Models.ViewModel;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace VentaFacil.web.Services.Producto
 {
@@ -286,6 +290,23 @@ namespace VentaFacil.web.Services.Producto
             }
 
             return response;
+        }
+
+        public async Task<List<ProductoMasVendidoDto>> GetProductosMasVendidosAsync()
+        {
+            var productosVendidos = await _context.DetalleVenta
+                .GroupBy(dv => dv.Id_Producto)
+                .Select(g => new ProductoMasVendidoDto
+                {
+                    Id_Producto = g.Key,
+                    Nombre = g.First().Producto != null ? g.First().Producto.Nombre : "",
+                    CantidadVendida = g.Sum(x => x.Cantidad)
+                })
+                .OrderByDescending(p => p.CantidadVendida)
+                .Take(5)
+                .ToListAsync();
+
+            return productosVendidos;
         }
     }
 }
