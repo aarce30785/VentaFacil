@@ -225,144 +225,144 @@ namespace VentaFacil.web
         }
 
         private static void InitializeDatabase(IConfiguration configuration)
-{
-    Console.WriteLine("=== INICIANDO INICIALIZACIÓN DE BD ===");
-    
-    string connectionString = configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("No se encontró la cadena de conexión 'DefaultConnection'.");
-
-    Console.WriteLine($"Cadena de conexión: {connectionString.Replace("Password=VentaFacilDb123!", "Password=***")}");
-
-    // Conexión a master
-    string masterConnection = connectionString.Replace("Database=VentaFacilDB;", "Database=master;");
-
-    var policy = Policy
-        .Handle<SqlException>()
-        .Or<InvalidOperationException>()
-        .WaitAndRetry(
-            retryCount: 10,  // Aumentar a 10 intentos
-            sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-            onRetry: (exception, timeSpan, retryCount, context) =>
-            {
-                Console.WriteLine($"❌ Intento {retryCount} de conexión a SQL Server falló. Reintentando en {timeSpan.Seconds} segundos...");
-                Console.WriteLine($"Error: {exception.Message}");
-            });
-
-    try
-    {
-        policy.Execute(() =>
         {
-            Console.WriteLine($"Intentando conexión a master...");
-            using (var connMaster = new SqlConnection(masterConnection))
-            {
-                connMaster.Open();
-                Console.WriteLine("✅ Conexión a SQL Server (master) exitosa");
+            Console.WriteLine("=== INICIANDO INICIALIZACIÓN DE BD ===");
+            
+            string connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("No se encontró la cadena de conexión 'DefaultConnection'.");
 
-                // Verificar si la base de datos existe
-                using var cmdCheckDb = new SqlCommand(
-                    "SELECT COUNT(*) FROM sys.databases WHERE name = 'VentaFacilDB'",
-                    connMaster);
-                var dbExists = (int)cmdCheckDb.ExecuteScalar() > 0;
+            Console.WriteLine($"Cadena de conexión: {connectionString.Replace("Password=VentaFacilDb123!", "Password=***")}");
 
-                if (!dbExists)
-                {
-                    Console.WriteLine("Creando base de datos VentaFacilDB...");
-                    using var cmdCreateDb = new SqlCommand(
-                        "CREATE DATABASE VentaFacilDB;",
-                        connMaster);
-                    cmdCreateDb.ExecuteNonQuery();
-                    Console.WriteLine("✅ Base de datos creada");
+            // Conexión a master
+            string masterConnection = connectionString.Replace("Database=VentaFacilDB;", "Database=master;");
 
-                    // Esperar más tiempo después de crear la BD
-                    Thread.Sleep(5000);
-                }
-                else
-                {
-                    Console.WriteLine("✅ Base de datos ya existe");
-                }
-            }
-        });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ ERROR CRÍTICO: No se pudo inicializar la base de datos: {ex.Message}");
-        Console.WriteLine($"StackTrace: {ex.StackTrace}");
-        // No lanzar excepción, dejar que la aplicación continúe
-        return;
-    }
-
-    // Esperar antes de conectar a la nueva BD
-    Thread.Sleep(3000);
-
-    try
-    {
-        // Conexión a la DB específica
-        policy.Execute(() =>
-        {
-            Console.WriteLine($"Intentando conexión a VentaFacilDB...");
-            using (var connDb = new SqlConnection(connectionString))
-            {
-                connDb.Open();
-                Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
-
-                string scriptPath = "/app/init/init.sql";
-                if (!File.Exists(scriptPath))
-                {
-                    Console.WriteLine($"⚠️ No se encontró el archivo de inicialización en {scriptPath}");
-                    return;
-                }
-
-                Console.WriteLine($"Ejecutando script: {scriptPath}");
-                string script = File.ReadAllText(scriptPath);
-
-                // Dividir por punto y coma
-                var batches = script.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                  .Where(b => !string.IsNullOrWhiteSpace(b))
-                                  .Select(b => b.Trim());
-
-                int batchCount = 0;
-                foreach (var batch in batches)
-                {
-                    if (!string.IsNullOrWhiteSpace(batch))
+            var policy = Policy
+                .Handle<SqlException>()
+                .Or<InvalidOperationException>()
+                .WaitAndRetry(
+                    retryCount: 10,  // Aumentar a 10 intentos
+                    sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
                     {
-                        batchCount++;
-                        try
+                        Console.WriteLine($"❌ Intento {retryCount} de conexión a SQL Server falló. Reintentando en {timeSpan.Seconds} segundos...");
+                        Console.WriteLine($"Error: {exception.Message}");
+                    });
+
+            try
+            {
+                policy.Execute(() =>
+                {
+                    Console.WriteLine($"Intentando conexión a master...");
+                    using (var connMaster = new SqlConnection(masterConnection))
+                    {
+                        connMaster.Open();
+                        Console.WriteLine("✅ Conexión a SQL Server (master) exitosa");
+
+                        // Verificar si la base de datos existe
+                        using var cmdCheckDb = new SqlCommand(
+                            "SELECT COUNT(*) FROM sys.databases WHERE name = 'VentaFacilDB'",
+                            connMaster);
+                        var dbExists = (int)cmdCheckDb.ExecuteScalar() > 0;
+
+                        if (!dbExists)
                         {
-                            using var cmd = new SqlCommand(batch, connDb);
-                            cmd.ExecuteNonQuery();
-                            Console.WriteLine($"✅ Batch {batchCount} ejecutado");
+                            Console.WriteLine("Creando base de datos VentaFacilDB...");
+                            using var cmdCreateDb = new SqlCommand(
+                                "CREATE DATABASE VentaFacilDB;",
+                                connMaster);
+                            cmdCreateDb.ExecuteNonQuery();
+                            Console.WriteLine("✅ Base de datos creada");
+
+                            // Esperar más tiempo después de crear la BD
+                            Thread.Sleep(5000);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Console.WriteLine($"⚠️ Error en batch {batchCount}: {ex.Message}");
-                            Console.WriteLine($"Batch: {batch.Substring(0, Math.Min(100, batch.Length))}...");
+                            Console.WriteLine("✅ Base de datos ya existe");
                         }
                     }
-                }
-
-                Console.WriteLine($"✅ {batchCount} scripts SQL ejecutados");
+                });
             }
-        });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"⚠️ ERROR ejecutando scripts: {ex.Message}");
-    }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ ERROR CRÍTICO: No se pudo inicializar la base de datos: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                // No lanzar excepción, dejar que la aplicación continúe
+                return;
+            }
 
-    // Intentar seeder
-    try
-    {
-        Console.WriteLine("Ejecutando seeder...");
-        DbSeeder.Seed(connectionString);
-        Console.WriteLine("✅ Seeder ejecutado");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"⚠️ ERROR en seeder: {ex.Message}");
-    }
+            // Esperar antes de conectar a la nueva BD
+            Thread.Sleep(3000);
 
-    Console.WriteLine("=== INICIALIZACIÓN DE BD COMPLETADA ===");
-}
+            try
+            {
+                // Conexión a la DB específica
+                policy.Execute(() =>
+                {
+                    Console.WriteLine($"Intentando conexión a VentaFacilDB...");
+                    using (var connDb = new SqlConnection(connectionString))
+                    {
+                        connDb.Open();
+                        Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
+
+                        string scriptPath = "/app/init/init.sql";
+                        if (!File.Exists(scriptPath))
+                        {
+                            Console.WriteLine($"⚠️ No se encontró el archivo de inicialización en {scriptPath}");
+                            return;
+                        }
+
+                        Console.WriteLine($"Ejecutando script: {scriptPath}");
+                        string script = File.ReadAllText(scriptPath);
+
+                        // Dividir por punto y coma
+                        var batches = script.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                                        .Where(b => !string.IsNullOrWhiteSpace(b))
+                                        .Select(b => b.Trim());
+
+                        int batchCount = 0;
+                        foreach (var batch in batches)
+                        {
+                            if (!string.IsNullOrWhiteSpace(batch))
+                            {
+                                batchCount++;
+                                try
+                                {
+                                    using var cmd = new SqlCommand(batch, connDb);
+                                    cmd.ExecuteNonQuery();
+                                    Console.WriteLine($"✅ Batch {batchCount} ejecutado");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"⚠️ Error en batch {batchCount}: {ex.Message}");
+                                    Console.WriteLine($"Batch: {batch.Substring(0, Math.Min(100, batch.Length))}...");
+                                }
+                            }
+                        }
+
+                        Console.WriteLine($"✅ {batchCount} scripts SQL ejecutados");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ ERROR ejecutando scripts: {ex.Message}");
+            }
+
+            // Intentar seeder
+            try
+            {
+                Console.WriteLine("Ejecutando seeder...");
+                DbSeeder.Seed(connectionString);
+                Console.WriteLine("✅ Seeder ejecutado");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ ERROR en seeder: {ex.Message}");
+            }
+
+            Console.WriteLine("=== INICIALIZACIÓN DE BD COMPLETADA ===");
+        }
 
         private static void TestDatabaseConnection(IConfiguration configuration)
         {
