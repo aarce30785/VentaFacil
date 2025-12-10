@@ -279,14 +279,45 @@ namespace VentaFacil.web
             Console.WriteLine($"Cadena de conexión: {connectionString.Replace("Password=VentaFacilDb123!", "Password=***")}");
 
             // Intentar conexión a la BD
-            try
-            {
-                using (var conn = new SqlConnection(connectionString))
-                {
-                    conn.Open();
-                    Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
+            // Intentar conexión a la BD con reintentos
+            int maxRetries = 10; // 10 intentos
+            int delaySeconds = 60; // 60 segundos (1 minuto) entre intentos
 
-                    // Verificar si las tablas principales ya existen
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    Console.WriteLine($"Intento de conexión {i + 1} de {maxRetries}...");
+                    using (var conn = new SqlConnection(connectionString))
+                    {
+                        conn.Open();
+                        Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
+
+                        // Si llegamos aquí, salimos del bucle de reintentos
+                        // Continuar con la inicialización...
+                        InitializeTablesAndSeed(conn, connectionString);
+                        return; // Éxito
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Intento {i + 1} fallido. Esperando {delaySeconds}s... Error: {ex.Message}");
+                    if (i == maxRetries - 1)
+                    {
+                        Console.WriteLine("❌ Se agotaron los reintentos de conexión.");
+                        Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                    }
+                    else
+                    {
+                        System.Threading.Thread.Sleep(delaySeconds * 1000);
+                    }
+                }
+            }
+        }
+
+        private static void InitializeTablesAndSeed(SqlConnection conn, string connectionString)
+        {
+            // Verificar si las tablas principales ya existen
                     using var checkCmd = new SqlCommand(
                         "SELECT CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Usuario') THEN 1 ELSE 0 END",
                         conn);
@@ -350,13 +381,6 @@ namespace VentaFacil.web
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ ERROR conectando a la base de datos: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
-            }
-
-            Console.WriteLine("=== INICIALIZACIÓN DE BD COMPLETADA ===");
         }
 
         private static void TestDatabaseConnection(IConfiguration configuration)
