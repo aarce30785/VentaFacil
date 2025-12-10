@@ -28,7 +28,6 @@ services:
       dockerfile: VentaFacil.web/Dockerfile
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
-    environment:
       - ConnectionStrings__MasterConnection=Server=sqlserver,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
