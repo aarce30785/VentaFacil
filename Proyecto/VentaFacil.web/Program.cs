@@ -164,7 +164,7 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IMovimientoService, MovimientoService>();
             builder.Services.AddScoped<IFacturacionService, FacturacionService>();
             builder.Services.AddScoped<ICajaService, CajaService>();
-            builder.Services.AddScoped<PdfService>();
+            builder.Services.AddScoped<IPdfService, PdfService>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IPlanillaService, PlanillaService>();
             builder.Services.AddScoped<IBonificacionService, BonificacionService>();
