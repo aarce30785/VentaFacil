@@ -1,6 +1,15 @@
 ﻿@model VentaFacil.web.Models.Dto.UsuarioDto
+
 @{
-    var accionModal = ViewBag.AccionModal as string;
+    var accion = ViewBag.AccionModal as string ?? "crear";
+    var esSoloLectura = accion == "ver";
+    var titulo = accion switch
+    {
+        "crear" => "Crear Usuario",
+        "editar" => "Editar Usuario",
+        "ver" => "Ver Usuario",
+        _ => "Usuario"
+    };
     var roles = ViewBag.Roles as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
 }
 
@@ -8,119 +17,116 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="usuarioModalLabel">
-                    @if (accionModal == "crear")
-                    {
-                        <text>Crear Usuario</text>
-                    }
-                    else if (accionModal == "editar")
-                    {
-                        <text>Editar Usuario</text>
-                    }
-                    else
-                    {
-                        <text>Ver Usuario</text>
-                    }
-                </h5>
+                <h5 class="modal-title" id="usuarioModalLabel">@titulo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form method="post" asp-action="GuardarUsuario" id="usuarioForm" enctype="multipart/form-data">
+            <form id="usuarioForm" method="post" asp-action="GuardarUsuario" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id_Usr" />
+                
+                <!-- Mantener parámetros de filtro -->
+                <input type="hidden" name="busqueda" value="@ViewBag.BusquedaActual" />
+                <input type="hidden" name="rolFiltro" value="@ViewBag.RolFiltroActual" />
+                <input type="hidden" name="pagina" value="@ViewBag.PaginaActual" />
 
                 <div class="modal-body">
-                    <div class="row g-3">
+                    <div class="row">
+                        <!-- Nombre -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label asp-for="Nombre" class="form-label"></label>
+                                <label asp-for="Nombre" class="form-label">Nombre *</label>
                                 <input asp-for="Nombre" class="form-control"
                                        placeholder="Ingrese el nombre completo"
-                                       readonly="@(accionModal == "ver")" />
+                                       readonly="@esSoloLectura" />
                                 <span asp-validation-for="Nombre" class="text-danger"></span>
                             </div>
                         </div>
 
+                        <!-- Correo -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label asp-for="Correo" class="form-label"></label>
+                                <label asp-for="Correo" class="form-label">Correo *</label>
                                 <input asp-for="Correo" type="email" class="form-control"
                                        placeholder="ejemplo@correo.com"
-                                       readonly="@(accionModal == "ver")" />
+                                       readonly="@esSoloLectura" />
                                 <span asp-validation-for="Correo" class="text-danger"></span>
                             </div>
                         </div>
+                    </div>
 
-                        @if (accionModal == "crear" || accionModal == "editar")
-                        {
+                    @if (accion == "crear" || accion == "editar")
+                    {
+                        <div class="row mt-3">
+                            <!-- Contraseña -->
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label asp-for="Contrasena" class="form-label"></label>
+                                    <label asp-for="Contrasena" class="form-label">Contraseña</label>
                                     <input asp-for="Contrasena" type="password" class="form-control"
                                            id="Contrasena" name="Contrasena"
-                                           placeholder="@(accionModal == "crear" ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual")" />
+                                           placeholder="@(accion == "crear" ? "Ingrese la contraseña" : "Dejar en blanco para mantener actual")" />
                                     <small class="form-text text-muted">
-                                        @if (accionModal == "crear")
-                                        {
-                                            <text>Mínimo 6 caracteres</text>
-                                        }
-                                        else
-                                        {
-                                            <text>Complete solo si desea cambiar la contraseña</text>
-                                        }
+                                        @(accion == "crear" ? "Mínimo 6 caracteres" : "Solo si desea cambiarla")
                                     </small>
                                 </div>
                             </div>
 
-
+                            <!-- Confirmar Contraseña -->
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label asp-for="ConfirmarContrasena" class="form-label"></label>
+                                    <label asp-for="ConfirmarContrasena" class="form-label">Confirmar Contraseña</label>
                                     <input asp-for="ConfirmarContrasena" type="password" class="form-control"
                                            id="ConfirmarContrasena" name="ConfirmarContrasena"
-                                           placeholder="@(accionModal == "crear" ? "Confirme la contraseña" : "Confirmar nueva contraseña")" />
+                                           placeholder="Confirme la contraseña" />
                                 </div>
                             </div>
-                        }
+                        </div>
+                    }
 
+                    <div class="row mt-3">
+                        <!-- Rol -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label asp-for="Rol" class="form-label"></label>
+                                <label asp-for="Rol" class="form-label">Rol *</label>
                                 <select asp-for="Rol" asp-items="roles" class="form-select"
-                                        disabled="@(accionModal == "ver")">
+                                        disabled="@esSoloLectura">
                                     <option value="">Seleccione un rol</option>
                                 </select>
                                 <span asp-validation-for="Rol" class="text-danger"></span>
                             </div>
                         </div>
 
+                        <!-- Estado -->
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <div class="form-check form-switch mt-4 pt-2">
-                                    @if (accionModal == "ver")
-                                    {
+                            <div class="form-group mt-4">
+                                @if (esSoloLectura)
+                                {
+                                    <div class="form-check form-switch">
                                         <input asp-for="Estado" class="form-check-input" disabled />
-                                    }
-                                    else
-                                    {
+                                        <label class="form-check-label">Usuario Activo</label>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-check form-switch">
                                         <input asp-for="Estado" class="form-check-input" />
-                                    }
-                                    <label class="form-check-label" for="Estado">Usuario Activo</label>
-                                </div>
+                                        <label class="form-check-label" for="Estado">Usuario Activo</label>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-
-                    @if (accionModal == "crear" || accionModal == "editar")
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    @if (!esSoloLectura)
                     {
-                        <button type="submit" class="btn btn-primary" id="btnGuardarUsuario">Guardar</button>
+                        <button type="submit" class="btn btn-primary">
+                            @(accion == "crear" ? "Crear Usuario" : "Actualizar Usuario")
+                        </button>
                     }
-
-                    @if (accionModal == "ver")
+                    @if (esSoloLectura)
                     {
                         <button type="button" class="btn btn-warning"
                                 onclick="abrirModal('editar', @Model.Id_Usr)">
@@ -128,11 +134,6 @@
                         </button>
                     }
                 </div>
-
-                <!-- Mantener parámetros de filtro -->
-                <input type="hidden" name="busqueda" value="@ViewBag.BusquedaActual" />
-                <input type="hidden" name="rolFiltro" value="@ViewBag.RolFiltroActual" />
-                <input type="hidden" name="pagina" value="@ViewBag.PaginaActual" />
             </form>
         </div>
     </div>
@@ -141,21 +142,10 @@
 <script>
     // Prevent events from bubbling up from the modal
     (function() {
-        // Wait for modal to be fully shown or just run immediately as it is partial
         const modalInputs = document.querySelectorAll('#usuarioModal input, #usuarioModal select, #usuarioModal textarea');
         modalInputs.forEach(input => {
-            input.addEventListener('input', function(e) {
-                e.stopPropagation();
-            });
-            input.addEventListener('keypress', function(e) {
-                e.stopPropagation();
-            });
+            input.addEventListener('input', function(e) { e.stopPropagation(); });
+            input.addEventListener('keypress', function(e) { e.stopPropagation(); });
         });
     })();
 </script>
-
-
-
-
-
-
