@@ -275,6 +275,7 @@ namespace VentaFacil.web
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseSession();
+            app.UseMiddleware<VentaFacil.web.Middleware.SessionValidationMiddleware>();
 
             app.MapControllerRoute(
                 name: "default",
