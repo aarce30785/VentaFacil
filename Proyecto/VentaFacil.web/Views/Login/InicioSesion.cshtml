@@ -1,6 +1,6 @@
 ﻿@model VentaFacil.web.Models.Dto.LoginDto
 @{
-    ViewData["Title"] = "Inicio Sesion";
+    ViewData["Title"] = "Inicio de Sesión";
     Layout = "_LayoutPlantilla";
 }
 
@@ -11,7 +11,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="title">
-                        <h2>Sign in</h2>
+                        <h2>Iniciar sesión</h2>
                     </div>
                 </div>
                 <!-- end col -->
@@ -20,16 +20,16 @@
                         <div class="auth-cover-wrapper bg-primary-100">
                             <div class="auth-cover">
                                 <div class="title text-center">
-                                    <h1 class="text-primary mb-10">Welcome Back</h1>
+                                    <h1 class="text-primary mb-10">¡Bienvenido de nuevo!</h1>
                                     <p class="text-medium">
-                                        Sign in to your Existing account to continue
+                                        Inicia sesión en tu cuenta para continuar
                                     </p>
                                 </div>
                                 <div class="cover-image">
-                                    <img src="~/Plantilla/images/auth/signin-image.svg" alt="" />
+                                    <img src="~/Plantilla/images/auth/signin-image.svg" alt="Imagen de inicio de sesión" />
                                 </div>
                                 <div class="shape-image">
-                                    <img src="~/Plantilla/images/auth/shape.svg" alt="" />
+                                    <img src="~/Plantilla/images/auth/shape.svg" alt="Decoración" />
                                 </div>
                             </div>
                         </div>
@@ -37,18 +37,17 @@
                     <div class="col-lg-6">
                         <div class="signin-wrapper">
                             <div class="form-wrapper">
-                                <h6 class="mb-15">Inicio de sesion</h6>
+                                <h6 class="mb-15">Inicio de sesión</h6>
                                 <p class="text-sm mb-25">
-                                    Start creating the best possible user experience for you
-                                    customers.
+                                    Ingresa tus credenciales para acceder al sistema.
                                 </p>
                                 <form asp-action="InicioSesion" asp-controller="Login" method="post">
                                     @Html.AntiForgeryToken()
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="input-style-1">
-                                                <label asp-for="Correo" class="form-label">Correo Electrónico</label>
-                                                <input asp-for="Correo" class="form-control" />
+                                                <label asp-for="Correo" class="form-label">Correo electrónico</label>
+                                                <input asp-for="Correo" class="form-control" placeholder="ejemplo@correo.com" />
                                                 <span asp-validation-for="Correo" class="text-danger"></span>
                                             </div>
                                         </div>
@@ -56,7 +55,7 @@
                                         <div class="col-12">
                                             <div class="input-style-1">
                                                 <label asp-for="Contrasena" class="form-label">Contraseña</label>
-                                                <input asp-for="Contrasena" type="password" class="form-control" />
+                                                <input asp-for="Contrasena" type="password" class="form-control" placeholder="Ingresa tu contraseña" />
                                                 <span asp-validation-for="Contrasena" class="text-danger"></span>
                                             </div>
                                         </div>
@@ -74,7 +73,7 @@
                                         <div class="col-xxl-6 col-lg-12 col-md-6">
                                             <div class="text-start text-md-end text-lg-start text-xxl-end mb-30">
                                                 <a href="#" class="hover-underline">
-                                                    ¿Olvidaste la contraseña?
+                                                    ¿Olvidaste tu contraseña?
                                                 </a>
                                             </div>
                                         </div>
