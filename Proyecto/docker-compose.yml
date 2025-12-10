@@ -10,7 +10,6 @@ services:
 
   sqlserver:
     container_name: ventafacil-db
-    hostname: mssql-db
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: 'Y'
@@ -39,8 +38,8 @@ services:
       context: .
       dockerfile: VentaFacil.web/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
-      - ConnectionStrings__MasterConnection=Server=sqlserver,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+      - ConnectionStrings__DefaultConnection=Server=ventafacil-db,1433;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+      - ConnectionStrings__MasterConnection=Server=ventafacil-db,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
       # ASPNETCORE_URLS removido para usar la config de Kestrel en appsettings.json
