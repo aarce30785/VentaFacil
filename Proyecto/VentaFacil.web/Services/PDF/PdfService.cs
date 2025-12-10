@@ -79,6 +79,7 @@ namespace VentaFacil.web.Services.PDF
                 document.Close();
                 return stream.ToArray();
             }
+        }
         public byte[] GenerarFacturaPdf(FacturaDto facturaDto, object footer = null, bool esCopia = false)
         {
              // TODO: Migrar lógica de iTextSharp a iText7
