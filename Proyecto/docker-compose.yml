@@ -2,7 +2,7 @@ services:
   fix-permissions:
     image: alpine
     user: root
-    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets"
+    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && echo 'Permissions fixed'"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
@@ -17,8 +17,9 @@ services:
       MSSQL_PID: 'Developer'
       MSSQL_TCP_PORT: 1433
       MSSQL_MEMORY_LIMIT_MB: 1024
+    # Usa el mismo puerto interno y externo para evitar confusiones
     ports:
-      - "1455:1433"
+      - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
@@ -27,6 +28,7 @@ services:
       default:
         aliases:
           - sqlserver
+          - ventafacil-db
     depends_on:
       fix-permissions:
         condition: service_completed_successfully
@@ -38,11 +40,11 @@ services:
       context: .
       dockerfile: VentaFacil.web/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Server=ventafacil-db,1433;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+      # Usa el nombre del contenedor o servicio
+      - ConnectionStrings__DefaultConnection=Server=ventafacil-db,1433;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;MultipleActiveResultSets=true;
       - ConnectionStrings__MasterConnection=Server=ventafacil-db,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
-      # ASPNETCORE_URLS removido para usar la config de Kestrel en appsettings.json
     ports:
       - "80:8080"
       - "443:443"
@@ -53,28 +55,3 @@ services:
     depends_on:
       - sqlserver
     restart: unless-stopped
-
-  postfix:
-    image: boky/postfix
-    container_name: postfix
-    environment:
-      ALLOWED_SENDER_DOMAINS: "ventafacil-web.com"
-      General_maillog_file: "/dev/stdout"
-    # No exponemos el puerto 25 al host para evitar conflictos/seguridad, solo interno
-    # ports:
-    #   - "25:25" 
-    networks:
-      default:
-        aliases:
-          - mailserver
-    restart: always
-
-volumes:
-  sqlserver_data:
-  sqlserver_log:
-  sqlserver_secrets:
-
-
-networks:
-  default:
-    driver: bridge
