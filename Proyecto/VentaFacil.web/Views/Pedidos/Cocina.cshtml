@@ -9,80 +9,109 @@
 }
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
     :root {
-        --kds-bg: #f1f5f9;
+        --kds-bg: #f8fafc;
         --card-bg: #ffffff;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-secondary: #64748b;
         --accent-color: #4f46e5;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-        --danger-color: #ef4444;
-        --info-color: #3b82f6;
+        --success-start: #10b981;
+        --success-end: #059669;
+        --warning-start: #f59e0b;
+        --warning-end: #d97706;
+        --danger-start: #ef4444;
+        --danger-end: #dc2626;
+        --info-start: #3b82f6;
+        --info-end: #2563eb;
     }
 
     body {
+        font-family: 'Inter', sans-serif;
         background-color: var(--kds-bg);
+        color: var(--text-primary);
     }
 
     .kds-header {
-        background: #fff;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         padding: 1rem 2rem;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         margin-bottom: 2rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        /* Fix overlapping: adjust top to match main navbar height approx 70px */
+        top: 70px; 
     }
 
     .kds-stats-card {
         background: #fff;
-        border-radius: 12px;
-        padding: 1rem;
+        border-radius: 9999px; /* Pill shape */
+        padding: 0.5rem 1.25rem 0.5rem 0.5rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.75rem;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kds-stats-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     .kds-card {
         background: var(--card-bg);
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-radius: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         overflow: hidden;
         height: 100%;
         display: flex;
         flex-direction: column;
-        border: 1px solid #e2e8f0;
-        transition: transform 0.2s;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .kds-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
     .kds-card-header {
-        padding: 1rem;
+        padding: 1.25rem;
         color: white;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    .header-prep { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-    .header-ready { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .header-prep { background: linear-gradient(135deg, var(--warning-start), var(--warning-end)); }
+    .header-ready { background: linear-gradient(135deg, var(--success-start), var(--success-end)); }
 
     .kds-card-body {
-        padding: 1rem;
+        padding: 1.25rem;
         flex-grow: 1;
         overflow-y: auto;
-        max-height: 400px;
+        max-height: 450px;
+    }
+
+    .kds-card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    .kds-card-body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .kds-card-body::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
     }
 
     .kds-item {
         display: flex;
         align-items: flex-start;
-        padding: 0.75rem 0;
+        padding: 0.875rem 0;
         border-bottom: 1px dashed #e2e8f0;
     }
 
@@ -92,91 +121,128 @@
 
     .item-qty {
         background: #f1f5f9;
-        color: #1e293b;
-        font-weight: 800;
-        font-size: 1.1rem;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 1rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-right: 1rem;
         flex-shrink: 0;
-    }
-
-    .item-details {
-        flex-grow: 1;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .item-name {
-        font-weight: 600;
+        font-weight: 500;
         color: var(--text-primary);
         font-size: 1rem;
-        line-height: 1.4;
+        line-height: 1.5;
     }
 
     .item-notes {
-        font-size: 0.85rem;
-        color: var(--danger-color);
-        margin-top: 0.25rem;
-        font-style: italic;
+        font-size: 0.8rem;
+        color: #b91c1c;
+        margin-top: 0.35rem;
+        font-weight: 500;
         background: #fef2f2;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
         display: inline-block;
+        border: 1px solid #fecaca;
     }
 
     .kds-card-footer {
-        padding: 1rem;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
+        padding: 1.25rem;
+        background: #fafbfb;
+        border-top: 1px solid #f1f5f9;
     }
 
     .timer-badge {
-        font-family: 'Courier New', monospace;
+        font-family: 'Courier New', monospace; /* Monospaced for stability */
         font-weight: 700;
-        font-size: 1.1rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 6px;
-        background: rgba(255,255,255,0.2);
+        font-size: 0.95rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.25);
+        backdrop-filter: blur(4px);
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .timer-normal { color: #1e293b; }
-    .timer-warning { color: #d97706; font-weight: 800; }
-    .timer-danger { color: #dc2626; font-weight: 800; animation: pulse 2s infinite; }
+    .timer-normal { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .timer-warning { background: #fff; color: #d97706; }
+    .timer-danger { background: #fff; color: #dc2626; animation: pulse-border 2s infinite; }
 
-    @@keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.6; }
-        100% { opacity: 1; }
+    @keyframes pulse-border {
+        0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+        70% { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
     }
 
     .btn-action {
         width: 100%;
-        padding: 0.75rem;
-        border-radius: 8px;
+        padding: 0.875rem;
+        border-radius: 12px;
         font-weight: 600;
         border: none;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     .btn-ready {
-        background: var(--success-color);
+        background: linear-gradient(135deg, var(--success-start), var(--success-end));
         color: white;
     }
-    .btn-ready:hover { background: #059669; }
+    .btn-ready:hover { 
+        filter: brightness(110%); 
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+    }
 
     .btn-deliver {
-        background: var(--info-color);
+        background: linear-gradient(135deg, var(--info-start), var(--info-end));
         color: white;
     }
-    .btn-deliver:hover { background: #2563eb; }
+    .btn-deliver:hover { 
+        filter: brightness(110%);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+    }
 
     .empty-kds {
         text-align: center;
-        padding: 4rem;
+        padding: 6rem 2rem;
         color: var(--text-secondary);
+        background: #fff;
+        border-radius: 24px;
+        border: 2px dashed #e2e8f0;
+        margin: 2rem auto;
+        max-width: 600px;
+    }
+    
+    .search-pill {
+        border-radius: 9999px;
+        border: 1px solid #e2e8f0;
+        padding-left: 1rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        transition: all 0.2s;
+    }
+    .search-pill:focus-within {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    .search-input {
+        border: none;
+        background: transparent;
+    }
+    .search-input:focus {
+        box-shadow: none;
     }
 </style>
 
@@ -209,11 +275,11 @@
         </div>
 
         <div class="d-flex gap-3 align-items-center">
-            <div class="input-group" style="width: 300px;">
-                <span class="input-group-text bg-white border-end-0"><i class="lni lni-search"></i></span>
-                <input type="text" id="filtroKds" class="form-control border-start-0" placeholder="Filtrar por #, cliente..." onkeyup="filtrarPedidos()">
+            <div class="input-group search-pill bg-white" style="width: 320px;">
+                <span class="input-group-text bg-transparent border-0 text-muted ps-2"><i class="lni lni-search"></i></span>
+                <input type="text" id="filtroKds" class="form-control search-input border-0" placeholder="Filtrar por #, cliente..." onkeyup="filtrarPedidos()">
             </div>
-            <button class="btn btn-light border rounded-circle p-2" onclick="location.reload()" title="Actualizar">
+            <button class="btn btn-white shadow-sm border rounded-circle p-2 text-secondary" onclick="location.reload()" title="Actualizar" style="width: 42px; height: 42px;">
                 <i class="lni lni-reload"></i>
             </button>
         </div>
