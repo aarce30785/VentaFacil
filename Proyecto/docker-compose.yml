@@ -28,19 +28,18 @@ services:
       dockerfile: VentaFacil.web/Dockerfile
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+    environment:
       - ConnectionStrings__MasterConnection=Server=sqlserver,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
-      - ASPNETCORE_URLS=http://+:8080;https://+:8081
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/etc/letsencrypt/live/ventafacil-web.com/fullchain.pem
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/etc/letsencrypt/live/ventafacil-web.com/privkey.pem
+      # ASPNETCORE_URLS removido para usar la config de Kestrel en appsettings.json
     ports:
       - "80:8080"
-      - "443:8081"
+      - "443:443"
     volumes:
       - ./dataprotection_keys:/app/keys
       - ./uploads:/wwwroot/uploads
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/letsencrypt/live/ventafacil-web.com:/certs:ro
     depends_on:
       - sqlserver
     restart: unless-stopped
