@@ -13,8 +13,8 @@ RUN apt-get update && \
 
 ENV PATH="$PATH:/opt/mssql-tools/bin"
 WORKDIR /app
-EXPOSE 8080 8081
-ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 80 81
+ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Docker
 
 # Build stage

@@ -34,27 +34,27 @@
     restart: unless-stopped
 
   ventafacil.web:
-      image: ventafacil.web
-      build:
-        context: .
-        dockerfile: VentaFacil.web/Dockerfile
-      environment:
-        - ConnectionStrings__DefaultConnection=Server=ventafacil-db;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;MultipleActiveResultSets=true;
-        - ConnectionStrings__MasterConnection=Server=ventafacil-db;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
-        - ASPNETCORE_ENVIRONMENT=Production
-        - DOTNET_RUNNING_IN_CONTAINER=true
-        - ASPNETCORE_URLS=http://+:80;https://+:443
-      ports:
-        - "80:80"    # ✅ Corregido: Host:8080 → Container:80
-        - "443:443"   # ✅ Corregido: Host:8443 → Container:443
-      volumes:
-        - ./dataprotection_keys:/app/keys
-        - ./uploads:/wwwroot/uploads
-        # - /etc/letsencrypt/live/ventafacil-web.com:/certs:ro  # Comentar temporalmente si no hay certificados
-        - ./init.sql:/app/init/init.sql
-      depends_on:
-        - sqlserver  # Añadir dependencia
-      restart: unless-stopped
+    image: ventafacil.web
+    build:
+      context: .
+      dockerfile: VentaFacil.web/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=ventafacil-db;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;MultipleActiveResultSets=true;
+      - ConnectionStrings__MasterConnection=Server=ventafacil-db;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      - ASPNETCORE_URLS=http://+:80;https://+:443
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./dataprotection_keys:/app/keys
+      - ./uploads:/wwwroot/uploads
+      # - /etc/letsencrypt/live/ventafacil-web.com:/certs:ro  # Comentar temporalmente si no hay certificados
+      - ./init.sql:/app/init/init.sql
+    depends_on:
+      - sqlserver
+    restart: unless-stopped
 
 volumes:
   sqlserver_data:
