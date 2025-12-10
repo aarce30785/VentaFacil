@@ -5,7 +5,7 @@ WORKDIR /src
 
 # Copiar archivos de proyecto
 COPY ["VentaFacil.web/VentaFacil.web.csproj", "VentaFacil.web/"]
-COPY ["VentaFacil.web.sln", "./"]
+COPY ["Proyecto.sln", "./"]
 
 # Restaurar dependencias
 RUN dotnet restore "VentaFacil.web/VentaFacil.web.csproj"

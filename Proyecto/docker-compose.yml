@@ -1,6 +1,4 @@
-﻿version: '3.8'
-
-services:
+﻿services:
   # Servicio para arreglar permisos de SQL Server
   fix-permissions:
     image: alpine:latest
