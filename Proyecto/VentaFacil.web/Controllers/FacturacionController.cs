@@ -18,6 +18,7 @@ namespace VentaFacil.web.Controllers
         private readonly IFacturacionService _facturacionService;
         private readonly IPedidoService _pedidoService;
         private readonly IPdfService _pdfService;
+        private readonly Services.BCCR.IBccrService _bccrService;
         private readonly ILogger<FacturacionController> _logger;
         private readonly Data.ApplicationDbContext _context;
 
@@ -25,12 +26,14 @@ namespace VentaFacil.web.Controllers
             IFacturacionService facturacionService,
             IPedidoService pedidoService,
             IPdfService pdfService,
+            Services.BCCR.IBccrService bccrService,
             ILogger<FacturacionController> logger,
             Data.ApplicationDbContext context)
         {
             _facturacionService = facturacionService;
             _pedidoService = pedidoService;
             _pdfService = pdfService;
+            _bccrService = bccrService;
             _logger = logger;
             _context = context;
         }
@@ -102,6 +105,21 @@ namespace VentaFacil.web.Controllers
                     Modalidad = pedido.Modalidad,
                     NumeroMesa = pedido.NumeroMesa
                 };
+
+                // Obtener Tipo de Cambio
+                try 
+                {
+                    var (compra, venta) = await _bccrService.ObtenerTipoDeCambioDelDiaAsync();
+                    ViewBag.TipoCambioCompra = compra;
+                    ViewBag.TipoCambioVenta = venta;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al obtener tipo de cambio del BCCR");
+                    // Valores por defecto o 0 si falla
+                    ViewBag.TipoCambioCompra = 0;
+                    ViewBag.TipoCambioVenta = 0;
+                }
 
                 return View(model);
             }

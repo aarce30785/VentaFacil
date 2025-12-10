@@ -21,6 +21,8 @@ using VentaFacil.web.Services.Usuario;
 using VentaFacil.web.Services.Planilla;
 using VentaFacil.web.Services.Email;
 using VentaFacil.web.Services.Auth;
+using VentaFacil.web.Services.BCCR;
+
 
 
 namespace VentaFacil.web
@@ -176,6 +178,10 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IBonificacionService, BonificacionService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+            
+            // BCCR Service Configuration
+            builder.Services.Configure<BccrSettings>(builder.Configuration.GetSection("BccrSettings"));
+            builder.Services.AddScoped<IBccrService, BccrService>();
 
             // Configurar sesión
 

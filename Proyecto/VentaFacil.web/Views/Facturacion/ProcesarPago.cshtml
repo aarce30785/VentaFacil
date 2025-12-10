@@ -270,6 +270,8 @@
                                     <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px; font-size: 1.5rem;" id="simboloMoneda">₡</span>
                                     <input asp-for="MontoPagado" type="number" step="0.01" class="form-control input-lg-custom border-start-0" placeholder="0.00" />
                                 </div>
+
+                                <div id="conversionFeedback" class="form-text text-primary fw-bold mt-2" style="display:none;"></div>
                                 <span asp-validation-for="MontoPagado" class="text-danger"></span>
                             </div>
                         </div>
@@ -457,23 +459,58 @@
             }
 
             // --- Lógica Pago Único ---
+            // Tasa BCCR (Venta referencial para pago en Dólares)
+            const tasaVentaBccr = @(ViewBag.TipoCambioVenta ?? 0) || 0;
+
             $('#monedaSelect').change(function() {
                 var esUSD = $(this).val() === 'USD';
                 if (esUSD) {
                     $('#tasaCambioGroup').fadeIn();
                     $('#TasaCambio').prop('required', true);
                     $('#simboloMoneda').text('$');
+                    
+                    // Auto-fill tasa si está vacía
+                    if (!$('#TasaCambio').val() && tasaVentaBccr > 0) {
+                        $('#TasaCambio').val(tasaVentaBccr);
+                    }
                 } else {
                     $('#tasaCambioGroup').fadeOut();
                     $('#TasaCambio').prop('required', false);
                     $('#simboloMoneda').text('₡');
                 }
                 calcularCambio();
+                actualizarReflejo();
             }).trigger('change');
 
             $('#MontoPagado, #TasaCambio').on('input change', function() {
                 calcularCambio();
+                actualizarReflejo();
             });
+
+            function actualizarReflejo() {
+                const monto = parseFloat($('#MontoPagado').val()) || 0;
+                const moneda = $('#monedaSelect').val();
+                const tasa = parseFloat($('#TasaCambio').val()) || tasaVentaBccr || 1;
+                const feedback = $('#conversionFeedback');
+
+                if (monto > 0) {
+                    if (moneda === 'USD') {
+                        // Dólares -> Colones
+                        const conversion = monto * tasa;
+                        feedback.text(`Equivalente a: ₡${conversion.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`).show();
+                    } else {
+                        // Colones -> Dólares (Referencial inversa)
+                        if (tasa > 0 && tasaVentaBccr > 0) {
+                             const conversion = monto / tasaVentaBccr;
+                             feedback.text(`Equivalente a: $${conversion.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`).show();
+                        } else {
+                            feedback.hide();
+                        }
+                    }
+                } else {
+                    feedback.hide();
+                }
+            }
 
             // --- Lógica Pago Mixto ---
             $('#splitMoneda').change(function() {

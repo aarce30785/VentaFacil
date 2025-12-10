@@ -82,6 +82,10 @@
               "target": "Package",
               "version": "[8.6.4, )"
             },
+            "System.ServiceModel.Primitives": {
+              "target": "Package",
+              "version": "[10.0.652802, )"
+            },
             "itext7": {
               "target": "Package",
               "version": "[9.4.0, )"
