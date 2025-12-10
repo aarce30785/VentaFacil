@@ -98,6 +98,8 @@ namespace VentaFacil.web
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
 
+            builder.Services.AddHealthChecks();
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -253,6 +255,8 @@ namespace VentaFacil.web
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            app.MapHealthChecks("/health");
 
             app.Run();
         }
