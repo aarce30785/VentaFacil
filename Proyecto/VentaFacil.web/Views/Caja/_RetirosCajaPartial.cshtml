@@ -1,21 +1,23 @@
 ﻿@model IEnumerable<VentaFacil.web.Models.CajaRetiro>
 
-<table class="table table-sm">
-    <thead>
-        <tr>
-            <th>Monto</th>
-            <th>Motivo</th>
-            <th>Fecha</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var retiro in Model)
-        {
+<div class="retiros-table-container" style="background:#fff; border-radius:16px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05); padding:1.5rem; margin-bottom:1rem;">
+    <table class="table premium-table-retiros">
+        <thead>
             <tr>
-                <td>@retiro.Monto</td>
-                <td>@retiro.Motivo</td>
-                <td>@retiro.FechaHora</td>
+                <th style="color:#222;">Monto</th>
+                <th style="color:#222;">Motivo</th>
+                <th style="color:#222;">Fecha</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var retiro in Model)
+            {
+                <tr>
+                    <td>@retiro.Monto</td>
+                    <td>@retiro.Motivo</td>
+                    <td>@retiro.FechaHora</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

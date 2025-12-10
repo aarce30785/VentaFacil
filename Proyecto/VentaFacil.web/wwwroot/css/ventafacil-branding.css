@@ -31,6 +31,10 @@
     /* Tipografías */
     --font-primaria: 'Merriweather', serif;
     --font-secundaria: 'Poppins', sans-serif;
+
+    /* Layout Variables */
+    --header-height: 90px;
+    /* Ajustar según la altura real del header */
 }
 
 /* ============================================
@@ -331,4 +335,43 @@ body {
 
 .bg-accent-custom {
     background-color: var(--color-acento) !important;
+}
+
+/* ============================================
+   Layout Overrides (Fix for Sidebar/Topbar Overlap)
+   ============================================ */
+
+/* Header fijo arriba y ancho completo */
+.header {
+    position: fixed !important;
+    width: 100% !important;
+    top: 0;
+    left: 0;
+    z-index: 1001 !important;
+    /* Encima del sidebar */
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    /* Sombra suave para separar */
+}
+
+/* Sidebar debajo del header */
+.sidebar-nav-wrapper {
+    top: var(--header-height) !important;
+    height: calc(100vh - var(--header-height)) !important;
+    z-index: 1000 !important;
+    /* Debajo del header */
+}
+
+/* Ajuste del contenido principal para no quedar oculto por el header */
+.main-wrapper {
+    padding-top: var(--header-height) !important;
+}
+
+/* Ajuste para pantallas pequeñas si es necesario */
+@media (max-width: 767px) {
+
+    /* En móvil, el sidebar suele ser overlay, pero mantenemos la lógica si es visible */
+    .sidebar-nav-wrapper {
+        top: var(--header-height) !important;
+        height: calc(100vh - var(--header-height)) !important;
+    }
 }

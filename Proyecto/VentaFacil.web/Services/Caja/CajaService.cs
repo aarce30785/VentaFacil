@@ -3,6 +3,8 @@ using VentaFacil.web.Data;
 using VentaFacil.web.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
+using System.Linq;
 
 namespace VentaFacil.web.Services.Caja
 {
@@ -76,6 +78,22 @@ namespace VentaFacil.web.Services.Caja
             return await _context.CajaRetiro
                 .Where(r => r.Id_Caja == idCaja)
                 .ToListAsync();
+        }
+
+        public async Task<decimal> GetIngresosRecientesAsync()
+        {
+            var desde = DateTime.Today.AddDays(-7);
+            return await _context.CajaRetiro
+                .Where(r => r.FechaHora >= desde && r.Monto > 0)
+                .SumAsync(r => r.Monto);
+        }
+
+        public async Task<decimal> GetGastosRecientesAsync()
+        {
+            var desde = DateTime.Today.AddDays(-7);
+            return await _context.CajaRetiro
+                .Where(r => r.FechaHora >= desde && r.Monto < 0)
+                .SumAsync(r => r.Monto);
         }
     }
 }

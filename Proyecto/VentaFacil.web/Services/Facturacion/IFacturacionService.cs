@@ -1,4 +1,5 @@
-﻿using VentaFacil.web.Models.Dto;
+﻿using System.Threading.Tasks;
+using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Response.Factura;
 
@@ -14,6 +15,9 @@ namespace VentaFacil.web.Services.Facturacion
         Task<bool> AnularFacturaAsync(int facturaId, string justificacion);
         Task<int> GenerarNotaCreditoAsync(int facturaId, List<int> productosIds);
         (bool EsValido, string Mensaje) ValidarMontoPago(decimal totalPedido, decimal montoPagado, string moneda, decimal? tasaCambio);
+        Task<decimal> GetVentasDiaAsync();
+        Task<decimal> GetVentasSemanaAsync();
+        Task<decimal> GetVentasMesAsync();
     }
     
 }

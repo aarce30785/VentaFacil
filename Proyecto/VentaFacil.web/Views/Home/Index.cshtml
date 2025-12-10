@@ -1,9 +1,160 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model VentaFacil.web.Models.ViewModel.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
     Layout = "_LayoutPlantilla";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    :root {
+        --primary-color: #6366f1;
+        --sidebar-brown: #6d4c41;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+        --info-color: #3b82f6;
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 2.5px solid #e5e7eb;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    }
+    .premium-card.primary {
+        border-color: var(--primary-color);
+    }
+    .premium-card.success {
+        border-color: var(--success-color);
+    }
+    .premium-card.danger {
+        border-color: var(--danger-color);
+    }
+    .premium-card.info {
+        border-color: var(--info-color);
+    }
+    .premium-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--hover-shadow);
+    }
+    .stat-header {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .stat-list {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+    .stat-list li {
+        padding: 0.25rem 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 1rem;
+    }
+    .stat-list li:last-child {
+        border-bottom: none;
+    }
+    .dashboard-row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        margin-bottom: 1.5rem;
+        margin-top: 1.5rem; /* Mejora el margen superior */
+    }
+    .dashboard-col {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        margin-top: 1.5rem;
+    }
+    .dashboard-btn {
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        background: var(--sidebar-brown, #6d4c41);
+        color: #fff;
+        border: none;
+        box-shadow: var(--card-shadow);
+        transition: background 0.2s;
+        margin-left: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .dashboard-btn:hover {
+        background: #54362d;
+        color: #fff;
+        text-decoration: none;
+    }
+</style>
+
+<div class="dashboard-header">
+    <h2 class="mb-0">Dashboard</h2>
+    <a asp-controller="Pedidos" asp-action="Crear" class="dashboard-btn">
+        <i class="fas fa-plus"></i> Crear Pedido
+    </a>
+</div>
+
+<div class="row dashboard-row">
+    <div class="col-md-4 dashboard-col">
+        <div class="premium-card primary">
+            <div class="stat-header">Ventas Totales</div>
+            <div class="stat-value">Hoy: @Model.VentasDia.ToString("C")</div>
+            <div>Semana: @Model.VentasSemana.ToString("C")</div>
+            <div>Mes: @Model.VentasMes.ToString("C")</div>
+        </div>
+    </div>
+    <div class="col-md-4 dashboard-col">
+        <div class="premium-card success">
+            <div class="stat-header">Ingresos y Gastos Recientes</div>
+            <div class="stat-value">Ingresos: @Model.IngresosRecientes.ToString("C")</div>
+            <div>Gastos: @Model.GastosRecientes.ToString("C")</div>
+        </div>
+    </div>
+    <div class="col-md-4 dashboard-col">
+        <div class="premium-card danger">
+            <div class="stat-header">Stock Mínimo</div>
+            @if (Model.StockMinimo.Any()) {
+                <ul class="stat-list">
+                    @foreach (var item in Model.StockMinimo) {
+                        <li>@item.Nombre (@item.StockActual/@item.StockMinimo)</li>
+                    }
+                </ul>
+            } else {
+                <span>No hay productos con stock mínimo.</span>
+            }
+        </div>
+    </div>
+</div>
+<div class="row dashboard-row">
+    <div class="col-md-6 dashboard-col">
+        <div class="premium-card info">
+            <div class="stat-header">Productos Más Vendidos</div>
+            @if (Model.ProductosMasVendidos.Any()) {
+                <ul class="stat-list">
+                    @foreach (var prod in Model.ProductosMasVendidos) {
+                        <li>@prod.Nombre: @prod.CantidadVendida vendidos</li>
+                    }
+                </ul>
+            } else {
+                <span>No hay ventas registradas.</span>
+            }
+        </div>
+    </div>
 </div>

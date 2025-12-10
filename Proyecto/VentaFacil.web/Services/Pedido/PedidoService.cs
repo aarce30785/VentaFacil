@@ -3,21 +3,27 @@ using System.Collections.Concurrent;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Services.Producto;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using VentaFacil.web.Data;
 
 namespace VentaFacil.web.Services.Pedido
 {
     public class PedidoService : IPedidoService
     {
+        private readonly ApplicationDbContext _context;
         private static readonly ConcurrentDictionary<int, PedidoDto> _pedidosTemporales = new();
         private static int _contadorId = 1;
         private static readonly object _lock = new object();
         private readonly IProductoService _productoService;
         private readonly ILogger<PedidoService> _logger;
 
-        public PedidoService(IProductoService productoService, ILogger<PedidoService> logger)
+        public PedidoService(IProductoService productoService, ILogger<PedidoService> logger, ApplicationDbContext context)
         {
             _productoService = productoService;
             _logger = logger;
+            _context = context;
         }
 
         public Task<PedidoDto> CrearPedidoAsync(int idUsuario, string? cliente = null)
@@ -367,6 +373,8 @@ namespace VentaFacil.web.Services.Pedido
 
             return Task.FromResult(resumen);
         }
+
+
 
         // MÉTODOS PRIVADOS AUXILIARES
         private void ValidarEstadoEditable(PedidoEstado estado)

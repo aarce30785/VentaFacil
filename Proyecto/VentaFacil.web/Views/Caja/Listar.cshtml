@@ -1,33 +1,134 @@
 ﻿@model IEnumerable<VentaFacil.web.Models.Dto.CajaDto>
 
 @{
-    ViewData["Title"] = "Listar";
-    // Suponiendo que solo puede haber una caja abierta por día y usuario
+    ViewData["Title"] = "Caja";
+    Layout = "_LayoutPlantilla";
     var cajaAbierta = Model.FirstOrDefault(c => c.Estado == "Abierta" && c.Fecha_Apertura.Date == DateTime.Now.Date);
 }
 
-<h1>Administrar Caja</h1>
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        --mustard: #f59e0b;
+        --mustard-hover: #d97706;
+        --card-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        --hover-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    }
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    .premium-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--hover-shadow);
+    }
+    .table-container {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .premium-table thead th {
+        background-color: #f8fafc;
+        color: #222 !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem;
+    }
+    .premium-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+    .premium-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .premium-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+    .caja-actions button {
+        margin-right: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+    .btn-mustard {
+        background-color: var(--mustard) !important;
+        color: #fff !important;
+        border: none;
+    }
+    .btn-mustard:hover, .btn-mustard:focus {
+        background-color: var(--mustard-hover) !important;
+        color: #fff !important;
+    }
+</style>
 
-<p>
-    @if (cajaAbierta == null)
-    {
-        <!-- Botón para abrir el modal de abrir caja -->
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
-            Abrir caja
-        </button>
-    }
-    else
-    {
-        <!-- Botón para cerrar caja -->
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
-            Cerrar caja
-        </button>
-        <!-- Botón para retiro de caja -->
-        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
-            Retiro de caja
-        </button>
-    }
-</p>
+<div class="premium-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Administrar Caja</h2>
+        <div>
+            @if (cajaAbierta == null)
+            {
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
+                    <i class="fas fa-cash-register me-1"></i> Abrir caja
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
+                    <i class="fas fa-lock me-1"></i> Cerrar caja
+                </button>
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
+                    <i class="fas fa-minus-circle me-1"></i> Retiro de caja
+                </button>
+            }
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="table premium-table">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Id_Usuario)</th>
+                    <th>@Html.DisplayNameFor(model => model.Fecha_Apertura)</th>
+                    <th>@Html.DisplayNameFor(model => model.Fecha_Cierre)</th>
+                    <th>@Html.DisplayNameFor(model => model.Monto_Inicial)</th>
+                    <th>@Html.DisplayNameFor(model => model.Monto)</th>
+                    <th>@Html.DisplayNameFor(model => model.Estado)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model) {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Id_Usuario)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Fecha_Apertura)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Fecha_Cierre)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Monto_Inicial)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Monto)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Estado)</td>
+                    <td class="caja-actions">
+                        <button type="button" class="btn btn-mustard btn-sm" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
+                            <i class="fas fa-eye"></i> Ver Retiros
+                        </button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <!-- Modal Abrir Caja -->
 <div class="modal fade" id="abrirCajaModal" tabindex="-1" aria-labelledby="abrirCajaModalLabel" aria-hidden="true">
@@ -64,7 +165,7 @@
       </div>
       <div class="modal-body">
         <p>¿Estás seguro que deseas cerrar la caja?</p>
-                <form asp-action="CerrarConfirmado" method="post">
+        <form asp-action="CerrarConfirmado" method="post">
             <input type="hidden" name="id" value="@cajaAbierta?.Id_Caja" />
             <div class="modal-footer">
                 <button type="submit" class="btn btn-danger">Confirmar cierre</button>
@@ -106,6 +207,7 @@
   </div>
 </div>
 
+<!-- Modal Ver Retiros -->
 <div class="modal fade" id="retirosModal" tabindex="-1" aria-labelledby="retirosModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -118,37 +220,6 @@
         </div>
     </div>
 </div>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Id_Usuario)</th>
-            <th>@Html.DisplayNameFor(model => model.Fecha_Apertura)</th>
-            <th>@Html.DisplayNameFor(model => model.Fecha_Cierre)</th>
-            <th>@Html.DisplayNameFor(model => model.Monto_Inicial)</th>
-            <th>@Html.DisplayNameFor(model => model.Monto)</th>
-            <th>@Html.DisplayNameFor(model => model.Estado)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>@Html.DisplayFor(modelItem => item.Id_Usuario)</td>
-            <td>@Html.DisplayFor(modelItem => item.Fecha_Apertura)</td>
-            <td>@Html.DisplayFor(modelItem => item.Fecha_Cierre)</td>
-            <td>@Html.DisplayFor(modelItem => item.Monto_Inicial)</td>
-            <td>@Html.DisplayFor(modelItem => item.Monto)</td>
-            <td>@Html.DisplayFor(modelItem => item.Estado)</td>
-            <td>
-                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
-                    Ver Retiros
-                </button>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
 
 @section Scripts {
     @{

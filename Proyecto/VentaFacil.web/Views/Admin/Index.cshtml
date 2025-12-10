@@ -8,43 +8,103 @@
     var productosResponse = ViewData["Productos"] as ListProductoResponse ?? new ListProductoResponse();
 }
 
-<!-- ========== table components start ========== -->
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --tab-brown: #6d4c41;
+        --tab-brown-hover: #54362d;
+    }
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    .premium-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--hover-shadow);
+    }
+    .table-container {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .premium-table thead th {
+        background-color: #f8fafc;
+        color: #222 !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem;
+    }
+    .premium-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+    .premium-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .premium-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+    .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+        background-color: var(--tab-brown) !important;
+        color: #fff !important;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(109,76,65,0.08);
+    }
+    .nav-pills .nav-link {
+        color: var(--tab-brown) !important;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    .nav-pills .nav-link:hover {
+        background-color: var(--tab-brown-hover) !important;
+        color: #fff !important;
+    }
+</style>
+
 <section class="table-components">
-    <div class="container-fluid">
-        <!-- ========== title-wrapper start ========== -->
-        <div class="title-wrapper pt-30">
+    <div class="container-fluid pt-30">
+        <div class="title-wrapper pt-30 mb-4">
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="title">
-                        <h2>Panel de Administrador</h2>
+                        <h2 class="fw-bold text-dark">Panel de Administrador</h2>
                     </div>
                 </div>
-                <!-- end col -->
                 <div class="col-md-6">
                     <div class="breadcrumb-wrapper">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
-                                    <a href="#0">Dashboard</a>
-                                </li>
-                                <li class="breadcrumb-item active" aria-current="page">
-                                    Gestión
-                                </li>
+                                <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Gestión</li>
                             </ol>
                         </nav>
                     </div>
                 </div>
-                <!-- end col -->
             </div>
-            <!-- end row -->
         </div>
-        <!-- ========== title-wrapper end ========== -->
-        <!-- ========== tabs section start ========== -->
         <div class="tables-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="card-style mb-30">
-                        <!-- Tabs Navigation -->
+                    <div class="premium-card">
                         <ul class="nav nav-pills mb-4" id="adminTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="true">
@@ -62,36 +122,30 @@
                                 </button>
                             </li>
                         </ul>
-
-                        <!-- Tabs Content -->
                         <div class="tab-content" id="adminTabsContent">
-
-                            <!-- Tab de Usuarios -->
                             <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
-                                <partial name="_GestionUsuarios" model="Model" />
+                                <div class="table-container">
+                                    <partial name="_GestionUsuarios" model="Model" />
+                                </div>
                             </div>
-
-                            <!-- Tab de Productos -->
                             <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
-                                <partial name="_GestionProductos" model="productosResponse" />
+                                <div class="table-container">
+                                    <partial name="_GestionProductos" model="productosResponse" />
+                                </div>
                             </div>
-
-                            <!-- Tab de Categorías (placeholder) -->
                             <div class="tab-pane fade" id="categoria" role="tabpanel" aria-labelledby="categoria-tab">
-                                <div class="text-center py-5">
+                                <div class="table-container text-center py-5">
                                     <i class="lni lni-package text-muted" style="font-size: 3rem;"></i>
                                     <h4 class="mt-3 text-muted">Gestión de Categorías</h4>
                                     <p class="text-muted">Esta funcionalidad estará disponible próximamente.</p>
                                 </div>
                             </div>
                         </div>
-                        </div>
-
-                        </div> <!-- end card -->
-                </div> <!-- end col -->
-            </div> <!-- end row -->
-        </div> <!-- ========== tabs section end ========== -->
-    </div> <!-- end container -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 @section Scripts {
@@ -157,8 +211,8 @@
                         // Buscar el span de validación
                         let errorSpan = document.querySelector(`span[data-valmsg-for="${key}"]`);
                         if (!errorSpan) {
-                            // Si no existe, buscar el siguiente elemento con clase text-danger
-                            errorSpan = input.parentNode.querySelector('.text-danger');
+                          // Si no existe, buscar el siguiente elemento con clase text-danger
+                          errorSpan = input.parentNode.querySelector('.text-danger');
                         }
                         
                         if (errorSpan) {

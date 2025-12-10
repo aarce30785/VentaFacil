@@ -202,6 +202,11 @@ namespace VentaFacil.web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                     return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+                }
+
                 var inventarios = await _inventarioService.ListarTodosAsync();
                 viewModel.Inventarios = inventarios.Select(i => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
                 {
@@ -216,11 +221,21 @@ namespace VentaFacil.web.Controllers
 
             if (result)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    TempData["Success"] = "Entrada registrada correctamente.";
+                    return Json(new { success = true });
+                }
                 TempData["Success"] = "Entrada registrada correctamente.";
                 return RedirectToAction(nameof(Listar));
             }
 
             ModelState.AddModelError("", "No se pudo registrar la entrada.");
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                 return Json(new { success = false, errors = new[] { "No se pudo registrar la entrada." } });
+            }
+
             var invs = await _inventarioService.ListarTodosAsync();
             viewModel.Inventarios = invs.Select(i => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
             {
@@ -228,6 +243,43 @@ namespace VentaFacil.web.Controllers
                 Text = i.Nombre
             });
             return View(viewModel);
+        }
+
+        // POST: Inventario/RegistrarSalida
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarSalida(VentaFacil.web.Models.ViewModel.RegistrarEntradaViewModel viewModel)
+        {
+            // Usamos el mismo ViewModel ya que los campos son idénticos (Id, Cantidad, Observaciones)
+            if (!ModelState.IsValid)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                     return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+                }
+                return RedirectToAction(nameof(Listar)); // Fallback simple para salida si no es ajax
+            }
+
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId") ?? 1; 
+            var result = await _inventarioService.RegistrarSalidaAsync(viewModel.IdInventario, viewModel.Cantidad, viewModel.Observaciones, usuarioId);
+
+            if (result)
+            {
+                TempData["Success"] = "Salida registrada correctamente.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true });
+                }
+                return RedirectToAction(nameof(Listar));
+            }
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                 return Json(new { success = false, errors = new[] { "No se pudo registrar la salida. Verifique si hay stock suficiente." } });
+            }
+
+            TempData["Error"] = "No se pudo registrar la salida (Stock insuficiente).";
+            return RedirectToAction(nameof(Listar));
         }
 
         // GET: Inventario/HistorialMovimientos

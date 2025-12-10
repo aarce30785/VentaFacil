@@ -1,4 +1,6 @@
-﻿using VentaFacil.web.Models.Dto;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 
 namespace VentaFacil.web.Services.Pedido

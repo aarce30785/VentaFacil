@@ -1,63 +1,578 @@
-﻿@model IEnumerable<VentaFacil.web.Models.Dto.ProductoDto>
+﻿@model VentaFacil.web.Models.Response.Producto.ListProductoResponse
 
 @{
-    ViewData["Title"] = "Listar";
+    ViewData["Title"] = "Gestión de Productos";
+    Layout = "_LayoutPlantilla";
 }
 
-<h1>Listar</h1>
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
 
-<p>
-    <a asp-action="Registrar">Registrar</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Nombre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Descripcion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Precio)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockMinimo)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Estado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Id_Categoria)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Nombre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Descripcion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Precio)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StockMinimo)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id_Categoria)
-            </td>
-            <td>
-                <a asp-action="Editar" asp-route-id="@item.Id_Producto">Editar</a>
-            </td>
-        </tr>
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .premium-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .table-container {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .premium-table thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem;
+    }
+
+    .premium-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .premium-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .premium-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+    
+    .status-btn {
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .active-btn {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+    
+    .inactive-btn {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+    
+    .success-btn {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+    
+    .warning-btn {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+    
+    .info-btn {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+    }
+    
+    .status-btn.success-btn,
+    .status-btn.info-btn {
+        color: #fff !important;
+    }
+</style>
+
+<div class="container-fluid pt-30">
+    <!-- Header -->
+    <div class="title-wrapper pt-30 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="title">
+                    <h2 class="fw-bold text-dark">Gestión de Productos</h2>
+                    <p class="text-muted text-sm">Administra el catálogo de productos</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Productos</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros y Acciones -->
+    <div class="premium-card mb-4 p-4">
+        <form method="get" asp-action="Listar" class="row g-3" id="filtrosProductosForm">
+            <!-- Campo de búsqueda -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
+                    <input type="text" name="busqueda" class="form-control bg-light border-0" 
+                           placeholder="Buscar por nombre o descripción..." 
+                           value="@Model.Busqueda" />
+                </div>
+            </div>
+
+            <!-- Filtro por categoría -->
+            <div class="col-md-3">
+                <select name="categoriaFiltro" class="form-select bg-light border-0">
+                    <option value="">Todas las categorías</option>
+                    @foreach (var categoria in Model.Categorias ?? new List<SelectListItem>())
+                    {
+                        <option value="@categoria.Value"
+                                selected="@(Model.CategoriaFiltro?.ToString() == categoria.Value ? "selected" : null)">
+                            @categoria.Text
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="col-md-2">
+                <div class="btn-group w-100" role="group">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <a href="@Url.Action("Listar")" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </div>
+            
+            <div class="col-md-3 text-end">
+                <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalProducto('crear')">
+                    <i class="lni lni-plus me-2"></i> Nuevo Producto
+                </button>
+            </div>
+
+            <!-- Campos ocultos -->
+            <input type="hidden" name="pagina" value="1" />
+            <input type="hidden" name="cantidadPorPagina" value="10" />
+        </form>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="lni lni-warning me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Tabla de Productos -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table premium-table">
+                <thead>
+                    <tr>
+                        <th class="lead-name"><h6>Nombre</h6></th>
+                        <th class="lead-email"><h6>Descripción</h6></th>
+                        <th class="lead-role"><h6>Precio</h6></th>
+                        <th><h6>Stock Mínimo</h6></th>
+                        <th><h6>Estado</h6></th>
+                        <th><h6>Categoría</h6></th>
+                        <th><h6>Acciones</h6></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Productos != null && Model.Productos.Any())
+                    {
+                        foreach (var producto in Model.Productos)
+                        {
+                             <tr>
+                                <td class="min-width">
+                                    <div class="lead">
+                                        <div class="lead-image">
+                                            @if (!string.IsNullOrEmpty(producto.Imagen))
+                                            {
+                                                <img src="@producto.Imagen" alt="" />
+                                            }
+                                            else
+                                            {
+                                                <img src="assets/images/lead/lead-1.png" alt="" />
+                                            }
+                                        </div>
+                                        <div class="lead-text">
+                                            <p>@producto.Nombre</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="min-width">
+                                    <div class="lead-text">
+                                        <p title="@producto.Descripcion">
+                                            @(producto.Descripcion?.Length > 50 ? producto.Descripcion.Substring(0, 50) + "..." : producto.Descripcion)
+                                        </p>
+                                    </div>
+                                </td>
+                                <td class="min-width">
+                                    <span class="status-btn success-btn">@producto.Precio.ToString("C")</span>
+                                </td>
+                                <td class="min-width">
+                                    <span class="status-btn info-btn">@producto.StockMinimo</span>
+                                </td>
+                                <td class="min-width">
+                                    <span class="status-btn @(producto.Estado ? "active-btn" : "inactive-btn")">
+                                        @(producto.Estado ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td class="min-width">
+                                    <span class="status-btn warning-btn">
+                                        @(Model.Categorias?.FirstOrDefault(c => c.Value == producto.Id_Categoria.ToString())?.Text ?? "N/A")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action d-flex gap-2">
+                                        <!-- Ver -->
+                                        <a href="javascript:void(0);"
+                                           onclick="abrirModalProducto('ver', @producto.Id_Producto)"
+                                           class="text-primary" title="Ver">
+                                            <i class="lni lni-eye"></i>
+                                        </a>
+
+                                        <!-- Editar -->
+                                        <a href="javascript:void(0);"
+                                           onclick="abrirModalProducto('editar', @producto.Id_Producto)"
+                                           class="text-warning" title="Editar">
+                                            <i class="lni lni-pencil"></i>
+                                        </a>
+
+                                        <!-- Eliminar -->
+                                        <a class="text-danger" href="javascript:void(0);"
+                                           onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
+                                           title="Eliminar">
+                                            <i class="lni lni-trash-can"></i>
+                                        </a>
+
+                                        <!-- Deshabilitar -->
+                                        @if (producto.Estado)
+                                        {
+                                            <a class="text-secondary" href="javascript:void(0);"
+                                               onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
+                                               title="Deshabilitar">
+                                                <i class="lni lni-ban"></i>
+                                            </a>
+                                        }
+                                        <!-- Habilitar -->
+                                        @if (!producto.Estado)
+                                        {
+                                            <a class="text-success" href="javascript:void(0);"
+                                               onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
+                                               title="Habilitar">
+                                                <i class="lni lni-checkmark-circle"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="empty-state">
+                                    <div class="mb-3">
+                                        <i class="lni lni-package fs-1 text-muted"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-muted">No se encontraron productos</h5>
+                                    <p class="text-muted text-sm mb-0">Intenta cambiar los filtros de búsqueda.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Paginación -->
+    @if (Model.TotalPaginas > 1 && Model.Productos != null && Model.Productos.Any())
+    {
+        <div class="pagination-wrapper mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link" 
+                           href="@Url.Action("Listar", new { 
+                               pagina = Model.PaginaActual - 1, 
+                               cantidadPorPagina = 10,
+                               busqueda = Model.Busqueda,
+                               categoriaFiltro = Model.CategoriaFiltro
+                           })">
+                            <i class="lni lni-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link" 
+                               href="@Url.Action("Listar", new { 
+                                   pagina = i, 
+                                   cantidadPorPagina = 10,
+                                   busqueda = Model.Busqueda,
+                                   categoriaFiltro = Model.CategoriaFiltro
+                               })">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                        <a class="page-link" 
+                           href="@Url.Action("Listar", new { 
+                               pagina = Model.PaginaActual + 1, 
+                               cantidadPorPagina = 10,
+                               busqueda = Model.Busqueda,
+                               categoriaFiltro = Model.CategoriaFiltro
+                           })">
+                            <i class="lni lni-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+<div id="modalContainerProductos"></div>
+
+<!-- Generic Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pt-0 pb-4">
+                <div class="mb-4">
+                    <i class="lni lni-warning text-warning display-1"></i>
+                </div>
+                <h4 class="mb-3 fw-bold" id="confirmationModalTitle">Confirmación</h4>
+                <p class="text-muted mb-4" id="confirmationModalMessage">¿Está seguro de realizar esta acción?</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="btnConfirmAction">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-submit filtro
+        document.querySelector('select[name="categoriaFiltro"]')?.addEventListener('change', function() {
+            document.getElementById('filtrosProductosForm').submit();
+        });
+
+        // Search logic
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const value = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.premium-table tbody tr');
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.indexOf(value) > -1 ? '' : 'none';
+                });
+            });
+        }
+
+        // AJAX Modal Logic
+        function abrirModalProducto(accion, productoId = null) {
+            console.log('Abriendo modal producto:', accion, 'Producto ID:', productoId);
+
+            let url = '';
+            const params = new URLSearchParams();
+            params.append('accion', accion);
+            if (productoId) params.append('productoId', productoId);
+
+            // Mantener filtros
+            const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
+            const categoriaFiltro = '@(Model.CategoriaFiltro?.ToString() ?? "")';
+            const pagina = '@Model.PaginaActual';
+
+            if (busqueda) params.append('busqueda', busqueda);
+            if (categoriaFiltro) params.append('categoriaFiltro', categoriaFiltro);
+            if (pagina) params.append('pagina', pagina);
+
+            url = '@Url.Action("ObtenerModalProducto", "Producto")' + '?' + params.toString();
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar el modal: ' + response.status);
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('modalContainerProductos').innerHTML = data;
+                    const modalElement = document.getElementById('productoModal');
+            
+                    if (!modalElement) {
+                        console.error('Modal element no encontrado');
+                        return;
+                    }
+            
+                    const modal = new bootstrap.Modal(modalElement);
+                    modalElement.addEventListener('shown.bs.modal', function () {
+                        configurarSubmitFormProducto(accion);
+                    });
+            
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar el formulario: ' + error.message);
+                });
+        }
+
+        function configurarSubmitFormProducto(accion) {
+            const form = document.getElementById('productoForm');
+            if (!form) return;
+
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                limpiarErrores();
+
+                const formData = new FormData(newForm);
+                const url = '@Url.Action("GuardarProducto", "Producto")';
+
+                fetch(url, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json().catch(() => {
+                    return { success: false, message: 'Error al procesar la respuesta' };
+                }))
+                .then(result => {
+                    if (result && result.success) {
+                        mostrarMensajeExito(result.message);
+                        setTimeout(() => {
+                             const modal = bootstrap.Modal.getInstance(document.getElementById('productoModal'));
+                             if (modal) modal.hide();
+                             window.location.reload();
+                        }, 1000);
+                    } else {
+                        if (result.errors || result.fieldErrors) {
+                            mostrarErroresEnFormulario(result.errors || [], result.fieldErrors || null);
+                        } else {
+                            mostrarErrorGeneral(result.message || 'Error desconocido');
+                        }
+                    }
+                })
+                .catch(err => {
+                    mostrarErrorGeneral('Error de conexión: ' + err.message);
+                });
+            });
+        }
+
+        // Helpers de UI para errores 
+        function limpiarErrores() {
+             const alerts = document.querySelectorAll('.alert-danger');
+             alerts.forEach(a => a.remove());
+             const invalid = document.querySelectorAll('.is-invalid');
+             invalid.forEach(i => i.classList.remove('is-invalid'));
+        }
+
+        function mostrarMensajeExito(msg) {
+            // Podríamos usar un toast aquí, pero por ahora alert es funcional para el feedback inmediato
+            alert(msg); 
+        }
+
+        function mostrarErrorGeneral(msg) {
+            alert('Error: ' + msg);
+        }
+
+        function mostrarErroresEnFormulario(errors, fieldErrors) {
+             if(errors && errors.length > 0) alert(errors.join('\n'));
+        }
+
+        // CONFIRMATION MODAL HELPER
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        const btnConfirmHelper = document.getElementById('btnConfirmAction');
+        const modalTitle = document.getElementById('confirmationModalTitle');
+        const modalMessage = document.getElementById('confirmationModalMessage');
+
+        function showConfirmation(title, message, callback) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            
+            // Remove previous event listeners
+            const newBtn = btnConfirmHelper.cloneNode(true);
+            btnConfirmHelper.parentNode.replaceChild(newBtn, btnConfirmHelper);
+            
+            newBtn.addEventListener('click', function() {
+                callback();
+                confirmationModal.hide();
+            });
+
+            confirmationModal.show();
+        }
+
+        function confirmarEliminacionProducto(productoId, nombreProducto) {
+            showConfirmation(
+                'Eliminar Producto',
+                `¿Está seguro que desea eliminar el producto "${nombreProducto}"?`,
+                () => {
+                    window.location.href = '@Url.Action("EliminarProducto", "Producto")'
+                        + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+                }
+            );
+        }
+
+        function confirmarDeshabilitacionProducto(productoId, nombreProducto) {
+             showConfirmation(
+                'Deshabilitar Producto',
+                `¿Está seguro que desea deshabilitar el producto "${nombreProducto}"?`,
+                () => {
+                    window.location.href = '@Url.Action("DeshabilitarProducto", "Producto")'
+                        + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+                }
+            );
+        }
+
+        function confirmarHabilitacionProducto(productoId, nombreProducto) {
+             showConfirmation(
+                'Habilitar Producto',
+                `¿Está seguro que desea habilitar el producto "${nombreProducto}"?`,
+                () => {
+                    window.location.href = '@Url.Action("HabilitarProducto", "Producto")'
+                        + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+                }
+            );
+        }
+    </script>
 }
-    </tbody>
-</table>

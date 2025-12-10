@@ -211,6 +211,34 @@ namespace VentaFacil.web.Services.Inventario
 
             return true;
         }
+
+        public async Task<bool> RegistrarSalidaAsync(int idInventario, int cantidad, string observaciones, int idUsuario)
+        {
+            var inventario = await _context.Inventario.FindAsync(idInventario);
+            if (inventario == null) return false;
+
+            if (inventario.StockActual < cantidad) return false; // Validación de stock suficiente
+
+            var stockAnterior = inventario.StockActual;
+            inventario.StockActual -= cantidad;
+            await _context.SaveChangesAsync();
+
+            var movimiento = new InventarioMovimiento
+            {
+                Id_Inventario = idInventario,
+                Tipo_Movimiento = "Salida",
+                Cantidad = cantidad,
+                Fecha = DateTime.Now,
+                Id_Usuario = idUsuario,
+                Observaciones = observaciones
+            };
+            _context.InventarioMovimiento.Add(movimiento);
+            await _context.SaveChangesAsync();
+
+            await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, movimiento.Id_Inventario, stockAnterior, inventario.StockActual, movimiento.Tipo_Movimiento, observaciones ?? "Registro de Salida", idUsuario);
+
+            return true;
+        }
         private async Task RegistrarAuditoriaAsync(int idMovimiento, int idInventario, int cantidadAnterior, int cantidadNueva, string tipoNuevo, string motivo, int idUsuario)
         {
             var auditoria = new InventarioMovimientoAuditoria
@@ -241,6 +269,23 @@ namespace VentaFacil.web.Services.Inventario
                     StockMinimo = i.StockMinimo
                 })
                 .ToListAsync();
+        }
+
+        public async Task<List<InventarioDto>> GetStockMinimoAsync()
+        {
+            var inventarios = await _context.Inventario
+                .Where(i => i.StockActual <= i.StockMinimo)
+                .Select(i => new InventarioDto
+                {
+                    Id_Inventario = i.Id_Inventario,
+                    Nombre = i.Nombre,
+                    StockActual = i.StockActual,
+                    StockMinimo = i.StockMinimo,
+                    UnidadMedida = i.UnidadMedida
+                })
+                .ToListAsync();
+
+            return inventarios;
         }
     }
 }

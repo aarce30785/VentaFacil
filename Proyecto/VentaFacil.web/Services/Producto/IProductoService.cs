@@ -1,6 +1,8 @@
-
-﻿using VentaFacil.web.Models.Dto;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Producto;
+using VentaFacil.web.Models.ViewModel;
 
 namespace VentaFacil.web.Services.Producto
 {
@@ -13,5 +15,6 @@ namespace VentaFacil.web.Services.Producto
         Task<EditProductoResponse> EliminarAsync(int idProducto);
         Task<EditProductoResponse> DeshabilitarAsync(int idProducto);
         Task<EditProductoResponse> HabilitarAsync(int idProducto);
+        Task<List<ProductoMasVendidoDto>> GetProductosMasVendidosAsync();
     }
 }
