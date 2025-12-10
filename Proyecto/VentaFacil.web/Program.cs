@@ -227,138 +227,88 @@ namespace VentaFacil.web
         private static void InitializeDatabase(IConfiguration configuration)
         {
             Console.WriteLine("=== INICIANDO INICIALIZACIÓN DE BD ===");
-            
+
             string connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("No se encontró la cadena de conexión 'DefaultConnection'.");
 
             Console.WriteLine($"Cadena de conexión: {connectionString.Replace("Password=VentaFacilDb123!", "Password=***")}");
 
-            // Conexión a master
-            string masterConnection = connectionString.Replace("Database=VentaFacilDB;", "Database=master;");
-
-            var policy = Policy
-                .Handle<SqlException>()
-                .Or<InvalidOperationException>()
-                .WaitAndRetry(
-                    retryCount: 10,  // Aumentar a 10 intentos
-                    sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                    onRetry: (exception, timeSpan, retryCount, context) =>
-                    {
-                        Console.WriteLine($"❌ Intento {retryCount} de conexión a SQL Server falló. Reintentando en {timeSpan.Seconds} segundos...");
-                        Console.WriteLine($"Error: {exception.Message}");
-                    });
-
+            // Intentar conexión a la BD
             try
             {
-                policy.Execute(() =>
+                using (var conn = new SqlConnection(connectionString))
                 {
-                    Console.WriteLine($"Intentando conexión a master...");
-                    using (var connMaster = new SqlConnection(masterConnection))
+                    conn.Open();
+                    Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
+
+                    // Verificar si las tablas principales ya existen
+                    using var checkCmd = new SqlCommand(
+                        "SELECT CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Usuario') THEN 1 ELSE 0 END",
+                        conn);
+                    var dbIsInitialized = (int)checkCmd.ExecuteScalar() == 1;
+
+                    if (dbIsInitialized)
                     {
-                        connMaster.Open();
-                        Console.WriteLine("✅ Conexión a SQL Server (master) exitosa");
+                        Console.WriteLine("✅ Base de datos ya está inicializada");
 
-                        // Verificar si la base de datos existe
-                        using var cmdCheckDb = new SqlCommand(
-                            "SELECT COUNT(*) FROM sys.databases WHERE name = 'VentaFacilDB'",
-                            connMaster);
-                        var dbExists = (int)cmdCheckDb.ExecuteScalar() > 0;
-
-                        if (!dbExists)
+                        // SOLO EJECUTAR SEEDER
+                        Console.WriteLine("Ejecutando seeder...");
+                        try
                         {
-                            Console.WriteLine("Creando base de datos VentaFacilDB...");
-                            using var cmdCreateDb = new SqlCommand(
-                                "CREATE DATABASE VentaFacilDB;",
-                                connMaster);
-                            cmdCreateDb.ExecuteNonQuery();
-                            Console.WriteLine("✅ Base de datos creada");
+                            DbSeeder.Seed(connectionString);
+                            Console.WriteLine("✅ Seeder ejecutado");
+                        }
+                        catch (Exception seederEx)
+                        {
+                            Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("⚠️ Base de datos no está inicializada. Creando tablas...");
 
-                            // Esperar más tiempo después de crear la BD
-                            Thread.Sleep(5000);
+                        // Ejecutar script de inicialización completo
+                        string scriptPath = "/app/init/init.sql";
+                        if (File.Exists(scriptPath))
+                        {
+                            Console.WriteLine($"Ejecutando script: {scriptPath}");
+                            string script = File.ReadAllText(scriptPath);
+
+                            // Ejecutar script completo
+                            using var cmd = new SqlCommand(script, conn);
+                            try
+                            {
+                                cmd.ExecuteNonQuery();
+                                Console.WriteLine("✅ Tablas creadas");
+                            }
+                            catch (Exception sqlEx)
+                            {
+                                Console.WriteLine($"⚠️ Error creando tablas: {sqlEx.Message}");
+                            }
                         }
                         else
                         {
-                            Console.WriteLine("✅ Base de datos ya existe");
+                            Console.WriteLine($"❌ No se encontró script de inicialización: {scriptPath}");
+                        }
+
+                        // Ejecutar seeder después de crear tablas
+                        Console.WriteLine("Ejecutando seeder...");
+                        try
+                        {
+                            DbSeeder.Seed(connectionString);
+                            Console.WriteLine("✅ Seeder ejecutado");
+                        }
+                        catch (Exception seederEx)
+                        {
+                            Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
                         }
                     }
-                });
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ ERROR CRÍTICO: No se pudo inicializar la base de datos: {ex.Message}");
+                Console.WriteLine($"❌ ERROR conectando a la base de datos: {ex.Message}");
                 Console.WriteLine($"StackTrace: {ex.StackTrace}");
-                // No lanzar excepción, dejar que la aplicación continúe
-                return;
-            }
-
-            // Esperar antes de conectar a la nueva BD
-            Thread.Sleep(3000);
-
-            try
-            {
-                // Conexión a la DB específica
-                policy.Execute(() =>
-                {
-                    Console.WriteLine($"Intentando conexión a VentaFacilDB...");
-                    using (var connDb = new SqlConnection(connectionString))
-                    {
-                        connDb.Open();
-                        Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
-
-                        string scriptPath = "/app/init/init.sql";
-                        if (!File.Exists(scriptPath))
-                        {
-                            Console.WriteLine($"⚠️ No se encontró el archivo de inicialización en {scriptPath}");
-                            return;
-                        }
-
-                        Console.WriteLine($"Ejecutando script: {scriptPath}");
-                        string script = File.ReadAllText(scriptPath);
-
-                        // Dividir por punto y coma
-                        var batches = script.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                        .Where(b => !string.IsNullOrWhiteSpace(b))
-                                        .Select(b => b.Trim());
-
-                        int batchCount = 0;
-                        foreach (var batch in batches)
-                        {
-                            if (!string.IsNullOrWhiteSpace(batch))
-                            {
-                                batchCount++;
-                                try
-                                {
-                                    using var cmd = new SqlCommand(batch, connDb);
-                                    cmd.ExecuteNonQuery();
-                                    Console.WriteLine($"✅ Batch {batchCount} ejecutado");
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine($"⚠️ Error en batch {batchCount}: {ex.Message}");
-                                    Console.WriteLine($"Batch: {batch.Substring(0, Math.Min(100, batch.Length))}...");
-                                }
-                            }
-                        }
-
-                        Console.WriteLine($"✅ {batchCount} scripts SQL ejecutados");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ ERROR ejecutando scripts: {ex.Message}");
-            }
-
-            // Intentar seeder
-            try
-            {
-                Console.WriteLine("Ejecutando seeder...");
-                DbSeeder.Seed(connectionString);
-                Console.WriteLine("✅ Seeder ejecutado");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ ERROR en seeder: {ex.Message}");
             }
 
             Console.WriteLine("=== INICIALIZACIÓN DE BD COMPLETADA ===");

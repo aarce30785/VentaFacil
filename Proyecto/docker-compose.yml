@@ -39,19 +39,18 @@
       context: .
       dockerfile: VentaFacil.web/Dockerfile
     environment:
-        - ConnectionStrings__DefaultConnection=Server=ventafacil-db;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;MultipleActiveResultSets=true;
-        - ConnectionStrings__MasterConnection=Server=ventafacil-db;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
-        - ASPNETCORE_ENVIRONMENT=Production
-        - DOTNET_RUNNING_IN_CONTAINER=true
-        - ASPNETCORE_URLS=http://+:80;https://+:443
+      - ASPNETCORE_ENVIRONMENT=Production  # Usar Production para usar appsettings.Production.json
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      # Las ConnectionStrings están en appsettings.Production.json, no necesarias aquí
     ports:
       - "8080:80"
       - "8443:443"
     volumes:
       - ./dataprotection_keys:/app/keys
       - ./uploads:/wwwroot/uploads
-      - /etc/letsencrypt/live/ventafacil-web.com:/https:ro  # Cambiado de /certs a /https
+      - /etc/letsencrypt/live/ventafacil-web.com:/https:ro
       - ./init.sql:/app/init/init.sql
+      - ./https/ventafacil.pfx:/https/ventafacil.pfx:ro
     depends_on:
       - sqlserver
     restart: unless-stopped
