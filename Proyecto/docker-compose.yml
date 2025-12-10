@@ -1,12 +1,15 @@
 ﻿services:
+  # Servicio para arreglar permisos de SQL Server
   fix-permissions:
-    image: alpine
+    image: alpine:latest
     user: root
-    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && echo 'Permissions fixed'"
+    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && chmod -R 775 /var/opt/mssql/data && echo '✅ Permissions fixed'"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
+    profiles:
+      - fix-perms  # Solo ejecutar cuando sea necesario
 
   sqlserver:
     container_name: ventafacil-db
@@ -16,47 +19,94 @@
       MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
       MSSQL_PID: 'Developer'
       MSSQL_TCP_PORT: 1433
-      MSSQL_MEMORY_LIMIT_MB: 1024
+      MSSQL_MEMORY_LIMIT_MB: 2048  # Aumentado para mejor rendimiento
+      MSSQL_COLLATION: 'SQL_Latin1_General_CP1_CI_AS'
+      TZ: 'America/CostaRica'  # Ajusta a tu zona horaria
     ports:
       - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
+      - ./sqlserver/backups:/var/opt/mssql/backup  # Para backups
     networks:
-      default:
+      ventafacil-network:
         aliases:
           - sqlserver
           - ventafacil-db
-    depends_on:
-      fix-permissions:
-        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P '$$MSSQL_SA_PASSWORD' -Q 'SELECT 1' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   ventafacil.web:
-    image: ventafacil.web
+    container_name: ventafacil-web
+    image: ventafacil.web:latest
     build:
       context: .
       dockerfile: VentaFacil.web/Dockerfile
+      args:
+        - BUILD_CONFIGURATION=Release
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
+      - ASPNETCORE_URLS=http://+:8080  # Forzar HTTP
+      - TZ=America/Guatemala  # Ajusta a tu zona horaria
     ports:
       - "8080:8080"
+      - "8081:8081"  # Si luego agregas HTTPS
     volumes:
-      - ./dataprotection_keys:/app/keys
-      - ./uploads:/wwwroot/uploads
-      - ./init.sql:/app/init/init.sql
+      - dataprotection_keys:/app/keys
+      - uploads:/wwwroot/uploads
+      - ./init.sql:/app/init/init.sql:ro
+      - ./logs:/app/logs  # Para logs de la aplicación
+    networks:
+      - ventafacil-network
     depends_on:
-      - sqlserver
+      sqlserver:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # NGINX como reverse proxy (opcional para producción)
+  nginx:
+    image: nginx:alpine
+    container_name: ventafacil-nginx
+    ports:
+      - "80:80"
+      - "443:443"  # Si usarás SSL
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Para certificados SSL
+      - uploads:/usr/share/nginx/html/uploads:ro
+    depends_on:
+      - ventafacil.web
+    networks:
+      - ventafacil-network
     restart: unless-stopped
 
 volumes:
   sqlserver_data:
+    driver: local
   sqlserver_log:
+    driver: local
   sqlserver_secrets:
-
+    driver: local
+  dataprotection_keys:
+    driver: local
+  uploads:
+    driver: local
 
 networks:
-  default:
+  ventafacil-network:
     driver: bridge
+    name: ventafacil-network
