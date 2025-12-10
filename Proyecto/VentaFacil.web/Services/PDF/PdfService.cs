@@ -6,11 +6,14 @@ using iText.Kernel.Geom;
 using iText.Kernel.Font;
 using iText.IO.Font.Constants;
 using System.IO;
+using System;
+using System.Collections.Generic;
+using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 
 namespace VentaFacil.web.Services.PDF
 {
-    public class PdfService
+    public class PdfService : IPdfService
     {
         public byte[] GenerarReporteNomina(NominaDetalleDto data)
         {
@@ -76,6 +79,20 @@ namespace VentaFacil.web.Services.PDF
                 document.Close();
                 return stream.ToArray();
             }
+        public byte[] GenerarFacturaPdf(FacturaDto facturaDto, object footer = null, bool esCopia = false)
+        {
+             // TODO: Migrar lógica de iTextSharp a iText7
+            throw new NotImplementedException("Método pendiente de migración a iText7");
+        }
+
+        public byte[] GenerarFacturaPdf(FacturaDto facturaDto)
+        {
+             return GenerarFacturaPdf(facturaDto, null, false);
+        }
+
+        public byte[] GenerarHistorialMovimientosPdf(List<InventarioMovimientoDto> movimientos, string nombreInsumo)
+        {
+            throw new NotImplementedException("Método pendiente de migración a iText7");
         }
     }
 }
