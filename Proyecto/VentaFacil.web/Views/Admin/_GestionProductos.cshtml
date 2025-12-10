@@ -340,12 +340,12 @@
     // ========== FUNCIONALIDAD PARA PRODUCTOS ==========
 
     // Auto-submit del filtro de categoría cuando cambia
-    document.querySelector('select[name="categoriaFiltro"]')?.addEventListener('change', function() {
+    document.querySelector('#filtrosProductosForm select[name="categoriaFiltro"]')?.addEventListener('change', function() {
         document.getElementById('filtrosProductosForm').submit();
     });
 
     // Manejar el evento de enter en el campo de búsqueda
-    document.querySelector('input[name="busqueda"]')?.addEventListener('keypress', function(e) {
+    document.querySelector('#filtrosProductosForm input[name="busqueda"]')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             document.getElementById('filtrosProductosForm').submit();

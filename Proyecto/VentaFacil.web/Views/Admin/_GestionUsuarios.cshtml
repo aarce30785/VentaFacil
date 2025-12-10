@@ -307,12 +307,12 @@
     // ========== FUNCIONALIDAD PARA USUARIOS ==========
     
     // Auto-submit del filtro de rol cuando cambia
-    document.querySelector('select[name="rolFiltro"]')?.addEventListener('change', function() {
+    document.querySelector('#filtrosForm select[name="rolFiltro"]')?.addEventListener('change', function() {
         document.getElementById('filtrosForm').submit();
     });
 
     // Manejar el evento de enter en el campo de búsqueda
-    document.querySelector('input[name="busqueda"]')?.addEventListener('keypress', function(e) {
+    document.querySelector('#filtrosForm input[name="busqueda"]')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             document.getElementById('filtrosForm').submit();
