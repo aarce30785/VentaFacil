@@ -3528,6 +3528,20 @@
           }
         }
       },
+      "System.ServiceModel.Http/10.0.652802": {
+        "type": "package",
+        "dependencies": {
+          "System.ServiceModel.Primitives": "10.0.652802"
+        },
+        "compile": {
+          "ref/netcoreapp2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.ServiceModel.Http.dll": {
+            "related": ".pdb"
+          }
+        }
+      },
       "System.ServiceModel.Primitives/10.0.652802": {
         "type": "package",
         "dependencies": {
@@ -10563,6 +10577,50 @@
         "version.txt"
       ]
     },
+    "System.ServiceModel.Http/10.0.652802": {
+      "sha512": "G02XZvmccf42QCU5MjviBIg69MSMAVHwL1inVPsNSpfp5g+t5BkQM3DyvWRLN4qmeFDWSF/mA1rIYONIDu/6Dg==",
+      "type": "package",
+      "path": "system.servicemodel.http/10.0.652802",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "README.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/MonoAndroid10/_._",
+        "lib/MonoTouch10/_._",
+        "lib/net10.0/System.ServiceModel.Http.dll",
+        "lib/net10.0/System.ServiceModel.Http.pdb",
+        "lib/net10.0/cs/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/de/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/es/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/fr/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/it/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/ja/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/ko/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/pl/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/pt-BR/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/ru/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/tr/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/zh-Hans/System.ServiceModel.Http.resources.dll",
+        "lib/net10.0/zh-Hant/System.ServiceModel.Http.resources.dll",
+        "lib/net462/System.ServiceModel.Http.dll",
+        "lib/net462/System.ServiceModel.Http.pdb",
+        "lib/netstandard2.0/System.ServiceModel.Http.dll",
+        "lib/netstandard2.0/System.ServiceModel.Http.pdb",
+        "lib/xamarinios10/_._",
+        "lib/xamarinmac20/_._",
+        "lib/xamarintvos10/_._",
+        "lib/xamarinwatchos10/_._",
+        "ref/net10.0/System.ServiceModel.Http.dll",
+        "ref/net462/System.ServiceModel.Http.dll",
+        "ref/netcoreapp2.0/_._",
+        "ref/netstandard2.0/System.ServiceModel.Http.dll",
+        "system.servicemodel.http.10.0.652802.nupkg.sha512",
+        "system.servicemodel.http.nuspec"
+      ]
+    },
     "System.ServiceModel.Primitives/10.0.652802": {
       "sha512": "ULfGNl75BNXkpF42wNV2CDXJ64dUZZEa8xO2mBsc4tqbW9QjruxjEB6bAr4Z/T1rNU+leOztIjCJQYsBGFWYlw==",
       "type": "package",
@@ -11448,6 +11506,7 @@
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 8.0.7",
       "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore >= 8.0.7",
       "Polly >= 8.6.4",
+      "System.ServiceModel.Http >= 10.0.652802",
       "System.ServiceModel.Primitives >= 10.0.652802",
       "itext7 >= 9.4.0",
       "itext7.bouncy-castle-adapter >= 9.4.0"
@@ -11534,6 +11593,10 @@
           "Polly": {
             "target": "Package",
             "version": "[8.6.4, )"
+          },
+          "System.ServiceModel.Http": {
+            "target": "Package",
+            "version": "[10.0.652802, )"
           },
           "System.ServiceModel.Primitives": {
             "target": "Package",
