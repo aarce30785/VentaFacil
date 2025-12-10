@@ -1,0 +1,53 @@
+@model VentaFacil.web.Models.Dto.ResetPasswordDto
+@{
+    ViewData["Title"] = "Restablecer Contraseña";
+    Layout = "_LayoutPlantilla";
+}
+
+<div class="card card-outline card-primary">
+    <div class="card-header text-center">
+        <a href="#" class="h1"><b>Venta</b>Facil</a>
+    </div>
+    <div class="card-body">
+        <p class="login-box-msg">Estás a un paso de tu nueva contraseña, recupera tu clave ahora.</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @Html.ValidationSummary(false, "", new { @class = "text-danger list-unstyled m-0" })
+            </div>
+        }
+
+        <form asp-action="RestablecerContrasena" method="post">
+            <input type="hidden" asp-for="Token" />
+            
+            <div class="input-group mb-3">
+                <input asp-for="Contrasena" type="password" class="form-control" placeholder="Nueva Contraseña">
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group mb-3">
+                <input asp-for="ConfirmarContrasena" type="password" class="form-control" placeholder="Confirmar Contraseña">
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-block">Cambiar contraseña</button>
+                </div>
+            </div>
+        </form>
+
+        <p class="mt-3 mb-1">
+            <a asp-action="InicioSesion">Iniciar Sesión</a>
+        </p>
+    </div>
+</div>

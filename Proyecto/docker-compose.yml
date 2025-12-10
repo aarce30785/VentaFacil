@@ -8,7 +8,7 @@ services:
       MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
       MSSQL_DATA_DIR: /var/opt/mssql/data
       MSSQL_PID: 'Developer'
-      MSSQL_TCP_PORT: 1433 
+      MSSQL_TCP_PORT: 1433
     ports:
       - "1455:1433"
     volumes:
@@ -29,21 +29,40 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
       - ConnectionStrings__MasterConnection=Server=sqlserver,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/etc/letsencrypt/live/ventafacil-web.com/fullchain.pem
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/etc/letsencrypt/live/ventafacil-web.com/privkey.pem
     ports:
-      - "8080:8080"
-      - "8081:8081"
+      - "80:8080"
+      - "443:8081"
     volumes:
       - ./dataprotection_keys:/app/keys
       - ./uploads:/wwwroot/uploads
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - sqlserver
     restart: unless-stopped
 
+  postfix:
+    image: boky/postfix
+    container_name: postfix
+    environment:
+      ALLOWED_SENDER_DOMAINS: "ventafacil-web.com"
+      General_maillog_file: "/dev/stdout"
+    # No exponemos el puerto 25 al host para evitar conflictos/seguridad, solo interno
+    # ports:
+    #   - "25:25" 
+    networks:
+      default:
+        aliases:
+          - mailserver
+    restart: always
+
 volumes:
   sqlserver_data:
+
 
 networks:
   default:

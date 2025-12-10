@@ -1,0 +1,39 @@
+@{
+    ViewData["Title"] = "Recuperar Contraseña";
+    Layout = "_LayoutPlantilla";
+}
+
+<div class="card card-outline card-primary">
+    <div class="card-header text-center">
+        <a href="#" class="h1"><b>Venta</b>Facil</a>
+    </div>
+    <div class="card-body">
+        <p class="login-box-msg">¿Olvidaste tu contraseña? Aquí puedes recuperar fácilmente una nueva.</p>
+        
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @Html.ValidationSummary(false, "", new { @class = "text-danger list-unstyled m-0" })
+            </div>
+        }
+
+        <form asp-action="OlvidoContrasena" method="post">
+            <div class="input-group mb-3">
+                <input type="email" name="correo" class="form-control" placeholder="Correo electrónico" required>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-envelope"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-block">Solicitar nueva contraseña</button>
+                </div>
+            </div>
+        </form>
+        <p class="mt-3 mb-1">
+            <a asp-action="InicioSesion">Iniciar Sesión</a>
+        </p>
+    </div>
+</div>

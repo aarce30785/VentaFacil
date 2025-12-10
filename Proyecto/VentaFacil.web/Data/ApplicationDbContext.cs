@@ -40,6 +40,8 @@ namespace VentaFacil.web.Data
         public DbSet<Bonificacion> Bonificacion { get; set; }
         public DbSet<BonificacionAuditoria> BonificacionAuditoria { get; set; }
 
+        public DbSet<PasswordResetToken> PasswordResetToken { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

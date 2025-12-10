@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Polly;
+using Microsoft.AspNetCore.HttpOverrides;
 using VentaFacil.web.Data;
 using VentaFacil.web.Services;
 using VentaFacil.web.Services.Admin;
@@ -18,6 +19,8 @@ using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
 using VentaFacil.web.Services.Usuario;
 using VentaFacil.web.Services.Planilla;
+using VentaFacil.web.Services.Email;
+using VentaFacil.web.Services.Auth;
 
 
 namespace VentaFacil.web
@@ -136,6 +139,8 @@ namespace VentaFacil.web
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IPlanillaService, PlanillaService>();
             builder.Services.AddScoped<IBonificacionService, BonificacionService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 
             // Configurar sesión
 
@@ -201,6 +206,12 @@ namespace VentaFacil.web
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            // Configurar Forwarded Headers para Nginx/Apache
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+            });
 
             app.UseAuthentication();
             app.UseAuthorization();

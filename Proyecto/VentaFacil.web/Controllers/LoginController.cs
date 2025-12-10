@@ -4,16 +4,70 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Services;
+using VentaFacil.web.Services.Auth;
 
 namespace VentaFacil.web.Controllers
 {
     public class LoginController : Controller
     {
         private  readonly IAuthService _authService;
+        private readonly IPasswordResetService _passwordResetService;
 
-        public LoginController(IAuthService authService)
+        public LoginController(IAuthService authService, IPasswordResetService passwordResetService)
         {
             _authService = authService;
+            _passwordResetService = passwordResetService;
+        }
+
+        [HttpGet]
+        public IActionResult OlvidoContrasena()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OlvidoContrasena(string correo)
+        {
+            if (string.IsNullOrEmpty(correo))
+            {
+                ModelState.AddModelError("", "Por favor ingrese su correo.");
+                return View();
+            }
+
+            await _passwordResetService.RequestPasswordResetAsync(correo);
+            
+            // Siempre mostramos el mismo mensaje por seguridad
+            TempData["SuccessMessage"] = "Si el correo existe, se han enviado las instrucciones.";
+            return RedirectToAction("InicioSesion");
+        }
+
+        [HttpGet]
+        public IActionResult RestablecerContrasena(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("InicioSesion");
+
+            return View(new Models.Dto.ResetPasswordDto { Token = token });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestablecerContrasena(Models.Dto.ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var result = await _passwordResetService.ResetPasswordAsync(model.Token, model.Contrasena);
+
+            if (result)
+            {
+                TempData["SuccessMessage"] = "Contraseña restablecida exitosamente. Inicie sesión.";
+                return RedirectToAction("InicioSesion");
+            }
+
+            ModelState.AddModelError("", "El token es inválido o ha expirado.");
+            return View(model);
         }
 
         [HttpGet]

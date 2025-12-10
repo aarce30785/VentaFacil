@@ -198,3 +198,17 @@ IF NOT EXISTS (SELECT 1 FROM Rol WHERE Nombre_Rol = 'Administrador')
 IF NOT EXISTS (SELECT 1 FROM Rol WHERE Nombre_Rol = 'Cajero')
     INSERT INTO Rol (Nombre_Rol, Descripcion) VALUES ('Cajero', 'Acceso a ventas y caja');
 
+-- Tabla PasswordResetToken
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[PasswordResetToken]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE PasswordResetToken (
+        Id INT IDENTITY (1,1),
+        UsuarioId INT NOT NULL,
+        Token VARCHAR(255) NOT NULL,
+        ExpirationDate DATETIME NOT NULL,
+        IsUsed BIT DEFAULT 0,
+        CONSTRAINT Tok_Pk PRIMARY KEY (Id),
+        CONSTRAINT TokUsr_Fk FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id_Usr)
+    )
+END;
+

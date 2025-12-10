@@ -307,3 +307,17 @@ INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VAL
 INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 1363000, 2374000, 15);
 INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 2374000, 4745000, 20);
 INSERT INTO ImpuestoRenta (Anio, LimiteInferior, LimiteSuperior, Porcentaje) VALUES (2025, 4745000, NULL, 25);
+
+-- Tabla PasswordResetToken
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[PasswordResetToken]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE PasswordResetToken (
+        Id INT IDENTITY (1,1),
+        UsuarioId INT NOT NULL,
+        Token VARCHAR(255) NOT NULL,
+        ExpirationDate DATETIME NOT NULL,
+        IsUsed BIT DEFAULT 0,
+        CONSTRAINT Tok_Pk PRIMARY KEY (Id),
+        CONSTRAINT TokUsr_Fk FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id_Usr)
+    )
+END;

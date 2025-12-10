@@ -57,42 +57,6 @@
         "Asset": null,
         "Patterns": null
       },
-      "images": {
-        "Children": {
-          "productos": {
-            "Children": {
-              "16d94513-03c2-4a9e-b0b7-5073f321def4.jpg": {
-                "Children": null,
-                "Asset": {
-                  "ContentRootIndex": 0,
-                  "SubPath": "images/productos/16d94513-03c2-4a9e-b0b7-5073f321def4.jpg"
-                },
-                "Patterns": null
-              },
-              "1730a5e2-615f-4da6-9317-42c3f1960e73.jpg": {
-                "Children": null,
-                "Asset": {
-                  "ContentRootIndex": 0,
-                  "SubPath": "images/productos/1730a5e2-615f-4da6-9317-42c3f1960e73.jpg"
-                },
-                "Patterns": null
-              },
-              "c09cadaa-e628-4491-89bc-19b013611dd8.jpg": {
-                "Children": null,
-                "Asset": {
-                  "ContentRootIndex": 0,
-                  "SubPath": "images/productos/c09cadaa-e628-4491-89bc-19b013611dd8.jpg"
-                },
-                "Patterns": null
-              }
-            },
-            "Asset": null,
-            "Patterns": null
-          }
-        },
-        "Asset": null,
-        "Patterns": null
-      },
       "lib": {
         "Children": {
           "bootstrap": {

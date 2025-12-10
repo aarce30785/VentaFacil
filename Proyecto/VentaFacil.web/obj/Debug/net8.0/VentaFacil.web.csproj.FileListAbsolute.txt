@@ -1,6 +1,7 @@
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\appsettings.Development.json
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\appsettings.Docker.json
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\appsettings.json
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\appsettings.Production.json
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\VentaFacil.web.staticwebassets.runtime.json
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\VentaFacil.web.staticwebassets.endpoints.json
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\VentaFacil.web.exe
@@ -12,6 +13,18 @@ C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Azure.Core.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Azure.Identity.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Humanizer.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.barcodes.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.bouncy-castle-connector.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.forms.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.io.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.kernel.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.layout.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.pdfa.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.pdfua.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.sign.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.styledxmlparser.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.svg.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itext.commons.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\itextsharp.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.AspNetCore.Razor.Language.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
@@ -29,6 +42,7 @@ C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.CodeAnalysis.Sc
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Data.SqlClient.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.DiaSymReader.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.DotNet.PlatformAbstractions.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.DotNet.Scaffolding.Shared.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
@@ -85,11 +99,14 @@ C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Composition.TypedP
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Configuration.ConfigurationManager.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Drawing.Common.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.IO.Pipelines.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Memory.Data.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Reflection.MetadataLoadContext.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Runtime.Caching.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Security.Permissions.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Text.Encodings.Web.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Text.Json.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\System.Windows.Extensions.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\af\Humanizer.resources.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\ar\Humanizer.resources.dll
@@ -240,6 +257,7 @@ C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\runtimes\win\lib\net7.0\M
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Security.Cryptography.ProtectedData.dll
+C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Windows.Extensions.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\VentaFacil.web.csproj.AssemblyReference.cache
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\rpswa.dswa.cache.json

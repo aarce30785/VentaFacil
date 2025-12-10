@@ -89,6 +89,10 @@
             "iTextSharp": {
               "target": "Package",
               "version": "[5.5.13.4, )"
+            },
+            "itext7": {
+              "target": "Package",
+              "version": "[9.4.0, )"
             }
           },
           "imports": [
@@ -110,7 +114,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
