@@ -39,6 +39,23 @@ namespace VentaFacil.web
 
             bool isRunningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
+            // ===== CONFIGURACIÓN DE KESTREL PARA DOCKER =====
+            // Esto es lo más importante: configurar Kestrel para usar solo HTTP en Docker
+            if (isRunningInContainer)
+            {
+                Console.WriteLine("⚡ Configurando Kestrel para Docker (solo HTTP en puerto 8080)");
+                
+                // Configurar Kestrel para usar solo HTTP en Docker
+                builder.WebHost.ConfigureKestrel(options =>
+                {
+                    options.ListenAnyIP(8080); // Solo HTTP
+                    // No configurar HTTPS endpoint
+                });
+                
+                // O también puedes usar:
+                // builder.WebHost.UseUrls("http://+:8080");
+            }
+
             // ===== CONFIGURACIÓN DE HTTPS / HTTP =====
             // Hostinger -> NO HTTPS interno, NO UseHttpsRedirection
             bool useHttpsRedirection = !isRunningInContainer;
