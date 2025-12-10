@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VentaFacil.web.Services.Caja;
 using VentaFacil.web.Models;
@@ -8,6 +9,7 @@ using System.Linq;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     public class CajaController : Controller
     {
         private readonly ICajaService _cajaService;

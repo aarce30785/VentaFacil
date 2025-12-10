@@ -1,13 +1,15 @@
 ﻿services:
   # Servicio para arreglar permisos de SQL Server
+  # Servicio para arreglar permisos de SQL Server y DataKeys
   fix-permissions:
     image: alpine:latest
     user: root
-    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && chmod -R 775 /var/opt/mssql/data && echo '✅ Permissions fixed'"
+    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && chmod -R 775 /var/opt/mssql/data && mkdir -p /datakeys && chown -R 1000:1000 /datakeys && echo '✅ Permissions fixed'"
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
+      - dataprotection_keys:/datakeys
 
   sqlserver:
     container_name: ventafacil-db
@@ -47,6 +49,10 @@
       - DOTNET_RUNNING_IN_CONTAINER=true
       - ASPNETCORE_URLS=http://+:8080 # Forzar HTTP
       - TZ=America/Guatemala # Ajusta a tu zona horaria
+      # Configuración de Email para Postfix
+      - EmailSettings__Host=postfix
+      - EmailSettings__Port=25
+      - EmailSettings__From=no-reply@ventafacil-web.com
     ports:
       - "8080:8080"
     volumes:

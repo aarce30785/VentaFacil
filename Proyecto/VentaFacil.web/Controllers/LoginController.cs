@@ -8,6 +8,7 @@ using VentaFacil.web.Services.Auth;
 
 namespace VentaFacil.web.Controllers
 {
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public class LoginController : Controller
     {
         private  readonly IAuthService _authService;

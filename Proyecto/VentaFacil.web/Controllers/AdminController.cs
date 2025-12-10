@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using VentaFacil.web.Models.Dto;
@@ -11,6 +12,7 @@ using VentaFacil.web.Services.Usuario;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     public class AdminController : Controller
     {
         private readonly IAdminService _adminService;

@@ -10,6 +10,7 @@ using VentaFacil.web.Services.PDF;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     public class InventarioController : Controller
     {
         private readonly IInventarioService _inventarioService;

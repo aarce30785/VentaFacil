@@ -93,7 +93,13 @@ namespace VentaFacil.web
 
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+            builder.Services.AddControllersWithViews(options =>
+            {
+                var policy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter(policy));
+            }).AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
@@ -209,6 +215,19 @@ namespace VentaFacil.web
                 else
                 {
                     Console.WriteLine($"=== DIRECTORIO DE CLAVES YA EXISTE: {keysDirectory} ===");
+
+                    // Verificar permisos de escritura en directorio existente
+                    try
+                    {
+                        var testFile = Path.Combine(keysDirectory, "test_perm.txt");
+                        File.WriteAllText(testFile, "test");
+                        File.Delete(testFile);
+                        Console.WriteLine("=== PERMISOS DE ESCRITURA VERIFICADOS (Directorio Existente) ===");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"=== ⚠️ ERROR DE PERMISOS EN {keysDirectory}: {ex.Message} ===");
+                    }
 
                     // Verificar claves existentes
                     var keyFiles = Directory.GetFiles(keysDirectory, "*.xml");

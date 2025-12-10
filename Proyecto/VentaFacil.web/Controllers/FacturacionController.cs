@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using VentaFacil.web.Models.Dto;
@@ -11,6 +12,7 @@ using VentaFacil.web.Services.Pedido;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     public class FacturacionController : Controller
     {
         private readonly IFacturacionService _facturacionService;

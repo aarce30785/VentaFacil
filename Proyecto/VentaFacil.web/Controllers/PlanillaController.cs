@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using VentaFacil.web.Services.PDF;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     [Route("Planilla")]
     public class PlanillaController : Controller
     {

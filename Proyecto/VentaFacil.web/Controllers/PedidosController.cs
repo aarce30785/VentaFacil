@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
@@ -7,6 +8,7 @@ using VentaFacil.web.Services.Producto;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     public class PedidosController : Controller
     {
         private readonly IPedidoService _pedidoService;

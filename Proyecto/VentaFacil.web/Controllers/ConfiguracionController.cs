@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -7,6 +8,7 @@ using VentaFacil.web.Models.Configuracion;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     public class ConfiguracionController : Controller
     {
         private readonly ApplicationDbContext _context;

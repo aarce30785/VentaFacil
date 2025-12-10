@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Services.Producto;
 
 namespace VentaFacil.web.Controllers
 {
+    [Authorize]
     public class ProductoController : Controller
     {
         private readonly IProductoService _productoService;
