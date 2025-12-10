@@ -460,7 +460,7 @@
 
             // --- Lógica Pago Único ---
             // Tasa BCCR (Venta referencial para pago en Dólares)
-            const tasaVentaBccr = @(ViewBag.TipoCambioVenta ?? 0) || 0;
+            const tasaVentaBccr = @((ViewBag.TipoCambioVenta as decimal?)?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "0") || 0;
 
             $('#monedaSelect').change(function() {
                 var esUSD = $(this).val() === 'USD';
