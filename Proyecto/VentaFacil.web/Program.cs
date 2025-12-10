@@ -125,14 +125,14 @@ namespace VentaFacil.web
                    options.AccessDeniedPath = "/Login/AccessDenied";
                    options.LogoutPath = "/Login/CerrarSesion";
 
-                    // Cookies seguras solo si el request original fue HTTPS
-                    options.Cookie.SecurePolicy = isRunningInContainer
-                        ? CookieSecurePolicy.None        // Hostinger (HTTP interno)
-                        : CookieSecurePolicy.Always;      // Local o servidor real HTTPS
+                // Cookies seguras solo si el request original fue HTTPS (o estamos en Docker detrás de Nginx)
+                options.Cookie.SecurePolicy = isRunningInContainer
+                    ? CookieSecurePolicy.Always      // Docker tras Nginx SSL -> SIEMPRE SECURE
+                    : CookieSecurePolicy.SameAsRequest; 
 
-                   options.SlidingExpiration = true;
-                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-                   options.Cookie.SameSite = SameSiteMode.None; 
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.Cookie.SameSite = SameSiteMode.None; // Requiere Secure = true 
                });
 
             // Configurar antiforgery tokens
@@ -142,10 +142,10 @@ namespace VentaFacil.web
                 options.Cookie.Name = "VentaFacil.Csrf";
                 options.Cookie.HttpOnly = true;
 
-                // Igual que cookies: no marcar Secure en Hostinger interno
+                // Igual que cookies: marcar Secure si estamos en Docker tras Nginx
                 options.Cookie.SecurePolicy = isRunningInContainer
-                    ? CookieSecurePolicy.None
-                    : CookieSecurePolicy.Always;
+                    ? CookieSecurePolicy.Always
+                    : CookieSecurePolicy.SameAsRequest;
 
                 options.Cookie.SameSite = SameSiteMode.None;
             });
@@ -216,6 +216,12 @@ namespace VentaFacil.web
                 }
             }
 
+            // Configurar Forwarded Headers para Nginx/Apache (PRIMERO)
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+            });
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -242,11 +248,7 @@ namespace VentaFacil.web
 
             app.UseRouting();
 
-            // Configurar Forwarded Headers para Nginx/Apache
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
-            });
+
 
             app.UseAuthentication();
             app.UseAuthorization();
