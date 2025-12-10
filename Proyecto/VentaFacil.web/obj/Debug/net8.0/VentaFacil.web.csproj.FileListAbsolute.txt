@@ -49,8 +49,6 @@ C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.EntityFramework
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
-C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Exchange.WebServices.Auth.dll
-C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Exchange.WebServices.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll

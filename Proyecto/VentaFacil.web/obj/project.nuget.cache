@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "w431tDX4nM4=",
+  "dgSpecHash": "lRFK/w5Cklg=",
   "success": true,
   "projectFilePath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
   "expectedPackageFiles": [
@@ -89,7 +89,6 @@
     "C:\\Users\\mija2\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\8.0.20\\microsoft.entityframeworkcore.relational.8.0.20.nupkg.sha512",
     "C:\\Users\\mija2\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\8.0.20\\microsoft.entityframeworkcore.sqlserver.8.0.20.nupkg.sha512",
     "C:\\Users\\mija2\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\8.0.20\\microsoft.entityframeworkcore.tools.8.0.20.nupkg.sha512",
-    "C:\\Users\\mija2\\.nuget\\packages\\microsoft.exchange.webservices\\2.2.0\\microsoft.exchange.webservices.2.2.0.nupkg.sha512",
     "C:\\Users\\mija2\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
     "C:\\Users\\mija2\\.nuget\\packages\\microsoft.extensions.caching.memory\\8.0.1\\microsoft.extensions.caching.memory.8.0.1.nupkg.sha512",
     "C:\\Users\\mija2\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
@@ -236,18 +235,6 @@
       "warningLevel": 1,
       "filePath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
       "libraryId": "iTextSharp",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "message": "Package 'Microsoft.Exchange.WebServices 2.2.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
-      "projectPath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
-      "libraryId": "Microsoft.Exchange.WebServices",
       "targetGraphs": [
         "net8.0"
       ]

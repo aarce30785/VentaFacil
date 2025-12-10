@@ -1,20 +1,24 @@
 # Base stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 
-# Instalar herramientas de diagnóstico y mssql-tools
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         iputils-ping dnsutils net-tools curl telnet netcat-openbsd gnupg && \
     curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/debian/11/prod bullseye main" > /etc/apt/sources.list.d/microsoft.list && \
+    echo "deb [signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/debian/11/prod bullseye main" \
+        > /etc/apt/sources.list.d/microsoft.list && \
     apt-get update && \
     ACCEPT_EULA=Y apt-get install -y mssql-tools unixodbc-dev && \
     rm -rf /var/lib/apt/lists/*
 
 ENV PATH="$PATH:/opt/mssql-tools/bin"
+
 WORKDIR /app
-EXPOSE 80 81
-ENV ASPNETCORE_URLS=http://+:80
+
+# Solo expone el puerto HTTP que Hostinger usa
+EXPOSE 8080
+
+ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Docker
 
 # Build stage
@@ -22,15 +26,10 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copiar proyecto completo para evitar errores de rutas
 COPY ./VentaFacil.web ./VentaFacil.web
 
 WORKDIR /src/VentaFacil.web
-
-# Restaurar paquetes
 RUN dotnet restore
-
-# Build
 RUN dotnet build -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish stage
@@ -42,14 +41,8 @@ RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 FROM base AS final
 WORKDIR /app
 
-# Copiar publicación
 COPY --from=publish /app/publish .
 
-# Copiar carpeta init con init.sql
 COPY ./init /app/init
-
-RUN mkdir -p /https
-COPY VentaFacil.web/certificates/ventafacil.pfx /https/ventafacil.pfx
-RUN chmod 644 /https/ventafacil.pfx
 
 ENTRYPOINT ["dotnet", "VentaFacil.web.dll"]

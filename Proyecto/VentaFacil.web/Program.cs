@@ -39,6 +39,18 @@ namespace VentaFacil.web
 
             bool isRunningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
+            // ===== CONFIGURACIÓN DE HTTPS / HTTP =====
+            // Hostinger -> NO HTTPS interno, NO UseHttpsRedirection
+            bool useHttpsRedirection = !isRunningInContainer;
+
+            // ===== CONFIGURACIÓN DE FORWARDED HEADERS =====
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
             var environment = builder.Environment;
 
             Console.WriteLine($"=== ENTORNO: {environment.EnvironmentName} ===");
@@ -103,13 +115,16 @@ namespace VentaFacil.web
                {
                    options.LoginPath = "/Login/InicioSesion";
                    options.AccessDeniedPath = "/Login/AccessDenied";
-                   options.LogoutPath = "/Login/Logout";
-                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                   options.LogoutPath = "/Login/CerrarSesion";
+
+                    // Cookies seguras solo si el request original fue HTTPS
+                    options.Cookie.SecurePolicy = isRunningInContainer
+                        ? CookieSecurePolicy.None        // Hostinger (HTTP interno)
+                        : CookieSecurePolicy.Always;      // Local o servidor real HTTPS
+
                    options.SlidingExpiration = true;
-                   options.Cookie.Name = "VentaFacil.Auth";
-                   options.Cookie.HttpOnly = true;
-                   options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                   options.Cookie.SameSite = SameSiteMode.Strict;
+                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                   options.Cookie.SameSite = SameSiteMode.None; 
                });
 
             // Configurar antiforgery tokens
@@ -118,7 +133,13 @@ namespace VentaFacil.web
                 options.HeaderName = "X-CSRF-TOKEN";
                 options.Cookie.Name = "VentaFacil.Csrf";
                 options.Cookie.HttpOnly = true;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+                // Igual que cookies: no marcar Secure en Hostinger interno
+                options.Cookie.SecurePolicy = isRunningInContainer
+                    ? CookieSecurePolicy.None
+                    : CookieSecurePolicy.Always;
+
+                options.Cookie.SameSite = SameSiteMode.None;
             });
 
             // Configurar autorización
@@ -202,7 +223,14 @@ namespace VentaFacil.web
                 //InitializeDatabase(builder.Configuration);
             }
 
-            app.UseHttpsRedirection();
+            if (useHttpsRedirection)
+            {
+                app.UseHttpsRedirection();
+            }
+            else
+            {
+                Console.WriteLine("⚠ HTTPS redirection deshabilitado (Hostinger)");
+            }
             app.UseStaticFiles();
 
             app.UseRouting();
