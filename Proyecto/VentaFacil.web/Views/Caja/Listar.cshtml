@@ -68,29 +68,37 @@
         background-color: var(--mustard) !important;
         color: #fff !important;
         border: none;
+        border-radius: 30px !important;
+        font-weight: 600;
+        padding: 0.5rem 1.2rem;
     }
     .btn-mustard:hover, .btn-mustard:focus {
         background-color: var(--mustard-hover) !important;
         color: #fff !important;
     }
+    .btn-premium {
+        border-radius: 30px !important;
+        font-weight: 600;
+        padding: 0.5rem 1.5rem;
+    }
 </style>
 
 <div class="premium-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Administrar Caja</h2>
+        <h2 class="fw-bold text-dark mb-0">Administrar Caja</h2>
         <div>
             @if (cajaAbierta == null)
             {
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
+                <button type="button" class="btn btn-primary btn-premium" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
                     <i class="fas fa-cash-register me-1"></i> Abrir caja
                 </button>
             }
             else
             {
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
+                <button type="button" class="btn btn-danger btn-premium" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
                     <i class="fas fa-lock me-1"></i> Cerrar caja
                 </button>
-                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
+                <button type="button" class="btn btn-warning btn-premium" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
                     <i class="fas fa-minus-circle me-1"></i> Retiro de caja
                 </button>
             }

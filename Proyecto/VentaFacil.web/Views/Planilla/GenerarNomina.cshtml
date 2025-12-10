@@ -1,16 +1,43 @@
 ﻿@using VentaFacil.web.Models.Dto
 @model GenerarNominaDto
 
-@{
-    ViewData["Title"] = "Generar Nómina";
-    Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
-}
+<style>
+    :root {
+        --card-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+    }
+    .form-select, .form-control {
+        border-radius: 30px;
+        font-size: 1rem;
+    }
+    .btn-premium {
+        border-radius: 30px !important;
+        font-weight: 600;
+        padding: 0.5rem 1.5rem;
+    }
+    .card-title {
+        font-weight: 700;
+        color: #6d4c41;
+    }
+</style>
 
-<section class="content-header">
+<section class="content-header mb-4">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Generar Nómina</h1>
+                <h2 class="fw-bold text-dark">Generar Nómina</h2>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
@@ -25,71 +52,54 @@
 
 <section class="content">
     <div class="container-fluid">
-
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                <h5><i class="icon fas fa-check"></i> Éxito</h5>
-                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <strong><i class="icon fas fa-check"></i> Éxito</strong> @TempData["Success"]
             </div>
         }
-
         @if (TempData["Error"] != null)
         {
             <div class="alert alert-danger alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                <h5><i class="icon fas fa-ban"></i> Error</h5>
-                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <strong><i class="icon fas fa-ban"></i> Error</strong> @TempData["Error"]
             </div>
         }
-
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">Parámetros de Generación</h3>
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="premium-card">
+                    <div class="mb-4">
+                        <h4 class="card-title mb-0">Parámetros de Generación</h4>
                     </div>
-
                     <form asp-controller="Planilla" asp-action="GenerarNomina" method="post">
                         @Html.AntiForgeryToken()
-                        <div class="card-body">
-
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label asp-for="FechaInicio">Fecha Inicio</label>
-                                        <input asp-for="FechaInicio" type="date" class="form-control" />
-                                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label asp-for="FechaFinal">Fecha Final</label>
-                                        <input asp-for="FechaFinal" type="date" class="form-control" />
-                                        <span asp-validation-for="FechaFinal" class="text-danger"></span>
-                                    </div>
-                                </div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FechaInicio" class="form-label">Fecha Inicio</label>
+                                <input asp-for="FechaInicio" type="date" class="form-control" />
+                                <span asp-validation-for="FechaInicio" class="text-danger"></span>
                             </div>
-
-                            <div class="form-group">
-                                <div class="form-check">
-                                    <input asp-for="IncluirSoloUsuariosActivos" class="form-check-input" type="checkbox" />
-                                    <label asp-for="IncluirSoloUsuariosActivos" class="form-check-label">
-                                        Incluir solo usuarios activos
-                                    </label>
-                                </div>
+                            <div class="col-md-6">
+                                <label asp-for="FechaFinal" class="form-label">Fecha Final</label>
+                                <input asp-for="FechaFinal" type="date" class="form-control" />
+                                <span asp-validation-for="FechaFinal" class="text-danger"></span>
                             </div>
-
                         </div>
-
-                        <div class="card-footer">
-                            <button type="submit" class="btn btn-success">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="IncluirSoloUsuariosActivos" class="form-check-input" type="checkbox" />
+                                <label asp-for="IncluirSoloUsuariosActivos" class="form-check-label">
+                                    Incluir solo usuarios activos
+                                </label>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-premium">
                                 <i class="fas fa-cogs"></i> Generar Nómina
                             </button>
-                            <a href="@Url.Action("Consultar", "Planilla")" class="btn btn-secondary">
+                            <a href="@Url.Action("Consultar", "Planilla")" class="btn btn-secondary btn-premium">
                                 <i class="fas fa-times"></i> Volver
                             </a>
                         </div>
