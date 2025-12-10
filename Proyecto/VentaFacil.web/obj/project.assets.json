@@ -47,7 +47,7 @@
           }
         }
       },
-      "BouncyCastle.Cryptography/2.4.0": {
+      "BouncyCastle.Cryptography/2.6.2": {
         "type": "package",
         "compile": {
           "lib/net6.0/BouncyCastle.Cryptography.dll": {
@@ -745,6 +745,23 @@
           }
         }
       },
+      "itext.bouncy-castle-adapter/9.4.0": {
+        "type": "package",
+        "dependencies": {
+          "BouncyCastle.Cryptography": "2.6.2",
+          "itext.commons": "9.4.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/itext.bouncy-castle-adapter.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/itext.bouncy-castle-adapter.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "itext.commons/9.4.0": {
         "type": "package",
         "dependencies": {
@@ -768,16 +785,10 @@
           "itext": "9.4.0"
         }
       },
-      "iTextSharp/5.5.13.4": {
+      "itext7.bouncy-castle-adapter/9.4.0": {
         "type": "package",
         "dependencies": {
-          "BouncyCastle.Cryptography": "2.4.0"
-        },
-        "compile": {
-          "lib/net461/itextsharp.dll": {}
-        },
-        "runtime": {
-          "lib/net461/itextsharp.dll": {}
+          "itext.bouncy-castle-adapter": "9.4.0"
         }
       },
       "Microsoft.AspNetCore.Razor.Language/6.0.24": {
@@ -3835,16 +3846,16 @@
         "lib/netstandard2.0/Azure.Identity.xml"
       ]
     },
-    "BouncyCastle.Cryptography/2.4.0": {
-      "sha512": "SwXsAV3sMvAU/Nn31pbjhWurYSjJ+/giI/0n6tCrYoupEK34iIHCuk3STAd9fx8yudM85KkLSVdn951vTng/vQ==",
+    "BouncyCastle.Cryptography/2.6.2": {
+      "sha512": "7oWOcvnntmMKNzDLsdxAYqApt+AjpRpP2CShjMfIa3umZ42UQMvH0tl1qAliYPNYO6vTdcGMqnRrCPmsfzTI1w==",
       "type": "package",
-      "path": "bouncycastle.cryptography/2.4.0",
+      "path": "bouncycastle.cryptography/2.6.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "LICENSE.md",
         "README.md",
-        "bouncycastle.cryptography.2.4.0.nupkg.sha512",
+        "bouncycastle.cryptography.2.6.2.nupkg.sha512",
         "bouncycastle.cryptography.nuspec",
         "lib/net461/BouncyCastle.Cryptography.dll",
         "lib/net461/BouncyCastle.Cryptography.xml",
@@ -4664,6 +4675,22 @@
         "lib/netstandard2.0/itext.svg.xml"
       ]
     },
+    "itext.bouncy-castle-adapter/9.4.0": {
+      "sha512": "qDKYzPr1fyE2lsGWxpkwqH3blBSqbbdmd1ekE2N3TIkuEDZ7vX3/Nj7WozA2ydA8+27eNxDMbLoP0FLDbi6shQ==",
+      "type": "package",
+      "path": "itext.bouncy-castle-adapter/9.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "ITSC-avatar.png",
+        "itext.bouncy-castle-adapter.9.4.0.nupkg.sha512",
+        "itext.bouncy-castle-adapter.nuspec",
+        "lib/net461/itext.bouncy-castle-adapter.dll",
+        "lib/net461/itext.bouncy-castle-adapter.xml",
+        "lib/netstandard2.0/itext.bouncy-castle-adapter.dll",
+        "lib/netstandard2.0/itext.bouncy-castle-adapter.xml"
+      ]
+    },
     "itext.commons/9.4.0": {
       "sha512": "h/5s1eKtCr6BIHL38bYSr82qrdts2R/RI6r/V+yWpQR1wXjzwjWkAe8WtHgBcY4t97xj1+T3j5PXfzCiBdAuUg==",
       "type": "package",
@@ -4694,20 +4721,18 @@
         "itext7.nuspec"
       ]
     },
-    "iTextSharp/5.5.13.4": {
-      "sha512": "/cvCNv8AJ+XuD99u4NfHSSxkBJKTdvP36wcfQF9V1Cjzi1ycyFSa4vJ64a3DhFVUTKVO60WF8OmAqngQDTHgYA==",
+    "itext7.bouncy-castle-adapter/9.4.0": {
+      "sha512": "EPx0vzqFYWVUCSd2WSqaphHTCLuX95fAmiJGyGBr/6j5hIAwSWWqdeKKkKpvkYbKjJB/6zGuWBAQdOjfk+jZcQ==",
       "type": "package",
-      "path": "itextsharp/5.5.13.4",
+      "path": "itext7.bouncy-castle-adapter/9.4.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "ITSC-avatar.png",
         "LICENSE.md",
         "gnu-agpl-v3.0.md",
-        "itextsharp.5.5.13.4.nupkg.sha512",
-        "itextsharp.nuspec",
-        "lib/net461/iTextSharp.xml",
-        "lib/net461/itextsharp.dll",
-        "notice.txt"
+        "itext7.bouncy-castle-adapter.9.4.0.nupkg.sha512",
+        "itext7.bouncy-castle-adapter.nuspec"
       ]
     },
     "Microsoft.AspNetCore.Razor.Language/6.0.24": {
@@ -11338,8 +11363,8 @@
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 8.0.7",
       "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore >= 8.0.7",
       "Polly >= 8.6.4",
-      "iTextSharp >= 5.5.13.4",
-      "itext7 >= 9.4.0"
+      "itext7 >= 9.4.0",
+      "itext7.bouncy-castle-adapter >= 9.4.0"
     ]
   },
   "packageFolders": {
@@ -11424,11 +11449,11 @@
             "target": "Package",
             "version": "[8.6.4, )"
           },
-          "iTextSharp": {
-            "target": "Package",
-            "version": "[5.5.13.4, )"
-          },
           "itext7": {
+            "target": "Package",
+            "version": "[9.4.0, )"
+          },
+          "itext7.bouncy-castle-adapter": {
             "target": "Package",
             "version": "[9.4.0, )"
           }
@@ -11455,17 +11480,5 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'iTextSharp 5.5.13.4' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
-      "libraryId": "iTextSharp",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    }
-  ]
+  }
 }

@@ -11,7 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="itext7" Version="9.4.0" />
-    <PackageReference Include="iTextSharp" Version="5.5.13.4" />
+    <PackageReference Include="itext7.bouncy-castle-adapter" Version="9.4.0" />
+
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
