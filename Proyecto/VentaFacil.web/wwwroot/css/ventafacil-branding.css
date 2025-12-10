@@ -351,7 +351,8 @@ body {
     /* Encima del sidebar */
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
     /* Sombra suave para separar */
-    background-color: #ffffff !important; /* Force white background to remove clashing blue */
+    background-color: #ffffff !important;
+    /* Force white background to remove clashing blue */
 }
 
 /* Sidebar debajo del header */
@@ -365,6 +366,13 @@ body {
 /* Ajuste del contenido principal para no quedar oculto por el header */
 .main-wrapper {
     padding-top: var(--header-height) !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.section {
+    flex: 1;
 }
 
 /* Ajuste para pantallas pequeñas si es necesario */
