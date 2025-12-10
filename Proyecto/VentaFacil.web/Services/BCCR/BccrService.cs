@@ -29,17 +29,26 @@ namespace VentaFacil.web.Services.BCCR
 
             try
             {
-                var result = await client.ObtenerIndicadoresEconomicosAsync(
-                    indicador: codigoIndicador, 
-                    fechaInicio: fechaInicio, 
-                    fechaFinal: fechaFinal, 
-                    nombre: _settings.Nombre, 
-                    subNiveles: "N", 
-                    correoElectronico: _settings.Email, 
-                    token: _settings.Token
+                var xmlResult = await client.ObtenerIndicadoresEconomicosXMLAsync(
+                    Indicador: codigoIndicador, 
+                    FechaInicio: fechaInicio, 
+                    FechaFinal: fechaFinal, 
+                    Nombre: _settings.Nombre, 
+                    SubNiveles: "N", 
+                    CorreoElectronico: _settings.Email, 
+                    Token: _settings.Token
                 );
 
-                return result;
+                var dataSet = new DataSet();
+                if (!string.IsNullOrEmpty(xmlResult))
+                {
+                    using (var reader = new System.IO.StringReader(xmlResult))
+                    {
+                        dataSet.ReadXml(reader);
+                    }
+                }
+                
+                return dataSet;
             }
             finally
             {

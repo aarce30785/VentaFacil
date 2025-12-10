@@ -1705,6 +1705,19 @@
           "buildTransitive/net6.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
         }
       },
+      "Microsoft.Extensions.ObjectPool/6.0.16": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Microsoft.Extensions.ObjectPool.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Microsoft.Extensions.ObjectPool.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.Options/8.0.2": {
         "type": "package",
         "dependencies": {
@@ -3528,37 +3541,116 @@
           }
         }
       },
-      "System.ServiceModel.Http/10.0.652802": {
+      "System.ServiceModel.Http/8.0.0": {
         "type": "package",
         "dependencies": {
-          "System.ServiceModel.Primitives": "10.0.652802"
+          "System.ServiceModel.Primitives": "8.0.0"
         },
         "compile": {
-          "ref/netcoreapp2.0/_._": {}
+          "lib/net8.0/System.ServiceModel.Http.dll": {
+            "related": ".pdb"
+          }
         },
         "runtime": {
-          "lib/netstandard2.0/System.ServiceModel.Http.dll": {
+          "lib/net8.0/System.ServiceModel.Http.dll": {
             "related": ".pdb"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.ServiceModel.Http.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.ServiceModel.Http.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.ServiceModel.Http.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.ServiceModel.Http.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.ServiceModel.Http.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.ServiceModel.Http.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.ServiceModel.Http.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.ServiceModel.Http.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.ServiceModel.Http.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.ServiceModel.Http.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.ServiceModel.Http.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.ServiceModel.Http.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.ServiceModel.Http.resources.dll": {
+            "locale": "zh-Hant"
           }
         }
       },
-      "System.ServiceModel.Primitives/10.0.652802": {
+      "System.ServiceModel.Primitives/8.0.0": {
         "type": "package",
         "dependencies": {
-          "System.Security.Principal.Windows": "5.0.0"
+          "Microsoft.Extensions.ObjectPool": "6.0.16",
+          "System.Security.Cryptography.Xml": "6.0.1"
         },
         "compile": {
-          "ref/netcoreapp2.0/_._": {}
+          "ref/net8.0/System.ServiceModel.Primitives.dll": {}
         },
         "runtime": {
-          "lib/netstandard2.0/System.ServiceModel.Duplex.dll": {
+          "lib/net8.0/System.ServiceModel.Primitives.dll": {
             "related": ".pdb"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "cs"
           },
-          "lib/netstandard2.0/System.ServiceModel.Primitives.dll": {
-            "related": ".pdb"
+          "lib/net8.0/de/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "de"
           },
-          "lib/netstandard2.0/System.ServiceModel.Security.dll": {
-            "related": ".pdb"
+          "lib/net8.0/es/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.ServiceModel.Primitives.resources.dll": {
+            "locale": "zh-Hant"
           }
         }
       },
@@ -6522,6 +6614,25 @@
         "microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
         "microsoft.extensions.logging.abstractions.nuspec",
         "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Extensions.ObjectPool/6.0.16": {
+      "sha512": "OVX5tlKg6LY+XKqlUn7i9KY+6Liut0iewWff2DNr7129i/NJ8rpUzbmxavPydZgcLREEWHklXZiPKCS895tNIQ==",
+      "type": "package",
+      "path": "microsoft.extensions.objectpool/6.0.16",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net461/Microsoft.Extensions.ObjectPool.dll",
+        "lib/net461/Microsoft.Extensions.ObjectPool.xml",
+        "lib/net6.0/Microsoft.Extensions.ObjectPool.dll",
+        "lib/net6.0/Microsoft.Extensions.ObjectPool.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.ObjectPool.xml",
+        "microsoft.extensions.objectpool.6.0.16.nupkg.sha512",
+        "microsoft.extensions.objectpool.nuspec"
       ]
     },
     "Microsoft.Extensions.Options/8.0.2": {
@@ -10577,112 +10688,62 @@
         "version.txt"
       ]
     },
-    "System.ServiceModel.Http/10.0.652802": {
-      "sha512": "G02XZvmccf42QCU5MjviBIg69MSMAVHwL1inVPsNSpfp5g+t5BkQM3DyvWRLN4qmeFDWSF/mA1rIYONIDu/6Dg==",
+    "System.ServiceModel.Http/8.0.0": {
+      "sha512": "Qwkoe0F+2e/2LiNwiIgfBTJTw11flv208UwS38ru+GR7nZk2VdGvAE8tqGB0RQIGra73Rux9jKNgfy1XtfXdLg==",
       "type": "package",
-      "path": "system.servicemodel.http/10.0.652802",
+      "path": "system.servicemodel.http/8.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Icon.png",
         "LICENSE.TXT",
-        "README.md",
         "THIRD-PARTY-NOTICES.TXT",
-        "lib/MonoAndroid10/_._",
-        "lib/MonoTouch10/_._",
-        "lib/net10.0/System.ServiceModel.Http.dll",
-        "lib/net10.0/System.ServiceModel.Http.pdb",
-        "lib/net10.0/cs/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/de/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/es/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/fr/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/it/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/ja/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/ko/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/pl/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/pt-BR/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/ru/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/tr/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/zh-Hans/System.ServiceModel.Http.resources.dll",
-        "lib/net10.0/zh-Hant/System.ServiceModel.Http.resources.dll",
-        "lib/net462/System.ServiceModel.Http.dll",
-        "lib/net462/System.ServiceModel.Http.pdb",
-        "lib/netstandard2.0/System.ServiceModel.Http.dll",
-        "lib/netstandard2.0/System.ServiceModel.Http.pdb",
-        "lib/xamarinios10/_._",
-        "lib/xamarinmac20/_._",
-        "lib/xamarintvos10/_._",
-        "lib/xamarinwatchos10/_._",
-        "ref/net10.0/System.ServiceModel.Http.dll",
-        "ref/net462/System.ServiceModel.Http.dll",
-        "ref/netcoreapp2.0/_._",
-        "ref/netstandard2.0/System.ServiceModel.Http.dll",
-        "system.servicemodel.http.10.0.652802.nupkg.sha512",
+        "lib/net8.0/System.ServiceModel.Http.dll",
+        "lib/net8.0/System.ServiceModel.Http.pdb",
+        "lib/net8.0/cs/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/de/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/es/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/fr/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/it/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/ja/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/ko/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/pl/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/pt-BR/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/ru/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/tr/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/zh-Hans/System.ServiceModel.Http.resources.dll",
+        "lib/net8.0/zh-Hant/System.ServiceModel.Http.resources.dll",
+        "system.servicemodel.http.8.0.0.nupkg.sha512",
         "system.servicemodel.http.nuspec"
       ]
     },
-    "System.ServiceModel.Primitives/10.0.652802": {
-      "sha512": "ULfGNl75BNXkpF42wNV2CDXJ64dUZZEa8xO2mBsc4tqbW9QjruxjEB6bAr4Z/T1rNU+leOztIjCJQYsBGFWYlw==",
+    "System.ServiceModel.Primitives/8.0.0": {
+      "sha512": "hVzK77Bl00H+1V7ho7h03tKlgxAIKssV3eUnRdH+gTCZCK4Ywnv2CR35AV9ly/tRpvsGwNL1d/jkAwB1MWw3Fw==",
       "type": "package",
-      "path": "system.servicemodel.primitives/10.0.652802",
+      "path": "system.servicemodel.primitives/8.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Icon.png",
         "LICENSE.TXT",
-        "README.md",
         "THIRD-PARTY-NOTICES.TXT",
-        "lib/MonoAndroid10/_._",
-        "lib/MonoTouch10/_._",
-        "lib/net10.0/System.ServiceModel.Duplex.dll",
-        "lib/net10.0/System.ServiceModel.Duplex.pdb",
-        "lib/net10.0/System.ServiceModel.Primitives.dll",
-        "lib/net10.0/System.ServiceModel.Primitives.pdb",
-        "lib/net10.0/System.ServiceModel.Security.dll",
-        "lib/net10.0/System.ServiceModel.Security.pdb",
-        "lib/net10.0/System.ServiceModel.dll",
-        "lib/net10.0/System.ServiceModel.pdb",
-        "lib/net10.0/cs/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/de/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/es/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/fr/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/it/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/ja/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/ko/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/pl/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/pt-BR/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/ru/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/tr/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/zh-Hans/System.ServiceModel.Primitives.resources.dll",
-        "lib/net10.0/zh-Hant/System.ServiceModel.Primitives.resources.dll",
-        "lib/net462/System.ServiceModel.Duplex.dll",
-        "lib/net462/System.ServiceModel.Duplex.pdb",
-        "lib/net462/System.ServiceModel.Primitives.dll",
-        "lib/net462/System.ServiceModel.Primitives.pdb",
-        "lib/net462/System.ServiceModel.Security.dll",
-        "lib/net462/System.ServiceModel.Security.pdb",
-        "lib/netstandard2.0/System.ServiceModel.Duplex.dll",
-        "lib/netstandard2.0/System.ServiceModel.Duplex.pdb",
-        "lib/netstandard2.0/System.ServiceModel.Primitives.dll",
-        "lib/netstandard2.0/System.ServiceModel.Primitives.pdb",
-        "lib/netstandard2.0/System.ServiceModel.Security.dll",
-        "lib/netstandard2.0/System.ServiceModel.Security.pdb",
-        "lib/xamarinios10/_._",
-        "lib/xamarinmac20/_._",
-        "lib/xamarintvos10/_._",
-        "lib/xamarinwatchos10/_._",
-        "ref/net10.0/System.ServiceModel.Duplex.dll",
-        "ref/net10.0/System.ServiceModel.Primitives.dll",
-        "ref/net10.0/System.ServiceModel.Security.dll",
-        "ref/net10.0/System.ServiceModel.dll",
-        "ref/net462/System.ServiceModel.Duplex.dll",
-        "ref/net462/System.ServiceModel.Primitives.dll",
-        "ref/net462/System.ServiceModel.Security.dll",
-        "ref/netcoreapp2.0/_._",
-        "ref/netstandard2.0/System.ServiceModel.Duplex.dll",
-        "ref/netstandard2.0/System.ServiceModel.Primitives.dll",
-        "ref/netstandard2.0/System.ServiceModel.Security.dll",
-        "system.servicemodel.primitives.10.0.652802.nupkg.sha512",
+        "lib/net8.0/System.ServiceModel.Primitives.dll",
+        "lib/net8.0/System.ServiceModel.Primitives.pdb",
+        "lib/net8.0/cs/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/de/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/es/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/fr/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/it/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/ja/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/ko/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/pl/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/pt-BR/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/ru/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/tr/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/zh-Hans/System.ServiceModel.Primitives.resources.dll",
+        "lib/net8.0/zh-Hant/System.ServiceModel.Primitives.resources.dll",
+        "ref/net8.0/System.ServiceModel.Primitives.dll",
+        "system.servicemodel.primitives.8.0.0.nupkg.sha512",
         "system.servicemodel.primitives.nuspec"
       ]
     },
@@ -11506,8 +11567,8 @@
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 8.0.7",
       "Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore >= 8.0.7",
       "Polly >= 8.6.4",
-      "System.ServiceModel.Http >= 10.0.652802",
-      "System.ServiceModel.Primitives >= 10.0.652802",
+      "System.ServiceModel.Http >= 8.0.0",
+      "System.ServiceModel.Primitives >= 8.0.0",
       "itext7 >= 9.4.0",
       "itext7.bouncy-castle-adapter >= 9.4.0"
     ]
@@ -11596,11 +11657,11 @@
           },
           "System.ServiceModel.Http": {
             "target": "Package",
-            "version": "[10.0.652802, )"
+            "version": "[8.0.0, )"
           },
           "System.ServiceModel.Primitives": {
             "target": "Package",
-            "version": "[10.0.652802, )"
+            "version": "[8.0.0, )"
           },
           "itext7": {
             "target": "Package",
