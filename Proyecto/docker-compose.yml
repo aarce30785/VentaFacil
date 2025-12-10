@@ -16,7 +16,7 @@ services:
       ACCEPT_EULA: 'Y'
       MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
       MSSQL_PID: 'Developer'
-      MSSQL_TCP_PORT: 
+      MSSQL_TCP_PORT: 1433
       MSSQL_MEMORY_LIMIT_MB: 1024
     ports:
       - "1455:1433"
