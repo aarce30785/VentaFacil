@@ -469,9 +469,17 @@
                     $('#TasaCambio').prop('required', true);
                     $('#simboloMoneda').text('$');
                     
-                    // Auto-fill tasa si está vacía
-                    if (!$('#TasaCambio').val() && tasaVentaBccr > 0) {
-                        $('#TasaCambio').val(tasaVentaBccr);
+                    // Auto-fill y bloquear si hay tasa BCCR
+                    if (tasaVentaBccr > 0) {
+                        $('#TasaCambio').val(tasaVentaBccr).prop('readonly', true).addClass('bg-light');
+                        // Agregar badge informativo si no existe
+                        if ($('#bccrBadge').length === 0) {
+                             $('<small id="bccrBadge" class="text-success fw-bold d-block mt-1"><i class="lni lni-check-circle"></i> Tasa BCCR aplicada</small>').insertAfter('#TasaCambio');
+                        }
+                    } else {
+                        // Permitir edición si falló el API
+                        $('#TasaCambio').prop('readonly', false).removeClass('bg-light');
+                        $('#bccrBadge').remove();
                     }
                 } else {
                     $('#tasaCambioGroup').fadeOut();
