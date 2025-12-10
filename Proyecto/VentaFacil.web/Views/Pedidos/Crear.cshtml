@@ -26,9 +26,9 @@
         <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
 
         <div class="row">
-            <!-- Información del Pedido -->
-            <div class="col-md-6">
-                <div class="card mb-4">
+            <!-- Información del Cliente y Acciones -->
+            <div class="col-md-6 d-flex flex-column h-100">
+                <div class="card mb-4 flex-grow-1">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">👤 Información del Cliente</h5>
                     </div>
@@ -81,7 +81,7 @@
                 </div>
 
                 <!-- Resumen del Pedido -->
-                <div class="card">
+                <div class="card mt-4">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">📊 Resumen del Pedido</h5>
                     </div>
@@ -144,10 +144,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Botones de Acción -->
-                
-               
             </div>
         </div>
     </form>
