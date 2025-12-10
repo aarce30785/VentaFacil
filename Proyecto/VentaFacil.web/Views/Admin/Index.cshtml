@@ -222,5 +222,44 @@
                 }
             }
         }
+
+        // ==========================================
+        // SOLUCIÓN GLOBAL PARA MODALES (Solución 2)
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delegación de eventos para manejar cualquier modal dinámico
+            document.body.addEventListener('keydown', function(e) {
+                // Si el evento ocurre dentro de un modal
+                if (e.target.closest('.modal')) {
+                    // Si se presiona Enter en un input (no textarea, no submit)
+                    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && 
+                        e.target.type !== 'submit' && e.target.type !== 'button') {
+                        e.preventDefault();
+                        console.log('Enter prevenido en modal globalmente');
+                        return false;
+                    }
+                }
+            });
+
+            // Prevenir submit estándar en formularios de modales
+            document.body.addEventListener('submit', function(e) {
+                if (e.target.closest('.modal')) {
+                    // Si el formulario no tiene data-ajax="true" (o similar), prevenimos
+                    // En nuestro caso, manejamos todo con fetch manual, así que prevenimos SIEMPRE
+                    // excepto si explícitamente queremos permitirlo (raro en este diseño)
+                    // e.preventDefault(); 
+                    // YA LO MANEJAMOS EN EL SCRIPT ESPECIFICO DE CADA MODAL, 
+                    // PERO ESTO ES UNA CAPA EXTRA DE SEGURIDAD
+                    console.log('Submit detectado en modal global');
+                }
+            });
+
+            // Manejo de cierre de modales
+            document.body.addEventListener('hide.bs.modal', function(e) {
+                // Aquí podríamos agregar lógica para prevenir cierre si hay cambios
+                // Por ahora solo logueamos
+                console.log('Modal cerrándose:', e.target.id);
+            });
+        });
     </script>
 }

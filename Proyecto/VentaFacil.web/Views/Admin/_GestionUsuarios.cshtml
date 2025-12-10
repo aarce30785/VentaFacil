@@ -381,7 +381,17 @@
                     return;
                 }
         
-                const modal = new bootstrap.Modal(modalElement);
+                // Destruir instancia previa si existe para evitar conflictos
+                const prevModal = bootstrap.Modal.getInstance(modalElement);
+                if (prevModal) {
+                    prevModal.dispose();
+                }
+
+                // Inicializar con opciones robustas
+                const modal = new bootstrap.Modal(modalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
         
                 // Configurar el evento cuando el modal se muestra completamente
                 modalElement.addEventListener('shown.bs.modal', function () {
