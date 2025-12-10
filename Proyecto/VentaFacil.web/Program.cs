@@ -288,10 +288,42 @@ namespace VentaFacil.web
                 try
                 {
                     Console.WriteLine($"Intento de conexión {i + 1} de {maxRetries}...");
+
+                    // 1. Conectar a master para verificar/crear la BD
+                    var builder = new SqlConnectionStringBuilder(connectionString);
+                    string targetDatabase = builder.InitialCatalog;
+                    builder.InitialCatalog = "master"; // Cambiar a master
+
+                    using (var masterConn = new SqlConnection(builder.ConnectionString))
+                    {
+                        masterConn.Open();
+                        Console.WriteLine("✅ Conexión a 'master' exitosa");
+
+                        // Verificar si existe la BD
+                        var checkDbCmd = new SqlCommand($"SELECT database_id FROM sys.databases WHERE Name = '{targetDatabase}'", masterConn);
+                        var dbId = checkDbCmd.ExecuteScalar();
+
+                        if (dbId == null)
+                        {
+                            Console.WriteLine($"⚠️ Base de datos '{targetDatabase}' no existe. Creando...");
+                            var createDbCmd = new SqlCommand($"CREATE DATABASE [{targetDatabase}]", masterConn);
+                            createDbCmd.ExecuteNonQuery();
+                            Console.WriteLine($"✅ Base de datos '{targetDatabase}' CREADA exitosamente");
+                            
+                            // Esperar un momento para que la BD esté disponible
+                            System.Threading.Thread.Sleep(2000); 
+                        }
+                        else
+                        {
+                            Console.WriteLine($"✅ Base de datos '{targetDatabase}' ya existe");
+                        }
+                    }
+
+                    // 2. Conectar a la base de datos correcta (VentaFacilDB)
                     using (var conn = new SqlConnection(connectionString))
                     {
                         conn.Open();
-                        Console.WriteLine("✅ Conexión a VentaFacilDB exitosa");
+                        Console.WriteLine($"✅ Conexión a {targetDatabase} exitosa");
 
                         // Si llegamos aquí, salimos del bucle de reintentos
                         // Continuar con la inicialización...
