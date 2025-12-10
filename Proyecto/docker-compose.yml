@@ -51,9 +51,6 @@ services:
       - ./uploads:/wwwroot/uploads
       - /etc/letsencrypt/live/ventafacil-web.com:/certs:ro
       - ./init.sql:/app/init/init.sql
-    depends_on:
-      sqlserver:
-        condition: service_healthy
     restart: unless-stopped
 
 volumes:
