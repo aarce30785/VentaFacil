@@ -1,8 +1,19 @@
 services:
+  fix-permissions:
+    image: alpine
+    user: root
+    command: sh -c "mkdir -p /var/opt/mssql/log /var/opt/mssql/secrets && chown -R 10001:0 /var/opt/mssql/log /var/opt/mssql/secrets && chmod -R 777 /var/opt/mssql/log /var/opt/mssql/secrets"
+    volumes:
+      - ./log:/var/opt/mssql/log
+      - ./secrets:/var/opt/mssql/secrets
+
   sqlserver:
     container_name: ventafacil-db
     hostname: mssql-db
     image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      fix-permissions:
+        condition: service_completed_successfully
     environment:
       ACCEPT_EULA: 'Y'
       MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
