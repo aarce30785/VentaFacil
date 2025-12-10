@@ -42,15 +42,7 @@ namespace VentaFacil.web
             // ===== CONFIGURACIÓN DE KESTREL PARA DOCKER =====
             if (isRunningInContainer)
             {
-                Console.WriteLine("⚡ Configurando Kestrel para Docker (solo HTTP en puerto 8080)");
-                // Configurar Kestrel para usar solo HTTP en Docker
-                builder.WebHost.ConfigureKestrel(options =>
-                {
-                    options.ListenAnyIP(8080); // Solo HTTP
-                });
-                
-                // FUERZA BRUTA: Sobrescribir cualquier variable de entorno
-                builder.WebHost.UseUrls("http://+:8080");
+                Console.WriteLine("⚡ Ejecutando en Docker - Usando configuración por defecto (ASPNETCORE_URLS)");
             }
 
             // ===== CONFIGURACIÓN DE HTTPS / HTTP =====
