@@ -1,119 +1,128 @@
 ﻿@model VentaFacil.web.Models.Dto.RegistrarHorasDto
 
-@{
-    ViewData["Title"] = "Registrar Horas";
-    Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
-}
-
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clockpicker/0.0.7/jquery-clockpicker.min.css" />
     <style>
-        .clockpicker-popover {
-            z-index: 999999;
+        .clockpicker-popover { z-index: 999999; }
+        .premium-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        .form-select, .form-control {
+            border-radius: 30px;
+            font-size: 1rem;
+        }
+        .input-group-text {
+            border-radius: 30px;
+        }
+        .btn-premium {
+            border-radius: 30px !important;
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+        }
+        .card-title {
+            font-weight: 700;
+            color: #6d4c41;
         }
     </style>
 }
 
 <div class="container-fluid p-0">
-    <h1 class="h3 mb-3">Registrar Horas de Trabajo</h1>
-
-    <div class="row">
+    <h2 class="fw-bold text-dark mb-4">Registrar Horas de Trabajo</h2>
+    <div class="row justify-content-center">
         <div class="col-12 col-xl-6">
-            <div class="card">
-                <div class="card-header">
+            <div class="premium-card">
+                <div class="mb-4">
                     <h5 class="card-title mb-0">Formulario de Registro</h5>
                 </div>
-                <div class="card-body">
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible" role="alert">
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            <div class="alert-message">
-                                <strong>Error:</strong> @TempData["Error"]
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="alert-message">
+                            <strong>Error:</strong> @TempData["Error"]
+                        </div>
+                    </div>
+                }
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible" role="alert">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="alert-message">
+                            <strong>Éxito:</strong> @TempData["Success"]
+                        </div>
+                    </div>
+                }
+                <form asp-action="RegistrarHoras" method="post" id="formRegistrarHoras">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id_Planilla" />
+                    <div class="mb-3">
+                        <label asp-for="Id_Usr" class="form-label">Colaborador</label>
+                        <select asp-for="Id_Usr" class="form-select" asp-items="ViewBag.Usuarios">
+                            <option value="">Seleccione un colaborador...</option>
+                        </select>
+                        <span asp-validation-for="Id_Usr" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora de Entrada</label>
+                        <div class="row g-2">
+                            <div class="col-md-7">
+                                <input type="date" id="fechaInicioDate" class="form-control" required />
                             </div>
-                        </div>
-                    }
-
-                    @if (TempData["Success"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible" role="alert">
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            <div class="alert-message">
-                                <strong>Éxito:</strong> @TempData["Success"]
-                            </div>
-                        </div>
-                    }
-
-                    <form asp-action="RegistrarHoras" method="post" id="formRegistrarHoras">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" asp-for="Id_Planilla" />
-
-                        <div class="mb-3">
-                            <label asp-for="Id_Usr" class="form-label">Colaborador</label>
-                            <select asp-for="Id_Usr" class="form-select" asp-items="ViewBag.Usuarios">
-                                <option value="">Seleccione un colaborador...</option>
-                            </select>
-                            <span asp-validation-for="Id_Usr" class="text-danger"></span>
-                        </div>
-
-                        <!-- Fecha Inicio Split -->
-                        <div class="mb-3">
-                            <label class="form-label">Hora de Entrada</label>
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <input type="date" id="fechaInicioDate" class="form-control" required />
-                                </div>
-                                <div class="col-md-5">
-                                    <div class="input-group clockpicker" data-autoclose="true">
-                                        <input type="text" id="fechaInicioTime" class="form-control" placeholder="00:00" required>
-                                        <span class="input-group-text">
-                                            <i class="far fa-clock"></i>
-                                        </span>
-                                    </div>
+                            <div class="col-md-5">
+                                <div class="input-group clockpicker" data-autoclose="true">
+                                    <input type="text" id="fechaInicioTime" class="form-control" placeholder="00:00" required>
+                                    <span class="input-group-text">
+                                        <i class="far fa-clock"></i>
+                                    </span>
                                 </div>
                             </div>
-                            <input type="hidden" asp-for="FechaInicio" />
-                            <span asp-validation-for="FechaInicio" class="text-danger"></span>
                         </div>
-
-                        <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="checkIncompleta">
-                                <label class="form-check-label" for="checkIncompleta">Marcar como jornada incompleta/interrumpida</label>
+                        <input type="hidden" asp-for="FechaInicio" />
+                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="checkIncompleta">
+                            <label class="form-check-label" for="checkIncompleta">Marcar como jornada incompleta/interrumpida</label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="divFechaFinal">
+                        <label class="form-label">Hora de Salida</label>
+                        <div class="row g-2">
+                            <div class="col-md-7">
+                                <input type="date" id="fechaFinalDate" class="form-control" />
                             </div>
-                        </div>
-
-                        <!-- Fecha Final Split -->
-                        <div class="mb-3" id="divFechaFinal">
-                            <label class="form-label">Hora de Salida</label>
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <input type="date" id="fechaFinalDate" class="form-control" />
-                                </div>
-                                <div class="col-md-5">
-                                    <div class="input-group clockpicker" data-autoclose="true">
-                                        <input type="text" id="fechaFinalTime" class="form-control" placeholder="00:00">
-                                        <span class="input-group-text">
-                                            <i class="far fa-clock"></i>
-                                        </span>
-                                    </div>
+                            <div class="col-md-5">
+                                <div class="input-group clockpicker" data-autoclose="true">
+                                    <input type="text" id="fechaFinalTime" class="form-control" placeholder="00:00">
+                                    <span class="input-group-text">
+                                        <i class="far fa-clock"></i>
+                                    </span>
                                 </div>
                             </div>
-                            <input type="hidden" asp-for="FechaFinal" />
-                            <span asp-validation-for="FechaFinal" class="text-danger"></span>
                         </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Observaciones" class="form-label">Observaciones</label>
-                            <textarea asp-for="Observaciones" class="form-control" rows="2"></textarea>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Registrar Jornada</button>
-                            <a asp-action="Consultar" class="btn btn-secondary">Cancelar</a>
-                        </div>
-                    </form>
-                </div>
+                        <input type="hidden" asp-for="FechaFinal" />
+                        <span asp-validation-for="FechaFinal" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Observaciones" class="form-label">Observaciones</label>
+                        <textarea asp-for="Observaciones" class="form-control" rows="2" style="border-radius: 16px;"></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-premium">Registrar Jornada</button>
+                        <a asp-action="Consultar" class="btn btn-secondary btn-premium">Cancelar</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
