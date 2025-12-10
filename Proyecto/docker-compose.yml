@@ -1,4 +1,13 @@
 services:
+  fix-permissions:
+    image: alpine
+    user: root
+    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets"
+    volumes:
+      - sqlserver_data:/var/opt/mssql/data
+      - sqlserver_log:/var/opt/mssql/log
+      - sqlserver_secrets:/var/opt/mssql/secrets
+
   sqlserver:
     container_name: ventafacil-db
     hostname: mssql-db
@@ -18,6 +27,9 @@ services:
       default:
         aliases:
           - sqlserver
+    depends_on:
+      fix-permissions:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   ventafacil.web:
