@@ -48,4 +48,8 @@ COPY --from=publish /app/publish .
 # Copiar carpeta init con init.sql
 COPY ./init /app/init
 
+RUN mkdir -p /https
+COPY VentaFacil.web/certificates/ventafacil.pfx /https/ventafacil.pfx
+RUN chmod 644 /https/ventafacil.pfx
+
 ENTRYPOINT ["dotnet", "VentaFacil.web.dll"]
