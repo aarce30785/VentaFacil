@@ -307,17 +307,36 @@
     // ========== FUNCIONALIDAD PARA USUARIOS ==========
     
     // Auto-submit del filtro de rol cuando cambia
-    document.querySelector('#filtrosForm select[name="rolFiltro"]')?.addEventListener('change', function() {
-        document.getElementById('filtrosForm').submit();
-    });
+    const rolFilter = document.getElementById('rolFiltroSelect'); // We will add this ID
+    if (rolFilter) {
+        rolFilter.addEventListener('change', function() {
+            console.log('Filtro de rol cambiado, enviando formulario...');
+            document.getElementById('filtrosForm').submit();
+        });
+    } else {
+        // Fallback for current selector if ID not added yet (or add ID in separate edit)
+        document.querySelector('#filtrosForm select[name="rolFiltro"]')?.addEventListener('change', function() {
+            console.log('Filtro de rol cambiado (selector genérico), enviando formulario...');
+            document.getElementById('filtrosForm').submit();
+        });
+    }
 
     // Manejar el evento de enter en el campo de búsqueda
-    document.querySelector('#filtrosForm input[name="busqueda"]')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('filtrosForm').submit();
-        }
-    });
+    const busquedaInput = document.querySelector('#filtrosForm input[name="busqueda"]');
+    if (busquedaInput) {
+        busquedaInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('Enter en búsqueda, enviando formulario...');
+                document.getElementById('filtrosForm').submit();
+            }
+        });
+        
+        // Prevent search input from triggering other things on input
+         busquedaInput.addEventListener('input', function(e) {
+            e.stopPropagation();
+        });
+    }
 
     // Función para abrir el modal
     let rolInicial = '';
