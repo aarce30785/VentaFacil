@@ -39,7 +39,6 @@ COPY --from=build /app/publish .
 
 # Exponer puertos
 EXPOSE 8080
-EXPOSE 8081
 
 # Punto de entrada
 ENTRYPOINT ["dotnet", "VentaFacil.web.dll"]
