@@ -65,6 +65,18 @@
       retries: 3
       start_period: 60s
     restart: unless-stopped
+  # Servicio de Email Local
+  postfix:
+    image: juanluisbaptiste/postfix
+    container_name: ventafacil-postfix
+    environment:
+      - SERVER_HOSTNAME=ventafacil-web.com
+      # - SMTP_SERVER=smtp.gmail.com  <-- Eliminado para envío directo
+      # - SMTP_USERNAME=...           <-- Eliminado
+      # - SMTP_PASSWORD=...           <-- Eliminado
+    networks:
+      - ventafacil-network
+    restart: always
 
   # NGINX como reverse proxy (opcional para producción)
   nginx:
