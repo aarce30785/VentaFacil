@@ -17,7 +17,6 @@ services:
       MSSQL_PID: 'Developer'
       MSSQL_TCP_PORT: 1433
       MSSQL_MEMORY_LIMIT_MB: 1024
-    # Usa el mismo puerto interno y externo para evitar confusiones
     ports:
       - "1433:1433"
     volumes:
@@ -32,6 +31,12 @@ services:
     depends_on:
       fix-permissions:
         condition: service_completed_successfully
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "VentaFacilDb123!" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     restart: unless-stopped
 
   ventafacil.web:
@@ -40,9 +45,8 @@ services:
       context: .
       dockerfile: VentaFacil.web/Dockerfile
     environment:
-      # Usa el nombre del contenedor o servicio
-      - ConnectionStrings__DefaultConnection=Server=ventafacil-db,1433;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;MultipleActiveResultSets=true;
-      - ConnectionStrings__MasterConnection=Server=ventafacil-db,1433;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+      - ConnectionStrings__DefaultConnection=Server=ventafacil-db;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;MultipleActiveResultSets=true;
+      - ConnectionStrings__MasterConnection=Server=ventafacil-db;Database=master;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
     ports:
@@ -52,6 +56,8 @@ services:
       - ./dataprotection_keys:/app/keys
       - ./uploads:/wwwroot/uploads
       - /etc/letsencrypt/live/ventafacil-web.com:/certs:ro
+      - ./init.sql:/app/init/init.sql
     depends_on:
-      - sqlserver
+      sqlserver:
+        condition: service_healthy
     restart: unless-stopped
