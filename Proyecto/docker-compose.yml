@@ -61,3 +61,13 @@ services:
       sqlserver:
         condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+  sqlserver_log:
+  sqlserver_secrets:
+
+
+networks:
+  default:
+    driver: bridge
