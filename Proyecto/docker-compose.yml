@@ -8,8 +8,6 @@
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
-    profiles:
-      - fix-perms # Solo ejecutar cuando sea necesario
 
   sqlserver:
     container_name: ventafacil-db
