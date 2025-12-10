@@ -15,9 +15,9 @@ namespace VentaFacil.web.Controllers
     {
         private readonly IPlanillaService _planillaService;
         private readonly IBonificacionService _bonificacionService;
-        private readonly PdfService _pdfService;
+        private readonly IPdfService _pdfService;
 
-        public PlanillaController(IPlanillaService planillaService, IBonificacionService bonificacionService, PdfService pdfService)
+        public PlanillaController(IPlanillaService planillaService, IBonificacionService bonificacionService, IPdfService pdfService)
         {
             _planillaService = planillaService;
             _bonificacionService = bonificacionService;

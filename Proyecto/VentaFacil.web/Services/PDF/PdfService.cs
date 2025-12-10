@@ -167,7 +167,52 @@ namespace VentaFacil.web.Services.PDF
 
         public byte[] GenerarHistorialMovimientosPdf(List<InventarioMovimientoDto> movimientos, string nombreInsumo)
         {
-            throw new NotImplementedException("Método pendiente de migración a iText7");
+            using (var stream = new MemoryStream())
+            {
+                var writer = new PdfWriter(stream);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf);
+
+                // Fuentes
+                var fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+                var fontRegular = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+                // Título
+                document.Add(new Paragraph($"Historial de Movimientos - {nombreInsumo}")
+                    .SetFont(fontBold)
+                    .SetFontSize(18)
+                    .SetTextAlignment(TextAlignment.CENTER));
+
+                document.Add(new Paragraph($"Generado el: {DateTime.Now:dd/MM/yyyy HH:mm}")
+                    .SetFontSize(10)
+                    .SetTextAlignment(TextAlignment.CENTER));
+
+                document.Add(new Paragraph("\n"));
+
+                // Tabla
+                var table = new Table(UnitValue.CreatePercentArray(new float[] { 1, 2, 2, 2, 1 }));
+                table.SetWidth(UnitValue.CreatePercentValue(100));
+
+                // Encabezados
+                table.AddHeaderCell(new Cell().Add(new Paragraph("ID").SetFont(fontBold)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Fecha").SetFont(fontBold)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Tipo").SetFont(fontBold)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Cantidad").SetFont(fontBold)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Usuario").SetFont(fontBold)));
+
+                foreach (var item in movimientos)
+                {
+                    table.AddCell(new Paragraph(item.Id_Movimiento.ToString()).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.Fecha.ToString("dd/MM/yyyy HH:mm")).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.Tipo_Movimiento).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.Cantidad.ToString()).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.Id_Usuario.ToString()).SetFont(fontRegular));
+                }
+
+                document.Add(table);
+                document.Close();
+                return stream.ToArray();
+            }
         }
     }
 }
