@@ -42,8 +42,7 @@
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "8080:8080"
     volumes:
       - ./dataprotection_keys:/app/keys
       - ./uploads:/wwwroot/uploads
@@ -56,6 +55,7 @@ volumes:
   sqlserver_data:
   sqlserver_log:
   sqlserver_secrets:
+
 
 networks:
   default:
