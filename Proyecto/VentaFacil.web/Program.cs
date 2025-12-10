@@ -378,10 +378,8 @@ namespace VentaFacil.web
                         {
                             Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
                         }
-                    }
                 }
             }
-        }
 
         private static void TestDatabaseConnection(IConfiguration configuration)
         {
