@@ -46,19 +46,41 @@ namespace VentaFacil.web.Services.Caja
             return caja;
         }
 
+        public async Task<CajaRetiro> RegistrarIngresoAsync(int idCaja, int idUsuario, decimal monto, string motivo)
+        {
+            var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Id_Caja == idCaja && c.Estado == "Abierta");
+            if (caja == null)
+                throw new InvalidOperationException("Caja no encontrada o ya cerrada.");
+
+            caja.Monto += monto;
+
+            var ingreso = new CajaRetiro
+            {
+                Id_Caja = idCaja,
+                Id_Usuario = idUsuario,
+                Monto = monto,
+                Motivo = motivo,
+                FechaHora = DateTime.Now
+            };
+
+            _context.CajaRetiro.Add(ingreso);
+            await _context.SaveChangesAsync();
+            return ingreso;
+        }
+
         public async Task<CajaRetiro> RegistrarRetiroAsync(int idCaja, int idUsuario, decimal monto, string motivo)
         {
             var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Id_Caja == idCaja && c.Estado == "Abierta");
             if (caja == null)
                 throw new InvalidOperationException("Caja no encontrada o ya cerrada.");
 
-            caja.Monto = caja.Monto -= monto;
+            caja.Monto -= monto;
 
             var retiro = new CajaRetiro
             {
                 Id_Caja = idCaja,
                 Id_Usuario = idUsuario,
-                Monto = monto,
+                Monto = -monto, // Guardar como negativo para reflejar gasto
                 Motivo = motivo,
                 FechaHora = DateTime.Now
             };

@@ -70,13 +70,14 @@ namespace VentaFacil.web.Services.Facturacion
                     var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Estado == "Abierta");
                     if (caja != null)
                     {
-                        // Registrar ingreso del monto pagado (positivo)
-                        await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, montoPagado, "Ingreso por venta en efectivo");
-                        // Registrar retiro del vuelto si aplica (negativo)
+                        // Registrar ingreso del monto pagado
+                        await _cajaService.RegistrarIngresoAsync(caja.Id_Caja, caja.Id_Usuario, montoPagado, "Ingreso por venta en efectivo");
+                        
+                        // Registrar retiro del vuelto si aplica
                         var vuelto = montoPagado - factura.Total;
                         if (vuelto > 0)
                         {
-                            await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, -vuelto, "Retiro de vuelto entregado al cliente");
+                            await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, vuelto, "Retiro de vuelto entregado al cliente");
                         }
                     }
                 }

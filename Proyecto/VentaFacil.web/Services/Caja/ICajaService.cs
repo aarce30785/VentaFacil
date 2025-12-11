@@ -8,6 +8,7 @@ namespace VentaFacil.web.Services.Caja
     {
         Task<VentaFacil.web.Models.Caja> AbrirCajaAsync(int idUsuario, decimal montoInicial);
         Task<VentaFacil.web.Models.Caja> CerrarCajaAsync(int idCaja);
+        Task<CajaRetiro> RegistrarIngresoAsync(int idCaja, int idUsuario, decimal monto, string motivo);
         Task<CajaRetiro> RegistrarRetiroAsync(int idCaja, int idUsuario, decimal monto, string motivo);
         Task<List<VentaFacil.web.Models.Caja>> ListarCajasAsync(); 
         Task<List<CajaRetiro>> ObtenerRetirosPorCajaAsync(int idCaja);
