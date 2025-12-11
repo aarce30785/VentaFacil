@@ -1,6 +1,11 @@
 ﻿@using VentaFacil.web.Models
 @using VentaFacil.web.Models.Response.Planilla
 @model NominaConsultaResponse
+@{
+    var cultureCR = new System.Globalization.CultureInfo("es-CR");
+    var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
+}
 
 <style>
     :root {
@@ -99,7 +104,7 @@
                     <div class="mb-2">
                         <i class="fas fa-money-bill-wave text-success fs-2"></i>
                     </div>
-                    <h3 class="fw-bold mb-0">@((Model?.Nominas?.Sum(x => x.TotalNeto) ?? 0).ToString("C"))</h3>
+                    <h3 class="fw-bold mb-0">@((Model?.Nominas?.Sum(x => x.TotalNeto) ?? 0).ToString("C", numberFormat))</h3>
                     <p class="text-muted mb-0">Total Pagado</p>
                 </div>
             </div>
@@ -108,7 +113,7 @@
                     <div class="mb-2">
                         <i class="fas fa-chart-pie text-warning fs-2"></i>
                     </div>
-                    <h3 class="fw-bold mb-0>@((Model?.Nominas?.Sum(x => x.TotalDeducciones) ?? 0).ToString("C"))</h3>
+                    <h3 class="fw-bold mb-0>@((Model?.Nominas?.Sum(x => x.TotalDeducciones) ?? 0).ToString("C", numberFormat))</h3>
                     <p class="text-muted mb-0">Total Deducciones</p>
                 </div>
             </div>
@@ -213,8 +218,13 @@
                                     <td>
                                         @if(item.Planillas != null && item.Planillas.Any())
                                         {
-                                            var nombres = item.Planillas.Where(p => p.Usuario != null).Select(p => p.Usuario.Nombre).Take(3).ToList();
-                                            var total = item.Planillas.Count();
+                                            var nombres = item.Planillas
+                                                .Where(p => p.Usuario != null)
+                                                .Select(p => p.Usuario.Nombre)
+                                                .Distinct()
+                                                .Take(3)
+                                                .ToList();
+                                            var total = item.Planillas.Select(p => p.Usuario?.Id_Usr).Distinct().Count();
                                             
                                             @string.Join(", ", nombres)
                                             @(total > 3 ? $" y {total - 3} más..." : "")
@@ -241,9 +251,9 @@
                                             <span class="badge badge-premium bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">@item.Estado</span>
                                         }
                                     </td>
-                                    <td class="text-secondary">@item.TotalBruto.ToString("C2")</td>
-                                    <td class="text-danger">@item.TotalDeducciones.ToString("C2")</td>
-                                    <td class="fw-bold text-success">@item.TotalNeto.ToString("C2")</td>
+                                    <td class="text-secondary">@item.TotalBruto.ToString("C", numberFormat)</td>
+                                    <td class="text-danger">@item.TotalDeducciones.ToString("C", numberFormat)</td>
+                                    <td class="fw-bold text-success">@item.TotalNeto.ToString("C", numberFormat)</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
                                             <a href="#" class="btn btn-info btn-premium btn-sm disabled" title="Ver Detalle">
