@@ -7,6 +7,8 @@ using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Services.Planilla;
 using VentaFacil.web.Services.PDF;
 
+using System.Security.Claims;
+
 namespace VentaFacil.web.Controllers
 {
     [Authorize]
@@ -231,8 +233,7 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GuardarBonificacion([FromBody] BonificacionDto dto)
         {
-            // TODO: Obtener ID de usuario real de la sesión
-            int idUsuario = 1; 
+            int idUsuario = GetUserId(); 
 
             var response = await _bonificacionService.AgregarBonificacionAsync(dto, idUsuario);
             return Json(response);
@@ -242,8 +243,7 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarBonificacion(int id, [FromBody] BonificacionDto dto)
         {
-            // TODO: Obtener ID de usuario real de la sesión
-            int idUsuario = 1;
+            int idUsuario = GetUserId();
 
             var response = await _bonificacionService.EditarBonificacionAsync(id, dto, idUsuario);
             return Json(response);
@@ -253,8 +253,7 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarBonificacion(int id)
         {
-            // TODO: Obtener ID de usuario real de la sesión
-            int idUsuario = 1;
+            int idUsuario = GetUserId();
 
             var response = await _bonificacionService.EliminarBonificacionAsync(id, idUsuario);
             return Json(response);
@@ -268,5 +267,15 @@ namespace VentaFacil.web.Controllers
             var usuarios = await _planillaService.ObtenerUsuariosAsync();
             ViewBag.Usuarios = new SelectList(usuarios, "Id_Usr", "Nombre");
         }
+        private int GetUserId()
+        {
+            var userIdClaim = User.FindFirst("UsuarioId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                return userId;
+            }
+            return 0;
+        }
+
     }
 }
