@@ -268,6 +268,31 @@ namespace VentaFacil.web.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> CrearUsuario()
+        {
+            var roles = await _usuarioService.GetRolesAsync();
+            ViewBag.Roles = roles ?? new List<SelectListItem>();
+
+            var model = new UsuarioDto { Estado = true };
+            return View("UsuarioForm", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditarUsuario(int id)
+        {
+            var usuario = await _usuarioService.GetUsuarioByIdAsync(id);
+            if (usuario == null)
+            {
+                return RedirectToAction("IndexUsuarios");
+            }
+
+            var roles = await _usuarioService.GetRolesAsync();
+            ViewBag.Roles = roles ?? new List<SelectListItem>();
+
+            return View("UsuarioForm", usuario);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> ObtenerModalUsuario(string accion, int? usuarioId = null,
             string? busqueda = null, int? rolFiltro = null, int pagina = 1)
         {
@@ -362,61 +387,22 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
-                Console.WriteLine($"Datos recibidos - ID: {usuarioDto.Id_Usr}, Nombre: {usuarioDto.Nombre}, Correo: {usuarioDto.Correo}, Rol: {usuarioDto.Rol}");
-                Console.WriteLine($"Contraseña recibida: {(string.IsNullOrEmpty(usuarioDto.Contrasena) ? "VACÍA" : "PRESENTE")}");
-                Console.WriteLine($"Filtros - Búsqueda: {busqueda}, RolFiltro: {rolFiltro}, Página: {pagina}");
-
-                ModelState.Clear();
-
                 if (usuarioDto.Id_Usr > 0 && string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
                     usuarioDto.Contrasena = null;
                     usuarioDto.ConfirmarContrasena = null;
-
                     ModelState.Remove("Contrasena");
                     ModelState.Remove("ConfirmarContrasena");
                 }
 
-                var validationContext = new ValidationContext(usuarioDto, null, null);
-                var validationResults = new List<ValidationResult>();
-                bool isValid = Validator.TryValidateObject(usuarioDto, validationContext, validationResults, true);
-
-                foreach (var validationResult in validationResults)
-                {
-                    foreach (var memberName in validationResult.MemberNames)
-                    {
-                        if (!ModelState.ContainsKey(memberName) || !ModelState[memberName].Errors.Any(e => e.ErrorMessage == validationResult.ErrorMessage))
-                        {
-                            ModelState.AddModelError(memberName, validationResult.ErrorMessage);
-                        }
-                    }
-                }
-
                 if (!ModelState.IsValid)
                 {
-                    var errors = ModelState
-                        .Where(ms => ms.Value.Errors.Any())
-                        .SelectMany(ms => ms.Value.Errors
-                            .Where(e => !string.IsNullOrEmpty(e.ErrorMessage))
-                            .Select(e => new { Field = ms.Key, Message = e.ErrorMessage }))
-                        .ToList();
-
-                    var errorMessages = errors.Select(e => e.Message).Distinct().ToList();
-                    var fieldErrors = errors.ToDictionary(e => e.Field, e => e.Message);
-
-                    Console.WriteLine($"Errores de validación: {string.Join(", ", errorMessages)}");
-
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Error de validación",
-                        errors = errorMessages,
-                        fieldErrors = fieldErrors
-                    });
+                    var roles = await _usuarioService.GetRolesAsync();
+                    ViewBag.Roles = roles ?? new List<SelectListItem>();
+                    return View("UsuarioForm", usuarioDto);
                 }
 
                 bool result;
-
                 if (usuarioDto.Id_Usr > 0)
                 {
                     result = await _adminService.ActualizarUsuarioAsync(usuarioDto);
@@ -428,33 +414,23 @@ namespace VentaFacil.web.Controllers
 
                 if (result)
                 {
-                    return Ok(new
-                    {
-                        success = true,
-                        message = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente"
-                    });
+                    TempData["MensajeExito"] = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente";
+                    return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, pagina });
                 }
                 else
                 {
-                    var operation = usuarioDto.Id_Usr > 0 ? "actualizar" : "crear";
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = $"Error al {operation} el usuario",
-                        errors = new List<string> { $"No se pudo {operation} el usuario en la base de datos" }
-                    });
+                    ModelState.AddModelError("", "Error al guardar el usuario en la base de datos");
+                    var roles = await _usuarioService.GetRolesAsync();
+                    ViewBag.Roles = roles ?? new List<SelectListItem>();
+                    return View("UsuarioForm", usuarioDto);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Excepción en GuardarUsuario: {ex}");
-
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = "Error interno del servidor",
-                    errors = new List<string> { ex.Message }
-                });
+                ModelState.AddModelError("", "Error interno: " + ex.Message);
+                var roles = await _usuarioService.GetRolesAsync();
+                ViewBag.Roles = roles ?? new List<SelectListItem>();
+                return View("UsuarioForm", usuarioDto);
             }
         }
 

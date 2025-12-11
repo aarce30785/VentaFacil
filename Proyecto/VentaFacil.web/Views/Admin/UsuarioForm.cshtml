@@ -1,0 +1,112 @@
+@model VentaFacil.web.Models.Dto.UsuarioDto
+
+@{
+    Layout = "_LayoutPlantilla";
+    var esEdicion = Model.Id_Usr > 0;
+    ViewData["Title"] = esEdicion ? "Editar Usuario" : "Crear Usuario";
+    var roles = ViewBag.Roles as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-style mb-30">
+                <div class="title d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-10">@ViewData["Title"]</h6>
+                    <a href="@Url.Action("IndexUsuarios", "Admin")" class="btn btn-sm btn-light border">
+                        <i class="lni lni-arrow-left"></i> Volver a la lista
+                    </a>
+                </div>
+
+                <form asp-action="GuardarUsuario" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id_Usr" />
+                    
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach (var modelState in ViewData.ModelState.Values)
+                                {
+                                    foreach (var error in modelState.Errors)
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label asp-for="Nombre">Nombre Completo</label>
+                                <input asp-for="Nombre" placeholder="Ingrese el nombre completo" />
+                                <span asp-validation-for="Nombre" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label asp-for="Correo">Correo Electrónico</label>
+                                <input asp-for="Correo" type="email" placeholder="ejemplo@correo.com" />
+                                <span asp-validation-for="Correo" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label asp-for="Contrasena">Contraseña</label>
+                                <input asp-for="Contrasena" type="password" 
+                                       placeholder="@(esEdicion ? "Dejar vacío para mantener actual" : "Mínimo 6 caracteres")" />
+                                <span asp-validation-for="Contrasena" class="text-danger"></span>
+                                @if (esEdicion)
+                                {
+                                    <small class="text-muted">Si no desea cambiar la contraseña, deje este campo vacío.</small>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-style-1">
+                                <label asp-for="ConfirmarContrasena">Confirmar Contraseña</label>
+                                <input asp-for="ConfirmarContrasena" type="password" placeholder="Confirmar contraseña" />
+                                <span asp-validation-for="ConfirmarContrasena" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="select-style-1">
+                                <label asp-for="Rol">Rol de Usuario</label>
+                                <div class="select-position">
+                                    <select asp-for="Rol" asp-items="roles">
+                                        <option value="">Seleccione un rol</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="Rol" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                             <div class="form-check form-switch mt-4 pt-2">
+                                <input class="form-check-input" type="checkbox" asp-for="Estado" id="EstadoCheck">
+                                <label class="form-check-label" for="EstadoCheck">Usuario Activo</label>
+                            </div>
+                            <span asp-validation-for="Estado" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4">
+                        <button type="submit" class="main-btn primary-btn btn-hover w-100">
+                            <i class="lni lni-save me-2"></i> @(esEdicion ? "Actualizar Usuario" : "Crear Usuario")
+                        </button>
+                        <a href="@Url.Action("IndexUsuarios", "Admin")" class="main-btn light-btn btn-hover">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

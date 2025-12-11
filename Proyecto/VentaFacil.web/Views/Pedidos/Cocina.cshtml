@@ -415,8 +415,65 @@
     </div>
 </div>
 
+<!-- Modal Confirmación -->
+<div class="modal fade" id="modalConfirmacion" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="modalConfirmacionTitulo">Confirmación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalConfirmacionMensaje">
+                ¿Está seguro de realizar esta acción?
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="btnConfirmarAccion">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Mensaje (Alerta) -->
+<div class="modal fade" id="modalMensaje" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Información</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalMensajeTexto">
+                Operación realizada con éxito.
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        // --- Modals Helpers ---
+        function mostrarMensaje(mensaje, titulo = 'Información') {
+            document.querySelector('#modalMensaje .modal-title').textContent = titulo;
+            document.getElementById('modalMensajeTexto').textContent = mensaje;
+            new bootstrap.Modal(document.getElementById('modalMensaje')).show();
+        }
+
+        let confirmCallback = null;
+        function mostrarConfirmacion(titulo, mensaje, callback) {
+            document.getElementById('modalConfirmacionTitulo').textContent = titulo;
+            document.getElementById('modalConfirmacionMensaje').textContent = mensaje;
+            confirmCallback = callback;
+            new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
+        }
+
+        document.getElementById('btnConfirmarAccion').addEventListener('click', function() {
+            if (confirmCallback) confirmCallback();
+            bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion')).hide();
+        });
+
         // --- Timers Logic ---
         function updateTimers() {
             const now = new Date();
@@ -454,32 +511,32 @@
             return document.querySelector('input[name="__RequestVerificationToken"]')?.value;
         }
 
-        async function marcarListo(id) {
-            if(!confirm('¿Pedido #' + id + ' listo?')) return;
-            
-            try {
-                const res = await fetch('/Pedidos/MarcarComoListo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pedidoId: id })
-                });
-                if(res.ok) location.reload();
-                else alert('Error al actualizar');
-            } catch(e) { console.error(e); }
+        function marcarListo(id) {
+            mostrarConfirmacion('Pedido Listo', '¿Confirmar que el pedido #' + id + ' está listo?', async () => {
+                try {
+                    const res = await fetch('/Pedidos/MarcarComoListo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pedidoId: id })
+                    });
+                    if(res.ok) location.reload();
+                    else mostrarMensaje('Error al actualizar el estado del pedido', 'Error');
+                } catch(e) { console.error(e); mostrarMensaje('Error de conexión', 'Error'); }
+            });
         }
 
-        async function marcarEntregado(id) {
-            if(!confirm('¿Pedido #' + id + ' entregado?')) return;
-            
-            try {
-                const res = await fetch('/Pedidos/MarcarComoEntregado', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pedidoId: id })
-                });
-                if(res.ok) location.reload();
-                else alert('Error al actualizar');
-            } catch(e) { console.error(e); }
+        function marcarEntregado(id) {
+             mostrarConfirmacion('Pedido Entregado', '¿Confirmar que el pedido #' + id + ' ha sido entregado?', async () => {
+                try {
+                    const res = await fetch('/Pedidos/MarcarComoEntregado', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pedidoId: id })
+                    });
+                    if(res.ok) location.reload();
+                    else mostrarMensaje('Error al actualizar el estado del pedido', 'Error');
+                } catch(e) { console.error(e); mostrarMensaje('Error de conexión', 'Error'); }
+            });
         }
 
         function agregarNota(id) {
@@ -501,9 +558,9 @@
                 if(res.ok) {
                     location.reload();
                 } else {
-                    alert('Error al guardar nota');
+                    mostrarMensaje('Error al guardar la nota', 'Error');
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error(e); mostrarMensaje('Error de conexión', 'Error'); }
         }
 
         // Auto refresh every 30s

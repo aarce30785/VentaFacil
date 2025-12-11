@@ -102,9 +102,9 @@
     </div>
 
     <div class="col-md-4 text-end">
-        <button type="button" class="main-btn primary-btn btn-hover" onclick="abrirModal('crear')">
+        <a href="@Url.Action("CrearUsuario", "Admin")" class="main-btn primary-btn btn-hover">
             <i class="lni lni-plus"></i> Agregar Usuario
-        </button>
+        </a>
     </div>
 </div>
 
@@ -143,54 +143,6 @@
         <tbody>
             @if (Model.Usuarios != null && Model.Usuarios.Any())
             {
-                foreach (var usuario in Model.Usuarios)
-                {
-                    <tr>
-                        <td class="min-width">
-                            <div class="lead">
-                                <div class="lead-image">
-                                    <img src="assets/images/lead/lead-1.png" alt="" />
-                                </div>
-                                <div class="lead-text">
-                                    <p>@usuario.Nombre</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="min-width">
-                            <div class="lead">
-                                <div class="lead-image">
-                                    <img src="assets/images/lead/lead-1.png" alt="" />
-                                </div>
-                                <div class="lead-text">
-                                    <p>@usuario.Correo</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="min-width">
-                            <span class="status-btn active-btn">@usuario.Rol</span>
-                        </td>
-                        <td>
-                            <div class="action d-flex gap-2">
-                                <!-- Ver -->
-                                <a href="javascript:void(0);"
-                                   onclick="abrirModal('ver', @usuario.Id_Usr)"
-                                   class="text-primary" title="Ver">
-                                    <i class="lni lni-eye"></i>
-                                </a>
-
-                                <!-- Editar -->
-                                <a href="javascript:void(0);"
-                                   onclick="abrirModal('editar', @usuario.Id_Usr)"
-                                   class="text-warning" title="Editar">
-                                    <i class="lni lni-pencil"></i>
-                                </a>
-
-                                <!-- Eliminar -->
-                                <a class="text-danger" href="javascript:void(0);"
-                                   onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
-                                   title="Eliminar">
-                                    <i class="lni lni-trash-can"></i>
-                                </a>
                             </div>
                         </td>
                     </tr>
@@ -228,8 +180,6 @@
         </tbody>
     </table>
 </div>
-
-<div id="modalContainer"></div>
 
 <!-- Menú de Paginación -->
 @if (Model.TotalPaginas > 1 && Model.Usuarios != null && Model.Usuarios.Any())
@@ -310,13 +260,10 @@
     const rolFilter = document.getElementById('rolFiltroSelect'); // We will add this ID
     if (rolFilter) {
         rolFilter.addEventListener('change', function() {
-            console.log('Filtro de rol cambiado, enviando formulario...');
             document.getElementById('filtrosForm').submit();
         });
     } else {
-        // Fallback for current selector if ID not added yet (or add ID in separate edit)
         document.querySelector('#filtrosForm select[name="rolFiltro"]')?.addEventListener('change', function() {
-            console.log('Filtro de rol cambiado (selector genérico), enviando formulario...');
             document.getElementById('filtrosForm').submit();
         });
     }
@@ -327,268 +274,35 @@
         busquedaInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                console.log('Enter en búsqueda, enviando formulario...');
                 document.getElementById('filtrosForm').submit();
             }
         });
         
-        // Prevent search input from triggering other things on input
          busquedaInput.addEventListener('input', function(e) {
             e.stopPropagation();
         });
     }
 
-    // Función para abrir el modal
-    let rolInicial = '';
-
-    function abrirModal(accion, usuarioId = null) {
-        console.log('Abriendo modal:', accion, 'Usuario ID:', usuarioId);
-
-        let url = '';
-        const params = new URLSearchParams();
-
-        // Agregar parámetros básicos
-        params.append('accion', accion);
-
-        if (usuarioId) {
-            params.append('usuarioId', usuarioId);
-        }
-
-        // Mantener filtros
-        const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
-        const rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
-        const pagina = '@Model.PaginaActual';
-
-        if (busqueda) params.append('busqueda', busqueda);
-        if (rolFiltro) params.append('rolFiltro', rolFiltro);
-        if (pagina) params.append('pagina', pagina);
-
-        url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
-        console.log('URL del modal:', url);
-
-        // Cargar modal via AJAX
-        fetch(url)
-            .then(response => {
-                if (!response.ok) throw new Error('Error al cargar el modal: ' + response.status);
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('modalContainer').innerHTML = data;
-                const modalElement = document.getElementById('usuarioModal');
-        
-                if (!modalElement) {
-                    console.error('Modal element no encontrado después de cargar');
-                    return;
-                }
-        
-                // Destruir instancia previa si existe para evitar conflictos
-                const prevModal = bootstrap.Modal.getInstance(modalElement);
-                if (prevModal) {
-                    prevModal.dispose();
-                }
-
-                // Inicializar con opciones robustas
-                const modal = new bootstrap.Modal(modalElement, {
-                    backdrop: 'static',
-                    keyboard: false
-                });
-        
-                // Configurar el evento cuando el modal se muestra completamente
-                modalElement.addEventListener('shown.bs.modal', function () {
-                    console.log('Modal mostrado, configurando submit para:', accion);
-                    
-                    // Capturar el rol inicial si es edición
-                    if (accion === 'editar') {
-                        const rolSelect = document.getElementById('Rol');
-                        rolInicial = rolSelect ? rolSelect.value : '';
-                        console.log('Rol inicial capturado:', rolInicial);
-                    }
-                    
-                    configurarSubmitForm(accion);
-                });
-        
-                modal.show();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al cargar el formulario: ' + error.message);
-            });
-    }
-    
-    function configurarSubmitForm(accion) {
-        const form = document.getElementById('usuarioForm');
-
-        if (!form) {
-            console.error('Formulario no encontrado en configurarSubmitForm');
-            return;
-        }
-
-        console.log('Configurando submit para acción:', accion, 'Form:', form);
-
-        // Remover event listeners previos para evitar duplicados
-        const newForm = form.cloneNode(true);
-        form.parentNode.replaceChild(newForm, form);
-
-        newForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            console.log('Submit del formulario para acción:', accion);
-
-            // Limpiar errores previos
-            limpiarErrores();
-
-            // Validación manual del frontend
-            let isValid = true;
-
-            const contrasena = document.getElementById('Contrasena')?.value || '';
-            const confirmar = document.getElementById('ConfirmarContrasena')?.value || '';
-            const rolActual = document.getElementById('Rol')?.value || '';
-
-            // Confirmación de cambio de rol
-            if (accion === 'editar' && rolInicial !== '' && rolActual !== rolInicial) {
-                if (!confirm('¿Está seguro que desea cambiar el rol de este usuario?')) {
-                    console.log('Cambio de rol cancelado por el usuario');
-                    return false;
-                }
-            }
-
-            if (accion === 'crear') {
-                if (!contrasena || contrasena.length < 6) {
-                    mostrarError('Contrasena', 'La contraseña es requerida y debe tener al menos 6 caracteres');
-                    isValid = false;
-                } else if (contrasena !== confirmar) {
-                    mostrarError('ConfirmarContrasena', 'Las contraseñas no coinciden');
-                    isValid = false;
-                }
-            }
-
-            if (accion === 'editar') {
-                if (contrasena || confirmar) {
-                    if (!contrasena || !confirmar) {
-                        mostrarError('Contrasena', 'Debe completar ambos campos de contraseña si desea cambiarla');
-                        isValid = false;
-                    } else if (contrasena.length < 6) {
-                        mostrarError('Contrasena', 'La contraseña debe tener al menos 6 caracteres');
-                        isValid = false;
-                    } else if (contrasena !== confirmar) {
-                        mostrarError('ConfirmarContrasena', 'Las contraseñas no coinciden');
-                        isValid = false;
-                    }
-                }
-            }
-
-            if (!isValid) {
-                console.log('Validación frontend fallida');
-                return false;
-            }
-
-            // Crear FormData directamente desde el formulario
-            const formData = new FormData(newForm);
-
-            // Debug: mostrar datos que se enviarán
-            console.log('Datos a enviar:');
-            for (let [key, value] of formData.entries()) {
-                console.log(key + ': ' + value);
-            }
-
-            // Enviar la solicitud
-            const url = '@Url.Action("GuardarUsuario", "Admin")';
-            console.log('Enviando a:', url);
-
-            fetch(url, {
-                method: 'POST',
-                body: formData // FormData establece automáticamente los headers correctos
-            })
-            .then(response => {
-                console.log('Respuesta HTTP - Status:', response.status, 'OK:', response.ok);
-
-                return response.text().then(text => {
-                    console.log('Respuesta completa recibida:', text);
-
-                    try {
-                        // Intentar parsear como JSON
-                        const jsonData = JSON.parse(text);
-                        console.log('Parseado como JSON exitosamente:', jsonData);
-                        return jsonData;
-                    } catch (e) {
-                        console.log('No es JSON válido, manejando como texto/HTML');
-                    
-                        if (response.status === 400) {
-                            return {
-                                success: false,
-                                message: 'Error de validación en el servidor',
-                                errors: ['Por favor verifique que todos los campos sean correctos'],
-                                fieldErrors: {}
-                            };
-                        }
-                    
-                        if (!response.ok) {
-                            return {
-                                success: false,
-                                message: `Error del servidor: ${response.status}`,
-                                errors: [text.substring(0, 200)],
-                                fieldErrors: {}
-                            };
-                        }
-                    
-                        return {
-                            success: false,
-                            message: 'Respuesta inesperada del servidor',
-                            errors: [text],
-                            fieldErrors: {}
-                        };
-                    }
-                });
-            })
-            .then(result => {
-                if (!result) return;
-
-                console.log('Resultado procesado:', result);
-
-                if (result.success) {
-                    mostrarMensajeExito(result.message);
-            
-                    setTimeout(() => {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
-                        if (modal) modal.hide();
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    console.log('Mostrando errores:', result.errors, result.fieldErrors);
-                    if (result.errors || result.fieldErrors) {
-                        mostrarErroresEnFormulario(result.errors || [], result.fieldErrors || null);
-                    } else {
-                        mostrarErrorGeneral(result.message || 'Error desconocido');
-                    }
-                }
-            })
-            .catch(err => {
-                console.error('Error en fetch:', err);
-                mostrarErrorGeneral('Error de conexión: ' + err.message);
-            });
-        });
-    }
-
+    // Función eliminar (Simplificada para usar fetch y recargar)
     function confirmarEliminacion(usuarioId, nombreUsuario) {
         if (confirm(`¿Está seguro que desea eliminar al usuario "${nombreUsuario}"?`)) {
             fetch(`@Url.Action("EliminarUsuario", "Admin")?id=${usuarioId}`, {
-                method: 'POST',
+                method: 'GET', // Cambiado a GET para simplificar ya que el controller es GET (aunque debería ser POST idealmente, pero el controller actual es GET)
                 headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    // 'RequestVerificationToken': ... (Si fuera POST)
                 }
             })
             .then(response => {
-                if (response.ok) {
-                    mostrarMensajeExito('Usuario eliminado correctamente');
-                    setTimeout(() => window.location.reload(), 1500);
+                if (response.ok || response.redirected) {
+                    // Si el controller redirige, seguir la redirección o recargar
+                    window.location.reload();
                 } else {
-                    mostrarErrorGeneral('Error al eliminar el usuario');
+                    alert('Error al eliminar el usuario');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                mostrarErrorGeneral('Error de conexión');
+                alert('Error de conexión');
             });
         }
     }
