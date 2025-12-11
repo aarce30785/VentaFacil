@@ -9,6 +9,10 @@
     var pedidosEntregados = Model.PedidosEntregados;
     var pedidosCancelados = Model.PedidosCancelados;
     var todosLosPedidos = Model.TodosLosPedidos;
+
+    var cultureCR = new System.Globalization.CultureInfo("es-CR");
+    var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
 }
 
 <style>
@@ -334,7 +338,7 @@
                                         }
                                     </td>
                                     <td class="text-center"><span class="badge bg-secondary rounded-pill">@pedido.Items.Count</span></td>
-                                    <td class="text-end"><span class="fw-bold text-dark">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-end"><span class="fw-bold text-dark">@pedido.Total.ToString("C", numberFormat)</span></td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
                                             <a asp-action="Editar" asp-route-id="@pedido.Id_Venta" class="action-btn text-primary" title="Editar">
@@ -398,7 +402,7 @@
                                         }
                                     </td>
                                     <td class="text-center"><span class="badge bg-secondary rounded-pill">@pedido.Items.Count</span></td>
-                                    <td class="text-end"><span class="fw-bold text-dark">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-end"><span class="fw-bold text-dark">@pedido.Total.ToString("C", numberFormat)</span></td>
                                     <td class="text-center"><small class="text-muted">@pedido.Fecha.ToString("HH:mm")</small></td>
                                     <td class="text-center">
                                         @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
@@ -476,7 +480,7 @@
                                         }
                                     </td>
                                     <td class="text-center"><span class="badge bg-secondary rounded-pill">@pedido.Items.Count</span></td>
-                                    <td class="text-end"><span class="fw-bold text-dark">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-end"><span class="fw-bold text-dark">@pedido.Total.ToString("C", numberFormat)</span></td>
                                     <td class="text-center">
                                         @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
                                         {
@@ -548,7 +552,7 @@
                                         }
                                     </td>
                                     <td class="text-center"><span class="badge bg-light text-muted border rounded-pill">@pedido.Items.Count</span></td>
-                                    <td class="text-end"><span class="fw-bold text-muted">$@pedido.Total.ToString("N2")</span></td>
+                                    <td class="text-end"><span class="fw-bold text-muted">@pedido.Total.ToString("C", numberFormat)</span></td>
                                     <td class="text-center">
                                         @if (pedido.FacturaId.HasValue && pedido.FacturaId > 0)
                                         {

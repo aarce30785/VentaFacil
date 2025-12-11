@@ -4,6 +4,10 @@
 @{
     ViewData["Title"] = "Nuevo Pedido";
     Layout = "_LayoutPlantilla";
+
+    var cultureCR = new System.Globalization.CultureInfo("es-CR");
+    var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
 }
 
 <div class="card shadow-sm p-4">
@@ -92,12 +96,12 @@
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal:</span>
-                            <span class="fw-bold" id="subtotal">$0.00</span>
+                            <span class="fw-bold" id="subtotal">¢0.00</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between">
                             <span class="fw-bold">Total:</span>
-                            <span class="fw-bold text-primary fs-5" id="total">$0.00</span>
+                            <span class="fw-bold text-primary fs-5" id="total">¢0.00</span>
                         </div>
                     </div>
                 </div>
@@ -138,7 +142,7 @@
                                 <tfoot class="table-primary">
                                     <tr>
                                         <th colspan="3" class="text-end">Total:</th>
-                                        <th class="text-end" id="totalTabla">$0.00</th>
+                                        <th class="text-end" id="totalTabla">¢0.00</th>
                                         <th></th>
                                     </tr>
                                 </tfoot>
@@ -172,7 +176,7 @@
                                             data-precio="@producto.Precio"
                                             data-nombre="@producto.Nombre"
                                             data-descripcion="@producto.Descripcion">
-                                        @producto.Nombre - $@producto.Precio.ToString("N2")
+                                        @producto.Nombre - @producto.Precio.ToString("C", numberFormat)
                                     </option>
                                 }
                             </select>
@@ -242,7 +246,7 @@
                 if (selectedOption.value) {
                     document.getElementById('nombreProducto').textContent = selectedOption.getAttribute('data-nombre');
                     document.getElementById('descripcionProducto').textContent = selectedOption.getAttribute('data-descripcion') || 'Sin descripción';
-                    document.getElementById('precioProducto').textContent = '$' + parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
+                    document.getElementById('precioProducto').textContent = '¢' + parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
                     infoProducto.classList.remove('d-none');
                 } else {
                     infoProducto.classList.add('d-none');
@@ -358,9 +362,9 @@
                 listaVacia.style.display = 'block';
                 listaProductos.style.display = 'none';
                 contadorProductos.textContent = '0';
-                subtotalElement.textContent = '$0.00';
-                totalElement.textContent = '$0.00';
-                totalTabla.textContent = '$0.00';
+                subtotalElement.textContent = '¢0.00';
+                totalElement.textContent = '¢0.00';
+                totalTabla.textContent = '¢0.00';
                 return;
             }
 
@@ -383,8 +387,8 @@
                             </button>
                         </div>
                     </td>
-                    <td class="text-end">$${producto.precio.toFixed(2)}</td>
-                    <td class="text-end fw-bold">$${producto.subtotal.toFixed(2)}</td>
+                    <td class="text-end">¢${producto.precio.toFixed(2)}</td>
+                    <td class="text-end fw-bold">¢${producto.subtotal.toFixed(2)}</td>
                     <td class="text-center">
                         <button type="button" class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})">
                             ❌
@@ -395,9 +399,9 @@
             });
 
             contadorProductos.textContent = productosAgregados.length;
-            subtotalElement.textContent = `$${total.toFixed(2)}`;
-            totalElement.textContent = `$${total.toFixed(2)}`;
-            totalTabla.textContent = `$${total.toFixed(2)}`;
+            subtotalElement.textContent = `¢${total.toFixed(2)}`;
+            totalElement.textContent = `¢${total.toFixed(2)}`;
+            totalTabla.textContent = `¢${total.toFixed(2)}`;
         }
 
         function actualizarCantidad(index, nuevaCantidad) {

@@ -5,6 +5,10 @@
     Layout = "_LayoutPlantilla";
     ViewData["Title"] = $"Editar Pedido #{Model.Id_Venta}";
     bool editable = Model.Estado == PedidoEstado.Borrador;
+
+    var cultureCR = new System.Globalization.CultureInfo("es-CR");
+    var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
 }
 
 <style>
@@ -294,8 +298,8 @@
                                                         <span class="badge bg-light text-dark border">@item.Cantidad</span>
                                                     }
                                                 </td>
-                                                <td class="text-end py-3 text-muted">$@item.PrecioUnitario.ToString("N2")</td>
-                                                <td class="text-end pe-4 py-3 fw-bold text-dark">$@item.Subtotal.ToString("N2")</td>
+                                                <td class="text-end py-3 text-muted">@item.PrecioUnitario.ToString("C", numberFormat)</td>
+                                                <td class="text-end pe-4 py-3 fw-bold text-dark">@item.Subtotal.ToString("C", numberFormat)</td>
                                                 @if (editable)
                                                 {
                                                     <td class="text-center py-3">
@@ -329,7 +333,7 @@
                         <div class="d-flex justify-content-end align-items-center">
                             <div class="text-end">
                                 <p class="text-muted mb-1 text-sm text-uppercase fw-bold">Total a Pagar</p>
-                                <h2 class="fw-bold text-primary mb-0">$@Model.Total.ToString("N2")</h2>
+                                <h2 class="fw-bold text-primary mb-0">@Model.Total.ToString("C", numberFormat)</h2>
                             </div>
                         </div>
                     </div>
@@ -364,7 +368,7 @@
                                                 data-precio="@producto.Precio"
                                                 data-nombre="@producto.Nombre"
                                                 data-descripcion="@producto.Descripcion">
-                                            @producto.Nombre - $@producto.Precio.ToString("N2")
+                                            @producto.Nombre - @producto.Precio.ToString("C", numberFormat)
                                         </option>
                                     }
                                 </select>
@@ -521,7 +525,7 @@
                     if (selectedOption.value) {
                         nombreProducto.textContent = selectedOption.getAttribute('data-nombre');
                         descripcionProducto.textContent = selectedOption.getAttribute('data-descripcion') || 'Sin descripción';
-                        precioProducto.textContent = '$' + parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
+                        precioProducto.textContent = '¢' + parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
                         infoProducto.classList.remove('d-none');
                         btnAgregar.disabled = false;
                     } else {
