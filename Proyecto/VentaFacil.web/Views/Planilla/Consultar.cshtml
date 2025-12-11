@@ -192,6 +192,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Colaboradores</th>
                             <th>Periodo Inicio</th>
                             <th>Periodo Final</th>
                             <th>Fecha Generación</th>
@@ -209,6 +210,20 @@
                             {
                                 <tr>
                                     <td>@item.Id_Nomina</td>
+                                    <td>
+                                        @if(item.Planillas != null && item.Planillas.Any())
+                                        {
+                                            var nombres = item.Planillas.Where(p => p.Usuario != null).Select(p => p.Usuario.Nombre).Take(3).ToList();
+                                            var total = item.Planillas.Count();
+                                            
+                                            @string.Join(", ", nombres)
+                                            @(total > 3 ? $" y {total - 3} más..." : "")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
                                     <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
                                     <td>@item.FechaFinal.ToString("dd/MM/yyyy")</td>
                                     <td>@item.FechaGeneracion.ToString("dd/MM/yyyy HH:mm")</td>
@@ -254,7 +269,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-3">
+                                <td colspan="10" class="text-center text-muted py-3">
                                     <div class="empty-state">
                                         <i class="fas fa-folder-open mb-2" style="font-size: 2em;"></i>
                                         <p class="m-0">No se encontraron nóminas registradas.</p>

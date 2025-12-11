@@ -53,7 +53,7 @@ namespace VentaFacil.web.Controllers
             
             // Mantener filtros en la vista
             ViewBag.Filtros = filtros;
-            await CargarUsuariosViewBag();
+            await CargarUsuariosViewBag(filtros.Id_Usr);
 
             return View("~/Views/Planilla/Consultar.cshtml", response);
         }
@@ -100,7 +100,7 @@ namespace VentaFacil.web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                await CargarUsuariosViewBag();
+                await CargarUsuariosViewBag(dto.Id_Usr);
                 return View("~/Views/Planilla/RegistrarHoras.cshtml", dto);
             }
 
@@ -109,7 +109,7 @@ namespace VentaFacil.web.Controllers
             if (!response.Success)
             {
                 TempData["Error"] = response.Message;
-                await CargarUsuariosViewBag();
+                await CargarUsuariosViewBag(dto.Id_Usr);
                 return View("~/Views/Planilla/RegistrarHoras.cshtml", dto);
             }
 
@@ -263,10 +263,10 @@ namespace VentaFacil.web.Controllers
         // ============================
         // METODO AUXILIAR
         // ============================
-        private async Task CargarUsuariosViewBag()
+        private async Task CargarUsuariosViewBag(int? selectedId = null)
         {
             var usuarios = await _planillaService.ObtenerUsuariosAsync();
-            ViewBag.Usuarios = new SelectList(usuarios, "Id_Usr", "Nombre");
+            ViewBag.Usuarios = new SelectList(usuarios, "Id_Usr", "Nombre", selectedId);
         }
         private int GetUserId()
         {

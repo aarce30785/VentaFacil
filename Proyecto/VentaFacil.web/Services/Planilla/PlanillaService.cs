@@ -376,7 +376,10 @@ namespace VentaFacil.web.Services.Planilla
                 int pagina = filtros.Pagina <= 0 ? 1 : filtros.Pagina;
                 int cantidad = filtros.CantidadPorPagina <= 0 ? 10 : filtros.CantidadPorPagina;
 
-                var query = _context.Nomina.AsQueryable();
+                var query = _context.Nomina
+                    .Include(n => n.Planillas)
+                    .ThenInclude(p => p.Usuario)
+                    .AsQueryable();
 
                 // Filtros
                 if (filtros.FechaInicio.HasValue)
