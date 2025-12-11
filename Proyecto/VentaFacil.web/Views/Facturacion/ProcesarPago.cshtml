@@ -1,9 +1,14 @@
 ﻿@using VentaFacil.web.Controllers
 @using VentaFacil.web.Models.Enum
+@using System.Globalization
 @model ProcesarPagoViewModel
 @{
     ViewData["Title"] = "Procesar Pago";
     Layout = "_LayoutPlantilla";
+
+    var cultureCR = CultureInfo.GetCultureInfo("es-CR");
+    var numberFormat = (NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
 }
 
 <style>
@@ -174,7 +179,7 @@
                                     <div class="fw-medium">@item.NombreProducto</div>
                                     <small class="text-muted">x @item.Cantidad</small>
                                 </div>
-                                <div class="fw-bold">@item.Subtotal.ToString("C")</div>
+                                <div class="fw-bold">@item.Subtotal.ToString("C", numberFormat)</div>
                             </div>
                         }
                     </div>
@@ -182,11 +187,11 @@
                     <div class="border-top pt-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="text-muted">Subtotal</span>
-                            <span class="fw-bold">@Model.Total.ToString("C")</span>
+                            <span class="fw-bold">@Model.Total.ToString("C", numberFormat)</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-lg">Total a Pagar</span>
-                            <span class="fw-bold text-primary text-xl">@Model.Total.ToString("C")</span>
+                            <span class="fw-bold text-primary text-xl">@Model.Total.ToString("C", numberFormat)</span>
                         </div>
                     </div>
                 </div>
@@ -251,14 +256,14 @@
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Moneda</label>
                                     <select asp-for="Moneda" class="form-select form-select-lg" id="monedaSelect" style="border-radius: 12px;">
-                                        <option value="CRC">🇨🇷 Colones (₡)</option>
+                                        <option value="CRC">🇨🇷 Colones (¢)</option>
                                         <option value="USD">🇺🇸 Dólares ($)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6" id="tasaCambioGroup" style="display: none;">
                                     <label asp-for="TasaCambio" class="form-label fw-bold">Tasa de Cambio</label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">₡</span>
+                                        <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">¢</span>
                                         <input asp-for="TasaCambio" type="number" step="0.01" class="form-control form-control-lg border-start-0" style="border-radius: 0 12px 12px 0;" placeholder="0.00" />
                                     </div>
                                 </div>
@@ -330,12 +335,12 @@
                                     <tfoot class="table-light fw-bold">
                                         <tr>
                                             <td colspan="2" class="text-end">Total Pagado:</td>
-                                            <td id="splitTotalPaid">₡0.00</td>
+                                            <td id="splitTotalPaid">¢0.00</td>
                                             <td></td>
                                         </tr>
                                         <tr>
                                             <td colspan="2" class="text-end">Restante:</td>
-                                            <td id="splitRemaining" class="text-danger">@Model.Total.ToString("C")</td>
+                                            <td id="splitRemaining" class="text-danger">@Model.Total.ToString("C", numberFormat)</td>
                                             <td></td>
                                         </tr>
                                     </tfoot>
@@ -484,7 +489,7 @@
                 } else {
                     $('#tasaCambioGroup').fadeOut();
                     $('#TasaCambio').prop('required', false);
-                    $('#simboloMoneda').text('₡');
+                    $('#simboloMoneda').text('¢');
                 }
                 calcularCambio();
                 actualizarReflejo();
@@ -505,7 +510,7 @@
                     if (moneda === 'USD') {
                         // Dólares -> Colones
                         const conversion = monto * tasa;
-                        feedback.text(`Equivalente a: ₡${conversion.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`).show();
+                        feedback.text(`Equivalente a: ¢${conversion.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`).show();
                     } else {
                         // Colones -> Dólares (Referencial inversa)
                         if (tasa > 0 && tasaVentaBccr > 0) {
@@ -578,7 +583,7 @@
                         <tr>
                             <td>${pago.MetodoPago}</td>
                             <td>${pago.Moneda} ${pago.Monto.toFixed(2)}</td>
-                            <td>₡${montoCRC.toFixed(2)}</td>
+                            <td>¢${montoCRC.toFixed(2)}</td>
                             <td class="text-end">
                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPago(${index})">
                                     <i class="lni lni-trash-can"></i>
@@ -597,10 +602,10 @@
                     `);
                 });
 
-                $('#splitTotalPaid').text('₡' + totalPagadoCRC.toFixed(2));
+                $('#splitTotalPaid').text('¢' + totalPagadoCRC.toFixed(2));
                 const restante = totalPedido - totalPagadoCRC;
                 const restanteElem = $('#splitRemaining');
-                restanteElem.text('₡' + Math.max(0, restante).toFixed(2));
+                restanteElem.text('¢' + Math.max(0, restante).toFixed(2));
                 
                 if (restante <= 0.01) {
                     restanteElem.removeClass('text-danger').addClass('text-success');
@@ -628,7 +633,7 @@
                 }
 
                 const cambio = totalPagadoCRC - totalPedido;
-                const cambioTexto = '₡' + Math.abs(cambio).toFixed(2);
+                const cambioTexto = '¢' + Math.abs(cambio).toFixed(2);
 
                 $('#cambioDisplay').text((cambio >= 0 ? '' : '-') + cambioTexto);
 

@@ -1,8 +1,13 @@
 ﻿@using VentaFacil.web.Models.ViewModel
+@using System.Globalization
 @model DetalleFacturaViewModel
 @{
     ViewData["Title"] = "Detalle de Factura";
     Layout = "_LayoutPlantilla";
+    var cultureCR = CultureInfo.GetCultureInfo("es-CR");
+    // Ensure the symbol is correct regardless of server settings
+    var numberFormat = (NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
 }
 
 <style>
@@ -33,6 +38,9 @@
         border-radius: 24px 24px 0 0;
         margin-bottom: 0;
         border-bottom: 1px solid #f1f5f9;
+        margin-top: -2.5rem; /* Ajuste para compensar padding del card */
+        margin-left: -2rem;
+        margin-right: -2rem;
     }
     .success-badge {
         width: 80px;
@@ -58,12 +66,12 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         color: var(--text-muted);
-        font-weight: 600;
+        font-weight: 700; /* Increased weight for visibility */
         margin-bottom: 0.25rem;
     }
     .info-value {
-        font-size: 1rem;
-        font-weight: 600;
+        font-size: 1.1rem; /* Slightly larger */
+        font-weight: 700;
         color: var(--text-main);
     }
     .premium-table {
@@ -73,13 +81,13 @@
         background: #fff;
     }
     .premium-table thead th {
-        background-color: #f8fafc;
-        color: #222 !important;
-        font-weight: 600;
+        background-color: #f1f5f9; /* Darker header for contrast */
+        color: #0f172a; /* Darker text */
+        font-weight: 700;
         text-transform: uppercase;
         font-size: 0.85rem;
         letter-spacing: 0.05em;
-        border-bottom: 2px solid #e2e8f0;
+        border-bottom: 2px solid #cbd5e1;
         padding: 1rem;
     }
     .premium-table tbody td {
@@ -87,6 +95,7 @@
         vertical-align: middle;
         border-bottom: 1px solid #f1f5f9;
         color: #334155;
+        font-weight: 500;
     }
     .premium-table tbody tr:last-child td {
         border-bottom: none;
@@ -100,20 +109,31 @@
         border-radius: 16px;
         padding: 2rem;
         margin-top: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     .total-row {
         display: flex;
         justify-content: space-between;
         margin-bottom: 0.75rem;
-        opacity: 0.9;
+        opacity: 1; /* Removed opacity for better contrast */
+        font-size: 1.05rem;
+    }
+    .total-row span:first-child {
+        color: #cbd5e1; /* Lighter text for labels */
+    }
+    .total-row span:last-child {
+        font-weight: 600;
+        color: #ffffff; /* Pure white for values */
     }
     .total-row.final {
         margin-top: 1rem;
         padding-top: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.2);
+        border-top: 1px solid rgba(255,255,255,0.3); /* Higher contrast border */
         font-size: 1.5rem;
-        font-weight: 700;
-        opacity: 1;
+        font-weight: 800;
+    }
+    .total-row.final span:first-child {
+        color: #ffffff;
     }
     .btn-premium {
         border-radius: 30px !important;
@@ -144,7 +164,7 @@
             <h1 class="h3 fw-bold mb-2">¡Pago Exitoso!</h1>
             <p class="mb-0 opacity-75">Gracias por su compra</p>
         </div>
-        <div class="invoice-body p-4">
+        <div class="invoice-body p-4" style="margin-top: 2rem;">
             <div class="info-group mb-4">
                 <div class="row g-4">
                     <div class="col-6 col-md-3">
@@ -171,30 +191,30 @@
                 <div class="total-section mt-4">
                     <div class="total-row">
                         <span>Subtotal</span>
-                        <span>@((Model.Factura?.Total ?? 0).ToString("C"))</span>
+                        <span>@((Model.Factura?.Subtotal ?? 0).ToString("C", numberFormat))</span>
                     </div>
                     <div class="total-row">
                         <span>Impuestos</span>
-                        <span>$0.00</span>
+                        <span>@((Model.Factura?.Impuestos ?? 0).ToString("C", numberFormat))</span>
                     </div>
                     <div class="total-row final">
                         <span>Total</span>
-                        <span>@((Model.Factura?.Total ?? 0).ToString("C"))</span>
+                        <span>@((Model.Factura?.Total ?? 0).ToString("C", numberFormat))</span>
                     </div>
                     <div class="mt-4 pt-3 border-top border-secondary">
-                        <div class="d-flex justify-content-between text-white small mb-1">
+                        <div class="d-flex justify-content-between small mb-2" style="color: #cbd5e1;">
                             <span>Pagado con @(Model.Factura?.Moneda ?? "CRC")</span>
-                            <span>@((Model.Factura?.MontoPagado ?? 0).ToString("C"))</span>
+                            <span class="fw-bold text-white">@((Model.Factura?.MontoPagado ?? 0).ToString("C", numberFormat))</span>
                         </div>
-                        <div class="d-flex justify-content-between text-white fw-bold">
-                            <span>Cambio</span>
-                            <span>@((Model.Factura?.Cambio ?? 0).ToString("C"))</span>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span class="text-white">Cambio</span>
+                            <span class="text-success fs-5">@((Model.Factura?.Cambio ?? 0).ToString("C", numberFormat))</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="info-group">
-                <h5 class="mb-3">Detalle de Productos</h5>
+                <h5 class="mb-3 fw-bold">Detalle de Productos</h5>
                 <form id="formDevolucion" method="post" action="@Url.Action("Devolucion", "Facturacion")">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="facturaId" value="@Model.FacturaId" />
@@ -228,8 +248,8 @@
                                             }
                                             <td>@item.NombreProducto</td>
                                             <td class="text-center">@item.Cantidad</td>
-                                            <td class="text-end">@item.PrecioUnitario.ToString("C")</td>
-                                            <td class="text-end">@item.Subtotal.ToString("C")</td>
+                                            <td class="text-end">@item.PrecioUnitario.ToString("C", numberFormat)</td>
+                                            <td class="text-end">@item.Subtotal.ToString("C", numberFormat)</td>
                                         </tr>
                                     }
                                 }

@@ -82,6 +82,10 @@ namespace VentaFacil.web.Services.PDF
         }
         public byte[] GenerarFacturaPdf(FacturaDto facturaDto, object footer = null, bool esCopia = false)
         {
+            var cultureCR = System.Globalization.CultureInfo.GetCultureInfo("es-CR");
+            var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+            numberFormat.CurrencySymbol = "¢";
+
             using (var stream = new MemoryStream())
             {
                 var writer = new PdfWriter(stream);
@@ -133,8 +137,8 @@ namespace VentaFacil.web.Services.PDF
                 {
                     table.AddCell(new Paragraph(item.NombreProducto).SetFont(fontRegular));
                     table.AddCell(new Paragraph(item.Cantidad.ToString()).SetFont(fontRegular));
-                    table.AddCell(new Paragraph(item.PrecioUnitario.ToString("C2")).SetFont(fontRegular));
-                    table.AddCell(new Paragraph(item.Subtotal.ToString("C2")).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.PrecioUnitario.ToString("C2", numberFormat)).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.Subtotal.ToString("C2", numberFormat)).SetFont(fontRegular));
                 }
 
                 document.Add(table);
@@ -145,13 +149,13 @@ namespace VentaFacil.web.Services.PDF
                 Table totalTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1 })).UseAllAvailableWidth();
                 
                 totalTable.AddCell(new Cell().Add(new Paragraph("Subtotal:").SetFont(fontBold).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
-                totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Subtotal.ToString("C2")).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Subtotal.ToString("C2", numberFormat)).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
                 
                 totalTable.AddCell(new Cell().Add(new Paragraph("Impuestos:").SetFont(fontBold).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
-                totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Impuestos.ToString("C2")).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Impuestos.ToString("C2", numberFormat)).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
 
                 totalTable.AddCell(new Cell().Add(new Paragraph("TOTAL:").SetFont(fontBold).SetFontSize(14).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
-                totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Total.ToString("C2")).SetFont(fontBold).SetFontSize(14).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Total.ToString("C2", numberFormat)).SetFont(fontBold).SetFontSize(14).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
 
                 document.Add(totalTable);
 

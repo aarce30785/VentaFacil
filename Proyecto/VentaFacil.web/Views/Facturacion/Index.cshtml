@@ -7,6 +7,10 @@
     var totalFacturas = Model?.Count() ?? 0;
     var totalMonto = Model?.Sum(f => f.Total) ?? 0;
     var anuladas = Model?.Count(f => f.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Anulada) ?? 0;
+
+    var cultureCR = System.Globalization.CultureInfo.GetCultureInfo("es-CR");
+    var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
 }
 
 <style>
@@ -196,7 +200,7 @@
                         <i class="lni lni-dollar"></i>
                     </div>
                     <div>
-                        <h3 class="mb-0 fw-bold">@totalMonto.ToString("C0")</h3>
+<h3 class="mb-0 fw-bold">@totalMonto.ToString("C0", numberFormat)</h3>
                         <span class="text-sm text-muted">Monto Total</span>
                     </div>
                 </div>
@@ -252,7 +256,7 @@
                                             <span class="fw-medium">@factura.Cliente</span>
                                         </div>
                                     </td>
-                                    <td class="text-end"><span class="fw-bold text-dark">@factura.Total.ToString("C") @factura.Moneda</span></td>
+<td class="text-end"><span class="fw-bold text-dark">@factura.Total.ToString("C", numberFormat) @factura.Moneda</span></td>
                                     <td><span class="badge bg-light text-dark border">@factura.MetodoPago</span></td>
                                     <td class="text-center">
                                         @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Activa)
