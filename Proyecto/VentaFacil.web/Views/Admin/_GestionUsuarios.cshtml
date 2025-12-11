@@ -143,9 +143,50 @@
         <tbody>
             @if (Model.Usuarios != null && Model.Usuarios.Any())
             {
+                foreach (var usuario in Model.Usuarios)
+                {
+                    <tr>
+                        <td class="min-width">
+                            <div class="lead">
+                                <div class="lead-image">
+                                    <img src="assets/images/lead/lead-1.png" alt="" />
+                                </div>
+                                <div class="lead-text">
+                                    <p>@usuario.Nombre</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="min-width">
+                            <div class="lead">
+                                <div class="lead-image">
+                                    <img src="assets/images/lead/lead-1.png" alt="" />
+                                </div>
+                                <div class="lead-text">
+                                    <p>@usuario.Correo</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="min-width">
+                            <span class="status-btn active-btn">@usuario.Rol</span>
+                        </td>
+                        <td>
+                            <div class="action d-flex gap-2">
+                                <!-- Editar -->
+                                <a href="@Url.Action("EditarUsuario", "Admin", new { id = usuario.Id_Usr })"
+                                   class="text-warning" title="Editar">
+                                    <i class="lni lni-pencil"></i>
+                                </a>
+
+                                <!-- Eliminar -->
+                                <a class="text-danger" href="javascript:void(0);"
+                                   onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
+                                   title="Eliminar">
+                                    <i class="lni lni-trash-can"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
+                }
                 }
             }
             else if (Model.Usuarios != null && !Model.Usuarios.Any())
