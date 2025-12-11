@@ -220,8 +220,8 @@
                                         {
                                             var nombres = item.Planillas
                                                 .Where(p => p.Usuario != null)
-                                                .Select(p => p.Usuario.Nombre)
-                                                .Distinct()
+                                                .GroupBy(p => p.Usuario.Id_Usr)
+                                                .Select(g => g.First().Usuario.Nombre.Trim())
                                                 .Take(3)
                                                 .ToList();
                                             var total = item.Planillas.Select(p => p.Usuario?.Id_Usr).Distinct().Count();
