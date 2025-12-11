@@ -184,7 +184,7 @@ namespace VentaFacil.web.Services.Planilla
                 // Buscar planillas en el rango que no tengan nómina asignada o sean pendientes
                 var query = _context.Planilla.AsQueryable();
 
-                query = query.Where(p => p.FechaInicio >= dto.FechaInicio && p.FechaFinal <= dto.FechaFinal);
+                query = query.Where(p => p.FechaInicio >= dto.FechaInicio && p.FechaFinal <= dto.FechaFinal && p.Id_Nomina == null);
 
                 if (dto.IncluirSoloUsuariosActivos)
                 {
