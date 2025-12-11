@@ -18,5 +18,7 @@
         // Esto se mostrará en el combo "Planilla (Periodo)"
         public string Periodo =>
             $"{FechaInicio:dd/MM/yyyy} - {(FechaFinal.HasValue ? FechaFinal.Value.ToString("dd/MM/yyyy") : "Pendiente")}";
+
+        public string InfoCompleta => $"{NombreUsuario} | {Periodo}";
     }
 }

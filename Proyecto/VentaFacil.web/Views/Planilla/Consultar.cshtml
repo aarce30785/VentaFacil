@@ -156,7 +156,9 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label mb-0">Usuario:</label>
-                            <input type="text" name="BusquedaUsuario" class="form-control form-control-sm rounded-pill" placeholder="Nombre o Correo..." value="@(ViewBag.Filtros?.BusquedaUsuario)">
+                            <select name="Id_Usr" class="form-select form-select-sm rounded-pill" asp-items="ViewBag.Usuarios">
+                                <option value="">-- Todos --</option>
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label mb-0">Estado:</label>

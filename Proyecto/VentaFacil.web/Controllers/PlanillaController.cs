@@ -53,6 +53,7 @@ namespace VentaFacil.web.Controllers
             
             // Mantener filtros en la vista
             ViewBag.Filtros = filtros;
+            await CargarUsuariosViewBag();
 
             return View("~/Views/Planilla/Consultar.cshtml", response);
         }
@@ -127,7 +128,7 @@ namespace VentaFacil.web.Controllers
             ViewBag.Planillas = new SelectList(
                 planillas,
                 "Id_Planilla",
-                "Periodo"
+                "InfoCompleta"
             );
 
             return View("~/Views/Planilla/RegistrarExtrasBonos.cshtml", new RegistrarExtrasBonosDto());
@@ -140,7 +141,7 @@ namespace VentaFacil.web.Controllers
             if (!ModelState.IsValid)
             {
                 var planillas = await _planillaService.ObtenerPlanillasParaExtrasAsync();
-                ViewBag.Planillas = new SelectList(planillas, "Id_Planilla", "Periodo");
+                ViewBag.Planillas = new SelectList(planillas, "Id_Planilla", "InfoCompleta");
 
                 return View("~/Views/Planilla/RegistrarExtrasBonos.cshtml", dto);
             }
@@ -152,7 +153,7 @@ namespace VentaFacil.web.Controllers
                 TempData["Error"] = response.Message;
 
                 var planillas = await _planillaService.ObtenerPlanillasParaExtrasAsync();
-                ViewBag.Planillas = new SelectList(planillas, "Id_Planilla", "Periodo");
+                ViewBag.Planillas = new SelectList(planillas, "Id_Planilla", "InfoCompleta");
 
                 return View("~/Views/Planilla/RegistrarExtrasBonos.cshtml", dto);
             }

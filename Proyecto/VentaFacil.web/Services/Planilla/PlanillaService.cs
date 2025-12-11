@@ -464,12 +464,14 @@ namespace VentaFacil.web.Services.Planilla
         public async Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasParaExtrasAsync()
         {
             var planillas = await _context.Planilla
+                .Include(p => p.Usuario)
                 .Select(p => new PlanillaListadoDto
                 {
                     Id_Planilla = p.Id_Planilla,
+                    Id_Usr = p.Id_Usr,
                     FechaInicio = p.FechaInicio,
                     FechaFinal = p.FechaFinal,
-                    NombreUsuario = "Usuario " + p.Id_Usr, // temporal, lo corregimos después
+                    NombreUsuario = p.Usuario.Nombre, 
                     EstadoRegistro = p.EstadoRegistro
                 })
                 .OrderByDescending(p => p.Id_Planilla)
