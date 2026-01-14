@@ -261,7 +261,7 @@ namespace VentaFacil.web
             {
                 app.UseDeveloperExceptionPage();
                 TestDatabaseConnection(builder.Configuration);
-                //InitializeDatabase(builder.Configuration);
+                InitializeDatabase(builder.Configuration);
             }
 
             if (useHttpsRedirection)
@@ -399,7 +399,13 @@ namespace VentaFacil.web
                         Console.WriteLine("⚠️ Base de datos no está inicializada. Creando tablas...");
 
                         // Ejecutar script de inicialización completo
+                        // Determinar ruta del script
                         string scriptPath = "/app/init/init.sql";
+                        if (!File.Exists(scriptPath)) 
+                        {
+                             scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "init", "init.sql");
+                        }
+
                         if (File.Exists(scriptPath))
                         {
                             Console.WriteLine($"Ejecutando script: {scriptPath}");

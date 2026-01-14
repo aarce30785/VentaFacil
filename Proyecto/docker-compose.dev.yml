@@ -1,0 +1,55 @@
+services:
+  # Base de datos SQL Server para desarrollo
+  sqlserver:
+    container_name: ventafacil-db-dev
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
+      MSSQL_PID: 'Developer'
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data_dev:/var/opt/mssql/data
+    networks:
+      ventafacil-dev-network:
+        aliases:
+          - sqlserver
+
+  # Aplicación Web
+  ventafacil.web:
+    container_name: ventafacil-web-dev
+    build:
+      context: .
+      dockerfile: VentaFacil.web/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # Sobrescribimos la conexión para que apunte al contenedor 'sqlserver'
+      # Nota: En desarrollo local usamos 'sa' y la password definida arriba.
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/wwwroot/uploads
+      # Opcional: Montar logs locales
+      - ./logs:/app/logs
+    depends_on:
+      - sqlserver
+    networks:
+      - ventafacil-dev-network
+
+  # Utilidad para corregir permisos si usas Docker Desktop
+  fix-permissions:
+    image: alpine:latest
+    user: root
+    command: sh -c "chown -R 10001:0 /var/opt/mssql/data && chmod -R 775 /var/opt/mssql/data && echo '✅ Permissions fixed'"
+    volumes:
+      - sqlserver_data_dev:/var/opt/mssql/data
+
+volumes:
+  sqlserver_data_dev:
+
+networks:
+  ventafacil-dev-network:
+    driver: bridge

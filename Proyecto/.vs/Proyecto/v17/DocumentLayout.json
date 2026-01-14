@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\VentaFacil\\Proyecto\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{81DDED9D-158B-E303-5F62-77A2896D2A5A}|docker-compose.dcproj|c:\\ventafacil\\proyecto\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{81DDED9D-158B-E303-5F62-77A2896D2A5A}|docker-compose.dcproj|solutionrelative:docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\appsettings.docker.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -13,6 +13,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\services\\pdf\\pdfservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -27,10 +31,6 @@
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{81DDED9D-158B-E303-5F62-77A2896D2A5A}|docker-compose.dcproj|c:\\ventafacil\\proyecto\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{81DDED9D-158B-E303-5F62-77A2896D2A5A}|docker-compose.dcproj|solutionrelative:docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\data\\dbseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\data\\dbseeder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -40,10 +40,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\init\\init.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\init\\init.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\init\\init.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\init\\init.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -53,7 +49,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 821,
-          "SelectedChildIndex": 11,
+          "SelectedChildIndex": 9,
           "Children": [
             {
               "$type": "Bookmark",
@@ -98,58 +94,6 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "PdfService.cs",
-              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Services\\PDF\\PdfService.cs",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Services\\PDF\\PdfService.cs",
-              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Services\\PDF\\PdfService.cs",
-              "RelativeToolTip": "VentaFacil.web\\Services\\PDF\\PdfService.cs",
-              "ViewState": "AgIAADQAAAAAAAAAAAAIwGIAAAAGAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-10T05:32:44.895Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "DbSeeder.cs",
-              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Data\\DbSeeder.cs",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Data\\DbSeeder.cs",
-              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Data\\DbSeeder.cs",
-              "RelativeToolTip": "VentaFacil.web\\Data\\DbSeeder.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-10T11:04:41.381Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Dockerfile",
-              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Dockerfile",
-              "RelativeDocumentMoniker": "VentaFacil.web\\Dockerfile",
-              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Dockerfile",
-              "RelativeToolTip": "VentaFacil.web\\Dockerfile",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAA3AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-12-10T10:35:17.505Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "appsettings.Development.json",
-              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\appsettings.Development.json",
-              "RelativeDocumentMoniker": "VentaFacil.web\\appsettings.Development.json",
-              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\appsettings.Development.json",
-              "RelativeToolTip": "VentaFacil.web\\appsettings.Development.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-12-10T10:33:41.087Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
               "Title": "appsettings.Docker.json",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\appsettings.Docker.json",
@@ -163,7 +107,70 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "docker-compose.yml",
+              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\docker-compose.yml",
+              "RelativeDocumentMoniker": "docker-compose.yml",
+              "ToolTip": "C:\\VentaFacil\\Proyecto\\docker-compose.yml",
+              "RelativeToolTip": "docker-compose.yml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAQwD4AAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
+              "WhenOpened": "2025-12-10T00:30:01.68Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "VentaFacil.web\\appsettings.Development.json",
+              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\appsettings.Development.json",
+              "RelativeToolTip": "VentaFacil.web\\appsettings.Development.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-10T10:33:41.087Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Dockerfile",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Dockerfile",
+              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Dockerfile",
+              "RelativeToolTip": "VentaFacil.web\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-12-10T10:35:17.505Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "DbSeeder.cs",
+              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Data\\DbSeeder.cs",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Data\\DbSeeder.cs",
+              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Data\\DbSeeder.cs",
+              "RelativeToolTip": "VentaFacil.web\\Data\\DbSeeder.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-10T11:04:41.381Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 4,
+              "Title": "PdfService.cs",
+              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Services\\PDF\\PdfService.cs",
+              "RelativeDocumentMoniker": "VentaFacil.web\\Services\\PDF\\PdfService.cs",
+              "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Services\\PDF\\PdfService.cs",
+              "RelativeToolTip": "VentaFacil.web\\Services\\PDF\\PdfService.cs",
+              "ViewState": "AgIAADQAAAAAAAAAAAAIwGIAAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-10T05:32:44.895Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Program.cs",
               "RelativeDocumentMoniker": "VentaFacil.web\\Program.cs",
@@ -171,20 +178,18 @@
               "RelativeToolTip": "VentaFacil.web\\Program.cs",
               "ViewState": "AgIAAJIAAAAAAAAAAAAnwK4AAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-10T06:01:35.444Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-10T06:01:35.444Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
-              "Title": "init.sql ",
+              "Title": "init.sql",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\init\\init.sql",
               "RelativeDocumentMoniker": "VentaFacil.web\\init\\init.sql",
               "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\init\\init.sql",
               "RelativeToolTip": "VentaFacil.web\\init\\init.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2025-12-10T05:55:25.774Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-10T05:55:25.774Z"
             },
             {
               "$type": "Document",
@@ -196,21 +201,7 @@
               "RelativeToolTip": "..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Sdks\\Microsoft.Docker.Sdk\\build\\Microsoft.VisualStudio.Docker.Compose.targets",
               "ViewState": "AgIAAKAAAAAAAAAAAAAcwMkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
-              "WhenOpened": "2025-12-10T05:28:41.351Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "docker-compose.yml",
-              "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\docker-compose.yml",
-              "RelativeDocumentMoniker": "docker-compose.yml",
-              "ToolTip": "C:\\VentaFacil\\Proyecto\\docker-compose.yml",
-              "RelativeToolTip": "docker-compose.yml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
-              "WhenOpened": "2025-12-10T00:30:01.68Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-10T05:28:41.351Z"
             }
           ]
         }
