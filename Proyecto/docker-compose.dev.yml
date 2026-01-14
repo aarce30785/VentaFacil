@@ -47,8 +47,21 @@ services:
     volumes:
       - sqlserver_data_dev:/var/opt/mssql/data
 
+  # Servicio de Correo (Postfix) - Modo Desarrollo
+  postfix:
+    image: juanluisbaptiste/postfix
+    container_name: ventafacil-postfix-dev
+    ports:
+      - "1025:25" # Exponemos el puerto 25 interno al 1025 de tu PC
+    environment:
+      - SERVER_HOSTNAME=ventafacil-web.com
+      - SMTP_NETWORKS=0.0.0.0/0
+    networks:
+      - ventafacil-dev-network
+
 volumes:
   sqlserver_data_dev:
+
 
 networks:
   ventafacil-dev-network:
