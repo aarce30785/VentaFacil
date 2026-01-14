@@ -29,6 +29,7 @@
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
       - ./sqlserver/backups:/var/opt/mssql/backup # Para backups
+    mem_limit: 2g # Límite duro de Docker para evitar consumo excesivo del host
     networks:
       ventafacil-network:
         aliases:
@@ -64,6 +65,7 @@
       - ventafacil-network
     depends_on:
       - sqlserver
+    mem_limit: 1g
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 30s
@@ -78,7 +80,7 @@
     environment:
       - SERVER_HOSTNAME=ventafacil-web.com
       - SMTP_NETWORKS=10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 127.0.0.0/8
-     
+
     networks:
       - ventafacil-network
     restart: always
@@ -89,7 +91,7 @@
     container_name: ventafacil-nginx
     ports:
       - "80:80"
-      - "443:443" 
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro

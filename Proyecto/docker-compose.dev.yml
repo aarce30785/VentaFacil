@@ -11,6 +11,7 @@ services:
       - "1433:1433"
     volumes:
       - sqlserver_data_dev:/var/opt/mssql/data
+    mem_limit: 1g # Limit memory to 1GB to prevent disk swapping
     networks:
       ventafacil-dev-network:
         aliases:
@@ -36,6 +37,7 @@ services:
       - ./logs:/app/logs
     depends_on:
       - sqlserver
+    mem_limit: 512m # Limit memory to 512MB
     networks:
       - ventafacil-dev-network
 
