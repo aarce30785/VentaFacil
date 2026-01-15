@@ -29,7 +29,7 @@
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
       - ./sqlserver/backups:/var/opt/mssql/backup # Para backups
-    mem_limit: 2g # Límite duro de Docker para evitar consumo excesivo del host
+    mem_limit: 4g # Límite duro de Docker para evitar consumo excesivo del host
     networks:
       ventafacil-network:
         aliases:
