@@ -65,6 +65,7 @@
       - ventafacil-network
     depends_on:
       - sqlserver
+      - postfix
     mem_limit: 1g
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]

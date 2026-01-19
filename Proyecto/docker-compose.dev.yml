@@ -11,7 +11,7 @@ services:
       - "1433:1433"
     volumes:
       - sqlserver_data_dev:/var/opt/mssql/data
-    mem_limit: 1g
+    mem_limit: 2g
     depends_on:
       fix-permissions:
         condition: service_completed_successfully
@@ -32,6 +32,8 @@ services:
       # Sobrescribimos la conexión para que apunte al contenedor 'sqlserver'
       # Nota: En desarrollo local usamos 'sa' y la password definida arriba.
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=VentaFacilDB;User Id=sa;Password=VentaFacilDb123!;TrustServerCertificate=true;
+      - EmailSettings__Host=postfix
+      - EmailSettings__Port=25
     ports:
       - "8080:8080"
     volumes:

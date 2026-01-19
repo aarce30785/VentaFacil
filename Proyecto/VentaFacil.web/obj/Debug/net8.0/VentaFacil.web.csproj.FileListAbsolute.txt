@@ -307,7 +307,6 @@ C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\staticwebassets.build.jso
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\staticwebassets.development.json
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\VentaFac.E693DB8C.Up2Date
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\VentaFacil.web.dll
 C:\VentaFacil\Proyecto\VentaFacil.web\obj\Debug\net8.0\refint\VentaFacil.web.dll
