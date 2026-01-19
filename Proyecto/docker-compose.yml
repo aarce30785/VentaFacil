@@ -74,14 +74,14 @@
       retries: 3
       start_period: 60s
     restart: unless-stopped
-  # Servicio de Correo (Postfix) - Modo Producción (Envío Directo)
+  # Servicio de Correo (Postfix) - Custom Build (Alpine)
   postfix:
-    image: catatnight/postfix
+    build:
+      context: ./postfix
+      dockerfile: Dockerfile
     container_name: ventafacil-postfix
     environment:
-      - maildomain=ventafacil-web.com
-      # Dejar smtp_user vacío permite envío sin autenticación desde la red interna
-      - smtp_user=
+      - SERVER_HOSTNAME=ventafacil-web.com
     networks:
       - ventafacil-network
     restart: always
