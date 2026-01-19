@@ -74,14 +74,14 @@
       retries: 3
       start_period: 60s
     restart: unless-stopped
-  # Servicio de Email Local
+  # Servicio de Correo (Postfix) - Modo Producción (Envío Directo)
   postfix:
-    image: juanluisbaptiste/postfix
+    image: catatnight/postfix
     container_name: ventafacil-postfix
     environment:
-      - SERVER_HOSTNAME=ventafacil-web.com
-      - SMTP_NETWORKS=10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 127.0.0.0/8
-
+      - maildomain=ventafacil-web.com
+      # Dejar smtp_user vacío permite envío sin autenticación desde la red interna
+      - smtp_user=
     networks:
       - ventafacil-network
     restart: always
