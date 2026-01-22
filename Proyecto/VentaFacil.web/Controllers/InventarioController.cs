@@ -27,7 +27,7 @@ namespace VentaFacil.web.Controllers
         // GET: Inventario/Listar
         public async Task<IActionResult> Listar()
         {
-            var inventarios = await _inventarioService.ListarTodosAsync();
+            var inventarios = (await _inventarioService.ListarTodosAsync()).OrderByDescending(i => i.Id_Inventario).ToList();
             return View(inventarios);
         }
         // SIN USAR 

@@ -7,13 +7,13 @@
     var roles = ViewBag.Roles as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
 }
 
-<div class="container-fluid">
+<div>
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card-style mb-30">
+            <div class="card-style mb-30 premium-card">
                 <div class="title d-flex justify-content-between align-items-center mb-3">
                     <h6 class="mb-10">@ViewData["Title"]</h6>
-                    <a href="@Url.Action("IndexUsuarios", "Admin")" class="btn btn-sm btn-light border">
+                    <a href="@Url.Action("IndexUsuarios", "Admin")" class="btn btn-sm btn-light border btn-premium">
                         <i class="lni lni-arrow-left"></i> Volver a la lista
                     </a>
                 </div>
@@ -98,10 +98,10 @@
                     </div>
 
                     <div class="d-flex gap-3 mt-4">
-                        <button type="submit" class="main-btn primary-btn btn-hover w-100">
+                        <button type="submit" class="main-btn primary-btn btn-hover w-100 btn-premium">
                             <i class="lni lni-save me-2"></i> @(esEdicion ? "Actualizar Usuario" : "Crear Usuario")
                         </button>
-                        <a href="@Url.Action("IndexUsuarios", "Admin")" class="main-btn light-btn btn-hover">
+                        <a href="@Url.Action("IndexUsuarios", "Admin")" class="main-btn light-btn btn-hover btn-premium">
                             Cancelar
                         </a>
                     </div>

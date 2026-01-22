@@ -302,7 +302,7 @@
                     <table class="table premium-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+
                                 <th>Cliente</th>
                                 <th>Modalidad</th>
                                 <th class="text-center">Items</th>
@@ -314,7 +314,7 @@
                             @foreach (var pedido in pedidosBorrador)
                             {
                                 <tr id="pedido-@pedido.Id_Venta">
-                                    <td><span class="fw-bold text-primary">#@pedido.Id_Venta</span></td>
+
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -375,7 +375,7 @@
                     <table class="table premium-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+
                                 <th>Cliente</th>
                                 <th>Modalidad</th>
                                 <th class="text-center">Items</th>
@@ -389,7 +389,7 @@
                             @foreach (var pedido in pedidosPendientes)
                             {
                                 <tr id="pedido-@pedido.Id_Venta">
-                                    <td><span class="fw-bold text-primary">#@pedido.Id_Venta</span></td>
+
                                     <td><span class="fw-medium">@(string.IsNullOrEmpty(pedido.Cliente) ? "Sin nombre" : pedido.Cliente)</span></td>
                                     <td>
                                         @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
@@ -454,7 +454,7 @@
                     <table class="table premium-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+
                                 <th>Cliente</th>
                                 <th>Modalidad</th>
                                 <th class="text-center">Items</th>
@@ -467,7 +467,7 @@
                             @foreach (var pedido in pedidosListos)
                             {
                                 <tr id="pedido-@pedido.Id_Venta">
-                                    <td><span class="fw-bold text-primary">#@pedido.Id_Venta</span></td>
+
                                     <td><span class="fw-medium">@pedido.Cliente</span></td>
                                     <td>
                                         @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)
@@ -527,7 +527,7 @@
                     <table class="table premium-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+
                                 <th>Cliente</th>
                                 <th>Modalidad</th>
                                 <th class="text-center">Items</th>
@@ -539,7 +539,7 @@
                             @foreach (var pedido in pedidosEntregados)
                             {
                                 <tr id="pedido-@pedido.Id_Venta">
-                                    <td><span class="fw-bold text-muted">#@pedido.Id_Venta</span></td>
+
                                     <td><span class="fw-medium text-muted">@pedido.Cliente</span></td>
                                     <td>
                                         @if (pedido.Modalidad == VentaFacil.web.Models.Enum.ModalidadPedido.EnMesa)

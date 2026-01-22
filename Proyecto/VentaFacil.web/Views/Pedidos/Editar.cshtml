@@ -11,76 +11,10 @@
     numberFormat.CurrencySymbol = "¢";
 }
 
-<style>
-    :root {
-        --primary-color: #4f46e5;
-        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
 
-    .premium-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-        height: 100%;
-    }
-
-    .card-header-custom {
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .card-body-custom {
-        padding: 1.5rem;
-    }
-
-    .status-badge-lg {
-        padding: 0.5rem 1rem;
-        border-radius: 9999px;
-        font-weight: 600;
-        font-size: 0.875rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .product-list-item {
-        transition: background-color 0.2s;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .product-list-item:last-child {
-        border-bottom: none;
-    }
-
-    .product-list-item:hover {
-        background-color: #f8fafc;
-    }
-
-    .total-section {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1.5rem;
-    }
-
-    .btn-premium {
-        border-radius: 9999px;
-        padding: 0.6rem 1.5rem;
-        font-weight: 500;
-        transition: all 0.2s;
-    }
-
-    .btn-premium:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-</style>
 
 <section class="section">
-    <div class="container-fluid">
+    <div class="pt-30">
         <!-- Header -->
         <div class="title-wrapper pt-30 mb-4">
             <div class="row align-items-center">
@@ -211,37 +145,29 @@
                                 bool puedeProceder = tieneProductos && tieneCliente && mesaValida;
                             }
 
-                            <form method="post" asp-action="ProcederAlPago" class="mb-2">
-                                <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
-                                <button type="submit" class="btn btn-success btn-premium w-100 @(!puedeProceder ? "disabled" : "")">
-                                    <i class="lni lni-credit-card me-2"></i> Proceder al Pago
+                            <div class="d-grid gap-2">
+                                <form method="post" asp-action="ProcederAlPago" class="mb-2">
+                                    <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
+                                    <button type="submit" class="btn btn-success btn-premium w-100 @(!puedeProceder ? "disabled" : "")">
+                                        <i class="lni lni-credit-card me-2"></i> Proceder al Pago
+                                    </button>
+                                </form>
+                                
+                                <form method="post" asp-action="GuardarBorrador" class="mb-2">
+                                    <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
+                                    <button type="submit" class="btn btn-outline-primary btn-premium w-100">
+                                        <i class="lni lni-save me-2"></i> Guardar Borrador
+                                    </button>
+                                </form>
+
+                                <button type="button" class="btn btn-warning btn-premium w-100 mb-2 text-white" onclick="iniciarPreparacion(@Model.Id_Venta)">
+                                    <i class="lni lni-chef-hat me-2"></i> Enviar a Cocina
                                 </button>
-                            </form>
-                            
-                            @if (!puedeProceder)
-                            {
-                                <div class="text-xs text-muted mb-3 p-2 bg-light rounded">
-                                    <i class="lni lni-warning me-1"></i> Faltan datos:
-                                    @if (!tieneProductos) { <span>Productos, </span> }
-                                    @if (!tieneCliente) { <span>Cliente, </span> }
-                                    @if (!mesaValida) { <span>Mesa</span> }
-                                </div>
-                            }
 
-                            <form method="post" asp-action="GuardarBorrador" class="mb-2">
-                                <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
-                                <button type="submit" class="btn btn-outline-primary btn-premium w-100">
-                                    <i class="lni lni-save me-2"></i> Guardar Borrador
+                                <button type="button" class="btn btn-outline-danger btn-premium w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalCancelarPedido">
+                                    <i class="lni lni-close me-2"></i> Cancelar Pedido
                                 </button>
-                            </form>
-
-                            <button type="button" class="btn btn-warning btn-premium w-100 mb-2 text-white" onclick="iniciarPreparacion(@Model.Id_Venta)">
-                                <i class="lni lni-chef-hat me-2"></i> Enviar a Cocina
-                            </button>
-
-                            <button type="button" class="btn btn-outline-danger btn-premium w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalCancelarPedido">
-                                <i class="lni lni-close me-2"></i> Cancelar Pedido
-                            </button>
+                            </div>
                         </div>
                     </div>
                 }
@@ -306,7 +232,7 @@
                                                         <form method="post" asp-action="EliminarProducto">
                                                             <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
                                                             <input type="hidden" name="itemId" value="@item.Id_Detalle" />
-                                                            <button type="submit" class="btn btn-link text-danger p-0" onclick="return confirm('¿Eliminar?')">
+                                                            <button type="submit" class="btn btn-light btn-sm rounded-circle text-danger" onclick="return confirm('¿Eliminar?')">
                                                                 <i class="lni lni-trash-can"></i>
                                                             </button>
                                                         </form>

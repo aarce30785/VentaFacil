@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\VentaFacil\\Proyecto\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\services\\pdf\\pdfservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\services\\pdf\\pdfservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\views\\shared\\_layoutplantilla.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\views\\shared\\_layoutplantilla.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -35,10 +39,6 @@
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\init\\init.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\services\\pdf\\pdfservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\services\\pdf\\pdfservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|c:\\ventafacil\\proyecto\\ventafacil.web\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{4DAB14B3-7CBC-4905-8B1D-9BB3747BA919}|VentaFacil.web\\VentaFacil.web.csproj|solutionrelative:ventafacil.web\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
@@ -53,7 +53,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 821,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 15,
           "Children": [
             {
               "$type": "Bookmark",
@@ -85,20 +85,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "_LayoutPlantilla.cshtml",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Views\\Shared\\_LayoutPlantilla.cshtml",
               "RelativeDocumentMoniker": "VentaFacil.web\\Views\\Shared\\_LayoutPlantilla.cshtml",
               "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Views\\Shared\\_LayoutPlantilla.cshtml",
               "RelativeToolTip": "VentaFacil.web\\Views\\Shared\\_LayoutPlantilla.cshtml",
-              "ViewState": "AgIAABIAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAFcAAAAAAAAAAAAAADsAAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-01-15T02:41:45.693Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "docker-compose.dcproj",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\docker-compose.dcproj",
               "RelativeDocumentMoniker": "docker-compose.dcproj",
@@ -110,7 +110,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "appsettings.Docker.json",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\appsettings.Docker.json",
               "RelativeDocumentMoniker": "VentaFacil.web\\appsettings.Docker.json",
@@ -122,7 +122,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "docker-compose.yml",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\docker-compose.yml",
               "RelativeDocumentMoniker": "docker-compose.yml",
@@ -134,7 +134,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\appsettings.Development.json",
               "RelativeDocumentMoniker": "VentaFacil.web\\appsettings.Development.json",
@@ -158,7 +158,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "DbSeeder.cs",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Data\\DbSeeder.cs",
               "RelativeDocumentMoniker": "VentaFacil.web\\Data\\DbSeeder.cs",
@@ -170,7 +170,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "init.sql",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\init\\init.sql",
               "RelativeDocumentMoniker": "VentaFacil.web\\init\\init.sql",
@@ -181,19 +181,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 0,
               "Title": "PdfService.cs",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Services\\PDF\\PdfService.cs",
               "RelativeDocumentMoniker": "VentaFacil.web\\Services\\PDF\\PdfService.cs",
               "ToolTip": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Services\\PDF\\PdfService.cs",
               "RelativeToolTip": "VentaFacil.web\\Services\\PDF\\PdfService.cs",
-              "ViewState": "AgIAADQAAAAAAAAAAAAIwGIAAAAGAAAAAAAAAA==",
+              "ViewState": "AgIAAJIAAAAAAAAAAAAlwKQAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-10T05:32:44.895Z"
+              "WhenOpened": "2025-12-10T05:32:44.895Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\Program.cs",
               "RelativeDocumentMoniker": "VentaFacil.web\\Program.cs",

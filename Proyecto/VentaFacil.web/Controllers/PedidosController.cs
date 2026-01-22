@@ -348,7 +348,7 @@ namespace VentaFacil.web.Controllers
         // MÉTODOS AUXILIARES PRIVADOS
         private async Task<PedidosIndexViewModel> CargarModeloVistaIndex(int usuarioId)
         {
-            var pedidos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
+            var pedidos = (await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId)).OrderByDescending(p => p.Id_Venta).ToList();
 
             return new PedidosIndexViewModel
             {

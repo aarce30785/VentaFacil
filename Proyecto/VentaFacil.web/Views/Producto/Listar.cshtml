@@ -5,104 +5,9 @@
     Layout = "_LayoutPlantilla";
 }
 
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
 
-    .premium-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-    }
 
-    .premium-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--hover-shadow);
-    }
-
-    .table-container {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .premium-table thead th {
-        background-color: #f8fafc;
-        color: #64748b;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 1rem;
-    }
-
-    .premium-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155;
-    }
-
-    .premium-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .premium-table tbody tr:hover {
-        background-color: #f8fafc;
-    }
-    
-    .status-btn {
-        padding: 5px 15px;
-        border-radius: 30px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    
-    .active-btn {
-        background-color: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
-    
-    .inactive-btn {
-        background-color: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-    }
-    
-    .success-btn {
-        background-color: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
-    
-    .warning-btn {
-        background-color: rgba(245, 158, 11, 0.1);
-        color: #f59e0b;
-    }
-    
-    .info-btn {
-        background-color: rgba(59, 130, 246, 0.1);
-        color: #3b82f6;
-    }
-    
-    .status-btn.success-btn,
-    .status-btn.info-btn {
-        color: #fff !important;
-    }
-</style>
-
-<div class="container-fluid pt-30">
+<div class="pt-30">
     <!-- Header -->
     <div class="title-wrapper pt-30 mb-4">
         <div class="row align-items-center">
@@ -155,13 +60,13 @@
             <!-- Botones de acción -->
             <div class="col-md-2">
                 <div class="btn-group w-100" role="group">
-                    <button type="submit" class="btn btn-primary">Buscar</button>
-                    <a href="@Url.Action("Listar")" class="btn btn-outline-secondary">Limpiar</a>
+                    <button type="submit" class="btn btn-primary btn-premium">Buscar</button>
+                    <a href="@Url.Action("Listar")" class="btn btn-outline-secondary btn-premium">Limpiar</a>
                 </div>
             </div>
             
             <div class="col-md-3 text-end">
-                <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalProducto('crear')">
+                <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4 btn-premium" onclick="abrirModalProducto('crear')">
                     <i class="lni lni-plus me-2"></i> Nuevo Producto
                 </button>
             </div>

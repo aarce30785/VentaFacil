@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {}
+    "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {}
   },
   "projects": {
-    "c:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {
+    "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
+        "projectUniqueName": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
         "projectName": "VentaFacil.web",
-        "projectPath": "c:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
+        "projectPath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\VentaFacil.web.csproj",
         "packagesPath": "C:\\Users\\mija2\\.nuget\\packages\\",
-        "outputPath": "c:\\VentaFacil\\Proyecto\\VentaFacil.web\\obj\\",
+        "outputPath": "C:\\VentaFacil\\Proyecto\\VentaFacil.web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
