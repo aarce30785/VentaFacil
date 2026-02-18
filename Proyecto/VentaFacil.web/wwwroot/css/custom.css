@@ -32,10 +32,10 @@
     padding: 1.5rem;
 }
 
-.premium-card:hover {
+/* .premium-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--hover-shadow);
-}
+} */
 
 .card-header-custom {
     background: #f8fafc;
@@ -45,10 +45,10 @@
     /* Negate padding of premium-card */
 }
 
-.card-body-custom {
-    /* padding: 1.5rem; */
-    /* Already handled by premium-card */
-}
+/* .card-body-custom {
+    padding: 1.5rem;
+    Already handled by premium-card
+} */
 
 /* Premium Table */
 .table-container {

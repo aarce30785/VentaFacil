@@ -12,7 +12,9 @@ namespace VentaFacil.web.Services.Admin
 
         Task<bool> EliminarUsuarioAsync(int id);
 
-        Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina = 1, int cantidadPorPagina = 10, string busqueda = null,  int? rolFiltro = null);
+        Task<bool> ReactivarUsuarioAsync(int id);
+
+        Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina = 1, int cantidadPorPagina = 10, string busqueda = null,  int? rolFiltro = null, bool mostrarInactivos = false);
 
     }
 }

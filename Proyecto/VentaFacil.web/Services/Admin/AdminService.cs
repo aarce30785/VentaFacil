@@ -19,15 +19,19 @@ namespace VentaFacil.web.Services.Admin
             _context = context;
         }
 
-        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina, int cantidadPorPagina, string busqueda = null, int? rolFiltro = null)
+        public async Task<UsuarioListResponse> GetUsuariosPaginadosAsync(int pagina, int cantidadPorPagina, string busqueda = null, int? rolFiltro = null, bool mostrarInactivos = false)
         {
             try
             {
                 var query = _context.Usuario
                     .Include(u => u.RolNavigation)
-
-                    .Where(u => u.Estado) // Solo usuarios activos
                     .AsQueryable();
+
+                // Filtrar por estado activo/inactivo
+                if (!mostrarInactivos)
+                {
+                    query = query.Where(u => u.Estado);
+                }
 
                 // Aplicar filtro de búsqueda
                 if (!string.IsNullOrEmpty(busqueda))
@@ -176,6 +180,36 @@ namespace VentaFacil.web.Services.Admin
             catch (Exception ex)
             {
                 throw new Exception($"Error al eliminar usuario: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> ReactivarUsuarioAsync(int id)
+        {
+            try
+            {
+                var usuario = await _context.Usuario
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(u => u.Id_Usr == id);
+
+                if (usuario == null)
+                {
+                    throw new Exception("Usuario no encontrado");
+                }
+
+                if (usuario.Estado)
+                {
+                    throw new Exception("El usuario ya se encuentra activo");
+                }
+
+                usuario.Estado = true;
+                _context.Usuario.Update(usuario);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al reactivar usuario: {ex.Message}", ex);
             }
         }
     }

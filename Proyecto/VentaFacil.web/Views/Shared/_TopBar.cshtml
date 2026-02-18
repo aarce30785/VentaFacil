@@ -124,7 +124,6 @@
     <!-- El mensaje se llenará dinámicamente -->
 </div>
 
-@section Scripts {
 <script>
     async function cargarNotificacionesStock() {
         const response = await fetch('@Url.Action("NotificacionesStockMinimoJson", "Inventario")');
@@ -195,5 +194,4 @@
     <script>
         window.onload = function() { checkStockMinimo(); }
     </script>
-}
 }

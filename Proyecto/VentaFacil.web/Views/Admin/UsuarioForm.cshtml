@@ -18,7 +18,7 @@
                     </a>
                 </div>
 
-                <form asp-action="GuardarUsuario" method="post" enctype="multipart/form-data">
+                <form id="userForm" asp-action="GuardarUsuario" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id_Usr" />
                     
@@ -81,7 +81,7 @@
                             <div class="select-style-1">
                                 <label asp-for="Rol">Rol de Usuario</label>
                                 <div class="select-position">
-                                    <select asp-for="Rol" asp-items="roles">
+                                    <select asp-for="Rol" asp-items="roles" id="Rol" data-initial-value="@Model.Rol">
                                         <option value="">Seleccione un rol</option>
                                     </select>
                                 </div>
@@ -90,7 +90,7 @@
                         </div>
                         <div class="col-md-6">
                              <div class="form-check form-switch mt-4 pt-2">
-                                <input class="form-check-input" type="checkbox" asp-for="Estado" id="EstadoCheck">
+                                <input class="form-check-input" type="checkbox" asp-for="Estado" id="EstadoCheck" data-initial-value="@(Model.Estado.ToString().ToLower())">
                                 <label class="form-check-label" for="EstadoCheck">Usuario Activo</label>
                             </div>
                             <span asp-validation-for="Estado" class="text-danger"></span>
@@ -110,3 +110,106 @@
         </div>
     </div>
 </div>
+
+</div>
+
+<!-- Modal de Confirmación de Cambio de Estado -->
+<div class="modal fade" id="confirmStatusChangeModal" tabindex="-1" aria-labelledby="confirmStatusChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmStatusChangeModalLabel">Confirmar Cambio de Estado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea cambiar el estado del usuario?
+                <br />
+                <small class="text-muted">Esto afectará el acceso del usuario al sistema.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmStatusChangeBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="confirmRoleChangeModal" tabindex="-1" aria-labelledby="confirmRoleChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmRoleChangeModalLabel">Confirmar Cambio de Rol</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea cambiar el rol del usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmRoleChangeBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            var form = $('#userForm');
+            var roleModal = new bootstrap.Modal(document.getElementById('confirmRoleChangeModal'));
+            var statusModal = new bootstrap.Modal(document.getElementById('confirmStatusChangeModal'));
+            
+            var roleConfirmed = false;
+            var statusConfirmed = false;
+            
+            if (form.length > 0) {
+                form.on('submit', function (e) {
+                    var isEdit = '@(Model.Id_Usr > 0 ? "true" : "false")' === 'true';
+                    
+                    // 1. Verificación de Cambio de Estado
+                    var statusCheck = $('#EstadoCheck');
+                    var initialStatus = statusCheck.data('initial-value');
+                    var currentStatus = statusCheck.is(':checked').toString().toLowerCase(); // "true" or "false"
+
+                    // Log para depuración
+                    // console.log('Estado:', initialStatus, currentStatus, statusConfirmed);
+
+                    if (isEdit && String(initialStatus) !== String(currentStatus) && !statusConfirmed) {
+                        e.preventDefault();
+                        statusModal.show();
+                        return;
+                    }
+
+                    // 2. Verificación de Cambio de Rol
+                    var roleSelect = $('#Rol');
+                    var initialRole = roleSelect.data('initial-value');
+                    var currentRole = roleSelect.val();
+
+                    if (isEdit && String(initialRole) !== String(currentRole) && !roleConfirmed) {
+                        e.preventDefault();
+                        roleModal.show();
+                        return;
+                    }
+                    
+                    // Si pasa ambas verificaciones (o no hay cambios), el formulario se envía
+                });
+
+                // Handle Confirm button inside Status Modal
+                $('#confirmStatusChangeBtn').on('click', function () {
+                    statusConfirmed = true;
+                    statusModal.hide();
+                    form.submit();
+                });
+
+                // Handle Confirm button inside Role Modal
+                $('#confirmRoleChangeBtn').on('click', function () {
+                    roleConfirmed = true;
+                    roleModal.hide();
+                    form.submit();
+                });
+            }
+        });
+    </script>
+}

@@ -7,9 +7,12 @@ namespace VentaFacil.web.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
             : base(options)
         {
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // Entidades existentes
@@ -164,9 +167,68 @@ namespace VentaFacil.web.Data
                 entity.HasOne(u => u.RolNavigation)
                       .WithMany(r => r.Usuarios)
                       .HasForeignKey(u => u.Rol)
-                      .OnDelete(DeleteBehavior.Restrict)
-                      .IsRequired();
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Configurar Trigger para Usuario
+                entity.ToTable(tb => tb.HasTrigger("trg_Audit_Usuario_Update"));
             });
+
+            // Configuración de Triggers para otras tablas auditadas
+            modelBuilder.Entity<Rol>(entity =>
+            {
+                entity.ToTable(tb => tb.HasTrigger("trg_Audit_Rol_Update"));
+            });
+
+            modelBuilder.Entity<Categoria>(entity =>
+            {
+                entity.ToTable(tb => tb.HasTrigger("trg_Audit_Categoria_Update"));
+            });
+
+            modelBuilder.Entity<Producto>(entity =>
+            {
+                entity.ToTable(tb => tb.HasTrigger("trg_Audit_Producto_Update"));
+            });
+
+            modelBuilder.Entity<Inventario>(entity =>
+            {
+                entity.ToTable(tb => tb.HasTrigger("trg_Audit_Inventario_Update"));
+            });
+        }
+        public override int SaveChanges()
+        {
+            SetUserContext();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            SetUserContext();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void SetUserContext()
+        {
+            try
+            {
+                var userIdString = _httpContextAccessor?.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (int.TryParse(userIdString, out int userId))
+                {
+                    // Abrir la conexión explícitamente para asegurar que el SESSION_CONTEXT persista
+                    // durante la transacción de SaveChanges
+                    var connection = Database.GetDbConnection();
+                    if (connection.State != System.Data.ConnectionState.Open)
+                    {
+                        connection.Open();
+                    }
+
+                    Database.ExecuteSqlRaw("EXEC sp_set_session_context 'Id_Usuario', {0}", userId);
+                }
+            }
+            catch
+            {
+                // Ignorar errores al establecer el contexto (ej. durante migraciones o si no hay DB)
+            }
         }
     }
 }

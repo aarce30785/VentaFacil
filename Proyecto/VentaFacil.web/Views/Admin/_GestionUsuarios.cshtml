@@ -3,56 +3,59 @@
 
 
 <!-- Controles de Búsqueda y Filtros -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <form method="get" asp-action="IndexUsuarios" class="row g-3" id="filtrosForm">
-            <!-- Campo de búsqueda -->
-            <div class="col-md-5">
-                <div class="input-group input-group-search">
-                    <input type="text" name="busqueda" class="form-control" 
-                           placeholder="Buscar por nombre o correo..." 
-                           value="@Model.Busqueda" />
-                    <button type="submit" class="btn btn-search">
-                        <i class="lni lni-search-alt"></i> Buscar
-                    </button>
-                </div>
-            </div>
+<form method="get" asp-action="IndexUsuarios" class="row g-3" id="filtrosForm">
 
-            <!-- Filtro por rol -->
-            <div class="col-md-4">
-                <select name="rolFiltro" class="form-select">
-                    <option value="">Todos los roles</option>
-                    @foreach (var rol in ViewBag.Roles)
-                    {
-                        <option value="@rol.Value" 
-                                selected="@(Model.RolFiltro?.ToString() == rol.Value ? "selected" : null)">
-                            @rol.Text
-                        </option>
-                    }
-                </select>
+    <div class="row mt-3">
+        <div class="col">
+            <div class="input-group rounded-pill shadow-sm overflow-hidden">
+                <input type="text" name="busqueda" class="form-control border-0 ps-4" 
+                       placeholder="Buscar por nombre o correo..." 
+                       value="@Model.Busqueda" 
+                       id="busquedaInput" 
+                       style="height: 56.5px;" />
+                <button type="submit" class="btn btn-primary rounded-pill px-4 border-0" 
+                        style="margin: 3px; height: 50px;">
+                    <i class="lni lni-search-alt"></i> Buscar
+                </button>
             </div>
+        </div>
 
-            <!-- Botones de acción -->
-            <div class="col-md-3 d-flex align-items-center">
-                <a href="@Url.Action("LimpiarFiltros", "Admin")" class="btn btn-clear">
-                    <i class="lni lni-close"></i> Limpiar
-                </a>
-            </div>
+        <div class="col-md-auto">
+            <a href="@Url.Action("LimpiarFiltros", "Admin")" class="main-btn dark-btn rounded-full btn-hover">
+                <i class="lni lni-close"></i> Limpiar
+            </a>
+        </div>
 
-            <!-- Campos ocultos para mantener otros parámetros -->
-            <input type="hidden" name="pagina" value="1" />
-            <input type="hidden" name="cantidadPorPagina" value="10" />
-        </form>
+        <div class="col-md-auto">
+            <button type="button" class="main-btn secondary-btn rounded-full btn-hover" onclick="abrirModalUsuario('crear')">
+                <i class="lni lni-plus text-black"></i> Agregar Usuario
+            </button>
+        </div>
     </div>
 
-    <div class="col-md-4 text-end">
-        <a href="@Url.Action("CrearUsuario", "Admin")" class="main-btn primary-btn btn-hover">
-            <i class="lni lni-plus"></i> Agregar Usuario
-        </a>
-    </div>
-</div>
 
-<!-- Mensaje cuando no hay resultados CON FILTROS APLICADOS -->
+    <div class="row mb-3 mt-3">
+
+
+        <div class="col-md-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="mostrarInactivos" value="true" 
+                       id="mostrarInactivosCheck" 
+                       @(ViewBag.MostrarInactivos == true ? "checked" : "") 
+                       onchange="document.getElementById('filtrosForm').submit();">
+                <label class="form-check-label" for="mostrarInactivosCheck">
+                    Mostrar usuarios inactivos
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campos ocultos para mantener otros parámetros -->
+    <input type="hidden" name="pagina" value="1" />
+    <input type="hidden" name="cantidadPorPagina" value="10" />
+</form>
+
+<!-- Mensajes de alerta (sin cambios) -->
 @if (Model.Usuarios != null && !Model.Usuarios.Any() && (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue))
 {
     <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -63,7 +66,6 @@
     </div>
 }
 
-<!-- Mensaje cuando no hay usuarios en absoluto -->
 @if (Model.Usuarios != null && !Model.Usuarios.Any() && string.IsNullOrEmpty(Model.Busqueda) && !Model.RolFiltro.HasValue)
 {
     <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -91,10 +93,8 @@
                 {
                     <tr>
                         <td class="min-width">
+                           
                             <div class="lead">
-                                <div class="lead-image">
-                                    <img src="assets/images/lead/lead-1.png" alt="" />
-                                </div>
                                 <div class="lead-text">
                                     <p>@usuario.Nombre</p>
                                 </div>
@@ -102,44 +102,65 @@
                         </td>
                         <td class="min-width">
                             <div class="lead">
-                                <div class="lead-image">
-                                    <img src="assets/images/lead/lead-1.png" alt="" />
-                                </div>
+                                
                                 <div class="lead-text">
                                     <p>@usuario.Correo</p>
                                 </div>
                             </div>
                         </td>
                         <td class="min-width">
-                            <span class="status-btn active-btn">@usuario.Rol</span>
+                            @if (usuario.Estado == true)
+                            {
+                                @usuario.Rol
+                            }
+                            else
+                            {
+                                <span>Inactivo</span>
+                            }
                         </td>
                         <td>
                             <div class="action d-flex gap-2">
-                                <!-- Editar -->
-                                <a href="@Url.Action("EditarUsuario", "Admin", new { id = usuario.Id_Usr })"
-                                   class="text-warning" title="Editar">
-                                    <i class="lni lni-pencil"></i>
-                                </a>
+                                @if (usuario.Estado == true)
+                                {
+                                    <!-- Editar -->
+                                    <a href="javascript:void(0);" 
+                                       onclick="abrirModalUsuario('editar', @usuario.Id_Usr)"
+                                       class="text-warning" title="Editar">
+                                        <i class="lni lni-pencil"></i>
+                                    </a>
 
-                                <!-- Eliminar -->
-                                <a class="text-danger" href="javascript:void(0);"
-                                   onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
-                                   title="Eliminar">
-                                    <i class="lni lni-trash-can"></i>
-                                </a>
+                                    <!-- Eliminar -->
+                                    <a class="text-danger" href="javascript:void(0);"
+                                       onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
+                                       title="Eliminar">
+                                        <i class="lni lni-trash-can"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <!-- Reactivar -->
+                                    <a class="text-success" href="javascript:void(0);"
+                                       title="Reactivar Usuario" 
+                                       onclick="confirmarReactivacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')">
+                                        <i class="lni lni-reload"></i>
+                                    </a>
+                                }
                             </div>
                         </td>
                     </tr>
                 }
-                }
             }
-            else if (Model.Usuarios != null && !Model.Usuarios.Any())
+            else
             {
                 <tr>
                     <td colspan="4" class="text-center py-4">
                         <div class="text-muted">
                             <i class="lni lni-users me-2"></i>
-                            @if (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue)
+                            @if (Model.Usuarios == null)
+                            {
+                                <span>Error al cargar los usuarios</span>
+                            }
+                            else if (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue)
                             {
                                 <span>No se encontraron usuarios con los filtros aplicados</span>
                             }
@@ -151,28 +172,16 @@
                     </td>
                 </tr>
             }
-            else
-            {
-                <tr>
-                    <td colspan="4" class="text-center py-4">
-                        <div class="text-muted">
-                            <i class="lni lni-warning me-2"></i>
-                            Error al cargar los usuarios
-                        </div>
-                    </td>
-                </tr>
-            }
         </tbody>
     </table>
 </div>
 
-<!-- Menú de Paginación -->
+<!-- Paginación (sin cambios) -->
 @if (Model.TotalPaginas > 1 && Model.Usuarios != null && Model.Usuarios.Any())
 {
     <div class="pagination-wrapper mt-4">
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
-                <!-- Botón Anterior -->
                 <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
                     <a class="page-link" 
                        href="@Url.Action("IndexUsuarios", "Admin", new { 
@@ -180,13 +189,11 @@
                            cantidadPorPagina = 10,
                            busqueda = Model.Busqueda,
                            rolFiltro = Model.RolFiltro
-                       })"
-                       tabindex="-1" aria-disabled="@(Model.PaginaActual == 1 ? "true" : "false")">
+                       })">
                         <i class="lni lni-chevron-left"></i>
                     </a>
                 </li>
 
-                <!-- Números de página -->
                 @for (int i = 1; i <= Model.TotalPaginas; i++)
                 {
                     <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
@@ -200,7 +207,6 @@
                     </li>
                 }
 
-                <!-- Botón Siguiente -->
                 <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
                     <a class="page-link" 
                        href="@Url.Action("IndexUsuarios", "Admin", new { 
@@ -215,16 +221,13 @@
             </ul>
         </nav>
 
-        <!-- Información de paginación -->
         <div class="pagination-info text-center mt-2">
             @{
                 var inicio = (Model.PaginaActual - 1) * 10 + 1;
                 var fin = Math.Min(Model.PaginaActual * 10, Model.TotalUsuarios);
             }
-            
             <p class="text-sm text-muted">
                 Mostrando @inicio-@fin de @Model.TotalUsuarios registros
-                
                 @if (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue)
                 {
                     <span class="ms-2">
@@ -238,57 +241,449 @@
     </div>
 }
 
+<!-- Script unificado - CORREGIDO -->
+
+
+<div id="modalContainerUsuarios"></div>
+
+<!-- Script unificado - CORREGIDO -->
 <script>
-    // ========== FUNCIONALIDAD PARA USUARIOS ==========
-    
-    // Auto-submit del filtro de rol cuando cambia
-    const rolFilter = document.getElementById('rolFiltroSelect'); // We will add this ID
-    if (rolFilter) {
-        rolFilter.addEventListener('change', function() {
-            document.getElementById('filtrosForm').submit();
-        });
-    } else {
-        document.querySelector('#filtrosForm select[name="rolFiltro"]')?.addEventListener('change', function() {
-            document.getElementById('filtrosForm').submit();
-        });
-    }
+    (function() {
+        'use strict';
 
-    // Manejar el evento de enter en el campo de búsqueda
-    const busquedaInput = document.querySelector('#filtrosForm input[name="busqueda"]');
-    if (busquedaInput) {
-        busquedaInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('filtrosForm').submit();
+        // Variables para el modal de reactivación
+        let reactivarModalInstance = null;
+        let usuarioAReactivar = {
+            id: null,
+            nombre: ''
+        };
+
+        // Variables para el modal de eliminación
+        let eliminarModalInstance = null;
+        let usuarioAEliminar = {
+            id: null,
+            nombre: ''
+        };
+
+        // Inicialización cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarFiltros();
+            inicializarModalReactivacion();
+            inicializarModalEliminacion();
+        });
+
+        // ===== FUNCIONES DE FILTROS =====
+        function inicializarFiltros() {
+            // Filtro de roles - usando el ID correcto
+            const rolFilter = document.getElementById('rolFiltroSelect');
+            if (rolFilter) {
+                rolFilter.addEventListener('change', function() {
+                    document.getElementById('filtrosForm').submit();
+                });
             }
-        });
-        
-         busquedaInput.addEventListener('input', function(e) {
-            e.stopPropagation();
-        });
-    }
 
-    // Función eliminar (Simplificada para usar fetch y recargar)
-    function confirmarEliminacion(usuarioId, nombreUsuario) {
-        if (confirm(`¿Está seguro que desea eliminar al usuario "${nombreUsuario}"?`)) {
-            fetch(`@Url.Action("EliminarUsuario", "Admin")?id=${usuarioId}`, {
-                method: 'GET', // Cambiado a GET para simplificar ya que el controller es GET (aunque debería ser POST idealmente, pero el controller actual es GET)
+            // Búsqueda con Enter
+            const busquedaInput = document.getElementById('busquedaInput');
+            if (busquedaInput) {
+                busquedaInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('filtrosForm').submit();
+                    }
+                });
+            }
+        }
+
+        // Variables para el control de cambios
+        let initialFormValues = {};
+
+        // ===== FUNCIONES DEL MODAL DE USUARIO (NUEVO) =====
+        window.abrirModalUsuario = function(accion, usuarioId = null) {
+            console.log('Abriendo modal usuario:', accion, 'Usuario ID:', usuarioId);
+
+            let url = '';
+            const params = new URLSearchParams();
+            params.append('accion', accion);
+            if (usuarioId) params.append('usuarioId', usuarioId);
+
+            // Mantener filtros
+            const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
+            const rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
+            const pagina = '@Model.PaginaActual';
+
+            if (busqueda) params.append('busqueda', busqueda);
+            if (rolFiltro) params.append('rolFiltro', rolFiltro);
+            if (pagina) params.append('pagina', pagina);
+
+            url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar el modal: ' + response.status);
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('modalContainerUsuarios').innerHTML = data;
+                    const modalElement = document.getElementById('usuarioModal');
+            
+                    if (!modalElement) {
+                        console.error('Modal element no encontrado');
+                        return;
+                    }
+            
+                    const modal = new bootstrap.Modal(modalElement);
+                    modalElement.addEventListener('shown.bs.modal', function () {
+                        // Capturar valores iniciales una vez que el modal se muestra
+                        capturarValoresIniciales();
+                        configurarSubmitFormUsuario(accion);
+                    });
+            
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar el formulario: ' + error.message);
+                });
+        };
+
+        function capturarValoresIniciales() {
+            const form = document.getElementById('usuarioForm');
+            if (!form) return;
+
+            initialFormValues = {
+                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
+                Correo: form.querySelector('[name="Correo"]')?.value || '',
+                Rol: form.querySelector('[name="Rol"]')?.value || '',
+                Estado: form.querySelector('[name="Estado"]')?.checked || false
+            };
+            // Contraseña no se captura porque siempre inicia vacía o enmascarada
+        }
+
+        function obtenerCambios(form, accion) {
+            const cambios = [];
+            const currentValues = {
+                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
+                Correo: form.querySelector('[name="Correo"]')?.value || '',
+                Rol: form.querySelector('[name="Rol"]')?.value || '',
+                Estado: form.querySelector('[name="Estado"]')?.checked || false,
+                Contrasena: form.querySelector('[name="Contrasena"]')?.value || ''
+            };
+
+            // Solo comparar si es edición, si es crear mostramos resumen general
+            if (accion === 'editar') {
+                if (currentValues.Nombre !== initialFormValues.Nombre) {
+                    cambios.push(`<strong>Nombre:</strong> ${initialFormValues.Nombre} <i class="lni lni-arrow-right"></i> ${currentValues.Nombre}`);
+                }
+                if (currentValues.Correo !== initialFormValues.Correo) {
+                    cambios.push(`<strong>Correo:</strong> ${initialFormValues.Correo} <i class="lni lni-arrow-right"></i> ${currentValues.Correo}`);
+                }
+                if (currentValues.Rol !== initialFormValues.Rol) {
+                    // Intentar obtener texto del rol seleccionado
+                    const select = form.querySelector('[name="Rol"]');
+                    const oldText = select.querySelector(`option[value="${initialFormValues.Rol}"]`)?.text || initialFormValues.Rol;
+                    const newText = select.options[select.selectedIndex]?.text || currentValues.Rol;
+                    cambios.push(`<strong>Rol:</strong> ${oldText} <i class="lni lni-arrow-right"></i> ${newText}`);
+                }
+                if (currentValues.Estado !== initialFormValues.Estado) {
+                    const oldState = initialFormValues.Estado ? 'Activo' : 'Inactivo';
+                    const newState = currentValues.Estado ? 'Activo' : 'Inactivo';
+                    cambios.push(`<strong>Estado:</strong> ${oldState} <i class="lni lni-arrow-right"></i> ${newState}`);
+                }
+                if (currentValues.Contrasena) {
+                    cambios.push(`<strong>Contraseña:</strong> <em>(Se ha modificado)</em>`);
+                }
+            } else {
+                // Modo crear: listar los valores ingresados
+                cambios.push(`<strong>Nombre:</strong> ${currentValues.Nombre}`);
+                cambios.push(`<strong>Correo:</strong> ${currentValues.Correo}`);
+                const select = form.querySelector('[name="Rol"]');
+                const rolText = select.options[select.selectedIndex]?.text || currentValues.Rol;
+                cambios.push(`<strong>Rol:</strong> ${rolText}`);
+                cambios.push(`<strong>Estado:</strong> ${currentValues.Estado ? 'Activo' : 'Inactivo'}`);
+                if(currentValues.Contrasena) cambios.push(`<strong>Contraseña:</strong> *****`);
+            }
+
+            return cambios;
+        }
+
+        window.configurarSubmitFormUsuario = function(accion) {
+            const form = document.getElementById('usuarioForm');
+            if (!form) return;
+
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Validación básica de HTML5
+                if (!newForm.checkValidity()) {
+                    newForm.classList.add('was-validated');
+                    return;
+                }
+
+                // Detectar cambios
+                const listaCambios = obtenerCambios(newForm, accion);
+                const modalBody = document.querySelector('#confirmarGuardarModal .modal-body');
+                
+                if (listaCambios.length === 0) {
+                     modalBody.innerHTML = '<div class="alert alert-warning">No se han detectado cambios.</div>';
+                } else {
+                    let html = accion === 'crear' 
+                        ? '<p>Se creará un nuevo usuario con los siguientes datos:</p>' 
+                        : '<p>Se realizarán las siguientes modificaciones:</p>';
+                    
+                    html += '<ul class="list-group list-group-flush">';
+                    listaCambios.forEach(cambio => {
+                        html += `<li class="list-group-item">${cambio}</li>`;
+                    });
+                    html += '</ul>';
+                    modalBody.innerHTML = html;
+                }
+
+                // Mostrar modal de confirmación
+                const confirmModal = new bootstrap.Modal(document.getElementById('confirmarGuardarModal'));
+                const btnConfirmar = document.getElementById('btnConfirmarGuardar');
+                
+                // Si no hay cambios en edición, deshabilitar guardar o permitir "guardar sin cambios"
+                // Permitiremos guardar de todos modos por consistencia, o el usuario puede cancelar.
+                
+                // Configurar acción del botón confirmar
+                btnConfirmar.onclick = function() {
+                    confirmModal.hide();
+                    enviarFormularioUsuario(newForm);
+                };
+
+                confirmModal.show();
+            });
+        };
+
+        function enviarFormularioUsuario(form) {
+            const formData = new FormData(form);
+            formData.append('isAjax', 'true'); // Flag para el backend
+
+            // Mostrar estado de carga en el botón del formulario
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
                 headers: {
-                    // 'RequestVerificationToken': ... (Si fuera POST)
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => {
-                if (response.ok || response.redirected) {
-                    // Si el controller redirige, seguir la redirección o recargar
-                    window.location.reload();
+                if (!response.ok) {
+                   // Si el servidor devuelve error (400, 500), intentamos parsear JSON
+                   return response.json().then(errData => { throw new Error(errData.message || 'Error en el servidor'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal de usuario
+                    const modalElement = document.getElementById('usuarioModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    modal.hide();
+
+                    // Mostrar mensaje de éxito y recargar
+                    window.location.reload(); 
                 } else {
-                    alert('Error al eliminar el usuario');
+                    throw new Error(data.message || 'Error desconocido');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error de conexión');
+                alert('Error: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             });
         }
-    }
+
+
+
+        // ===== FUNCIONES DEL MODAL DE REACTIVACIÓN =====
+        function inicializarModalReactivacion() {
+            const modalEl = document.getElementById('reactivarUsuarioModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                reactivarModalInstance = new bootstrap.Modal(modalEl);
+                
+                // Configurar botón de confirmación
+                const btnConfirmar = document.getElementById('btnConfirmarReactivacion');
+                if (btnConfirmar) {
+                    btnConfirmar.addEventListener('click', function() {
+                        if (usuarioAReactivar.id) {
+                            reactivarUsuario(usuarioAReactivar.id);
+                        }
+                    });
+                }
+            }
+        }
+
+        // ===== FUNCIONES DEL MODAL DE ELIMINACIÓN =====
+        function inicializarModalEliminacion() {
+            const modalEl = document.getElementById('eliminarUsuarioModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                eliminarModalInstance = new bootstrap.Modal(modalEl);
+                
+                // Configurar botón de confirmación
+                const btnConfirmar = document.getElementById('btnConfirmarEliminacion');
+                if (btnConfirmar) {
+                    btnConfirmar.addEventListener('click', function() {
+                        if (usuarioAEliminar.id) {
+                            realizarEliminacion(usuarioAEliminar.id);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Función global para confirmar reactivación
+        window.confirmarReactivacion = function(usuarioId, nombreUsuario) {
+            usuarioAReactivar = {
+                id: usuarioId,
+                nombre: nombreUsuario
+            };
+            
+            const nombreSpan = document.getElementById('nombreUsuarioReactivar');
+            if (nombreSpan) {
+                nombreSpan.textContent = nombreUsuario;
+            }
+            
+            if (reactivarModalInstance) {
+                reactivarModalInstance.show();
+            } else if (confirm(`¿Está seguro de que desea reactivar al usuario "${nombreUsuario}"?`)) {
+                reactivarUsuario(usuarioId);
+            }
+        };
+
+        // Función global para confirmar eliminación
+        window.confirmarEliminacion = function(usuarioId, nombreUsuario) {
+            usuarioAEliminar = {
+                id: usuarioId,
+                nombre: nombreUsuario
+            };
+
+            const nombreSpan = document.getElementById('nombreUsuarioEliminar');
+            if (nombreSpan) {
+                nombreSpan.textContent = nombreUsuario;
+            }
+
+            if (eliminarModalInstance) {
+                eliminarModalInstance.show();
+            } else if (confirm(`¿Está seguro que desea eliminar al usuario "${nombreUsuario}"?`)) {
+                realizarEliminacion(usuarioId);
+            }
+        };
+
+        // Función para reactivar usuario
+        function reactivarUsuario(usuarioId) {
+            // Safely get properties from Razor
+            var busqueda = @Json.Serialize(Model.Busqueda);
+            var rolFiltro = @Json.Serialize(Model.RolFiltro);
+            var mostrarInactivos = @Json.Serialize(ViewBag.MostrarInactivos);
+            var pagina = @Json.Serialize(Model.PaginaActual);
+
+            // Construir URL con los parámetros actuales
+            var url = '@Url.Action("ReactivarUsuario", "Admin")' + 
+                       '?id=' + usuarioId + 
+                       '&busqueda=' + encodeURIComponent(busqueda || '') +
+                       '&rolFiltro=' + (rolFiltro || '') +
+                       '&mostrarInactivos=' + (mostrarInactivos === true) +
+                       '&pagina=' + (pagina || 1);
+            
+            window.location.href = url;
+        }
+
+        // Función para realizar la eliminación
+        function realizarEliminacion(usuarioId) {
+            // Mostrar estado de carga
+            const btn = document.getElementById('btnConfirmarEliminacion');
+            if (btn) {
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Eliminando...';
+            }
+
+            // Obtener parámetros para mantener el contexto
+            var busqueda = @Json.Serialize(Model.Busqueda);
+            var rolFiltro = @Json.Serialize(Model.RolFiltro);
+            var pagina = @Json.Serialize(Model.PaginaActual);
+            
+            // Construir URL (EliminarUsuario es un GET que retorna un Redirect)
+            var url = '@Url.Action("EliminarUsuario", "Admin")' + 
+                       '?id=' + usuarioId + 
+                       '&busqueda=' + encodeURIComponent(busqueda || '') +
+                       '&rolFiltro=' + (rolFiltro || '') +
+                       '&pagina=' + (pagina || 1);
+            
+            // Navegar directamente en lugar de usar fetch + reload
+            window.location.href = url;
+        }
+
+    })();
 </script>
+
+<!-- Modal de Confirmación de Reactivación (sin cambios) -->
+<div class="modal fade" id="reactivarUsuarioModal" tabindex="-1" aria-labelledby="reactivarUsuarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reactivarUsuarioModalLabel">Confirmar Reactivación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea reactivar al usuario <strong id="nombreUsuarioReactivar"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarReactivacion">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="eliminarUsuarioModal" tabindex="-1" aria-labelledby="eliminarUsuarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eliminarUsuarioModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea eliminar al usuario <strong id="nombreUsuarioEliminar"></strong>?
+                <br />
+                <small class="text-danger">Esta acción no se puede deshacer.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarEliminacion">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Guardado -->
+<div class="modal fade" id="confirmarGuardarModal" tabindex="-1" aria-labelledby="confirmarGuardarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmarGuardarModalLabel">Confirmar Cambios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de que desea guardar los cambios en este usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarGuardar">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

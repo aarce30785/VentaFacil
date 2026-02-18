@@ -51,12 +51,13 @@ namespace VentaFacil.web.Controllers
 
         // ========== MÉTODOS PARA USUARIOS ==========
         public async Task<IActionResult> IndexUsuarios(int pagina = 1, int cantidadPorPagina = 10,
-                     string? busqueda = null, int? rolFiltro = null, int? usuarioId = null, string? accion = null)
+                     string? busqueda = null, int? rolFiltro = null, bool mostrarInactivos = false, int? usuarioId = null, string? accion = null)
         {
             try
             {
+                ViewBag.MostrarInactivos = mostrarInactivos;
                 // Pasar los parámetros de filtro al servicio
-                var usuarios = await _adminService.GetUsuariosPaginadosAsync(pagina, cantidadPorPagina, busqueda, rolFiltro);
+                var usuarios = await _adminService.GetUsuariosPaginadosAsync(pagina, cantidadPorPagina, busqueda, rolFiltro, mostrarInactivos);
 
                 if (usuarios == null)
                 {
@@ -383,10 +384,14 @@ namespace VentaFacil.web.Controllers
             [FromForm] UsuarioDto usuarioDto,
             [FromForm] string busqueda = null,
             [FromForm] int? rolFiltro = null,
-            [FromForm] int pagina = 1)
+            [FromForm] int pagina = 1,
+            [FromForm] bool isAjax = false)
         {
             try
             {
+                // Detectar AJAX por parámetro o por header
+                isAjax = isAjax || Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
                 if (usuarioDto.Id_Usr > 0 && string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
                     usuarioDto.Contrasena = null;
@@ -397,6 +402,12 @@ namespace VentaFacil.web.Controllers
 
                 if (!ModelState.IsValid)
                 {
+                    if (isAjax)
+                    {
+                        var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                        return BadRequest(new { success = false, message = "Errores de validación", errors = errors });
+                    }
+
                     var roles = await _usuarioService.GetRolesAsync();
                     ViewBag.Roles = roles ?? new List<SelectListItem>();
                     return View("UsuarioForm", usuarioDto);
@@ -414,12 +425,23 @@ namespace VentaFacil.web.Controllers
 
                 if (result)
                 {
+                    if (isAjax)
+                    {
+                         return Ok(new { success = true, message = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente" });
+                    }
+
                     TempData["MensajeExito"] = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente";
                     return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, pagina });
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Error al guardar el usuario en la base de datos");
+                    var errorMessage = "Error al guardar el usuario en la base de datos";
+                    if (isAjax)
+                    {
+                         return BadRequest(new { success = false, message = errorMessage });
+                    }
+
+                    ModelState.AddModelError("", errorMessage);
                     var roles = await _usuarioService.GetRolesAsync();
                     ViewBag.Roles = roles ?? new List<SelectListItem>();
                     return View("UsuarioForm", usuarioDto);
@@ -427,7 +449,13 @@ namespace VentaFacil.web.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "Error interno: " + ex.Message);
+                var errorMessage = "Error interno: " + ex.Message;
+                if (isAjax)
+                {
+                     return StatusCode(500, new { success = false, message = errorMessage });
+                }
+
+                ModelState.AddModelError("", errorMessage);
                 var roles = await _usuarioService.GetRolesAsync();
                 ViewBag.Roles = roles ?? new List<SelectListItem>();
                 return View("UsuarioForm", usuarioDto);
@@ -588,6 +616,26 @@ namespace VentaFacil.web.Controllers
             }
 
             return RedirectToAction("IndexProductos", new { busqueda, categoriaFiltro, pagina });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ReactivarUsuario(int id, string? busqueda, int? rolFiltro, bool mostrarInactivos, int pagina = 1)
+        {
+            try
+            {
+                bool resultado = await _adminService.ReactivarUsuarioAsync(id);
+
+                if (resultado)
+                    TempData["MensajeExito"] = "Usuario reactivado correctamente.";
+                else
+                    TempData["MensajeError"] = "No se pudo reactivar el usuario.";
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = $"Error al reactivar el usuario: {ex.Message}";
+            }
+
+            return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, mostrarInactivos, pagina });
         }
     }
 }

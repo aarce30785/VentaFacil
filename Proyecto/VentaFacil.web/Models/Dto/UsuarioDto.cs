@@ -14,10 +14,11 @@ namespace VentaFacil.web.Models.Dto
         [EmailAddress(ErrorMessage = "El formato del correo no es válido")]
         public string Correo { get; set; }
 
-        // REMOVER DataAnnotations de Contrasena y ConfirmarContrasena
-        public string Contrasena { get; set; }
+       
+        public string? Contrasena { get; set; }
 
-        public string ConfirmarContrasena { get; set; }
+        [Compare("Contrasena", ErrorMessage = "Las contraseñas no coinciden")]
+        public string? ConfirmarContrasena { get; set; }
 
         public DateTime? FechaCreacion { get; set; }
 
@@ -30,7 +31,7 @@ namespace VentaFacil.web.Models.Dto
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            // Creación - contraseña es requerida
+            
             if (Id_Usr == 0)
             {
                 if (string.IsNullOrWhiteSpace(Contrasena))
