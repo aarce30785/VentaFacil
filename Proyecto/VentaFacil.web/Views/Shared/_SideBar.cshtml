@@ -1,4 +1,6 @@
-﻿<aside class="sidebar-nav-wrapper">
+﻿@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+<aside class="sidebar-nav-wrapper">
     <div class="navbar-logo">
         <a asp-controller="Home" asp-action="Index">
             <h3 class="text-white mb-0" style="font-family: 'Merriweather', serif; font-weight: 700;">
@@ -82,43 +84,49 @@
 
             <span class="divider"><hr /></span>
             
-            <li class="nav-item">
-                <a asp-controller="Planilla" asp-action="Index">
-                    <span class="icon">
-                        <i class="fas fa-user-clock"></i>
-                    </span>
-                    <span class="text">Planilla</span>
-                </a>
-            </li>
+            @if (User.IsInRole("Administrador"))
+            {
+                <li class="nav-item">
+                    <a asp-controller="Planilla" asp-action="Index">
+                        <span class="icon">
+                            <i class="fas fa-user-clock"></i>
+                        </span>
+                        <span class="text">Planilla</span>
+                    </a>
+                </li>
 
-            <li class="nav-item">
-                <a asp-controller="Configuracion" asp-action="Index">
-                    <span class="icon">
-                        <i class="fas fa-cogs"></i>
-                    </span>
-                    <span class="text">Configuración</span>
-                </a>
-            </li>
+                <li class="nav-item">
+                    <a asp-controller="Configuracion" asp-action="Index">
+                        <span class="icon">
+                            <i class="fas fa-cogs"></i>
+                        </span>
+                        <span class="text">Configuración</span>
+                    </a>
+                </li>
 
-            <li class="nav-item">
-                <a href="#">
-                    <span class="icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </span>
-                    <span class="text">Reportes</span>
-                </a>
-            </li>
+                <li class="nav-item">
+                    <a href="#">
+                        <span class="icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </span>
+                        <span class="text">Reportes</span>
+                    </a>
+                </li>
 
-            <span class="divider"><hr /></span>
-            
-            <li class="nav-item">
-                <a asp-controller="Admin" asp-action="Index">
-                    <span class="icon">
-                        <i class="fas fa-cogs"></i>
-                    </span>
-                    <span class="text">Administración</span>
-                </a>
-            </li>
+                <span class="divider"><hr /></span>
+
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Index">
+                        <span class="icon">
+                            <i class="fas fa-cogs"></i>
+                        </span>
+                        <span class="text">Administración</span>
+                    </a>
+                </li>
+            }
+           
+
+           
         </ul>
     </nav>
     

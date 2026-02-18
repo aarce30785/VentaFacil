@@ -71,7 +71,7 @@
                                         <!-- end col -->
                                         <div class="col-xxl-6 col-lg-12 col-md-6">
                                             <div class="text-start text-md-end text-lg-start text-xxl-end mb-30">
-                                                <a href="#" class="hover-underline">
+                                                <a href="#0" class="hover-underline" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
                                                     ¿Olvidaste tu contraseña?
                                                 </a>
                                             </div>
@@ -96,7 +96,31 @@
             <!-- end row -->
 </div>
 
-
+    <!-- Modal de Recuperar Contraseña -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="forgotPasswordModalLabel">Recuperar Contraseña</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-sm mb-3">Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.</p>
+                    <form asp-action="OlvidoContrasena" asp-controller="Login" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="input-style-1">
+                            <label>Correo Electrónico</label>
+                            <input type="email" name="correo" class="form-control" placeholder="ejemplo@correo.com" required />
+                        </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="main-btn primary-btn btn-hover">Enviar Instrucciones</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @section Scripts {
     @{

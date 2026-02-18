@@ -15,7 +15,7 @@ using System;
 namespace VentaFacil.web.Controllers
 {
     [Authorize]
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IPedidoService _pedidoService;
@@ -42,6 +42,9 @@ namespace VentaFacil.web.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // TODO: Remove this test alert after verification
+            // Test alert removed
+
             var dashboard = new DashboardViewModel();
 
             dashboard.VentasDia = await _facturacionService.GetVentasDiaAsync();

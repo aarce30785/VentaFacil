@@ -32,245 +32,264 @@
         </div>
         <!-- ========== title-wrapper end ========== -->
         <!-- Mensajes de error -->
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
 
-        <!-- Pestañas de navegación -->
-        <div class="row mb-30">
-            <div class="col-12">
-                <ul class="nav nav-tabs" id="profileTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="view-tab" data-bs-toggle="tab" data-bs-target="#view-panel" type="button" role="tab">
-                            <i class="lni lni-eye me-2"></i>Ver Perfil
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card-style settings-card-1 mb-30">
+                    <div class="title mb-30 d-flex justify-content-between align-items-center">
+                        <h6>Información del Perfil</h6>
+                        <button type="button" class="main-btn primary-btn btn-hover btn-sm" onclick="openEditModal()">
+                            <i class="lni lni-pencil-alt me-2"></i> Editar Perfil
                         </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit-panel" type="button" role="tab">
-                            <i class="lni lni-pencil-alt me-2"></i>Editar Perfil
-                        </button>
-                    </li>
-                </ul>
+                    </div>
+                    <div class="profile-info">
+                        <div class="d-flex align-items-center mb-30">
+                            <div class="profile-image">
+                                <img src="~/Plantilla/images/profile/profile-1.png" alt="" />
+                            </div>
+                            <div class="profile-meta">
+                                <h5 class="text-bold text-dark mb-10">@(Model.Usuario?.Nombre ?? "Usuario")</h5>
+                                <p class="text-sm text-gray">@(Model.Usuario?.Rol ?? "Rol no especificado")</p>
+                            </div>
+                        </div>
+
+                        <!-- Validación de modelo nulo -->
+                        @if (Model == null)
+                        {
+                            <div class="alert alert-warning">
+                                No se pudieron cargar los datos del perfil.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="input-style-1">
+                                <label>Nombre Completo</label>
+                                <input type="text" placeholder="Nombre completo" value="@(Model.Usuario.Nombre ?? "No especificado")" readonly />
+                            </div>
+                            <div class="input-style-1">
+                                <label>Correo Electrónico</label>
+                                <input type="email" placeholder="Correo electrónico" value="@(Model.Usuario.Correo ?? "No especificado")" readonly />
+                            </div>
+                            <div class="input-style-1">
+                                <label>Rol</label>
+                                <input type="text" placeholder="Rol" value="@(Model.Usuario.Rol ?? "No especificado")" readonly />
+                            </div>
+                            <div class="input-style-1">
+                                <label>Estado</label>
+                                <div class="form-control-plaintext">
+                                    <span class="badge @(Model.Usuario.Estado.GetValueOrDefault() ? "bg-success" : "bg-danger")">
+                                        @(Model.Usuario.Estado.GetValueOrDefault() ? "Activo" : "Inactivo")
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="tab-content" id="profileTabsContent">
-            <!-- Panel de Visualización -->
-            <div class="tab-pane fade show active" id="view-panel" role="tabpanel">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="card-style settings-card-1 mb-30">
-                            <div class="title mb-30 d-flex justify-content-between align-items-center">
-                                <h6>Información del Perfil</h6>
-                                <button type="button" class="border-0 bg-transparent" onclick="switchToEdit()">
-                                    <i class="lni lni-pencil-alt"></i> Editar
-                                </button>
-                            </div>
-                            <div class="profile-info">
-                                <div class="d-flex align-items-center mb-30">
-                                    <div class="profile-image">
-                                        <img src="~/Plantilla/images/profile/profile-1.png" alt="" />
-                                        <div class="update-image">
-                                            <input type="file" />
-                                            <label for=""><i class="lni lni-cloud-upload"></i></label>
-                                        </div>
-                                    </div>
-                                    <div class="profile-meta">
-                                        <h5 class="text-bold text-dark mb-10">@(Model.Usuario?.Nombre ?? "Usuario")</h5>
-                                        <p class="text-sm text-gray">@(Model.Usuario?.Rol ?? "Rol no especificado")</p>
-                                    </div>
-                                </div>
+        <!-- Modal de Edición -->
+        <div class="modal fade" id="editarPerfilModal" tabindex="-1" aria-labelledby="editarPerfilModalLabel" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editarPerfilModalLabel">Editar Perfil</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                         <div class="alert alert-info mb-4">
+                            <i class="lni lni-info-circle me-2"></i>
+                            <strong>Instrucciones:</strong> Haz clic en los botones "Habilitar edición" para activar los campos que deseas modificar.
+                        </div>
 
-                                <!-- Validación de modelo nulo -->
-                                @if (Model == null)
-                                {
-                                    <div class="alert alert-warning">
-                                        No se pudieron cargar los datos del perfil.
-                                    </div>
-                                }
-                                else
-                                {
+                        <form asp-action="ActualizarPerfil" method="post" id="editForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="Edicion.Id_Usr" />
+
+                            <!-- Sección de Información Personal -->
+                            <div class="card-style-3 mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6>Información Personal</h6>
+                                    <button type="button" id="togglePersonalInfo" class="main-btn primary-btn-outline btn-sm btn-hover">
+                                        <i class="lni lni-pencil-alt me-1"></i> Habilitar edición
+                                    </button>
+                                </div>
+                                <div class="card-content">
                                     <div class="input-style-1">
-                                        <label>Nombre Completo</label>
-                                        <input type="text" placeholder="Nombre completo" value="@(Model.Usuario.Nombre ?? "No especificado")" readonly />
-                                    </div>
-                                    <div class="input-style-1">
-                                        <label>Correo Electrónico</label>
-                                        <input type="email" placeholder="Correo electrónico" value="@(Model.Usuario.Correo ?? "No especificado")" readonly />
-                                    </div>
-                                    <div class="input-style-1">
-                                        <label>Rol</label>
-                                        <input type="text" placeholder="Rol" value="@(Model.Usuario.Rol ?? "No especificado")" readonly />
-                                    </div>
-                                    <div class="input-style-1">
-                                        <label>Estado</label>
-                                        <div class="form-control-plaintext">
-                                            <span class="badge @(Model.Usuario.Estado.GetValueOrDefault() ? "bg-success" : "bg-danger")">
-                                                @(Model.Usuario.Estado.GetValueOrDefault() ? "Activo" : "Inactivo")
+                                        <label asp-for="Edicion.Nombre">Nombre Completo</label>
+                                        <div class="input-group">
+                                            <input asp-for="Edicion.Nombre" type="text" placeholder="Dejar vacío para no cambiar"
+                                                   class="form-control" disabled />
+                                            <span class="input-group-text text-muted">
+                                                <i class="lni lni-lock"></i>
                                             </span>
                                         </div>
+                                        <small class="form-text text-muted">Campo deshabilitado. Haz clic en "Habilitar edición" para modificarlo.</small>
+                                        <span asp-validation-for="Edicion.Nombre" class="text-danger"></span>
                                     </div>
-                                }
+                                </div>
                             </div>
-                        </div>
+
+                            <!-- Sección de Correo Electrónico -->
+                            <div class="card-style-3 mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6>Correo Electrónico</h6>
+                                    <button type="button" id="toggleEmail" class="main-btn primary-btn-outline btn-sm btn-hover">
+                                        <i class="lni lni-pencil-alt me-1"></i> Habilitar edición
+                                    </button>
+                                </div>
+                                <div class="card-content">
+                                    <div class="input-style-1">
+                                        <label asp-for="Edicion.Correo">Correo Electrónico</label>
+                                        <div class="input-group">
+                                            <input asp-for="Edicion.Correo" type="email" placeholder="Dejar vacío para no cambiar"
+                                                   class="form-control" disabled />
+                                            <span class="input-group-text text-muted">
+                                                <i class="lni lni-lock"></i>
+                                            </span>
+                                        </div>
+                                        <small class="form-text text-muted">Campo deshabilitado. Haz clic en "Habilitar edición" para modificarlo.</small>
+                                        <span asp-validation-for="Edicion.Correo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Cambio de Contraseña -->
+                            <div class="card-style-3 mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6>Cambiar Contraseña</h6>
+                                    <button type="button" id="togglePassword" class="main-btn primary-btn-outline btn-sm btn-hover">
+                                        <i class="lni lni-pencil-alt me-1"></i> Habilitar edición
+                                    </button>
+                                </div>
+                                <div class="card-content">
+                                    <small class="text-muted d-block mb-3">Completa estos campos solo si quieres cambiar tu contraseña</small>
+
+                                    <div class="input-style-1">
+                                        <label asp-for="Edicion.ContrasenaActual">Contraseña Actual</label>
+                                        <div class="input-group">
+                                            <input asp-for="Edicion.ContrasenaActual" type="password" placeholder="Solo si cambias contraseña"
+                                                   class="form-control" disabled />
+                                            <span class="input-group-text text-muted">
+                                                <i class="lni lni-lock"></i>
+                                            </span>
+                                        </div>
+                                        <span asp-validation-for="Edicion.ContrasenaActual" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="input-style-1">
+                                        <label asp-for="Edicion.NuevaContrasena">Nueva Contraseña</label>
+                                        <div class="input-group">
+                                            <input asp-for="Edicion.NuevaContrasena" type="password" placeholder="Solo si cambias contraseña"
+                                                   class="form-control" disabled />
+                                            <span class="input-group-text text-muted">
+                                                <i class="lni lni-lock"></i>
+                                            </span>
+                                        </div>
+                                        <span asp-validation-for="Edicion.NuevaContrasena" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="input-style-1">
+                                        <label asp-for="Edicion.ConfirmarContrasena">Confirmar Nueva Contraseña</label>
+                                        <div class="input-group">
+                                            <input asp-for="Edicion.ConfirmarContrasena" type="password" placeholder="Solo si cambias contraseña"
+                                                   class="form-control" disabled />
+                                            <span class="input-group-text text-muted">
+                                                <i class="lni lni-lock"></i>
+                                            </span>
+                                        </div>
+                                        <span asp-validation-for="Edicion.ConfirmarContrasena" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </div>
-            </div>
-
-            <!-- Panel de Edición -->
-            <div class="tab-pane fade" id="edit-panel" role="tabpanel">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="card-style settings-card-2 mb-30">
-                            <div class="title mb-30 d-flex justify-content-between align-items-center">
-                                <h6>Editar Perfil</h6>
-                                <button type="button" class="border-0 bg-transparent" onclick="switchToView()">
-                                    <i class="lni lni-arrow-left me-2"></i> Volver
-                                </button>
-                            </div>
-
-                            <div class="alert alert-info mb-4">
-                                <i class="lni lni-info-circle me-2"></i>
-                                <strong>Instrucciones:</strong> Haz clic en los botones "Habilitar edición" para activar los campos que deseas modificar.
-                            </div>
-
-                            <form asp-action="ActualizarPerfil" method="post" id="editForm">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" asp-for="Edicion.Id_Usr" />
-
-                                <!-- Sección de Información Personal -->
-                                <div class="card-style-3 mb-4">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h6>Información Personal</h6>
-                                        <button type="button" id="togglePersonalInfo" class="main-btn primary-btn-outline btn-sm btn-hover">
-                                            <i class="lni lni-pencil-alt me-1"></i> Habilitar edición
-                                        </button>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="input-style-1">
-                                            <label asp-for="Edicion.Nombre">Nombre Completo</label>
-                                            <div class="input-group">
-                                                <input asp-for="Edicion.Nombre" type="text" placeholder="Dejar vacío para no cambiar"
-                                                       class="form-control" disabled />
-                                                <span class="input-group-text text-muted">
-                                                    <i class="lni lni-lock"></i>
-                                                </span>
-                                            </div>
-                                            <small class="form-text text-muted">Campo deshabilitado. Haz clic en "Habilitar edición" para modificarlo.</small>
-                                            <span asp-validation-for="Edicion.Nombre" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Sección de Correo Electrónico -->
-                                <div class="card-style-3 mb-4">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h6>Correo Electrónico</h6>
-                                        <button type="button" id="toggleEmail" class="main-btn primary-btn-outline btn-sm btn-hover">
-                                            <i class="lni lni-pencil-alt me-1"></i> Habilitar edición
-                                        </button>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="input-style-1">
-                                            <label asp-for="Edicion.Correo">Correo Electrónico</label>
-                                            <div class="input-group">
-                                                <input asp-for="Edicion.Correo" type="email" placeholder="Dejar vacío para no cambiar"
-                                                       class="form-control" disabled />
-                                                <span class="input-group-text text-muted">
-                                                    <i class="lni lni-lock"></i>
-                                                </span>
-                                            </div>
-                                            <small class="form-text text-muted">Campo deshabilitado. Haz clic en "Habilitar edición" para modificarlo.</small>
-                                            <span asp-validation-for="Edicion.Correo" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Sección de Cambio de Contraseña -->
-                                <div class="card-style-3 mb-4">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h6>Cambiar Contraseña</h6>
-                                        <button type="button" id="togglePassword" class="main-btn primary-btn-outline btn-sm btn-hover">
-                                            <i class="lni lni-pencil-alt me-1"></i> Habilitar edición
-                                        </button>
-                                    </div>
-                                    <div class="card-content">
-                                        <small class="text-muted d-block mb-3">Completa estos campos solo si quieres cambiar tu contraseña</small>
-
-                                        <div class="input-style-1">
-                                            <label asp-for="Edicion.ContrasenaActual">Contraseña Actual</label>
-                                            <div class="input-group">
-                                                <input asp-for="Edicion.ContrasenaActual" type="password" placeholder="Solo si cambias contraseña"
-                                                       class="form-control" disabled />
-                                                <span class="input-group-text text-muted">
-                                                    <i class="lni lni-lock"></i>
-                                                </span>
-                                            </div>
-                                            <span asp-validation-for="Edicion.ContrasenaActual" class="text-danger"></span>
-                                        </div>
-
-                                        <div class="input-style-1">
-                                            <label asp-for="Edicion.NuevaContrasena">Nueva Contraseña</label>
-                                            <div class="input-group">
-                                                <input asp-for="Edicion.NuevaContrasena" type="password" placeholder="Solo si cambias contraseña"
-                                                       class="form-control" disabled />
-                                                <span class="input-group-text text-muted">
-                                                    <i class="lni lni-lock"></i>
-                                                </span>
-                                            </div>
-                                            <span asp-validation-for="Edicion.NuevaContrasena" class="text-danger"></span>
-                                        </div>
-
-                                        <div class="input-style-1">
-                                            <label asp-for="Edicion.ConfirmarContrasena">Confirmar Nueva Contraseña</label>
-                                            <div class="input-group">
-                                                <input asp-for="Edicion.ConfirmarContrasena" type="password" placeholder="Solo si cambias contraseña"
-                                                       class="form-control" disabled />
-                                                <span class="input-group-text text-muted">
-                                                    <i class="lni lni-lock"></i>
-                                                </span>
-                                            </div>
-                                            <span asp-validation-for="Edicion.ConfirmarContrasena" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-12">
-                                    <button type="submit" class="main-btn primary-btn btn-hover">
-                                        <i class="lni lni-checkmark-circle me-2"></i>
-                                        Actualizar Campos Seleccionados
-                                    </button>
-                                    <button type="button" class="main-btn light-btn btn-hover ms-2" onclick="resetForm()">
-                                        <i class="lni lni-reload me-2"></i>
-                                        Reiniciar
-                                    </button>
-                                    <button type="button" class="main-btn danger-btn-outline btn-hover ms-2" onclick="switchToView()">
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="main-btn light-btn btn-hover" data-bs-dismiss="modal" onclick="resetForm()">Cancelar</button>
+                        <button type="button" class="main-btn primary-btn btn-hover" onclick="confirmarActualizacionPerfil()">Actualizar Perfil</button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Modal de Confirmación (Eliminado, se usa SweetAlert2) -->
+
 
 
 
 @section Scripts {
     <script>
-        function switchToEdit() {
-            const editTab = new bootstrap.Tab(document.getElementById('edit-tab'));
-            editTab.show();
-        }
+        var editModal;
 
-        function switchToView() {
-            const viewTab = new bootstrap.Tab(document.getElementById('view-tab'));
-            viewTab.show();
+        function openEditModal() {
+             if (!editModal) {
+                editModal = new bootstrap.Modal(document.getElementById('editarPerfilModal'));
+            }
+            editModal.show();
+        }
+        
+        // Función principal para manejar la actualización
+        function confirmarActualizacionPerfil() {
+            const editForm = document.getElementById('editForm');
+            
+            // Validación HTML5 básica (campos requeridos, email, etc.)
+            if (!editForm.checkValidity()) {
+                editForm.reportValidity(); // Muestra los mensajes del navegador
+                return;
+            }
+
+            const nuevaContrasena = document.querySelector('[name="Edicion.NuevaContrasena"]').value;
+            const contrasenaActual = document.querySelector('[name="Edicion.ContrasenaActual"]').value;
+            const confirmarContrasena = document.querySelector('[name="Edicion.ConfirmarContrasena"]').value;
+
+            // Validar contraseñas
+            if (nuevaContrasena && !contrasenaActual) {
+                showAlert('Debes ingresar tu contraseña actual para cambiar la contraseña', 'error');
+                return;
+            }
+
+            if (nuevaContrasena !== confirmarContrasena) {
+                showAlert('Las contraseñas nuevas no coinciden', 'error');
+                return;
+            }
+
+            // Verificar que al menos un campo esté habilitado y tenga datos
+            const enabledFields = Array.from(document.querySelectorAll('#editForm input:not([disabled])'))
+                .filter(input => input.value.trim() !== '');
+
+            if (enabledFields.length === 0) {
+                showAlert('No hay campos habilitados para actualizar. Habilita al menos un campo.', 'warning');
+                return;
+            }
+
+            // Si todo está bien, mostrar el modal de confirmación con SweetAlert2
+            Swal.fire({
+                title: 'Confirmar Cambios',
+                text: '¿Estás seguro de que deseas guardar los cambios realizados en tu perfil?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#365CF5',
+                cancelButtonColor: '#secondary',
+                confirmButtonText: 'Guardar Cambios',
+                cancelButtonText: 'Cancelar',
+                allowOutsideClick: false // Evitar cierre accidental
+            }).then((result) => {
+                if (result.isConfirmed) {
+                   // Mostrar loading state
+                   Swal.fire({
+                       title: 'Guardando...',
+                       text: 'Por favor espere mientras actualizamos su perfil.',
+                       allowOutsideClick: false,
+                       didOpen: () => {
+                           Swal.showLoading();
+                       }
+                   });
+                   
+                   // Enviar formulario (esto recargará la página)
+                   editForm.submit();
+                }
+            });
         }
 
         function resetForm() {
@@ -352,24 +371,26 @@
         }
 
         function showAlert(message, type) {
-            // Crear alerta temporal
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
+            let bgGradient = "linear-gradient(to right, #4b6cb7, #182848)"; // Default for info
+            
+            if (type === 'success') {
+                bgGradient = "linear-gradient(to right, #00b09b, #96c93d)";
+            } else if (type === 'error') {
+                bgGradient = "linear-gradient(to right, #ff5f6d, #ffc371)";
+            } else if (type === 'warning') {
+                bgGradient = "linear-gradient(to right, #f12711, #f5af19)";
+            }
 
-            // Insertar después del título
-            const title = document.querySelector('.settings-card-2 .title');
-            title.parentNode.insertBefore(alertDiv, title.nextSibling);
-
-            // Auto-eliminar después de 5 segundos
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
-                }
-            }, 5000);
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "bottom", // `top` or `bottom`
+                position: "right", // `left`, `center` or `right`
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                style: {
+                    background: bgGradient,
+                },
+            }).showToast();
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -390,60 +411,21 @@
                 ]);
             });
 
-            // Validación del formulario
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                const nuevaContrasena = document.querySelector('[name="Edicion.NuevaContrasena"]').value;
-                const contrasenaActual = document.querySelector('[name="Edicion.ContrasenaActual"]').value;
-                const confirmarContrasena = document.querySelector('[name="Edicion.ConfirmarContrasena"]').value;
-
-                // Validar contraseñas
-                if (nuevaContrasena && !contrasenaActual) {
-                    e.preventDefault();
-                    showAlert('Debes ingresar tu contraseña actual para cambiar la contraseña', 'error');
-                    return false;
-                }
-
-                if (nuevaContrasena !== confirmarContrasena) {
-                    e.preventDefault();
-                    showAlert('Las contraseñas nuevas no coinciden', 'error');
-                    return false;
-                }
-
-                // Verificar que al menos un campo esté habilitado y tenga datos
-                const enabledFields = Array.from(document.querySelectorAll('#editForm input:not([disabled])'))
-                    .filter(input => input.value.trim() !== '');
-
-                if (enabledFields.length === 0) {
-                    e.preventDefault();
-                    showAlert('No hay campos habilitados para actualizar. Habilita al menos un campo.', 'warning');
-                    return false;
-                }
-
-                showAlert('Enviando cambios...', 'info');
+            // Validación del formulario y manejo del Modal
+            const editForm = document.getElementById('editForm');
+            
+            // Manejar envío estándar (intercep enter key, etc)
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevenir envío estándar siempre
+                confirmarActualizacionPerfil(); // Usar la misma lógica
             });
-
-            @if (TempData["SuccessMessage"] != null)
-            {
-                    <text>
-                    showAlert('@TempData["SuccessMessage"]', 'success');
-                    </text>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                    <text>
-                    showAlert('@TempData["ErrorMessage"]', 'error');
-                    </text>
-            }
         });
 
         // Atajos de teclado
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'e') {
                 e.preventDefault();
-                switchToEdit();
-            }
-            if (e.key === 'Escape') {
-                switchToView();
+                openEditModal();
             }
         });
     </script>

@@ -16,6 +16,11 @@
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="~/css/custom.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <!-- Toastify-js -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- SweetAlert2 (Para Confirmaciones) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -47,6 +52,9 @@
                 <!-- Token ANTIFORGERY aquí -->
                 @Html.AntiForgeryToken()
                 
+                <!-- Alertas Globales -->
+                @await Html.PartialAsync("_Alert")
+
                 @RenderBody()
             </div>
             <!-- end container -->

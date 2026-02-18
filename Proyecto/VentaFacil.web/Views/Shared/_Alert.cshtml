@@ -1,0 +1,49 @@
+@if (TempData["AlertMessage"] != null)
+{
+    var alertType = TempData["AlertType"]?.ToString()?.ToLower() ?? "info";
+    var alertTitle = TempData["AlertTitle"]?.ToString();
+
+    // Map Bootstrap types to SweetAlert2 types
+    if (alertType == "danger") { alertType = "error"; }
+    if (alertType == "primary") { alertType = "info"; }
+    
+    // Set default titles if not provided
+    if (string.IsNullOrEmpty(alertTitle))
+    {
+        switch (alertType)
+        {
+            case "success": alertTitle = "Éxito"; break;
+            case "error": alertTitle = "Error"; break;
+            case "warning": alertTitle = "Advertencia"; break;
+            case "info": alertTitle = "Información"; break;
+            default: alertTitle = "Notificación"; break;
+        }
+    }
+
+    var bgGradient = "linear-gradient(to right, #4b6cb7, #182848)"; // Default for info
+
+    if (alertType == "success") {
+        bgGradient = "linear-gradient(to right, #00b09b, #96c93d)";
+    } else if (alertType == "error") {
+        bgGradient = "linear-gradient(to right, #ff5f6d, #ffc371)";
+    } else if (alertType == "warning") {
+        bgGradient = "linear-gradient(to right, #f12711, #f5af19)";
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Toastify({
+                text: "@Html.Raw(string.IsNullOrEmpty(alertTitle) ? "" : $"<strong>{alertTitle}:</strong> ") @Html.Raw(TempData["AlertMessage"])",
+                duration: 3000,
+                gravity: "bottom", // `top` or `bottom`
+                position: "right", // `left`, `center` or `right`
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                escapeMarkup: false,
+                style: {
+                    background: "@Html.Raw(bgGradient)",
+                },
+                onClick: function(){} // Callback after click
+            }).showToast();
+        });
+    </script>
+}

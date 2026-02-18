@@ -9,7 +9,7 @@ using VentaFacil.web.Services.Usuario;
 namespace VentaFacil.web.Controllers
 {
     [Authorize]
-    public class UsuarioController : Controller
+    public class UsuarioController : BaseController
     {
         private readonly IUsuarioService _usuarioService;
 
@@ -27,7 +27,7 @@ namespace VentaFacil.web.Controllers
 
                 if (usuarioId == null)
                 {
-                    TempData["ErrorMessage"] = "No se pudo identificar el usuario - Sesión no encontrada";
+                    SetAlert("No se pudo identificar el usuario - Sesión no encontrada", "error");
                     return RedirectToAction("InicioSesion", "Login");
                 }
 
@@ -35,7 +35,7 @@ namespace VentaFacil.web.Controllers
 
                 if (perfil == null)
                 {
-                    TempData["ErrorMessage"] = "Error al cargar el perfil - Usuario no encontrado";
+                    SetAlert("Error al cargar el perfil - Usuario no encontrado", "error");
                     return View("ErrorPerfil");
                 }
 
@@ -59,7 +59,7 @@ namespace VentaFacil.web.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Ocurrió un error al cargar su perfil. Por favor, intente más tarde.";
+                SetAlert("Ocurrió un error al cargar su perfil. Por favor, intente más tarde.", "error");
                 return View("ErrorPerfil");
             }
         }
@@ -102,7 +102,7 @@ namespace VentaFacil.web.Controllers
                     string.IsNullOrWhiteSpace(viewModel.Edicion.Correo) &&
                     string.IsNullOrWhiteSpace(viewModel.Edicion.NuevaContrasena))
                 {
-                    TempData["ErrorMessage"] = "Debe proporcionar al menos un campo para actualizar (Nombre, Correo o Contraseña)";
+                    SetAlert("Debe proporcionar al menos un campo para actualizar (Nombre, Correo o Contraseña)", "warning");
 
                     await RecargarDatosUsuario(usuarioId, viewModel);
                     return View("Perfil", viewModel);
@@ -137,12 +137,12 @@ namespace VentaFacil.web.Controllers
                             }
                         }
 
-                        TempData["SuccessMessage"] = "Perfil actualizado correctamente";
+                        SetAlert("Perfil actualizado correctamente", "success");
                         return RedirectToAction("Perfil");
                     }
                     else
                     {
-                        TempData["ErrorMessage"] = "Error al actualizar perfil";
+                        SetAlert("Error al actualizar perfil", "error");
                     }
                 }
                 else
@@ -153,7 +153,7 @@ namespace VentaFacil.web.Controllers
                         .Select(x => new { x.Key, Errores = x.Value.Errors.Select(e => e.ErrorMessage) })
                         .ToList();
 
-                    TempData["ErrorMessage"] = "Por favor, corrige los errores del formulario";
+                     SetAlert("Por favor, corrige los errores del formulario", "error");
                 }
 
                 await RecargarDatosUsuario(usuarioId, viewModel);
@@ -161,7 +161,7 @@ namespace VentaFacil.web.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                SetAlert(ex.Message, "error");
                 await RecargarDatosUsuario(usuarioId, viewModel);
                 return View("Perfil", viewModel);
             }

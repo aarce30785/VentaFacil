@@ -12,8 +12,8 @@ using VentaFacil.web.Services.Usuario;
 
 namespace VentaFacil.web.Controllers
 {
-    [Authorize]
-    public class AdminController : Controller
+    [Authorize(Roles="Administrador")]
+    public class AdminController : BaseController
     {
         private readonly IAdminService _adminService;
         private readonly IUsuarioService _usuarioService;
@@ -425,12 +425,13 @@ namespace VentaFacil.web.Controllers
 
                 if (result)
                 {
+                    var msg = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente";
                     if (isAjax)
                     {
-                         return Ok(new { success = true, message = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente" });
+                         return Ok(new { success = true, message = msg });
                     }
 
-                    TempData["MensajeExito"] = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente";
+                    SetAlert(msg, "success");
                     return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, pagina });
                 }
                 else
@@ -546,13 +547,13 @@ namespace VentaFacil.web.Controllers
                 bool resultado = await _adminService.EliminarUsuarioAsync(id);
 
                 if (resultado)
-                    TempData["MensajeExito"] = "Usuario eliminado correctamente.";
+                    SetAlert("Usuario eliminado correctamente.", "success");
                 else
-                    TempData["MensajeError"] = "No se pudo eliminar el usuario.";
+                    SetAlert("No se pudo eliminar el usuario.", "error");
             }
             catch (Exception ex)
             {
-                TempData["MensajeError"] = $"Error al eliminar el usuario: {ex.Message}";
+                SetAlert($"Error al eliminar el usuario: {ex.Message}", "error");
             }
 
             return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, pagina });
@@ -626,13 +627,13 @@ namespace VentaFacil.web.Controllers
                 bool resultado = await _adminService.ReactivarUsuarioAsync(id);
 
                 if (resultado)
-                    TempData["MensajeExito"] = "Usuario reactivado correctamente.";
+                    SetAlert("Usuario reactivado correctamente.", "success");
                 else
-                    TempData["MensajeError"] = "No se pudo reactivar el usuario.";
+                    SetAlert("No se pudo reactivar el usuario.", "error");
             }
             catch (Exception ex)
             {
-                TempData["MensajeError"] = $"Error al reactivar el usuario: {ex.Message}";
+                SetAlert($"Error al reactivar el usuario: {ex.Message}", "error");
             }
 
             return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, mostrarInactivos, pagina });

@@ -244,6 +244,9 @@
 <!-- Script unificado - CORREGIDO -->
 
 
+<!-- Modals para Confirmaciones (SweetAlert2 usado directamente) -->
+<!-- <div class="modal fade" id="confirmarGuardarModal" ... (Removed) -->
+
 <div id="modalContainerUsuarios"></div>
 
 <!-- Script unificado - CORREGIDO -->
@@ -268,8 +271,6 @@
         // Inicialización cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', function() {
             inicializarFiltros();
-            inicializarModalReactivacion();
-            inicializarModalEliminacion();
         });
 
         // ===== FUNCIONES DE FILTROS =====
@@ -507,78 +508,47 @@
 
 
 
+
         // ===== FUNCIONES DEL MODAL DE REACTIVACIÓN =====
-        function inicializarModalReactivacion() {
-            const modalEl = document.getElementById('reactivarUsuarioModal');
-            if (modalEl && typeof bootstrap !== 'undefined') {
-                reactivarModalInstance = new bootstrap.Modal(modalEl);
-                
-                // Configurar botón de confirmación
-                const btnConfirmar = document.getElementById('btnConfirmarReactivacion');
-                if (btnConfirmar) {
-                    btnConfirmar.addEventListener('click', function() {
-                        if (usuarioAReactivar.id) {
-                            reactivarUsuario(usuarioAReactivar.id);
-                        }
-                    });
-                }
-            }
-        }
+        // (No initialization needed for SweetAlert2)
 
         // ===== FUNCIONES DEL MODAL DE ELIMINACIÓN =====
-        function inicializarModalEliminacion() {
-            const modalEl = document.getElementById('eliminarUsuarioModal');
-            if (modalEl && typeof bootstrap !== 'undefined') {
-                eliminarModalInstance = new bootstrap.Modal(modalEl);
-                
-                // Configurar botón de confirmación
-                const btnConfirmar = document.getElementById('btnConfirmarEliminacion');
-                if (btnConfirmar) {
-                    btnConfirmar.addEventListener('click', function() {
-                        if (usuarioAEliminar.id) {
-                            realizarEliminacion(usuarioAEliminar.id);
-                        }
-                    });
-                }
-            }
-        }
+        // (No initialization needed for SweetAlert2)
 
         // Función global para confirmar reactivación
         window.confirmarReactivacion = function(usuarioId, nombreUsuario) {
-            usuarioAReactivar = {
-                id: usuarioId,
-                nombre: nombreUsuario
-            };
-            
-            const nombreSpan = document.getElementById('nombreUsuarioReactivar');
-            if (nombreSpan) {
-                nombreSpan.textContent = nombreUsuario;
-            }
-            
-            if (reactivarModalInstance) {
-                reactivarModalInstance.show();
-            } else if (confirm(`¿Está seguro de que desea reactivar al usuario "${nombreUsuario}"?`)) {
-                reactivarUsuario(usuarioId);
-            }
+            Swal.fire({
+                title: 'Confirmar Reactivación',
+                text: `¿Está seguro de que desea reactivar al usuario "${nombreUsuario}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#365CF5', // Primary
+                cancelButtonColor: '#secondary',
+                confirmButtonText: 'Sí, reactivar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    reactivarUsuario(usuarioId);
+                }
+            });
         };
 
         // Función global para confirmar eliminación
         window.confirmarEliminacion = function(usuarioId, nombreUsuario) {
-            usuarioAEliminar = {
-                id: usuarioId,
-                nombre: nombreUsuario
-            };
-
-            const nombreSpan = document.getElementById('nombreUsuarioEliminar');
-            if (nombreSpan) {
-                nombreSpan.textContent = nombreUsuario;
-            }
-
-            if (eliminarModalInstance) {
-                eliminarModalInstance.show();
-            } else if (confirm(`¿Está seguro que desea eliminar al usuario "${nombreUsuario}"?`)) {
-                realizarEliminacion(usuarioId);
-            }
+            Swal.fire({
+                title: 'Confirmar Eliminación',
+                html: `¿Está seguro de que desea eliminar al usuario <strong>${nombreUsuario}</strong>?<br/><small class="text-danger">Esta acción no se puede deshacer.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33', // Danger
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    realizarEliminacion(usuarioId);
+                }
+            });
         };
 
         // Función para reactivar usuario
@@ -602,13 +572,25 @@
 
         // Función para realizar la eliminación
         function realizarEliminacion(usuarioId) {
-            // Mostrar estado de carga
-            const btn = document.getElementById('btnConfirmarEliminacion');
-            if (btn) {
-                const originalText = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Eliminando...';
-            }
+            // Mostrar SweetAlert de carga (opcional, o dejar que navegue)
+            // Mostrar SweetAlert de carga (opcional)
+            Swal.fire({
+                title: 'Eliminando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            // O mostrar Toastify de "Procesando..." si prefieres evitar el modal de carga intrusivo
+            /*
+            Toastify({
+                text: "Procesando eliminación...",
+                duration: 2000,
+                gravity: "bottom",
+                position: "right",
+            }).showToast();
+            */
 
             // Obtener parámetros para mantener el contexto
             var busqueda = @Json.Serialize(Model.Busqueda);
@@ -622,68 +604,136 @@
                        '&rolFiltro=' + (rolFiltro || '') +
                        '&pagina=' + (pagina || 1);
             
-            // Navegar directamente en lugar de usar fetch + reload
+            // Navegar directamente
             window.location.href = url;
+        }
+        
+        // Modificación de configurarSubmitFormUsuario para usar SweetAlert en Confirmación
+        window.configurarSubmitFormUsuario = function(accion) {
+            const form = document.getElementById('usuarioForm');
+            if (!form) return;
+
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Validación básica de HTML5
+                if (!newForm.checkValidity()) {
+                    newForm.classList.add('was-validated');
+                    return;
+                }
+
+                // Detectar cambios
+                const listaCambios = obtenerCambios(newForm, accion);
+                
+                let html = '';
+                if (listaCambios.length === 0) {
+                     html = '<div class="alert alert-warning">No se han detectado cambios.</div>';
+                } else {
+                    html = accion === 'crear' 
+                        ? '<p>Se creará un nuevo usuario con los siguientes datos:</p>' 
+                        : '<p>Se realizarán las siguientes modificaciones:</p>';
+                    
+                    html += '<ul class="list-group list-group-flush text-start">';
+                    listaCambios.forEach(cambio => {
+                        html += `<li class="list-group-item">${cambio}</li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                // Mostrar SweetAlert de confirmación
+                // Mostrar SweetAlert de confirmación
+                Swal.fire({
+                    title: 'Confirmar Cambios',
+                    html: html,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#365CF5'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        enviarFormularioUsuario(newForm);
+                    }
+                });
+            });
+        };
+
+        function enviarFormularioUsuario(form) {
+            const formData = new FormData(form);
+            formData.append('isAjax', 'true'); // Flag para el backend
+
+            // Mostrar estado de carga con SweetAlert (Opcional, o usar Toastify loader)
+            Swal.fire({
+                title: 'Guardando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                   Swal.showLoading();
+                }
+            });
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                   return response.json().then(errData => { throw new Error(errData.message || 'Error en el servidor'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal de usuario
+                    const modalElement = document.getElementById('usuarioModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) modal.hide();
+                    
+                    Swal.close(); // Cerrar loader
+
+                    // Mostrar Toastify de éxito y recargar
+                    Toastify({
+                        text: "<strong>¡Éxito!</strong> " + (data.message || 'Operación realizada correctamente'),
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "right",
+                        escapeMarkup: false,
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000); 
+                } else {
+                    throw new Error(data.message || 'Error desconocido');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.close();
+                
+                Toastify({
+                    text: "<strong>Error:</strong> " + error.message,
+                    duration: 5000,
+                    gravity: "bottom",
+                    position: "right",
+                    escapeMarkup: false,
+                    style: {
+                         background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    }
+                }).showToast();
+            });
         }
 
     })();
 </script>
-
-<!-- Modal de Confirmación de Reactivación (sin cambios) -->
-<div class="modal fade" id="reactivarUsuarioModal" tabindex="-1" aria-labelledby="reactivarUsuarioModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="reactivarUsuarioModalLabel">Confirmar Reactivación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ¿Está seguro de que desea reactivar al usuario <strong id="nombreUsuarioReactivar"></strong>?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btnConfirmarReactivacion">Confirmar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Confirmación de Eliminación -->
-<div class="modal fade" id="eliminarUsuarioModal" tabindex="-1" aria-labelledby="eliminarUsuarioModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="eliminarUsuarioModalLabel">Confirmar Eliminación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ¿Está seguro de que desea eliminar al usuario <strong id="nombreUsuarioEliminar"></strong>?
-                <br />
-                <small class="text-danger">Esta acción no se puede deshacer.</small>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="btnConfirmarEliminacion">Eliminar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Confirmación de Guardado -->
-<div class="modal fade" id="confirmarGuardarModal" tabindex="-1" aria-labelledby="confirmarGuardarModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmarGuardarModalLabel">Confirmar Cambios</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ¿Está seguro de que desea guardar los cambios en este usuario?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btnConfirmarGuardar">Guardar</button>
-            </div>
-        </div>
-    </div>
-</div>

@@ -9,7 +9,7 @@ using VentaFacil.web.Services.Auth;
 namespace VentaFacil.web.Controllers
 {
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
-    public class LoginController : Controller
+    public class LoginController : BaseController
     {
         private  readonly IAuthService _authService;
         private readonly IPasswordResetService _passwordResetService;
@@ -32,14 +32,14 @@ namespace VentaFacil.web.Controllers
         {
             if (string.IsNullOrEmpty(correo))
             {
-                ModelState.AddModelError("", "Por favor ingrese su correo.");
-                return View();
+                SetAlert("Por favor ingrese su correo.", "warning");
+                return RedirectToAction("InicioSesion");
             }
 
             await _passwordResetService.RequestPasswordResetAsync(correo);
             
             // Siempre mostramos el mismo mensaje por seguridad
-            TempData["SuccessMessage"] = "Si el correo existe, se han enviado las instrucciones.";
+            SetAlert("Si el correo existe, se han enviado las instrucciones.", "success", "Solicitud Enviada");
             return RedirectToAction("InicioSesion");
         }
 
@@ -78,7 +78,14 @@ namespace VentaFacil.web.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-            return View();
+            
+            
+            var model = new LoginDto();
+            if (TempData["SavedCorreo"] != null)
+            {
+                model.Correo = TempData["SavedCorreo"].ToString();
+            }
+            return View(model);
         }
 
         [HttpPost]
@@ -122,7 +129,8 @@ namespace VentaFacil.web.Controllers
                 HttpContext.Session.SetInt32("UsuarioId", result.UsuarioId);
                 HttpContext.Session.SetString("IsLoggedIn", "true");
 
-                TempData["SuccessMessage"] = result.Message;
+                // TempData["SuccessMessage"] = result.Message; // Removed in favor of SetAlert
+                SetAlert($"Bienvenido nuevamente, {result.Nombre}", "success", "Inicio de Sesión Correcto");
 
                 // **CORREGIR: Redirigir explícitamente al Home/Index**
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -133,8 +141,10 @@ namespace VentaFacil.web.Controllers
             }
             else
             {
-                ModelState.AddModelError(string.Empty, result.Message);
-                return View(loginDto);
+                SetAlert(result.Message, "danger", "Error de Acceso");
+                // Save email to avoid retyping
+                TempData["SavedCorreo"] = loginDto.Correo;
+                return RedirectToAction("InicioSesion");
             }
         }
 
@@ -148,7 +158,7 @@ namespace VentaFacil.web.Controllers
             
             HttpContext.Session.Clear();
         
-            TempData["SuccessMessage"] = "Sesión cerrada correctamente";
+            SetAlert("Sesión cerrada correctamente", "info", "Hasta pronto");
             return RedirectToAction("InicioSesion", "Login");
         }
 
