@@ -400,8 +400,8 @@
                 const select = form.querySelector('[name="Rol"]');
                 const rolText = select.options[select.selectedIndex]?.text || currentValues.Rol;
                 cambios.push(`<strong>Rol:</strong> ${rolText}`);
-                cambios.push(`<strong>Estado:</strong> ${currentValues.Estado ? 'Activo' : 'Inactivo'}`);
-                if(currentValues.Contrasena) cambios.push(`<strong>Contraseña:</strong> *****`);
+                cambios.push(`<strong>Estado:</strong> Inactivo (Pendiente de activación)`);
+                cambios.push(`<strong>Nota:</strong> Se enviará un correo de activación.`);
             }
 
             return cambios;
@@ -732,6 +732,93 @@
                          background: "linear-gradient(to right, #ff5f6d, #ffc371)",
                     }
                 }).showToast();
+            });
+        }
+
+        // Función para enviar correo de restablecimiento de contraseña
+        window.enviarCorreoRestablecer = function(usuarioId) {
+             Swal.fire({
+                title: 'Enviar correo de restablecimiento',
+                text: "¿Desea enviar un correo al usuario para que restablezca su contraseña?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#365CF5',
+                cancelButtonColor: '#secondary',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarSolicitudRestablecimiento(usuarioId);
+                }
+            });
+        };
+
+        function enviarSolicitudRestablecimiento(usuarioId) {
+            Swal.fire({
+                title: 'Enviando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const url = '@Url.Action("EnviarRestablecerContrasena", "Admin")';
+            const formData = new FormData();
+            formData.append('id', usuarioId);
+
+            // Intentar obtener el token del formulario del modal si existe, o buscar uno global
+            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenElement ? tokenElement.value : '';
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                     'RequestVerificationToken': token,
+                     'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    Toastify({
+                        text: "<strong>¡Éxito!</strong> " + (data.message || 'Correo enviado correctamente'),
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "right",
+                        escapeMarkup: false,
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                } else {
+                    Toastify({
+                        text: "<strong>Error:</strong> " + (data.message || 'No se pudo enviar el correo'),
+                        duration: 5000,
+                        gravity: "bottom",
+                        position: "right",
+                        escapeMarkup: false,
+                        style: {
+                             background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        }
+                    }).showToast();
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Toastify({
+                    text: "<strong>Error:</strong> Ocurrió un error al procesar la solicitud",
+                    duration: 5000,
+                    gravity: "bottom",
+                    position: "right",
+                    escapeMarkup: false,
+                    style: {
+                         background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    }
+                }).showToast();
+                console.error('Error:', error);
             });
         }
 

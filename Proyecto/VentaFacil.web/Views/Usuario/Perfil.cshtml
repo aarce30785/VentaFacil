@@ -413,6 +413,31 @@
 
             // Validación del formulario y manejo del Modal
             const editForm = document.getElementById('editForm');
+
+            // Auto-open modal if there are errors
+            const errorSpans = document.querySelectorAll('.field-validation-error');
+            if (errorSpans.length > 0) {
+                 // Check if any error span actually has text content (server-side validation renders text inside)
+                let hasVisibleErrors = false;
+                errorSpans.forEach(span => {
+                    if (span.innerText && span.innerText.trim() !== "") {
+                        hasVisibleErrors = true;
+                        // Enable the section for this error
+                        const card = span.closest('.card-style-3');
+                        if (card) {
+                            const btn = card.querySelector('.card-header button');
+                            if (btn && !btn.classList.contains('success-btn')) {
+                                btn.click(); // Trigger toggle to enable
+                            }
+                        }
+                    }
+                });
+
+                if (hasVisibleErrors) {
+                    openEditModal();
+                    // Optional: Scroll to the first error? The modal centers itself.
+                }
+            }
             
             // Manejar envío estándar (intercep enter key, etc)
             editForm.addEventListener('submit', function(e) {

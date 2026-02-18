@@ -4,5 +4,6 @@ namespace VentaFacil.web.Services.Auth
     {
         Task<bool> RequestPasswordResetAsync(string email);
         Task<bool> ResetPasswordAsync(string token, string newPassword);
+        Task<bool> SendActivationEmailAsync(string email);
     }
 }

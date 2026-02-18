@@ -96,6 +96,20 @@ namespace VentaFacil.web.Controllers
                     ModelState.Remove("Edicion.NuevaContrasena");
                     ModelState.Remove("Edicion.ConfirmarContrasena");
                 }
+                else
+                {
+                    // Validar política de contraseñas
+                    var errorContrasena = ValidarPoliticaContrasena(viewModel.Edicion.NuevaContrasena);
+                    if (errorContrasena != null)
+                    {
+                        ModelState.AddModelError("Edicion.NuevaContrasena", errorContrasena);
+                    }
+
+                    if (viewModel.Edicion.NuevaContrasena == viewModel.Edicion.ContrasenaActual)
+                    {
+                         ModelState.AddModelError("Edicion.NuevaContrasena", "La nueva contraseña no puede ser igual a la actual.");
+                    }
+                }
 
                 
                 if (string.IsNullOrWhiteSpace(viewModel.Edicion.Nombre) &&
@@ -153,7 +167,7 @@ namespace VentaFacil.web.Controllers
                         .Select(x => new { x.Key, Errores = x.Value.Errors.Select(e => e.ErrorMessage) })
                         .ToList();
 
-                     SetAlert("Por favor, corrige los errores del formulario", "error");
+                     // SetAlert("Por favor, corrige los errores del formulario", "error");
                 }
 
                 await RecargarDatosUsuario(usuarioId, viewModel);
@@ -174,6 +188,23 @@ namespace VentaFacil.web.Controllers
                 var perfil = await _usuarioService.PerfilUsuario(usuarioId.Value);
                 viewModel.Usuario = perfil;
             }
+        }
+
+        private string ValidarPoliticaContrasena(string contrasena)
+        {
+            if (string.IsNullOrEmpty(contrasena)) return "La contraseña no puede estar vacía.";
+            
+            if (contrasena.Length < 12) return "La contraseña debe tener al menos 12 caracteres.";
+            
+            if (!contrasena.Any(char.IsUpper)) return "La contraseña debe contener al menos una letra mayúscula (A-Z).";
+            
+            if (!contrasena.Any(char.IsLower)) return "La contraseña debe contener al menos una letra minúscula (a-z).";
+            
+            if (!contrasena.Any(char.IsDigit)) return "La contraseña debe contener al menos un número (0-9).";
+            
+            if (!contrasena.Any(ch => !char.IsLetterOrDigit(ch))) return "La contraseña debe contener al menos un carácter especial.";
+            
+            return null;
         }
     }
 }

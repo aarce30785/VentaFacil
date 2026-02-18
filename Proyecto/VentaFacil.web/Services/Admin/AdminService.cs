@@ -102,9 +102,10 @@ namespace VentaFacil.web.Services.Admin
                 {
                     Nombre = usuarioDto.Nombre.Trim(),
                     Correo = usuarioDto.Correo.Trim().ToLower(),
-                    Contrasena = PasswordHelper.HashPassword(usuarioDto.Contrasena),
+                    // Generar una contraseña aleatoria compleja temporalmente
+                    Contrasena = PasswordHelper.HashPassword(Guid.NewGuid().ToString() + "A1!"),
                     Rol = usuarioDto.Rol,
-                    Estado = usuarioDto.Estado,
+                    Estado = false, // Inactivo por defecto hasta que active su cuenta
                     FechaCreacion = DateTime.Now,
                    
                 };

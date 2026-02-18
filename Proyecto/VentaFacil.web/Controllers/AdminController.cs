@@ -9,6 +9,7 @@ using VentaFacil.web.Models.Response.Usuario;
 using VentaFacil.web.Services.Admin;
 using VentaFacil.web.Services.Producto;
 using VentaFacil.web.Services.Usuario;
+using VentaFacil.web.Services.Auth;
 
 namespace VentaFacil.web.Controllers
 {
@@ -19,17 +20,20 @@ namespace VentaFacil.web.Controllers
         private readonly IUsuarioService _usuarioService;
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
+        private readonly IPasswordResetService _passwordResetService;
 
         public AdminController(
             IAdminService adminService,
             IUsuarioService usuarioService,
             IProductoService productoService,
-            ICategoriaService categoriaService)
+            ICategoriaService categoriaService,
+            IPasswordResetService passwordResetService)
         {
             _adminService = adminService;
             _usuarioService = usuarioService;
             _productoService = productoService;
             _categoriaService = categoriaService;
+            _passwordResetService = passwordResetService;
         }
 
         public async Task<IActionResult> Index()
@@ -392,10 +396,19 @@ namespace VentaFacil.web.Controllers
                 // Detectar AJAX por parámetro o por header
                 isAjax = isAjax || Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
+                // Para usuarios existentes, si la contraseña está vacía, no se actualiza
                 if (usuarioDto.Id_Usr > 0 && string.IsNullOrEmpty(usuarioDto.Contrasena))
                 {
                     usuarioDto.Contrasena = null;
                     usuarioDto.ConfirmarContrasena = null;
+                    ModelState.Remove("Contrasena");
+                    ModelState.Remove("ConfirmarContrasena");
+                }
+                // Para nuevos usuarios, la contraseña se genera automáticamente y se envía por correo
+                else if (usuarioDto.Id_Usr == 0)
+                {
+                    usuarioDto.Contrasena = "Temp123!"; // Valor dummy para pasar validación del modelo si es [Required]
+                    usuarioDto.ConfirmarContrasena = "Temp123!";
                     ModelState.Remove("Contrasena");
                     ModelState.Remove("ConfirmarContrasena");
                 }
@@ -425,7 +438,26 @@ namespace VentaFacil.web.Controllers
 
                 if (result)
                 {
-                    var msg = usuarioDto.Id_Usr > 0 ? "Usuario actualizado correctamente" : "Usuario creado correctamente";
+                    var msg = "";
+                    if (usuarioDto.Id_Usr > 0)
+                    {
+                        msg = "Usuario actualizado correctamente";
+                    }
+                    else
+                    {
+                        // Enviar correo de activación para nuevos usuarios
+                        try
+                        {
+                            await _passwordResetService.SendActivationEmailAsync(usuarioDto.Correo);
+                            msg = "Usuario creado. Se ha enviado un correo de activación.";
+                        }
+                        catch (Exception emailEx)
+                        {
+                            Console.WriteLine($"Error enviando correo de activación: {emailEx.Message}");
+                            msg = "Usuario creado, pero hubo un error enviando el correo de activación.";
+                        }
+                    }
+
                     if (isAjax)
                     {
                          return Ok(new { success = true, message = msg });
@@ -637,6 +669,34 @@ namespace VentaFacil.web.Controllers
             }
 
             return RedirectToAction("IndexUsuarios", new { busqueda, rolFiltro, mostrarInactivos, pagina });
+        }
+        [HttpPost]
+        public async Task<IActionResult> EnviarRestablecerContrasena(int id)
+        {
+            try
+            {
+                var usuario = await _usuarioService.GetUsuarioByIdAsync(id);
+                if (usuario == null)
+                {
+                    return Json(new { success = false, message = "Usuario no encontrado" });
+                }
+
+                var result = await _passwordResetService.RequestPasswordResetAsync(usuario.Correo);
+                
+                if (result)
+                {
+                    return Json(new { success = true, message = "Se ha enviado el correo de restablecimiento exitosamente." });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "No se pudo enviar el correo. Verifique la configuración." });
+                }
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Error enviando correo de restablecimiento desde admin");
+                return Json(new { success = false, message = "Ocurrió un error al procesar la solicitud." });
+            }
         }
     }
 }

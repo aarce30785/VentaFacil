@@ -71,6 +71,38 @@ namespace VentaFacil.web.Controllers
             return View(model);
         }
 
+
+        [HttpGet]
+        public IActionResult ActivarCuenta(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("InicioSesion");
+
+            // Reusamos el DTO de reset password ya que necesitamos los mismos campos
+            return View(new Models.Dto.ResetPasswordDto { Token = token });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActivarCuenta(Models.Dto.ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Reusamos el servicio de reset password ya que la lógica es idéntica (buscar token, validar, actualizar pass)
+            // La diferencia es que internamente el servicio ahora también activa el usuario.
+            var result = await _passwordResetService.ResetPasswordAsync(model.Token, model.Contrasena);
+
+            if (result)
+            {
+                SetAlert("¡Cuenta activada correctamente! Ya puedes iniciar sesión.", "success", "Bienvenido");
+                return RedirectToAction("InicioSesion");
+            }
+
+            ModelState.AddModelError("", "El enlace de activación es inválido o ha expirado.");
+            return View(model);
+        }
+
         [HttpGet]
         public IActionResult InicioSesion()
         {
