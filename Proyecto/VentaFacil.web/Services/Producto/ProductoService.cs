@@ -36,6 +36,7 @@ namespace VentaFacil.web.Services.Producto
                     Precio = p.Precio,
                     Imagen = p.Imagen,
                     StockMinimo = p.StockMinimo,
+                    StockActual = p.StockActual,
                     Estado = p.Estado,
                     Id_Categoria = p.Id_Categoria
                 }).ToList();
@@ -53,12 +54,71 @@ namespace VentaFacil.web.Services.Producto
             return response;
         }
 
+        public async Task<ListProductoResponse> ListarActivosAsync()
+        {
+            var response = new ListProductoResponse();
+            try
+            {
+                var productos = await _context.Producto
+                    .AsNoTracking()
+                    .Where(p => p.Estado)
+                    .ToListAsync();
+
+                response.Success = true;
+                response.Productos = productos.Select(p => new ProductoDto
+                {
+                    Id_Producto = p.Id_Producto,
+                    Nombre = p.Nombre,
+                    Descripcion = p.Descripcion,
+                    Precio = p.Precio,
+                    Imagen = p.Imagen,
+                    StockMinimo = p.StockMinimo,
+                    StockActual = p.StockActual,
+                    Estado = p.Estado,
+                    Id_Categoria = p.Id_Categoria
+                }).ToList();
+
+                response.Message = response.Productos.Count > 0
+                    ? "Productos activos encontrados."
+                    : "No hay productos activos.";
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error al listar productos activos: {ex.Message}";
+            }
+
+            return response;
+        }
+
         public async Task<RegisterProductoResponse> RegisterAsync(ProductoDto productoDto)
         {
             var response = new RegisterProductoResponse();
 
             try
             {
+                // Validación de integridad de datos
+                if (productoDto.Precio <= 0)
+                {
+                    response.Success = false;
+                    response.Message = "El precio debe ser mayor a 0.";
+                    return response;
+                }
+
+                if (productoDto.StockMinimo < 1)
+                {
+                    response.Success = false;
+                    response.Message = "El stock mínimo debe ser al menos 1.";
+                    return response;
+                }
+
+                if (productoDto.StockActual < 0)
+                {
+                    response.Success = false;
+                    response.Message = "El stock actual no puede ser negativo.";
+                    return response;
+                }
+
                 // Validación básica: nombre único y estado activo
                 var exist = await _context.Producto
                     .AnyAsync(p => p.Nombre == productoDto.Nombre && p.Estado);
@@ -66,7 +126,7 @@ namespace VentaFacil.web.Services.Producto
                 if (exist)
                 {
                     response.Success = false;
-                    response.Message = "Ya existe un producto activo con ese nombre.";
+                    response.Message = "El código de producto o nombre ya existe.";
                     return response;
                 }
 
@@ -80,6 +140,7 @@ namespace VentaFacil.web.Services.Producto
                     Precio = productoDto.Precio,
                     Imagen = productoDto.Imagen,
                     StockMinimo = productoDto.StockMinimo,
+                    StockActual = productoDto.StockActual,
                     Estado = productoDto.Estado,
                     Id_Categoria = productoDto.Id_Categoria
                 };
@@ -116,6 +177,28 @@ namespace VentaFacil.web.Services.Producto
                     return response;
                 }
 
+                // Validación de integridad de datos
+                if (productoDto.Precio <= 0)
+                {
+                    response.Success = false;
+                    response.Message = "El precio debe ser mayor a 0.";
+                    return response;
+                }
+
+                if (productoDto.StockMinimo < 1)
+                {
+                    response.Success = false;
+                    response.Message = "El stock mínimo debe ser al menos 1.";
+                    return response;
+                }
+
+                if (productoDto.StockActual < 0)
+                {
+                    response.Success = false;
+                    response.Message = "El stock actual no puede ser negativo.";
+                    return response;
+                }
+
                 // Validación de unicidad de nombre 
                 var existeNombre = await _context.Producto
                     .AnyAsync(p => p.Nombre == productoDto.Nombre && p.Id_Producto != productoDto.Id_Producto && p.Estado);
@@ -123,7 +206,7 @@ namespace VentaFacil.web.Services.Producto
                 if (existeNombre)
                 {
                     response.Success = false;
-                    response.Message = "Ya existe otro producto activo con ese nombre.";
+                    response.Message = "El código de producto o nombre ya existe.";
                     return response;
                 }
 
@@ -133,6 +216,7 @@ namespace VentaFacil.web.Services.Producto
                 producto.Precio = productoDto.Precio;
                 producto.Imagen = productoDto.Imagen;
                 producto.StockMinimo = productoDto.StockMinimo;
+                producto.StockActual = productoDto.StockActual;
                 producto.Estado = productoDto.Estado;
                 producto.Id_Categoria = productoDto.Id_Categoria;
 
@@ -169,6 +253,7 @@ namespace VentaFacil.web.Services.Producto
                     Precio = producto.Precio,
                     Imagen = producto.Imagen,
                     StockMinimo = producto.StockMinimo,
+                    StockActual = producto.StockActual,
                     Estado = producto.Estado,
                     Id_Categoria = producto.Id_Categoria
                 };
@@ -287,6 +372,47 @@ namespace VentaFacil.web.Services.Producto
             {
                 response.Success = false;
                 response.Message = $"Error al habilitar producto: {ex.Message}";
+            }
+
+            return response;
+        }
+
+        public async Task<EditProductoResponse> ActualizarStockAsync(int idProducto, int cantidad)
+        {
+            var response = new EditProductoResponse();
+
+            try
+            {
+                var producto = await _context.Producto
+                    .FirstOrDefaultAsync(p => p.Id_Producto == idProducto);
+
+                if (producto == null)
+                {
+                    response.Success = false;
+                    response.Message = "Producto no encontrado.";
+                    return response;
+                }
+
+                int nuevoStock = producto.StockActual + cantidad;
+
+                if (nuevoStock < 0)
+                {
+                    response.Success = false;
+                    response.Message = "El stock no puede ser negativo.";
+                    return response;
+                }
+
+                producto.StockActual = nuevoStock;
+                await _context.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = "Stock actualizado correctamente.";
+                response.ProductoId = producto.Id_Producto;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = $"Error al actualizar stock: {ex.Message}";
             }
 
             return response;

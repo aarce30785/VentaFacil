@@ -1,0 +1,48 @@
+@model VentaFacil.web.Models.Dto.ProductoDto
+
+<div class="modal-header border-0 pb-0">
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body pt-0">
+    <div class="row">
+        <div class="col-md-5 mb-4 mb-md-0 text-center">
+            @if (!string.IsNullOrEmpty(Model.Imagen))
+            {
+                <img src="@Model.Imagen" class="img-fluid rounded" alt="@Model.Nombre" style="max-height: 300px; object-fit: contain;">
+            }
+            else
+            {
+                <div class="bg-light rounded d-flex flex-column align-items-center justify-content-center h-100" style="min-height: 250px;">
+                    <i class="fas fa-image fa-4x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Sin imagen</p>
+                </div>
+            }
+        </div>
+        <div class="col-md-7 d-flex flex-column">
+            <h3 class="fw-bold text-dark mb-2">@Model.Nombre</h3>
+            
+            <div class="mb-3">
+                <span class="badge bg-primary text-white p-2">
+                    <i class="fas fa-tag me-1"></i> Categoría
+                </span>
+            </div>
+
+            <div class="mb-4 flex-grow-1">
+                <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.85rem; letter-spacing: 1px;">Descripción</h6>
+                <p class="text-secondary" style="line-height: 1.6;">
+                    @(string.IsNullOrEmpty(Model.Descripcion) ? "No hay descripción disponible para este producto." : Model.Descripcion)
+                </p>
+            </div>
+
+            <div class="mt-auto pt-3 border-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Precio</span>
+                    <h2 class="text-success fw-bold mb-0">@Model.Precio.ToString("C")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer border-0 pt-0">
+    <button type="button" class="btn btn-secondary w-100 py-2 rounded-pill fw-bold" data-bs-dismiss="modal">Cerrar Detalle</button>
+</div>

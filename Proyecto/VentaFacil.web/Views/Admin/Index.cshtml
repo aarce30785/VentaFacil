@@ -12,22 +12,20 @@
 
 <div class="admin-wrapper">
     <div class="pt-30">
-        <div class="title-wrapper pt-30 mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="title">
-                        <h2 class="fw-bold text-dark">Panel de Administrador</h2>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="breadcrumb-wrapper">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Gestión</li>
-                            </ol>
-                        </nav>
-                    </div>
+        <!-- Header -->
+        <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem;">
+            <div class="position-relative z-1">
+                <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-cog me-2"></i>Panel de Administrador</h1>
+                <p class="mb-0 text-white-50 fs-5">Gestiona usuarios, productos y configuraciones generales.</p>
+            </div>
+            <div class="position-relative z-1 d-none d-md-block">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">Gestión</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -100,36 +98,35 @@
         }
 
         function mostrarErrorGeneral(mensaje) {
-            const form = document.querySelector('.modal.show form');
-            if (form) {
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-                alertDiv.innerHTML = `
-                    <i class="lni lni-warning me-2"></i> ${mensaje}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                form.insertBefore(alertDiv, form.firstChild);
-            } else {
-                alert(mensaje);
-            }
+            // Usar SweetAlert2 para errores generales
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: mensaje,
+                confirmButtonText: 'Entendido'
+            });
         }
 
         function mostrarMensajeExito(mensaje) {
-            const form = document.querySelector('.modal.show form');
-            if (form) {
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                alertDiv.innerHTML = `
-                    <i class="lni lni-checkmark-circle me-2"></i> ${mensaje}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                form.insertBefore(alertDiv, form.firstChild);
-            }
+            // Usar Toastify para mensajes de éxito
+            Toastify({
+                text: mensaje,
+                duration: 3000,
+                close: true,
+                gravity: "top", // `top` or `bottom`
+                position: "right", // `left`, `center` or `right`
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                style: {
+                    background: "linear-gradient(to right, #00b09b, #96c93d)",
+                },
+                onClick: function(){} // Callback after click
+            }).showToast();
         }
 
         function mostrarErroresEnFormulario(errors, fieldErrors) {
             if (errors && errors.length > 0) {
-                mostrarErrorGeneral(errors.join('<br>'));
+                 // Si hay errores generales, mostrarlos con SweetAlert
+                 mostrarErrorGeneral(errors.join('\n'));
             }
 
             if (fieldErrors) {

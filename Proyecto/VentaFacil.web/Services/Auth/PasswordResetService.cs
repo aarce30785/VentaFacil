@@ -129,8 +129,7 @@ namespace VentaFacil.web.Services.Auth
             await _context.SaveChangesAsync();
             _logger.LogInformation($"Token de activación generado y guardado para usuario ID: {usuario.Id_Usr}");
 
-            // Construir enlace de activación (usa la misma vista de restablecer contraseña pero el contexto es diferente)
-            // Construir enlace de activación
+           
             var baseUrl = _configuration["AppUrl"] ?? "https://ventafacil-web.com";
             var activationLink = $"{baseUrl}/Login/ActivarCuenta?token={token}";
 

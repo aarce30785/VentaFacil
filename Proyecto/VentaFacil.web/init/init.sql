@@ -74,6 +74,7 @@ CREATE TABLE Producto (
     Precio DECIMAL(10,2),
     Imagen VARCHAR(2048),
     StockMinimo INT,
+    StockActual INT NOT NULL,
     Estado BIT DEFAULT 1,
     Id_Categoria INT,
     CONSTRAINT Pro_Pk PRIMARY KEY (Id_Producto),

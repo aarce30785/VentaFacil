@@ -1,61 +1,66 @@
 @model VentaFacil.web.Models.Response.Admin.UsuarioListResponse
 
 
+<!-- Controles de Búsqueda y Filtros Premium -->
+<div class="premium-card mb-4 p-4">
+    <form method="get" asp-action="IndexUsuarios" class="row g-3 align-items-center" id="filtrosForm">
+        
+        <!-- Stats Summary -->
+        <div class="col-md-3">
+             <div class="d-flex align-items-center">
+                <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                    <i class="lni lni-users fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Usuarios</h6>
+                    <p class="text-sm text-muted mb-0">@Model.TotalUsuarios registrados</p>
+                </div>
+            </div>
+        </div>
 
-<!-- Controles de Búsqueda y Filtros -->
-<form method="get" asp-action="IndexUsuarios" class="row g-3" id="filtrosForm">
-
-    <div class="row mt-3">
-        <div class="col">
-            <div class="input-group rounded-pill shadow-sm overflow-hidden">
-                <input type="text" name="busqueda" class="form-control border-0 ps-4" 
+        <!-- Search -->
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
+                <input type="text" name="busqueda" class="form-control bg-light border-0" 
                        placeholder="Buscar por nombre o correo..." 
                        value="@Model.Busqueda" 
-                       id="busquedaInput" 
-                       style="height: 56.5px;" />
-                <button type="submit" class="btn btn-primary rounded-pill px-4 border-0" 
-                        style="margin: 3px; height: 50px;">
-                    <i class="lni lni-search-alt"></i> Buscar
+                       id="busquedaInput" />
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-md-5 text-end">
+            <div class="d-flex justify-content-end align-items-center gap-2">
+                <a href="@Url.Action("LimpiarFiltros", "Admin")" class="main-btn dark-btn-outline btn-hover rounded-full px-4" title="Limpiar Filtros">
+                    <i class="lni lni-reload me-2"></i> Limpiar
+                </a>
+                <button type="button" class="main-btn primary-btn btn-hover rounded-full px-4" onclick="abrirModalUsuario('crear')">
+                    <i class="lni lni-plus me-2"></i> Nuevo Usuario
                 </button>
             </div>
         </div>
 
-        <div class="col-md-auto">
-            <a href="@Url.Action("LimpiarFiltros", "Admin")" class="main-btn dark-btn rounded-full btn-hover">
-                <i class="lni lni-close"></i> Limpiar
-            </a>
-        </div>
-
-        <div class="col-md-auto">
-            <button type="button" class="main-btn secondary-btn rounded-full btn-hover" onclick="abrirModalUsuario('crear')">
-                <i class="lni lni-plus text-black"></i> Agregar Usuario
-            </button>
-        </div>
-    </div>
-
-
-    <div class="row mb-3 mt-3">
-
-
-        <div class="col-md-4">
-            <div class="form-check">
+        <!-- Checkbox for inactive -->
+        <div class="col-12 mt-2">
+            <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" name="mostrarInactivos" value="true" 
                        id="mostrarInactivosCheck" 
                        @(ViewBag.MostrarInactivos == true ? "checked" : "") 
                        onchange="document.getElementById('filtrosForm').submit();">
-                <label class="form-check-label" for="mostrarInactivosCheck">
+                <label class="form-check-label text-sm text-muted" for="mostrarInactivosCheck">
                     Mostrar usuarios inactivos
                 </label>
             </div>
         </div>
-    </div>
 
-    <!-- Campos ocultos para mantener otros parámetros -->
-    <input type="hidden" name="pagina" value="1" />
-    <input type="hidden" name="cantidadPorPagina" value="10" />
-</form>
+        <!-- Hidden fields -->
+        <input type="hidden" name="pagina" value="1" />
+        <input type="hidden" name="cantidadPorPagina" value="10" />
+    </form>
+</div>
 
-<!-- Mensajes de alerta (sin cambios) -->
+<!-- Mensajes de alerta -->
 @if (Model.Usuarios != null && !Model.Usuarios.Any() && (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue))
 {
     <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -75,108 +80,62 @@
     </div>
 }
 
-<!-- Tabla de Usuarios -->
-<div class="table-wrapper table-responsive">
-    <table class="table premium-table">
-        <thead>
-            <tr>
-                <th class="lead-name"><h6>Nombre</h6></th>
-                <th class="lead-email"><h6>Email</h6></th>
-                <th class="lead-role"><h6>Rol</h6></th>
-                <th><h6>Acción</h6></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Usuarios != null && Model.Usuarios.Any())
-            {
-                foreach (var usuario in Model.Usuarios)
-                {
-                    <tr>
-                        <td class="min-width">
-                           
-                            <div class="lead">
-                                <div class="lead-text">
-                                    <p>@usuario.Nombre</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="min-width">
-                            <div class="lead">
-                                
-                                <div class="lead-text">
-                                    <p>@usuario.Correo</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="min-width">
-                            @if (usuario.Estado == true)
-                            {
-                                @usuario.Rol
-                            }
-                            else
-                            {
-                                <span>Inactivo</span>
-                            }
-                        </td>
-                        <td>
-                            <div class="action d-flex gap-2">
-                                @if (usuario.Estado == true)
-                                {
-                                    <!-- Editar -->
-                                    <a href="javascript:void(0);" 
-                                       onclick="abrirModalUsuario('editar', @usuario.Id_Usr)"
-                                       class="text-warning" title="Editar">
-                                        <i class="lni lni-pencil"></i>
-                                    </a>
-
-                                    <!-- Eliminar -->
-                                    <a class="text-danger" href="javascript:void(0);"
-                                       onclick="confirmarEliminacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')"
-                                       title="Eliminar">
-                                        <i class="lni lni-trash-can"></i>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <!-- Reactivar -->
-                                    <a class="text-success" href="javascript:void(0);"
-                                       title="Reactivar Usuario" 
-                                       onclick="confirmarReactivacion(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')">
-                                        <i class="lni lni-reload"></i>
-                                    </a>
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="4" class="text-center py-4">
-                        <div class="text-muted">
-                            <i class="lni lni-users me-2"></i>
-                            @if (Model.Usuarios == null)
-                            {
-                                <span>Error al cargar los usuarios</span>
-                            }
-                            else if (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue)
-                            {
-                                <span>No se encontraron usuarios con los filtros aplicados</span>
-                            }
-                            else
-                            {
-                                <span>No hay usuarios registrados</span>
-                            }
+<!-- Grilla de Usuarios -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
+    @if (Model.Usuarios != null && Model.Usuarios.Any())
+    {
+        foreach (var usuario in Model.Usuarios)
+        {
+            <div class="col">
+                <div class="user-card position-relative">
+                    @if (usuario.Estado != true)
+                    {
+                        <div class="position-absolute top-0 end-0 p-2">
+                            <span class="badge bg-danger shadow-sm"><i class="lni lni-ban me-1"></i> Inactivo</span>
                         </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    }
+                    
+                    <div class="user-card-body">
+                        <div class="user-avatar-lg @(usuario.Rol?.ToLower() == "administrador" ? "bg-primary" : "bg-info") shadow-sm" style="opacity: 0.9;">
+                            @(string.IsNullOrEmpty(usuario.Nombre) ? "?" : usuario.Nombre.Substring(0,1).ToUpper())
+                        </div>
+                        <h5 class="user-name" title="@usuario.Nombre">@usuario.Nombre</h5>
+                        <p class="user-email text-muted mb-3"><a href="mailto:@usuario.Correo" class="text-decoration-none text-muted">@usuario.Correo</a></p>
+                        <span class="badge @(usuario.Rol?.ToLower() == "administrador" ? "bg-primary bg-opacity-10 text-primary" : "bg-info bg-opacity-10 text-info") rounded-pill px-3 py-2 border-0" style="font-size: 0.85rem;">
+                            <i class="@(usuario.Rol?.ToLower() == "administrador" ? "lni lni-shield" : "lni lni-user") me-1"></i> @usuario.Rol
+                        </span>
+                    </div>
+                    
+                    <div class="user-card-footer">
+                        <button class="btn btn-sm btn-light text-primary rounded-circle shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white;" onclick="abrirModalUsuario('ver', @usuario.Id_Usr)" title="Ver">
+                            <i class="lni lni-eye fs-6"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light text-warning rounded-circle shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white;" onclick="abrirModalUsuario('editar', @usuario.Id_Usr)" title="Editar">
+                            <i class="lni lni-pencil fs-6"></i>
+                        </button>
+                        
+                        @if (usuario.Estado == true)
+                        {
+                            <button class="btn btn-sm btn-light text-danger rounded-circle shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white;" onclick="confirmarEliminacionUsuario(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')" title="Eliminar">
+                                <i class="lni lni-trash-can fs-6"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-sm btn-light text-success rounded-circle shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white;" onclick="confirmarReactivacionUsuario(@usuario.Id_Usr, '@usuario.Nombre.Replace("'", "\\'")')" title="Reactivar">
+                                <i class="lni lni-checkmark-circle fs-6"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
 </div>
 
-<!-- Paginación (sin cambios) -->
+<div id="modalContainer"></div>
+
+<!-- Paginación -->
 @if (Model.TotalPaginas > 1 && Model.Usuarios != null && Model.Usuarios.Any())
 {
     <div class="pagination-wrapper mt-4">
@@ -188,7 +147,8 @@
                            pagina = Model.PaginaActual - 1, 
                            cantidadPorPagina = 10,
                            busqueda = Model.Busqueda,
-                           rolFiltro = Model.RolFiltro
+                           rolFiltro = Model.RolFiltro,
+                           mostrarInactivos = ViewBag.MostrarInactivos
                        })">
                         <i class="lni lni-chevron-left"></i>
                     </a>
@@ -202,7 +162,8 @@
                                pagina = i, 
                                cantidadPorPagina = 10,
                                busqueda = Model.Busqueda,
-                               rolFiltro = Model.RolFiltro
+                               rolFiltro = Model.RolFiltro,
+                               mostrarInactivos = ViewBag.MostrarInactivos
                            })">@i</a>
                     </li>
                 }
@@ -213,614 +174,256 @@
                            pagina = Model.PaginaActual + 1, 
                            cantidadPorPagina = 10,
                            busqueda = Model.Busqueda,
-                           rolFiltro = Model.RolFiltro
+                           rolFiltro = Model.RolFiltro,
+                           mostrarInactivos = ViewBag.MostrarInactivos
                        })">
                         <i class="lni lni-chevron-right"></i>
                     </a>
                 </li>
             </ul>
         </nav>
-
         <div class="pagination-info text-center mt-2">
             @{
                 var inicio = (Model.PaginaActual - 1) * 10 + 1;
                 var fin = Math.Min(Model.PaginaActual * 10, Model.TotalUsuarios);
             }
-            <p class="text-sm text-muted">
-                Mostrando @inicio-@fin de @Model.TotalUsuarios registros
-                @if (!string.IsNullOrEmpty(Model.Busqueda) || Model.RolFiltro.HasValue)
-                {
-                    <span class="ms-2">
-                        <a href="@Url.Action("LimpiarFiltros")" class="text-primary text-decoration-underline">
-                            (Ver todos)
-                        </a>
-                    </span>
-                }
-            </p>
+            <p class="text-sm text-muted">Mostrando @inicio-@fin de @Model.TotalUsuarios registros</p>
         </div>
     </div>
 }
 
-<!-- Script unificado - CORREGIDO -->
-
-
-<!-- Modals para Confirmaciones (SweetAlert2 usado directamente) -->
-<!-- <div class="modal fade" id="confirmarGuardarModal" ... (Removed) -->
-
-<div id="modalContainerUsuarios"></div>
-
-<!-- Script unificado - CORREGIDO -->
 <script>
-    (function() {
-        'use strict';
+    // ========== FUNCIONALIDAD PARA USUARIOS ==========
+    // (Scripts específicos de usuarios si los hay, aunque la mayoría están en Index o Modales)
+    
+     function abrirModalUsuario(accion, usuarioId = null) {
+        console.log('Abriendo modal usuario:', accion, 'Usuario ID:', usuarioId);
 
-        // Variables para el modal de reactivación
-        let reactivarModalInstance = null;
-        let usuarioAReactivar = {
-            id: null,
-            nombre: ''
-        };
+        let url = '';
+        const params = new URLSearchParams();
 
-        // Variables para el modal de eliminación
-        let eliminarModalInstance = null;
-        let usuarioAEliminar = {
-            id: null,
-            nombre: ''
-        };
+        // Agregar parámetros básicos
+        params.append('accion', accion);
 
-        // Inicialización cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function() {
-            inicializarFiltros();
-        });
-
-        // ===== FUNCIONES DE FILTROS =====
-        function inicializarFiltros() {
-            // Filtro de roles - usando el ID correcto
-            const rolFilter = document.getElementById('rolFiltroSelect');
-            if (rolFilter) {
-                rolFilter.addEventListener('change', function() {
-                    document.getElementById('filtrosForm').submit();
-                });
-            }
-
-            // Búsqueda con Enter
-            const busquedaInput = document.getElementById('busquedaInput');
-            if (busquedaInput) {
-                busquedaInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        document.getElementById('filtrosForm').submit();
-                    }
-                });
-            }
+        if (usuarioId) {
+            params.append('usuarioId', usuarioId);
         }
 
-        // Variables para el control de cambios
-        let initialFormValues = {};
+        // Mantener filtros
+        const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
+        const rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
+        const pagina = '@Model.PaginaActual';
+        const mostrarInactivos = '@(ViewBag.MostrarInactivos == true ? "true" : "false")';
 
-        // ===== FUNCIONES DEL MODAL DE USUARIO (NUEVO) =====
-        window.abrirModalUsuario = function(accion, usuarioId = null) {
-            console.log('Abriendo modal usuario:', accion, 'Usuario ID:', usuarioId);
+        if (busqueda) params.append('busqueda', busqueda);
+        if (rolFiltro) params.append('rolFiltro', rolFiltro);
+        if (pagina) params.append('pagina', pagina);
+        if (mostrarInactivos === 'true') params.append('mostrarInactivos', mostrarInactivos);
 
-            let url = '';
-            const params = new URLSearchParams();
-            params.append('accion', accion);
-            if (usuarioId) params.append('usuarioId', usuarioId);
+        url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
+        console.log('URL del modal:', url);
 
-            // Mantener filtros
-            const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
-            const rolFiltro = '@(Model.RolFiltro?.ToString() ?? "")';
-            const pagina = '@Model.PaginaActual';
-
-            if (busqueda) params.append('busqueda', busqueda);
-            if (rolFiltro) params.append('rolFiltro', rolFiltro);
-            if (pagina) params.append('pagina', pagina);
-
-            url = '@Url.Action("ObtenerModalUsuario", "Admin")' + '?' + params.toString();
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error('Error al cargar el modal: ' + response.status);
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById('modalContainerUsuarios').innerHTML = data;
-                    const modalElement = document.getElementById('usuarioModal');
-            
-                    if (!modalElement) {
-                        console.error('Modal element no encontrado');
-                        return;
-                    }
-            
-                    const modal = new bootstrap.Modal(modalElement);
-                    modalElement.addEventListener('shown.bs.modal', function () {
-                        // Capturar valores iniciales una vez que el modal se muestra
-                        capturarValoresIniciales();
-                        configurarSubmitFormUsuario(accion);
-                    });
-            
-                    modal.show();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar el formulario: ' + error.message);
-                });
-        };
-
-        function capturarValoresIniciales() {
-            const form = document.getElementById('usuarioForm');
-            if (!form) return;
-
-            initialFormValues = {
-                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
-                Correo: form.querySelector('[name="Correo"]')?.value || '',
-                Rol: form.querySelector('[name="Rol"]')?.value || '',
-                Estado: form.querySelector('[name="Estado"]')?.checked || false
-            };
-            // Contraseña no se captura porque siempre inicia vacía o enmascarada
-        }
-
-        function obtenerCambios(form, accion) {
-            const cambios = [];
-            const currentValues = {
-                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
-                Correo: form.querySelector('[name="Correo"]')?.value || '',
-                Rol: form.querySelector('[name="Rol"]')?.value || '',
-                Estado: form.querySelector('[name="Estado"]')?.checked || false,
-                Contrasena: form.querySelector('[name="Contrasena"]')?.value || ''
-            };
-
-            // Solo comparar si es edición, si es crear mostramos resumen general
-            if (accion === 'editar') {
-                if (currentValues.Nombre !== initialFormValues.Nombre) {
-                    cambios.push(`<strong>Nombre:</strong> ${initialFormValues.Nombre} <i class="lni lni-arrow-right"></i> ${currentValues.Nombre}`);
-                }
-                if (currentValues.Correo !== initialFormValues.Correo) {
-                    cambios.push(`<strong>Correo:</strong> ${initialFormValues.Correo} <i class="lni lni-arrow-right"></i> ${currentValues.Correo}`);
-                }
-                if (currentValues.Rol !== initialFormValues.Rol) {
-                    // Intentar obtener texto del rol seleccionado
-                    const select = form.querySelector('[name="Rol"]');
-                    const oldText = select.querySelector(`option[value="${initialFormValues.Rol}"]`)?.text || initialFormValues.Rol;
-                    const newText = select.options[select.selectedIndex]?.text || currentValues.Rol;
-                    cambios.push(`<strong>Rol:</strong> ${oldText} <i class="lni lni-arrow-right"></i> ${newText}`);
-                }
-                if (currentValues.Estado !== initialFormValues.Estado) {
-                    const oldState = initialFormValues.Estado ? 'Activo' : 'Inactivo';
-                    const newState = currentValues.Estado ? 'Activo' : 'Inactivo';
-                    cambios.push(`<strong>Estado:</strong> ${oldState} <i class="lni lni-arrow-right"></i> ${newState}`);
-                }
-                if (currentValues.Contrasena) {
-                    cambios.push(`<strong>Contraseña:</strong> <em>(Se ha modificado)</em>`);
-                }
-            } else {
-                // Modo crear: listar los valores ingresados
-                cambios.push(`<strong>Nombre:</strong> ${currentValues.Nombre}`);
-                cambios.push(`<strong>Correo:</strong> ${currentValues.Correo}`);
-                const select = form.querySelector('[name="Rol"]');
-                const rolText = select.options[select.selectedIndex]?.text || currentValues.Rol;
-                cambios.push(`<strong>Rol:</strong> ${rolText}`);
-                cambios.push(`<strong>Estado:</strong> Inactivo (Pendiente de activación)`);
-                cambios.push(`<strong>Nota:</strong> Se enviará un correo de activación.`);
-            }
-
-            return cambios;
-        }
-
-        window.configurarSubmitFormUsuario = function(accion) {
-            const form = document.getElementById('usuarioForm');
-            if (!form) return;
-
-            const newForm = form.cloneNode(true);
-            form.parentNode.replaceChild(newForm, form);
-
-            newForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Validación básica de HTML5
-                if (!newForm.checkValidity()) {
-                    newForm.classList.add('was-validated');
-                    return;
-                }
-
-                // Detectar cambios
-                const listaCambios = obtenerCambios(newForm, accion);
-                const modalBody = document.querySelector('#confirmarGuardarModal .modal-body');
-                
-                if (listaCambios.length === 0) {
-                     modalBody.innerHTML = '<div class="alert alert-warning">No se han detectado cambios.</div>';
-                } else {
-                    let html = accion === 'crear' 
-                        ? '<p>Se creará un nuevo usuario con los siguientes datos:</p>' 
-                        : '<p>Se realizarán las siguientes modificaciones:</p>';
-                    
-                    html += '<ul class="list-group list-group-flush">';
-                    listaCambios.forEach(cambio => {
-                        html += `<li class="list-group-item">${cambio}</li>`;
-                    });
-                    html += '</ul>';
-                    modalBody.innerHTML = html;
-                }
-
-                // Mostrar modal de confirmación
-                const confirmModal = new bootstrap.Modal(document.getElementById('confirmarGuardarModal'));
-                const btnConfirmar = document.getElementById('btnConfirmarGuardar');
-                
-                // Si no hay cambios en edición, deshabilitar guardar o permitir "guardar sin cambios"
-                // Permitiremos guardar de todos modos por consistencia, o el usuario puede cancelar.
-                
-                // Configurar acción del botón confirmar
-                btnConfirmar.onclick = function() {
-                    confirmModal.hide();
-                    enviarFormularioUsuario(newForm);
-                };
-
-                confirmModal.show();
-            });
-        };
-
-        function enviarFormularioUsuario(form) {
-            const formData = new FormData(form);
-            formData.append('isAjax', 'true'); // Flag para el backend
-
-            // Mostrar estado de carga en el botón del formulario
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
+        // Cargar modal via AJAX
+        fetch(url)
             .then(response => {
-                if (!response.ok) {
-                   // Si el servidor devuelve error (400, 500), intentamos parsear JSON
-                   return response.json().then(errData => { throw new Error(errData.message || 'Error en el servidor'); });
-                }
-                return response.json();
+                if (!response.ok) throw new Error('Error al cargar el modal: ' + response.status);
+                return response.text();
             })
             .then(data => {
-                if (data.success) {
-                    // Cerrar modal de usuario
-                    const modalElement = document.getElementById('usuarioModal');
-                    const modal = bootstrap.Modal.getInstance(modalElement);
-                    modal.hide();
-
-                    // Mostrar mensaje de éxito y recargar
-                    window.location.reload(); 
-                } else {
-                    throw new Error(data.message || 'Error desconocido');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
-        }
-
-
-
-
-        // ===== FUNCIONES DEL MODAL DE REACTIVACIÓN =====
-        // (No initialization needed for SweetAlert2)
-
-        // ===== FUNCIONES DEL MODAL DE ELIMINACIÓN =====
-        // (No initialization needed for SweetAlert2)
-
-        // Función global para confirmar reactivación
-        window.confirmarReactivacion = function(usuarioId, nombreUsuario) {
-            Swal.fire({
-                title: 'Confirmar Reactivación',
-                text: `¿Está seguro de que desea reactivar al usuario "${nombreUsuario}"?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#365CF5', // Primary
-                cancelButtonColor: '#secondary',
-                confirmButtonText: 'Sí, reactivar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    reactivarUsuario(usuarioId);
-                }
-            });
-        };
-
-        // Función global para confirmar eliminación
-        window.confirmarEliminacion = function(usuarioId, nombreUsuario) {
-            Swal.fire({
-                title: 'Confirmar Eliminación',
-                html: `¿Está seguro de que desea eliminar al usuario <strong>${nombreUsuario}</strong>?<br/><small class="text-danger">Esta acción no se puede deshacer.</small>`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33', // Danger
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    realizarEliminacion(usuarioId);
-                }
-            });
-        };
-
-        // Función para reactivar usuario
-        function reactivarUsuario(usuarioId) {
-            // Safely get properties from Razor
-            var busqueda = @Json.Serialize(Model.Busqueda);
-            var rolFiltro = @Json.Serialize(Model.RolFiltro);
-            var mostrarInactivos = @Json.Serialize(ViewBag.MostrarInactivos);
-            var pagina = @Json.Serialize(Model.PaginaActual);
-
-            // Construir URL con los parámetros actuales
-            var url = '@Url.Action("ReactivarUsuario", "Admin")' + 
-                       '?id=' + usuarioId + 
-                       '&busqueda=' + encodeURIComponent(busqueda || '') +
-                       '&rolFiltro=' + (rolFiltro || '') +
-                       '&mostrarInactivos=' + (mostrarInactivos === true) +
-                       '&pagina=' + (pagina || 1);
-            
-            window.location.href = url;
-        }
-
-        // Función para realizar la eliminación
-        function realizarEliminacion(usuarioId) {
-            // Mostrar SweetAlert de carga (opcional, o dejar que navegue)
-            // Mostrar SweetAlert de carga (opcional)
-            Swal.fire({
-                title: 'Eliminando...',
-                text: 'Por favor espere',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            // O mostrar Toastify de "Procesando..." si prefieres evitar el modal de carga intrusivo
-            /*
-            Toastify({
-                text: "Procesando eliminación...",
-                duration: 2000,
-                gravity: "bottom",
-                position: "right",
-            }).showToast();
-            */
-
-            // Obtener parámetros para mantener el contexto
-            var busqueda = @Json.Serialize(Model.Busqueda);
-            var rolFiltro = @Json.Serialize(Model.RolFiltro);
-            var pagina = @Json.Serialize(Model.PaginaActual);
-            
-            // Construir URL (EliminarUsuario es un GET que retorna un Redirect)
-            var url = '@Url.Action("EliminarUsuario", "Admin")' + 
-                       '?id=' + usuarioId + 
-                       '&busqueda=' + encodeURIComponent(busqueda || '') +
-                       '&rolFiltro=' + (rolFiltro || '') +
-                       '&pagina=' + (pagina || 1);
-            
-            // Navegar directamente
-            window.location.href = url;
-        }
+                document.getElementById('modalContainer').innerHTML = data;
+                const modalElement = document.getElementById('usuarioModal');
         
-        // Modificación de configurarSubmitFormUsuario para usar SweetAlert en Confirmación
-        window.configurarSubmitFormUsuario = function(accion) {
-            const form = document.getElementById('usuarioForm');
-            if (!form) return;
-
-            const newForm = form.cloneNode(true);
-            form.parentNode.replaceChild(newForm, form);
-
-            newForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Validación básica de HTML5
-                if (!newForm.checkValidity()) {
-                    newForm.classList.add('was-validated');
+                if (!modalElement) {
+                    console.error('Modal element no encontrado después de cargar');
                     return;
                 }
-
-                // Detectar cambios
-                const listaCambios = obtenerCambios(newForm, accion);
-                
-                let html = '';
-                if (listaCambios.length === 0) {
-                     html = '<div class="alert alert-warning">No se han detectado cambios.</div>';
-                } else {
-                    html = accion === 'crear' 
-                        ? '<p>Se creará un nuevo usuario con los siguientes datos:</p>' 
-                        : '<p>Se realizarán las siguientes modificaciones:</p>';
-                    
-                    html += '<ul class="list-group list-group-flush text-start">';
-                    listaCambios.forEach(cambio => {
-                        html += `<li class="list-group-item">${cambio}</li>`;
-                    });
-                    html += '</ul>';
-                }
-
-                // Mostrar SweetAlert de confirmación
-                // Mostrar SweetAlert de confirmación
-                Swal.fire({
-                    title: 'Confirmar Cambios',
-                    html: html,
-                    icon: 'info',
-                    showCancelButton: true,
-                    confirmButtonText: 'Guardar',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#365CF5'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        enviarFormularioUsuario(newForm);
-                    }
+        
+                const modal = new bootstrap.Modal(modalElement);
+        
+                // Configurar el evento cuando el modal se muestra completamente
+                modalElement.addEventListener('shown.bs.modal', function () {
+                    console.log('Modal mostrado, configurando submit para:', accion);
+                    configurarSubmitForm(accion);
                 });
-            });
-        };
-
-        function enviarFormularioUsuario(form) {
-            const formData = new FormData(form);
-            formData.append('isAjax', 'true'); // Flag para el backend
-
-            // Mostrar estado de carga con SweetAlert (Opcional, o usar Toastify loader)
-            Swal.fire({
-                title: 'Guardando...',
-                text: 'Por favor espere',
-                allowOutsideClick: false,
-                didOpen: () => {
-                   Swal.showLoading();
-                }
-            });
-
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                   return response.json().then(errData => { throw new Error(errData.message || 'Error en el servidor'); });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Cerrar modal de usuario
-                    const modalElement = document.getElementById('usuarioModal');
-                    const modal = bootstrap.Modal.getInstance(modalElement);
-                    if (modal) modal.hide();
-                    
-                    Swal.close(); // Cerrar loader
-
-                    // Mostrar Toastify de éxito y recargar
-                    Toastify({
-                        text: "<strong>¡Éxito!</strong> " + (data.message || 'Operación realizada correctamente'),
-                        duration: 3000,
-                        gravity: "bottom",
-                        position: "right",
-                        escapeMarkup: false,
-                        style: {
-                            background: "linear-gradient(to right, #00b09b, #96c93d)",
-                        }
-                    }).showToast();
-
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000); 
-                } else {
-                    throw new Error(data.message || 'Error desconocido');
-                }
+        
+                modal.show();
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.close();
-                
-                Toastify({
-                    text: "<strong>Error:</strong> " + error.message,
-                    duration: 5000,
-                    gravity: "bottom",
-                    position: "right",
-                    escapeMarkup: false,
-                    style: {
-                         background: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    }
-                }).showToast();
+                alert('Error al cargar el formulario: ' + error.message);
             });
+    }
+
+    function configurarSubmitForm(accion) {
+        const form = document.getElementById('usuarioForm');
+
+        if (!form) {
+            console.error('Formulario no encontrado en configurarSubmitForm');
+            return;
         }
 
-        // Función para enviar correo de restablecimiento de contraseña
-        window.enviarCorreoRestablecer = function(usuarioId) {
-             Swal.fire({
-                title: 'Enviar correo de restablecimiento',
-                text: "¿Desea enviar un correo al usuario para que restablezca su contraseña?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#365CF5',
-                cancelButtonColor: '#secondary',
-                confirmButtonText: 'Sí, enviar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    enviarSolicitudRestablecimiento(usuarioId);
-                }
-            });
-        };
+        console.log('Configurando submit para acción:', accion, 'Form:', form);
 
-        function enviarSolicitudRestablecimiento(usuarioId) {
-            Swal.fire({
-                title: 'Enviando...',
-                text: 'Por favor espere',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+        // Remover event listeners previos para evitar duplicados
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
 
-            const url = '@Url.Action("EnviarRestablecerContrasena", "Admin")';
-            const formData = new FormData();
-            formData.append('id', usuarioId);
+        newForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-            // Intentar obtener el token del formulario del modal si existe, o buscar uno global
-            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
-            const token = tokenElement ? tokenElement.value : '';
+            console.log('Submit del formulario para acción:', accion);
+
+            // Limpiar errores previos
+            limpiarErrores();
+
+            // Validación manual del frontend (si es necesaria)
+            let isValid = true;
+            
+            // Validación de contraseña solo al crear o si se intenta cambiar
+            const passwordInput = document.getElementById('Password');
+            if (accion === 'crear' && passwordInput && !passwordInput.value) {
+                // Si es required, el navegador ya lo valida, pero podemos forzar
+            }
+
+            if (!isValid) {
+                console.log('Validación frontend fallida');
+                return false;
+            }
+
+            // Crear FormData directamente desde el formulario
+            const formData = new FormData(newForm);
+            // Asegurar que el controlador sepa que es una petición AJAX
+            formData.append('isAjax', 'true');
+
+            // Enviar la solicitud
+            const url = '@Url.Action("GuardarUsuario", "Admin")';
+            console.log('Enviando a:', url);
 
             fetch(url, {
                 method: 'POST',
-                body: formData,
                 headers: {
-                     'RequestVerificationToken': token,
-                     'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                if (data.success) {
-                    Toastify({
-                        text: "<strong>¡Éxito!</strong> " + (data.message || 'Correo enviado correctamente'),
-                        duration: 3000,
-                        gravity: "bottom",
-                        position: "right",
-                        escapeMarkup: false,
-                        style: {
-                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+            .then(response => {
+                return response.text().then(text => {
+                    try {
+                        const jsonData = JSON.parse(text);
+                        return jsonData;
+                    } catch (e) {
+                         // Manejo de errores de parsing o respuesta HTML por error
+                        if (response.status === 400) {
+                            return {
+                                success: false,
+                                message: 'Error de validación en el servidor',
+                                errors: ['Por favor verifique que todos los campos sean correctos'],
+                                fieldErrors: {}
+                            };
                         }
-                    }).showToast();
-                } else {
-                    Toastify({
-                        text: "<strong>Error:</strong> " + (data.message || 'No se pudo enviar el correo'),
-                        duration: 5000,
-                        gravity: "bottom",
-                        position: "right",
-                        escapeMarkup: false,
-                        style: {
-                             background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        if (!response.ok) {
+                            return {
+                                success: false,
+                                message: `Error del servidor: ${response.status}`,
+                                errors: [text.substring(0, 200)], // Mostrar parte del error
+                                fieldErrors: {}
+                            };
                         }
-                    }).showToast();
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                Toastify({
-                    text: "<strong>Error:</strong> Ocurrió un error al procesar la solicitud",
-                    duration: 5000,
-                    gravity: "bottom",
-                    position: "right",
-                    escapeMarkup: false,
-                    style: {
-                         background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                         return {
+                            success: false,
+                            message: 'Respuesta inesperada del servidor (posiblemente HTML)',
+                            errors: [text.substring(0, 100) + '...'],
+                            fieldErrors: {}
+                        };
                     }
-                }).showToast();
-                console.error('Error:', error);
-            });
-        }
+                });
+            })
+            .then(result => {
+                if (!result) return;
 
-    })();
+                if (result.success) {
+                    mostrarMensajeExito(result.message);
+            
+                    // Cerrar modal y recargar
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
+                        if (modal) modal.hide();
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    if (result.errors || result.fieldErrors) {
+                        mostrarErroresEnFormulario(result.errors || [], result.fieldErrors || null);
+                         // Asegurar que el modal siga visible y el overlay también
+                        const modalElement = document.getElementById('usuarioModal');
+                        if (modalElement) {
+                             // Pequeño truco para forzar el re-renderizado si algo visual falló
+                             modalElement.style.display = 'block';
+                        }
+                    } else {
+                        mostrarErrorGeneral(result.message || 'Error desconocido');
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error en fetch:', err);
+                mostrarErrorGeneral('Error de conexión: ' + err.message);
+            });
+        });
+    }
+
+    function confirmarEliminacionUsuario(usuarioId, nombreUsuario) {
+        Swal.fire({
+            title: 'Eliminar Usuario',
+            html: `¿Está seguro que desea eliminar al usuario <strong>${nombreUsuario}</strong>?<br><small class="text-danger">Esta acción no se puede deshacer.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Procesando...',
+                    text: 'Eliminando usuario',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                window.location.href = '@Url.Action("EliminarUsuario", "Admin")'
+                    + `?id=${usuarioId}&busqueda=@Model.Busqueda&rolFiltro=@Model.RolFiltro&pagina=@Model.PaginaActual&mostrarInactivos=@ViewBag.MostrarInactivos`;
+            }
+        });
+    }
+
+    function confirmarReactivacionUsuario(usuarioId, nombreUsuario) {
+        Swal.fire({
+            title: 'Reactivar Usuario',
+            html: `¿Desea reactivar al usuario <strong>${nombreUsuario}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#365CF5',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, reactivar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Procesando...',
+                    text: 'Reactivando usuario',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                window.location.href = '@Url.Action("ReactivarUsuario", "Admin")'
+                    + `?id=${usuarioId}&busqueda=@Model.Busqueda&rolFiltro=@Model.RolFiltro&pagina=@Model.PaginaActual&mostrarInactivos=@ViewBag.MostrarInactivos`;
+            }
+        });
+    }
+
+    // Funciones globales (se pueden mover a Index o Layout si se reutilizan mucho)
+    // Se mantienen aquí por ahora para asegurar funcionalidad dentro del Partial renderizado
 </script>

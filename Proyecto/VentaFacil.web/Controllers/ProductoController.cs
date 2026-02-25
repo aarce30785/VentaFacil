@@ -24,12 +24,13 @@ namespace VentaFacil.web.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Listar(int pagina = 1, int cantidadPorPagina = 10,
-                     string? busqueda = null, int? categoriaFiltro = null, int? productoId = null, string? accion = null)
+                     string? busqueda = null, int? categoriaFiltro = null, int? productoId = null, string? accion = null, bool mostrarInactivos = false)
         {
              try
             {
                 // Cargar productos con filtros
-                var productosResponse = await GetProductosResponse(pagina, cantidadPorPagina, busqueda, categoriaFiltro);
+                ViewBag.MostrarInactivos = mostrarInactivos;
+                var productosResponse = await GetProductosResponse(pagina, cantidadPorPagina, busqueda, categoriaFiltro, mostrarInactivos);
                 return View(productosResponse);
             }
             catch (Exception ex)
@@ -48,11 +49,28 @@ namespace VentaFacil.web.Controllers
 
         // Método auxiliar para obtener la respuesta de productos (Copiado de AdminController)
         private async Task<ListProductoResponse> GetProductosResponse(int pagina = 1, int cantidadPorPagina = 10,
-                     string? busqueda = null, int? categoriaFiltro = null)
+                     string? busqueda = null, int? categoriaFiltro = null, bool mostrarInactivos = false)
         {
             try
             {
                 var productos = await _productoService.ListarTodosAsync();
+
+                if (!productos.Success)
+                {
+                    return new ListProductoResponse
+                    {
+                        Success = false,
+                        Message = productos.Message,
+                        Productos = new List<ProductoDto>(),
+                        PaginaActual = pagina,
+                        CantidadPorPagina = cantidadPorPagina,
+                        TotalProductos = 0,
+                        Busqueda = busqueda,
+                        CategoriaFiltro = categoriaFiltro,
+                        MostrarInactivos = mostrarInactivos,
+                        Categorias = await GetCategoriasSelectList()
+                    };
+                }
 
                 // Aplicar filtros
                 var productosFiltrados = productos.Productos?.AsQueryable() ?? new List<ProductoDto>().AsQueryable();
@@ -70,6 +88,11 @@ namespace VentaFacil.web.Controllers
                     productosFiltrados = productosFiltrados.Where(p => p.Id_Categoria == categoriaFiltro.Value);
                 }
 
+                if (!mostrarInactivos)
+                {
+                    productosFiltrados = productosFiltrados.Where(p => p.Estado);
+                }
+
                 // Ordenar por ID descendente (nuevos primero)
                 productosFiltrados = productosFiltrados.OrderByDescending(p => p.Id_Producto);
 
@@ -82,21 +105,18 @@ namespace VentaFacil.web.Controllers
 
                 var response = new ListProductoResponse
                 {
+                    Success = true,
                     Productos = productosPaginados,
                     PaginaActual = pagina,
                     CantidadPorPagina = cantidadPorPagina,
                     TotalProductos = totalProductos,
                     Busqueda = busqueda,
-                    CategoriaFiltro = categoriaFiltro
+                    CategoriaFiltro = categoriaFiltro,
+                    MostrarInactivos = mostrarInactivos
                 };
 
                 // Cargar categorías para el dropdown
-                var categorias = await _categoriaService.ListarTodasAsync();
-                response.Categorias = categorias?.Select(c => new SelectListItem
-                {
-                    Value = c.Id_Categoria.ToString(),
-                    Text = c.Nombre
-                }).ToList() ?? new List<SelectListItem>();
+                response.Categorias = await GetCategoriasSelectList();
 
                 return response;
             }
@@ -111,6 +131,7 @@ namespace VentaFacil.web.Controllers
                     TotalProductos = 0,
                     Busqueda = busqueda,
                     CategoriaFiltro = categoriaFiltro,
+                    MostrarInactivos = mostrarInactivos,
                     Categorias = new List<SelectListItem>()
                 };
             }
@@ -118,7 +139,7 @@ namespace VentaFacil.web.Controllers
 
         [HttpGet]
         public async Task<IActionResult> ObtenerModalProducto(string accion, int? productoId = null,
-            string? busqueda = null, int? categoriaFiltro = null, int pagina = 1)
+            string? busqueda = null, int? categoriaFiltro = null, int pagina = 1, bool mostrarInactivos = false)
         {
             try
             {
@@ -128,6 +149,7 @@ namespace VentaFacil.web.Controllers
                 ViewBag.BusquedaActual = busqueda;
                 ViewBag.CategoriaFiltroActual = categoriaFiltro;
                 ViewBag.PaginaActual = pagina;
+                ViewBag.MostrarInactivos = mostrarInactivos;
 
                 // Cargar categorías
                 var categorias = await _categoriaService.ListarTodasAsync();
@@ -173,6 +195,17 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault();
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = firstError?.ErrorMessage ?? "Por favor, revise los datos del formulario.",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
+                    });
+                }
+
                 // Guardar imagen si se envió
                 if (ImagenFile != null && ImagenFile.Length > 0)
                 {
@@ -238,7 +271,7 @@ namespace VentaFacil.web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> EliminarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1)
+        public async Task<IActionResult> EliminarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1, bool mostrarInactivos = false)
         {
             try
             {
@@ -254,11 +287,11 @@ namespace VentaFacil.web.Controllers
                 TempData["Error"] = $"Error al eliminar el producto: {ex.Message}";
             }
 
-            return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina });
+            return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina, mostrarInactivos });
         }
 
         [HttpGet]
-        public async Task<IActionResult> DeshabilitarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1)
+        public async Task<IActionResult> DeshabilitarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1, bool mostrarInactivos = false)
         {
             try
             {
@@ -274,11 +307,11 @@ namespace VentaFacil.web.Controllers
                 TempData["Error"] = $"Error al deshabilitar el producto: {ex.Message}";
             }
 
-            return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina });
+            return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina, mostrarInactivos });
         }
 
         [HttpGet]
-        public async Task<IActionResult> HabilitarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1)
+        public async Task<IActionResult> HabilitarProducto(int id, string? busqueda, int? categoriaFiltro, int pagina = 1, bool mostrarInactivos = false)
         {
             try
             {
@@ -294,7 +327,47 @@ namespace VentaFacil.web.Controllers
                 TempData["Error"] = $"Error al habilitar el producto: {ex.Message}";
             }
 
-            return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina });
+            return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina, mostrarInactivos });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ActualizarStock([FromBody] Dictionary<string, int> data)
+        {
+            try
+            {
+                if (!data.ContainsKey("idProducto") || !data.ContainsKey("cantidad"))
+                {
+                    return BadRequest(new { success = false, message = "Datos inválidos." });
+                }
+
+                int idProducto = data["idProducto"];
+                int cantidad = data["cantidad"];
+
+                var resultado = await _productoService.ActualizarStockAsync(idProducto, cantidad);
+
+                if (resultado.Success)
+                {
+                    return Ok(new { success = true, message = resultado.Message });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = resultado.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Error interno: {ex.Message}" });
+            }
+        }
+
+        private async Task<List<SelectListItem>> GetCategoriasSelectList()
+        {
+            var categorias = await _categoriaService.ListarTodasAsync();
+            return categorias?.Select(c => new SelectListItem
+            {
+                Value = c.Id_Categoria.ToString(),
+                Text = c.Nombre
+            }).ToList() ?? new List<SelectListItem>();
         }
     }
 }

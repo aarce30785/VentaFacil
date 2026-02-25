@@ -9,30 +9,39 @@
 
 <div class="pt-30">
     <!-- Header -->
-    <div class="title-wrapper pt-30 mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div class="title">
-                    <h2 class="fw-bold text-dark">Gestión de Productos</h2>
-                    <p class="text-muted text-sm">Administra el catálogo de productos</p>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="breadcrumb-wrapper">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Productos</li>
-                        </ol>
-                    </nav>
-                </div>
+    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem;">
+        <div class="position-relative z-1">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-archive me-2"></i>Gestión de Productos</h1>
+            <p class="mb-0 text-white-50 fs-5">Administra el catálogo de productos y su inventario.</p>
+        </div>
+        <div class="position-relative z-1 d-none d-md-block">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Productos</li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
     
     <!-- Filtros y Acciones -->
     <div class="premium-card mb-4 p-4">
-        <form method="get" asp-action="Listar" class="row g-3" id="filtrosProductosForm">
+        <form method="get" asp-action="Listar" class="row g-3 align-items-center" id="filtrosProductosForm">
+             <!-- Stats Summary Mini -->
+            <div class="col-md-3">
+                 <div class="d-flex align-items-center">
+                    <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-package fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Catálogo General</h6>
+                        <p class="text-sm text-muted mb-0">@Model.TotalProductos productos totales</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Campo de búsqueda -->
             <div class="col-md-4">
                 <div class="input-group">
@@ -45,7 +54,7 @@
 
             <!-- Filtro por categoría -->
             <div class="col-md-3">
-                <select name="categoriaFiltro" class="form-select bg-light border-0">
+                <select name="categoriaFiltro" class="form-select bg-light border-0" onchange="this.form.submit()">
                     <option value="">Todas las categorías</option>
                     @foreach (var categoria in Model.Categorias ?? new List<SelectListItem>())
                     {
@@ -58,17 +67,26 @@
             </div>
 
             <!-- Botones de acción -->
-            <div class="col-md-2">
-                <div class="btn-group w-100" role="group">
-                    <button type="submit" class="btn btn-primary btn-premium">Buscar</button>
-                    <a href="@Url.Action("Listar")" class="btn btn-outline-secondary btn-premium">Limpiar</a>
+            <div class="col-md-2 text-end">
+                <div class="d-flex justify-content-end align-items-center gap-2">
+                    <button type="submit" class="btn btn-primary d-none">Buscar</button> <!-- Hidden submit for enter key -->
+                    <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalProducto('crear')">
+                        <i class="lni lni-plus me-2"></i> Nuevo
+                    </button>
                 </div>
             </div>
-            
-            <div class="col-md-3 text-end">
-                <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4 btn-premium" onclick="abrirModalProducto('crear')">
-                    <i class="lni lni-plus me-2"></i> Nuevo Producto
-                </button>
+
+            <!-- Checkbox for inactive -->
+            <div class="col-12 mt-2">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="mostrarInactivos" value="true" 
+                           id="mostrarInactivosCheck" 
+                           @(Model.MostrarInactivos ? "checked" : "") 
+                           onchange="document.getElementById('filtrosProductosForm').submit();">
+                    <label class="form-check-label text-sm text-muted" for="mostrarInactivosCheck">
+                        Mostrar productos inactivos
+                    </label>
+                </div>
             </div>
 
             <!-- Campos ocultos -->
@@ -92,131 +110,119 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+    
+    @if (!Model.Success && !string.IsNullOrEmpty(Model.Message))
+    {
+         <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="lni lni-warning me-2"></i> @Model.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>       
+    }
 
-    <!-- Tabla de Productos -->
-    <div class="table-container">
-        <div class="table-responsive">
-            <table class="table premium-table">
-                <thead>
-                    <tr>
-                        <th class="lead-name"><h6>Nombre</h6></th>
-                        <th class="lead-email"><h6>Descripción</h6></th>
-                        <th class="lead-role"><h6>Precio</h6></th>
-                        <th><h6>Stock Mínimo</h6></th>
-                        <th><h6>Estado</h6></th>
-                        <th><h6>Categoría</h6></th>
-                        <th><h6>Acciones</h6></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Productos != null && Model.Productos.Any())
-                    {
-                        foreach (var producto in Model.Productos)
-                        {
-                             <tr>
-                                <td class="min-width">
-                                    <div class="lead">
-                                        <div class="lead-image">
-                                            @if (!string.IsNullOrEmpty(producto.Imagen))
-                                            {
-                                                <img src="@producto.Imagen" alt="" />
-                                            }
-                                            else
-                                            {
-                                                <img src="~/Plantilla/images/lead/lead-1.png" alt="" />
-                                            }
-                                        </div>
-                                        <div class="lead-text">
-                                            <p>@producto.Nombre</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="min-width">
-                                    <div class="lead-text">
-                                        <p title="@producto.Descripcion">
-                                            @(producto.Descripcion?.Length > 50 ? producto.Descripcion.Substring(0, 50) + "..." : producto.Descripcion)
-                                        </p>
-                                    </div>
-                                </td>
-                                <td class="min-width">
-                                    <span class="status-btn success-btn">@producto.Precio.ToString("C")</span>
-                                </td>
-                                <td class="min-width">
-                                    <span class="status-btn info-btn">@producto.StockMinimo</span>
-                                </td>
-                                <td class="min-width">
-                                    <span class="status-btn @(producto.Estado ? "active-btn" : "inactive-btn")">
-                                        @(producto.Estado ? "Activo" : "Inactivo")
-                                    </span>
-                                </td>
-                                <td class="min-width">
-                                    <span class="status-btn warning-btn">
-                                        @(Model.Categorias?.FirstOrDefault(c => c.Value == producto.Id_Categoria.ToString())?.Text ?? "N/A")
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="action d-flex gap-2">
-                                        <!-- Ver -->
-                                        <a href="javascript:void(0);"
-                                           onclick="abrirModalProducto('ver', @producto.Id_Producto)"
-                                           class="text-primary" title="Ver">
-                                            <i class="lni lni-eye"></i>
-                                        </a>
-
-                                        <!-- Editar -->
-                                        <a href="javascript:void(0);"
-                                           onclick="abrirModalProducto('editar', @producto.Id_Producto)"
-                                           class="text-warning" title="Editar">
-                                            <i class="lni lni-pencil"></i>
-                                        </a>
-
-                                        <!-- Eliminar -->
-                                        <a class="text-danger" href="javascript:void(0);"
-                                           onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
-                                           title="Eliminar">
-                                            <i class="lni lni-trash-can"></i>
-                                        </a>
-
-                                        <!-- Deshabilitar -->
-                                        @if (producto.Estado)
-                                        {
-                                            <a class="text-secondary" href="javascript:void(0);"
-                                               onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
-                                               title="Deshabilitar">
-                                                <i class="lni lni-ban"></i>
-                                            </a>
-                                        }
-                                        <!-- Habilitar -->
-                                        @if (!producto.Estado)
-                                        {
-                                            <a class="text-success" href="javascript:void(0);"
-                                               onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
-                                               title="Habilitar">
-                                                <i class="lni lni-checkmark-circle"></i>
-                                            </a>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <div class="empty-state">
-                                    <div class="mb-3">
-                                        <i class="lni lni-package fs-1 text-muted"></i>
-                                    </div>
-                                    <h5 class="fw-bold text-muted">No se encontraron productos</h5>
-                                    <p class="text-muted text-sm mb-0">Intenta cambiar los filtros de búsqueda.</p>
+    <!-- Grilla de Productos -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
+        @if (Model.Productos != null && Model.Productos.Any())
+        {
+            foreach (var producto in Model.Productos)
+            {
+                <div class="col">
+                    <div class="product-card">
+                        <div class="product-img-wrapper" style="height: 180px;">
+                            @if (!string.IsNullOrEmpty(producto.Imagen))
+                            {
+                                <img src="@producto.Imagen" class="product-img" alt="@producto.Nombre" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'product-placeholder\'><i class=\'lni lni-image mb-2\'></i><span class=\'text-sm\'>Sin imagen</span></div>';">
+                            }
+                            else
+                            {
+                                <div class="product-placeholder">
+                                    <i class="lni lni-image mb-2"></i>
+                                    <span class="text-sm">Sin imagen</span>
                                 </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                            }
+                            
+                            <!-- Status Badge Float -->
+                            <div class="position-absolute top-0 end-0 p-2" id="badge-disponibilidad-@producto.Id_Producto">
+                                @if (producto.StockActual <= 0)
+                                {
+                                    <span class="badge bg-danger shadow-sm"><i class="lni lni-warning me-1"></i> Agotado</span>
+                                }
+                                else if (producto.StockActual <= producto.StockMinimo)
+                                {
+                                    <span class="badge bg-warning text-dark shadow-sm"><i class="lni lni-warning me-1"></i> Bajo Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success shadow-sm"><i class="lni lni-checkmark-circle me-1"></i> Disponible</span>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="product-details">
+                            <h5 class="product-title" title="@producto.Nombre">@producto.Nombre</h5>
+                            <p class="product-desc" title="@producto.Descripcion">
+                                @(string.IsNullOrEmpty(producto.Descripcion) ? "Sin descripción disponible." : producto.Descripcion)
+                            </p>
+                            
+                            <!-- Stock Control -->
+                            <div class="d-flex align-items-center justify-content-between mb-3 bg-light rounded p-2">
+                                <span class="text-sm fw-bold text-muted">Stock:</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-sm btn-white border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px; background: white;" 
+                                            onclick="actualizarStockRapido(@producto.Id_Producto, -1, @producto.StockMinimo)" title="Disminuir">
+                                        <i class="lni lni-minus text-danger" style="font-size: 12px;"></i>
+                                    </button>
+                                    <span class="fw-bold fs-5 mx-1" id="stock-val-@producto.Id_Producto">@producto.StockActual</span>
+                                    <button type="button" class="btn btn-sm btn-white border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px; background: white;" 
+                                            onclick="actualizarStockRapido(@producto.Id_Producto, 1, @producto.StockMinimo)" title="Aumentar">
+                                        <i class="lni lni-plus text-success" style="font-size: 12px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions Footer -->
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                                <span class="product-price fs-5">@producto.Precio.ToString("C")</span>
+                                <div class="action d-flex gap-2">
+                                    <a href="javascript:void(0);" onclick="abrirModalProducto('ver', @producto.Id_Producto)" class="btn btn-sm btn-light text-primary rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Ver">
+                                        <i class="lni lni-eye"></i>
+                                    </a>
+                                    <a href="javascript:void(0);" onclick="abrirModalProducto('editar', @producto.Id_Producto)" class="btn btn-sm btn-light text-warning rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Editar">
+                                        <i class="lni lni-pencil"></i>
+                                    </a>
+                                    <a href="javascript:void(0);" onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@(producto.Nombre?.Replace("'", "\\'") ?? "")')" class="btn btn-sm btn-light text-danger rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Eliminar">
+                                        <i class="lni lni-trash-can"></i>
+                                    </a>
+                                    @if (producto.Estado)
+                                    {
+                                        <a href="javascript:void(0);" onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@(producto.Nombre?.Replace("'", "\\'") ?? "")')" class="btn btn-sm btn-light text-secondary rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Deshabilitar">
+                                            <i class="lni lni-ban"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@(producto.Nombre?.Replace("'", "\\'") ?? "")')" class="btn btn-sm btn-light text-success rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Habilitar">
+                                            <i class="lni lni-checkmark-circle"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <div class="empty-state">
+                    <div class="mb-3">
+                        <i class="lni lni-package fs-1 text-muted"></i>
+                    </div>
+                    <h5 class="fw-bold text-muted">No se encontraron productos</h5>
+                    <p class="text-muted text-sm mb-0">Intenta cambiar los filtros de búsqueda.</p>
+                </div>
+            </div>
+        }
     </div>
     
     <!-- Paginación -->
@@ -231,7 +237,8 @@
                                pagina = Model.PaginaActual - 1, 
                                cantidadPorPagina = 10,
                                busqueda = Model.Busqueda,
-                               categoriaFiltro = Model.CategoriaFiltro
+                               categoriaFiltro = Model.CategoriaFiltro,
+                               mostrarInactivos = Model.MostrarInactivos
                            })">
                             <i class="lni lni-chevron-left"></i>
                         </a>
@@ -245,7 +252,8 @@
                                    pagina = i, 
                                    cantidadPorPagina = 10,
                                    busqueda = Model.Busqueda,
-                                   categoriaFiltro = Model.CategoriaFiltro
+                                   categoriaFiltro = Model.CategoriaFiltro,
+                                   mostrarInactivos = Model.MostrarInactivos
                                })">@i</a>
                         </li>
                     }
@@ -256,7 +264,8 @@
                                pagina = Model.PaginaActual + 1, 
                                cantidadPorPagina = 10,
                                busqueda = Model.Busqueda,
-                               categoriaFiltro = Model.CategoriaFiltro
+                               categoriaFiltro = Model.CategoriaFiltro,
+                               mostrarInactivos = Model.MostrarInactivos
                            })">
                             <i class="lni lni-chevron-right"></i>
                         </a>
@@ -299,21 +308,12 @@
         });
 
         // Search logic
-        const searchInput = document.getElementById('searchInput');
-        if(searchInput) {
-            searchInput.addEventListener('keyup', function() {
-                const value = this.value.toLowerCase();
-                const rows = document.querySelectorAll('.premium-table tbody tr');
-                
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.indexOf(value) > -1 ? '' : 'none';
-                });
-            });
-        }
+        const searchInput = document.getElementById('busqueda'); 
+        
+        let initialFormValues = {};
 
         // AJAX Modal Logic
-        function abrirModalProducto(accion, productoId = null) {
+        window.abrirModalProducto = function(accion, productoId = null) {
             console.log('Abriendo modal producto:', accion, 'Producto ID:', productoId);
 
             let url = '';
@@ -325,10 +325,12 @@
             const busqueda = '@Html.Raw(Model.Busqueda ?? "")';
             const categoriaFiltro = '@(Model.CategoriaFiltro?.ToString() ?? "")';
             const pagina = '@Model.PaginaActual';
+            const mostrarInactivos = '@(Model.MostrarInactivos ? "true" : "false")';
 
             if (busqueda) params.append('busqueda', busqueda);
             if (categoriaFiltro) params.append('categoriaFiltro', categoriaFiltro);
             if (pagina) params.append('pagina', pagina);
+            if (mostrarInactivos === 'true') params.append('mostrarInactivos', mostrarInactivos);
 
             url = '@Url.Action("ObtenerModalProducto", "Producto")' + '?' + params.toString();
 
@@ -348,6 +350,7 @@
             
                     const modal = new bootstrap.Modal(modalElement);
                     modalElement.addEventListener('shown.bs.modal', function () {
+                        capturarValoresIniciales();
                         configurarSubmitFormProducto(accion);
                     });
             
@@ -355,11 +358,86 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al cargar el formulario: ' + error.message);
+                    Toastify({
+                        text: "Error al cargar el formulario: " + error.message,
+                        duration: 3000,
+                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                    }).showToast();
                 });
+        };
+
+        function capturarValoresIniciales() {
+            const form = document.getElementById('productoForm');
+            if (!form) return;
+
+            initialFormValues = {
+                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
+                Precio: form.querySelector('[name="Precio"]')?.value || '',
+                Id_Categoria: form.querySelector('[name="Id_Categoria"]')?.value || '',
+                StockMinimo: form.querySelector('[name="StockMinimo"]')?.value || '',
+                StockActual: form.querySelector('[name="StockActual"]')?.value || '',
+                Descripcion: form.querySelector('[name="Descripcion"]')?.value || '',
+                Estado: form.querySelector('[name="Estado"]')?.checked || false
+            };
         }
 
-        function configurarSubmitFormProducto(accion) {
+        function obtenerCambios(form, accion) {
+            const cambios = [];
+            const currentValues = {
+                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
+                Precio: form.querySelector('[name="Precio"]')?.value || '',
+                Id_Categoria: form.querySelector('[name="Id_Categoria"]')?.value || '',
+                StockMinimo: form.querySelector('[name="StockMinimo"]')?.value || '',
+                StockActual: form.querySelector('[name="StockActual"]')?.value || '',
+                Descripcion: form.querySelector('[name="Descripcion"]')?.value || '',
+                Estado: form.querySelector('[name="Estado"]')?.checked || false,
+                ImagenFile: form.querySelector('[name="ImagenFile"]')?.files?.length > 0
+            };
+
+            if (accion === 'editar') {
+                if (currentValues.Nombre !== initialFormValues.Nombre) {
+                    cambios.push(`<strong>Nombre:</strong> ${initialFormValues.Nombre} <i class="lni lni-arrow-right"></i> ${currentValues.Nombre}`);
+                }
+                // Comparar Precio (puede ser numérico o string, normalizar)
+                if (parseFloat(currentValues.Precio) !== parseFloat(initialFormValues.Precio)) {
+                    cambios.push(`<strong>Precio:</strong> ${initialFormValues.Precio} <i class="lni lni-arrow-right"></i> ${currentValues.Precio}`);
+                }
+                if (currentValues.Id_Categoria !== initialFormValues.Id_Categoria) {
+                    const select = form.querySelector('[name="Id_Categoria"]');
+                    const oldText = select.querySelector(`option[value="${initialFormValues.Id_Categoria}"]`)?.text || 'N/A';
+                    const newText = select.options[select.selectedIndex]?.text || 'N/A';
+                    cambios.push(`<strong>Categoría:</strong> ${oldText} <i class="lni lni-arrow-right"></i> ${newText}`);
+                }
+                if (currentValues.StockMinimo !== initialFormValues.StockMinimo) {
+                    cambios.push(`<strong>Stock Mínimo:</strong> ${initialFormValues.StockMinimo} <i class="lni lni-arrow-right"></i> ${currentValues.StockMinimo}`);
+                }
+                if (currentValues.StockActual !== initialFormValues.StockActual) {
+                    cambios.push(`<strong>Stock Actual:</strong> ${initialFormValues.StockActual} <i class="lni lni-arrow-right"></i> ${currentValues.StockActual}`);
+                }
+                if (currentValues.Descripcion !== initialFormValues.Descripcion) {
+                    cambios.push(`<strong>Descripción:</strong> <em>(Se ha modificado)</em>`);
+                }
+                if (currentValues.Estado !== initialFormValues.Estado) {
+                    const oldState = initialFormValues.Estado ? 'Activo' : 'Inactivo';
+                    const newState = currentValues.Estado ? 'Activo' : 'Inactivo';
+                    cambios.push(`<strong>Estado:</strong> ${oldState} <i class="lni lni-arrow-right"></i> ${newState}`);
+                }
+                if (currentValues.ImagenFile) {
+                    cambios.push(`<strong>Imagen:</strong> <em>(Se ha seleccionado una nueva imagen)</em>`);
+                }
+            } else {
+                // Crear
+                cambios.push(`<strong>Nombre:</strong> ${currentValues.Nombre}`);
+                cambios.push(`<strong>Precio:</strong> ${currentValues.Precio}`);
+                const select = form.querySelector('[name="Id_Categoria"]');
+                const catText = select.options[select.selectedIndex]?.text || '';
+                cambios.push(`<strong>Categoría:</strong> ${catText}`);
+            }
+
+            return cambios;
+        }
+
+        window.configurarSubmitFormProducto = function(accion) {
             const form = document.getElementById('productoForm');
             if (!form) return;
 
@@ -370,114 +448,232 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                limpiarErrores();
+                // Validación HTML5
+                if (!newForm.checkValidity()) {
+                    newForm.classList.add('was-validated');
+                     // Find first invalid input and focus
+                    const firstInvalid = newForm.querySelector(':invalid');
+                    if(firstInvalid) firstInvalid.focus();
+                    return;
+                }
 
-                const formData = new FormData(newForm);
-                const url = '@Url.Action("GuardarProducto", "Producto")';
+                // Detectar cambios
+                const listaCambios = obtenerCambios(newForm, accion);
+                let html = '';
+                
+                if (listaCambios.length === 0) {
+                     html = '<div class="alert alert-warning">No se han detectado cambios.</div>';
+                } else {
+                    html = accion === 'crear' 
+                        ? '<p>Se creará un nuevo producto con los siguientes datos:</p>' 
+                        : '<p>Se realizarán las siguientes modificaciones:</p>';
+                    
+                    html += '<ul class="list-group list-group-flush text-start">';
+                    listaCambios.forEach(cambio => {
+                        html += `<li class="list-group-item">${cambio}</li>`;
+                    });
+                    html += '</ul>';
+                }
 
-                fetch(url, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json().catch(() => {
-                    return { success: false, message: 'Error al procesar la respuesta' };
-                }))
-                .then(result => {
-                    if (result && result.success) {
-                        mostrarMensajeExito(result.message);
-                        setTimeout(() => {
-                             const modal = bootstrap.Modal.getInstance(document.getElementById('productoModal'));
-                             if (modal) modal.hide();
-                             window.location.reload();
-                        }, 1000);
-                    } else {
-                        if (result.errors || result.fieldErrors) {
-                            mostrarErroresEnFormulario(result.errors || [], result.fieldErrors || null);
-                        } else {
-                            mostrarErrorGeneral(result.message || 'Error desconocido');
-                        }
+                Swal.fire({
+                    title: 'Confirmar Guardado',
+                    html: html,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#365CF5'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        enviarFormularioProducto(newForm);
                     }
-                })
-                .catch(err => {
-                    mostrarErrorGeneral('Error de conexión: ' + err.message);
                 });
             });
-        }
+        };
 
-        // Helpers de UI para errores 
-        function limpiarErrores() {
-             const alerts = document.querySelectorAll('.alert-danger');
-             alerts.forEach(a => a.remove());
-             const invalid = document.querySelectorAll('.is-invalid');
-             invalid.forEach(i => i.classList.remove('is-invalid'));
-        }
-
-        function mostrarMensajeExito(msg) {
-            // Podríamos usar un toast aquí, pero por ahora alert es funcional para el feedback inmediato
-            alert(msg); 
-        }
-
-        function mostrarErrorGeneral(msg) {
-            alert('Error: ' + msg);
-        }
-
-        function mostrarErroresEnFormulario(errors, fieldErrors) {
-             if(errors && errors.length > 0) alert(errors.join('\n'));
-        }
-
-        // CONFIRMATION MODAL HELPER
-        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-        const btnConfirmHelper = document.getElementById('btnConfirmAction');
-        const modalTitle = document.getElementById('confirmationModalTitle');
-        const modalMessage = document.getElementById('confirmationModalMessage');
-
-        function showConfirmation(title, message, callback) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
+        function enviarFormularioProducto(form) {
+            const formData = new FormData(form);
             
-            // Remove previous event listeners
-            const newBtn = btnConfirmHelper.cloneNode(true);
-            btnConfirmHelper.parentNode.replaceChild(newBtn, btnConfirmHelper);
-            
-            newBtn.addEventListener('click', function() {
-                callback();
-                confirmationModal.hide();
+             Swal.fire({
+                title: 'Guardando...',
+                text: 'Por favor espere',
+                allowOutsideClick: false,
+                didOpen: () => {
+                   Swal.showLoading();
+                }
             });
 
-            confirmationModal.show();
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json().catch(() => {
+                return { success: false, message: 'Error al procesar la respuesta del servidor' };
+            }))
+            .then(result => {
+                Swal.close();
+                if (result && result.success) {
+                    const modalElement = document.getElementById('productoModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) modal.hide();
+
+                    Toastify({
+                        text: "<strong>¡Éxito!</strong> " + (result.message || 'Operación realizada correctamente'),
+                        duration: 2000,
+                        gravity: "bottom",
+                        position: "right",
+                        escapeMarkup: false,
+                        style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                    }).showToast();
+
+                    setTimeout(() => {
+                         window.location.reload();
+                    }, 1000);
+                } else {
+                    let msg = result.message || 'Error desconocido';
+                    if (result.errors && result.errors.length > 0) {
+                        msg = result.errors.join('<br>');
+                    }
+                    
+                    Toastify({
+                        text: "<strong>Error:</strong> " + msg,
+                        duration: 5000,
+                        gravity: "bottom",
+                        position: "right",
+                        escapeMarkup: false,
+                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                    }).showToast();
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                Toastify({
+                    text: "Error de conexión: " + err.message,
+                    duration: 5000,
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
+            });
         }
 
-        function confirmarEliminacionProducto(productoId, nombreProducto) {
-            showConfirmation(
-                'Eliminar Producto',
-                `¿Está seguro que desea eliminar el producto "${nombreProducto}"?`,
-                () => {
+        // CONFIRMACIONES SWEETALERT
+        window.confirmarEliminacionProducto = function(productoId, nombreProducto) {
+            Swal.fire({
+                title: 'Eliminar Producto',
+                html: `¿Está seguro que desea eliminar el producto <strong>${nombreProducto}</strong>?<br><small class="text-danger">Esta acción no se puede deshacer.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                     // Mostrar loading
+                    Swal.fire({ title: 'Eliminando...', didOpen: () => Swal.showLoading() });
+                    
                     window.location.href = '@Url.Action("EliminarProducto", "Producto")'
-                        + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+                        + `?id=${productoId}&busqueda=${encodeURIComponent('@Model.Busqueda')}&categoriaFiltro=${'@Model.CategoriaFiltro'}&pagina=${'@Model.PaginaActual'}&mostrarInactivos=${'@(Model.MostrarInactivos ? "true" : "false")'}`;
                 }
-            );
-        }
+            });
+        };
 
-        function confirmarDeshabilitacionProducto(productoId, nombreProducto) {
-             showConfirmation(
-                'Deshabilitar Producto',
-                `¿Está seguro que desea deshabilitar el producto "${nombreProducto}"?`,
-                () => {
+        window.confirmarDeshabilitacionProducto = function(productoId, nombreProducto) {
+             Swal.fire({
+                title: 'Deshabilitar Producto',
+                text: `¿Está seguro que desea deshabilitar el producto "${nombreProducto}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#f0ad4e', // Warning color
+                confirmButtonText: 'Sí, deshabilitar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading() });
                     window.location.href = '@Url.Action("DeshabilitarProducto", "Producto")'
-                        + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+                        + `?id=${productoId}&busqueda=${encodeURIComponent('@Model.Busqueda')}&categoriaFiltro=${'@Model.CategoriaFiltro'}&pagina=${'@Model.PaginaActual'}&mostrarInactivos=${'@(Model.MostrarInactivos ? "true" : "false")'}`;
                 }
-            );
-        }
+            });
+        };
 
-        function confirmarHabilitacionProducto(productoId, nombreProducto) {
-             showConfirmation(
-                'Habilitar Producto',
-                `¿Está seguro que desea habilitar el producto "${nombreProducto}"?`,
-                () => {
+        window.confirmarHabilitacionProducto = function(productoId, nombreProducto) {
+             Swal.fire({
+                title: 'Habilitar Producto',
+                text: `¿Está seguro que desea habilitar el producto "${nombreProducto}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745', // Success color
+                confirmButtonText: 'Sí, habilitar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading() });
                     window.location.href = '@Url.Action("HabilitarProducto", "Producto")'
-                        + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+                         + `?id=${productoId}&busqueda=${encodeURIComponent('@Model.Busqueda')}&categoriaFiltro=${'@Model.CategoriaFiltro'}&pagina=${'@Model.PaginaActual'}&mostrarInactivos=${'@(Model.MostrarInactivos ? "true" : "false")'}`;
                 }
-            );
-        }
+            });
+        };
+
+        window.actualizarStockRapido = function(productoId, cantidad, stockMinimo) {
+            const currentStockElem = document.getElementById(`stock-val-${productoId}`);
+            if (!currentStockElem) return;
+
+            const currentStock = parseInt(currentStockElem.innerText);
+            if (currentStock + cantidad < 0) {
+                Toastify({
+                    text: "El stock no puede ser negativo",
+                    duration: 2000,
+                    style: { background: "#ff5f6d" }
+                }).showToast();
+                return;
+            }
+
+            fetch('@Url.Action("ActualizarStock", "Producto")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({ idProducto: productoId, cantidad: cantidad })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const nuevoStock = currentStock + cantidad;
+                    currentStockElem.innerText = nuevoStock;
+                    
+                    // Actualizar badge de disponibilidad
+                    const badgeContainer = document.getElementById(`badge-disponibilidad-${productoId}`);
+                    if (badgeContainer) {
+                        if (nuevoStock <= 0) {
+                            badgeContainer.innerHTML = `<span class="badge bg-danger text-white rounded-pill px-3 py-2"><i class="lni lni-warning me-1"></i> Agotado</span>`;
+                        } else if (nuevoStock <= stockMinimo) {
+                            badgeContainer.innerHTML = `<span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="lni lni-warning me-1"></i> Bajo Stock</span>`;
+                        } else {
+                            badgeContainer.innerHTML = `<span class="badge bg-success text-white rounded-pill px-3 py-2"><i class="lni lni-checkmark-circle me-1"></i> Disponible</span>`;
+                        }
+                    }
+
+                    Toastify({
+                        text: cantidad > 0 ? "+ Stock actualizado" : "- Stock actualizado",
+                        duration: 1500,
+                        style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                    }).showToast();
+                } else {
+                    Toastify({
+                        text: "Error: " + data.message,
+                        duration: 3000,
+                        style: { background: "#ff5f6d" }
+                    }).showToast();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Toastify({
+                    text: "Error de conexión",
+                    duration: 3000,
+                    style: { background: "#ff5f6d" }
+                }).showToast();
+            });
+        };
     </script>
 }

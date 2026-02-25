@@ -21,7 +21,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <form id="productoForm" enctype="multipart/form-data" method="post" asp-action="GuardarProducto">
+            <form id="productoForm" enctype="multipart/form-data" method="post" asp-action="GuardarProducto" novalidate>
                 @Html.AntiForgeryToken()
 
                 <!-- Campos ocultos para mantener el estado -->
@@ -38,6 +38,7 @@
                                 <label asp-for="Nombre" class="form-label">Nombre *</label>
                                 <input asp-for="Nombre" class="form-control"
                                        placeholder="Ingrese el nombre del producto"
+                                       required
                                        readonly="@esSoloLectura" />
                                 <span asp-validation-for="Nombre" class="text-danger"></span>
                             </div>
@@ -47,8 +48,9 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Precio" class="form-label">Precio *</label>
-                                <input asp-for="Precio" type="number" step="0.01" class="form-control"
+                                <input asp-for="Precio" type="number" step="0.01" min="0" class="form-control"
                                        placeholder="0.00"
+                                       required
                                        readonly="@esSoloLectura" />
                                 <span asp-validation-for="Precio" class="text-danger"></span>
                             </div>
@@ -62,6 +64,7 @@
                                 <label asp-for="Id_Categoria" class="form-label">Categoría *</label>
                                 <select asp-for="Id_Categoria" class="form-select"
                                         asp-items="@(ViewBag.Categorias as List<SelectListItem> ?? new List<SelectListItem>())"
+                                        required
                                         disabled="@esSoloLectura">
                                     <option value="">Seleccione una categoría</option>
                                 </select>
@@ -70,13 +73,26 @@
                         </div>
 
                         <!-- Stock Mínimo -->
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label asp-for="StockMinimo" class="form-label">Stock Mínimo</label>
-                                <input asp-for="StockMinimo" type="number" class="form-control"
+                                <input asp-for="StockMinimo" type="number" min="1" class="form-control"
                                        placeholder="0"
+                                       required
                                        readonly="@esSoloLectura" />
                                 <span asp-validation-for="StockMinimo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                         <!-- Stock Actual -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="StockActual" class="form-label">Stock Actual</label>
+                                <input asp-for="StockActual" type="number" min="0" class="form-control"
+                                       placeholder="0"
+                                       required
+                                       readonly="@esSoloLectura" />
+                                <span asp-validation-for="StockActual" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
@@ -108,12 +124,24 @@
                         </div>
                     }
 
-                    <!-- Imagen actual -->
-                    @if (mostrarImagen)
+                    <!-- Imagen actual o placeholder -->
+                    @if (ViewBag.AccionModal == "editar" || ViewBag.AccionModal == "ver")
                     {
                         <div class="mb-3 text-center">
                             <label class="form-label">Imagen actual</label><br />
-                            <img src="@Model.Imagen" alt="Imagen del producto" style="max-width:200px;max-height:200px;" />
+                            @if (mostrarImagen)
+                            {
+                                <img src="@Model.Imagen" alt="Imagen del producto" style="max-width:200px;max-height:200px; object-fit: contain;" />
+                            }
+                            else
+                            {
+                                <div class="bg-light d-flex align-items-center justify-content-center mx-auto" style="width: 200px; height: 200px; border: 1px dashed #ccc; border-radius: 8px;" role="img" aria-label="Sin imagen disponible" title="Sin imagen disponible">
+                                    <div class="text-muted text-center">
+                                        <i class="lni lni-image fs-1 mb-2"></i>
+                                        <p class="mb-0 small">Sin imagen disponible</p>
+                                    </div>
+                                </div>
+                            }
                         </div>
                     }
 
@@ -127,16 +155,28 @@
                     }
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    @if (!esSoloLectura)
-                    {
-                        <button type="submit" class="btn btn-primary">
-                            @(accion == "crear" ? "Crear Producto" : "Actualizar Producto")
-                        </button>
-                    }
+                <div class="modal-footer d-flex justify-content-between w-100">
+                    <div>
+                        @if (accion == "editar" && Model.Id_Producto > 0)
+                        {
+                            <button type="button" class="btn btn-danger" onclick="confirmarEliminacionProducto(@Model.Id_Producto, '@Model.Nombre.Replace("'", "\\'")')">
+                                <i class="lni lni-trash-can me-1"></i> Eliminar
+                            </button>
+                        }
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        @if (!esSoloLectura)
+                        {
+                            <button type="submit" class="btn btn-primary">
+                                @(accion == "crear" ? "Crear Producto" : "Actualizar Producto")
+                            </button>
+                        }
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+

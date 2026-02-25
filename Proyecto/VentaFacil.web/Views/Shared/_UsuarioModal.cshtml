@@ -85,10 +85,18 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Rol" class="form-label">Rol *</label>
-                                <select asp-for="Rol" asp-items="roles" class="form-select"
-                                        disabled="@esSoloLectura">
-                                    <option value="">Seleccione un rol</option>
-                                </select>
+                                @if (esSoloLectura)
+                                {
+                                    <select asp-for="Rol" asp-items="roles" class="form-select" disabled>
+                                        <option value="">Seleccione un rol</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <select asp-for="Rol" asp-items="roles" class="form-select">
+                                        <option value="">Seleccione un rol</option>
+                                    </select>
+                                }
                                 <span asp-validation-for="Rol" class="text-danger"></span>
                             </div>
                         </div>
@@ -103,10 +111,17 @@
                                         <label class="form-check-label">Usuario Activo</label>
                                     </div>
                                 }
+                                else if (accion == "crear")
+                                {
+                                     <div class="form-check form-switch">
+                                        <input asp-for="Estado" class="form-check-input" disabled />
+                                        <label class="form-check-label" for="Estado">Usuario Activo (Inactivo al crear)</label>
+                                    </div>
+                                }
                                 else
                                 {
                                     <div class="form-check form-switch">
-                                        <input asp-for="Estado" class="form-check-input" disabled="@(accion == "crear")" />
+                                        <input asp-for="Estado" class="form-check-input" />
                                         <label class="form-check-label" for="Estado">Usuario Activo</label>
                                     </div>
                                 }

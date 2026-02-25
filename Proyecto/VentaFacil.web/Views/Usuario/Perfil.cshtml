@@ -3,40 +3,30 @@
     Layout = "_LayoutPlantilla";
 }
 
-<div class="title-wrapper pt-30">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="title">
-                        <h2>Mi Perfil</h2>
-                    </div>
-                </div>
-                <!-- end col -->
-                <div class="col-md-6">
-                    <div class="breadcrumb-wrapper">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
-                                    <a href="#0">Dashboard</a>
-                                </li>
-                                <li class="breadcrumb-item"><a href="#0">Páginas</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">
-                                    Mi Perfil
-                                </li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
-                <!-- end col -->
+        <!-- Hero Section Header -->
+        <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem;">
+            <div class="position-relative z-1">
+                <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-user me-2"></i>Mi Perfil</h1>
+                <p class="mb-0 text-white-50 fs-5">Gestiona tu información personal y configuración.</p>
             </div>
-            <!-- end row -->
+            <div class="position-relative z-1 d-none d-md-block">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="#0" class="text-white-50">Páginas</a></li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">Mi Perfil</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
         </div>
-        <!-- ========== title-wrapper end ========== -->
         <!-- Mensajes de error -->
 
 
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="card-style settings-card-1 mb-30">
+                <div class="premium-card border-0 mb-30">
                     <div class="title mb-30 d-flex justify-content-between align-items-center">
                         <h6>Información del Perfil</h6>
                         <button type="button" class="main-btn primary-btn btn-hover btn-sm" onclick="openEditModal()">
@@ -45,9 +35,7 @@
                     </div>
                     <div class="profile-info">
                         <div class="d-flex align-items-center mb-30">
-                            <div class="profile-image">
-                                <img src="~/Plantilla/images/profile/profile-1.png" alt="" />
-                            </div>
+                            
                             <div class="profile-meta">
                                 <h5 class="text-bold text-dark mb-10">@(Model.Usuario?.Nombre ?? "Usuario")</h5>
                                 <p class="text-sm text-gray">@(Model.Usuario?.Rol ?? "Rol no especificado")</p>
@@ -371,7 +359,7 @@
         }
 
         function showAlert(message, type) {
-            let bgGradient = "linear-gradient(to right, #4b6cb7, #182848)"; // Default for info
+            let bgGradient = "linear-gradient(to right, #4b6cb7, #182848)"; 
             
             if (type === 'success') {
                 bgGradient = "linear-gradient(to right, #00b09b, #96c93d)";
@@ -411,23 +399,23 @@
                 ]);
             });
 
-            // Validación del formulario y manejo del Modal
+           
             const editForm = document.getElementById('editForm');
 
-            // Auto-open modal if there are errors
+            
             const errorSpans = document.querySelectorAll('.field-validation-error');
             if (errorSpans.length > 0) {
-                 // Check if any error span actually has text content (server-side validation renders text inside)
+                 
                 let hasVisibleErrors = false;
                 errorSpans.forEach(span => {
                     if (span.innerText && span.innerText.trim() !== "") {
                         hasVisibleErrors = true;
-                        // Enable the section for this error
+                        
                         const card = span.closest('.card-style-3');
                         if (card) {
                             const btn = card.querySelector('.card-header button');
                             if (btn && !btn.classList.contains('success-btn')) {
-                                btn.click(); // Trigger toggle to enable
+                                btn.click(); 
                             }
                         }
                     }
@@ -435,7 +423,7 @@
 
                 if (hasVisibleErrors) {
                     openEditModal();
-                    // Optional: Scroll to the first error? The modal centers itself.
+                   
                 }
             }
             

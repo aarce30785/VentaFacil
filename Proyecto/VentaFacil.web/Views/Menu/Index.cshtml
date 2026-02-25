@@ -1,0 +1,332 @@
+@model VentaFacil.web.Models.ViewModel.MenuViewModel
+@{
+    ViewData["Title"] = "Menú Público";
+    Layout = null; // No usamos el layout por defecto para tener una página limpia
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menú - VentaFácil</title>
+    <!-- CSS Dependencies -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .hero-title {
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .product-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            overflow: hidden;
+            background: white;
+        }
+
+            .product-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+
+        .product-img-wrapper {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background-color: #f1f1f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.05);
+        }
+
+        .product-placeholder {
+            color: #ccc;
+            font-size: 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .product-details {
+            padding: 1.25rem;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 2.7rem; /* Aproximadamente 2 líneas */
+        }
+
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .btn-view-more {
+            border-radius: 20px;
+            font-weight: 500;
+            padding: 0.4rem 1.2rem;
+        }
+
+        /* Nav Pills Customization */
+        .nav-pills .nav-link {
+            border-radius: 20px;
+            color: #2a5298;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            margin: 0.2rem;
+            padding: 0.5rem 1.2rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+            .nav-pills .nav-link:hover {
+                background-color: #e9ecef;
+            }
+
+            .nav-pills .nav-link.active {
+                background-color: #2a5298;
+                color: white;
+                border-color: #2a5298;
+            }
+
+        .search-bar {
+            border-radius: 25px;
+            padding: 0.6rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .search-inner {
+            position: relative;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        footer {
+            margin-top: 3rem;
+            padding: 2rem 0;
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="hero-title"><i class="fas fa-utensils me-2"></i> Nuestro Menú</h1>
+            <p class="lead mb-4">Descubre nuestros deliciosos productos</p>
+
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <form asp-action="Index" method="get" class="search-inner">
+                        <input type="hidden" name="categoriaId" value="@Model.CategoriaSeleccionadaId" />
+                        <input type="text" name="busqueda" value="@Model.Busqueda" class="form-control search-bar" placeholder="Buscar por producto..." />
+                        <button type="submit" class="btn btn-link search-icon"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container mb-5">
+        <!-- Categories Filter -->
+        <div class="filter-section text-center">
+            <ul class="nav nav-pills justify-content-center mb-4" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link @(Model.CategoriaSeleccionadaId == null ? "active" : "")" 
+                       href="@Url.Action("Index", new { busqueda = Model.Busqueda })">
+                        Todos
+                    </a>
+                </li>
+                @foreach (var categoria in Model.Categorias)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(Model.CategoriaSeleccionadaId == categoria.Id_Categoria ? "active" : "")"
+                           href="@Url.Action("Index", new { categoriaId = categoria.Id_Categoria, busqueda = Model.Busqueda })">
+                            @categoria.Nombre
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <!-- Products Grid -->
+        @if (Model.Productos != null && Model.Productos.Any())
+        {
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                @foreach (var producto in Model.Productos)
+                {
+                    <div class="col">
+                        <div class="product-card">
+                            <div class="product-img-wrapper">
+                                @if (!string.IsNullOrEmpty(producto.Imagen))
+                                {
+                                    <img src="@producto.Imagen" class="product-img" alt="@producto.Nombre" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'product-placeholder\'><i class=\'fas fa-image mb-2\'></i><span style=\'font-size:0.9rem\'>Sin imagen</span></div>';">
+                                }
+                                else
+                                {
+                                    <div class="product-placeholder">
+                                        <i class="fas fa-image mb-2"></i>
+                                        <span style="font-size:0.9rem">Sin imagen</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="product-details d-flex flex-column">
+                                <h5 class="product-title" title="@producto.Nombre">@producto.Nombre</h5>
+                                <p class="product-desc" title="@producto.Descripcion">
+                                    @(string.IsNullOrEmpty(producto.Descripcion) ? "Sin descripción disponible." : producto.Descripcion)
+                                </p>
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <span class="product-price">@producto.Precio.ToString("C")</span>
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-view-more" onclick="abrirDetalleModal(@producto.Id_Producto)">
+                                        Ver más
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-search-minus fa-3x text-muted mb-3"></i>
+                <h3 class="text-muted">No se encontraron productos</h3>
+                <p class="text-muted">Intenta con otra búsqueda o categoría.</p>
+                <a href="@Url.Action("Index")" class="btn btn-primary mt-3">Ver todo el menú</a>
+            </div>
+        }
+    </div>
+
+    <footer>
+        <div class="container">
+            <p class="mb-0">&copy; @DateTime.Now.Year - VentaFácil. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Modal para Detalle de Producto -->
+    <div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" id="detalleModalContenido">
+                <!-- El contenido se cargará aquí por AJAX -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.css"></script>
+    <script>
+        // Use standard JS since we're not running full jquery
+        function abrirDetalleModal(idProducto) {
+            var myModal = new bootstrap.Modal(document.getElementById('detalleModal'));
+            myModal.show();
+            
+            // Mostrar loading
+            document.getElementById('detalleModalContenido').innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>`;
+
+            // Cargar datos
+            fetch('@Url.Action("Detalle", "Menu")?id=' + idProducto)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Producto no disponible');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById('detalleModalContenido').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('detalleModalContenido').innerHTML = `
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger">Error</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                            <p>El producto no está disponible o ha ocurrido un error.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>`;
+                });
+        }
+    </script>
+</body>
+</html>

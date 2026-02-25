@@ -3,8 +3,8 @@
 <aside class="sidebar-nav-wrapper">
     <div class="navbar-logo">
         <a asp-controller="Home" asp-action="Index">
-            <h3 class="text-white mb-0" style="font-family: 'Merriweather', serif; font-weight: 700;">
-                <i class="fas fa-store-alt me-2" style="color: #FFD54F;"></i>VentaFácil
+            <h3 class="text-primary mb-0" style="font-family: 'Merriweather', serif; font-weight: 700;">
+                <i class="fas fa-store-alt me-2" style="color: #365CF5;"></i>VentaFácil
             </h3>
         </a>
     </div>
@@ -35,6 +35,11 @@
                     <span class="text">Ventas</span>
                 </a>
                 <ul id="ddmenu_2" class="collapse dropdown-nav">
+                    <li>
+                        <a asp-controller="Menu" asp-action="Index" target="_blank">
+                            <i class="fas fa-book-open me-2"></i> Menú Público
+                        </a>
+                    </li>
                     <li>
                         <a asp-controller="Pedidos" asp-action="Index">
                             <i class="fas fa-utensils me-2"></i> Pedidos

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using VentaFacil.web.Models.Dto;
+using VentaFacil.web.Models.Response.Inventario;
 using VentaFacil.web.Services.Inventario;
 using VentaFacil.web.Services.Movimiento;
 using VentaFacil.web.Services.PDF;
@@ -25,10 +26,43 @@ namespace VentaFacil.web.Controllers
         }
 
         // GET: Inventario/Listar
-        public async Task<IActionResult> Listar()
+        // GET: Inventario/Listar
+        public async Task<IActionResult> Listar(string? busqueda = null, int pagina = 1, int cantidadPorPagina = 10)
         {
-            var inventarios = (await _inventarioService.ListarTodosAsync()).OrderByDescending(i => i.Id_Inventario).ToList();
-            return View(inventarios);
+            var inventarios = await _inventarioService.ListarTodosAsync();
+            
+            // Filtrado
+            if (!string.IsNullOrEmpty(busqueda))
+            {
+                inventarios = inventarios.Where(i => 
+                    i.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            var totalRegistros = inventarios.Count();
+            var totalPaginas = (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
+            
+            // Paginación
+            var inventariosPaginados = inventarios
+                .Skip((pagina - 1) * cantidadPorPagina)
+                .Take(cantidadPorPagina)
+                .OrderByDescending(i => i.Id_Inventario)
+                .ToList();
+
+            var response = new ListInventarioResponse
+            {
+                Success = true,
+                Inventarios = inventariosPaginados,
+                PaginaActual = pagina,
+                TotalPaginas = totalPaginas,
+                CantidadPorPagina = cantidadPorPagina,
+                TotalRegistros = totalRegistros,
+                Busqueda = busqueda,
+                TotalInsumos = inventarios.Count,
+                StockBajo = inventarios.Count(i => i.StockActual <= i.StockMinimo)
+            };
+
+            return View(response);
         }
         // SIN USAR 
         // GET: Inventario/Details/5
@@ -387,6 +421,33 @@ namespace VentaFacil.web.Controllers
         {
             var notificaciones = await _inventarioService.ObtenerStockMinimoAsync();
             return Json(notificaciones);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerModalInventario(string accion, int? inventarioId = null)
+        {
+             try
+            {
+                var model = new InventarioDto();
+                ViewBag.AccionModal = accion;
+
+                if (inventarioId.HasValue && (accion == "editar" || accion == "ver"))
+                {
+                    var inventario = await _inventarioService.GetByIdAsync(inventarioId.Value);
+                    if (inventario != null)
+                    {
+                        model = inventario;
+                    }
+                }
+
+                return PartialView("_InventarioModal", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerModalInventario: {ex.Message}");
+                ViewBag.AccionModal = accion;
+                return PartialView("_InventarioModal", new InventarioDto());
+            }
         }
     }
 }

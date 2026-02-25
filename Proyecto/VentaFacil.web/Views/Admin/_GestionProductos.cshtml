@@ -1,52 +1,63 @@
 @model VentaFacil.web.Models.Response.Producto.ListProductoResponse
 
-
-
 <!-- Controles de Búsqueda y Filtros -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        <form method="get" asp-action="IndexProductos" class="row g-3" id="filtrosProductosForm">
-            <!-- Campo de búsqueda -->
-            <div class="col-md-5">
-                <div class="input-group input-group-search">
-                    <input type="text" name="busqueda" class="form-control" 
-                           placeholder="Buscar por nombre o descripción..." 
-                           value="@Model.Busqueda" />
-                    <button type="submit" class="btn btn-search">
-                        <i class="lni lni-search-alt"></i> Buscar
-                    </button>
+<div class="premium-card mb-4 p-4">
+    <form method="get" asp-action="IndexProductos" class="row g-3 align-items-center" id="filtrosProductosForm">
+        
+        <!-- Stats Summary -->
+        <div class="col-md-3">
+             <div class="d-flex align-items-center">
+                <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                    <i class="lni lni-package fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Productos</h6>
+                    <p class="text-sm text-muted mb-0">@Model.TotalProductos totales</p>
                 </div>
             </div>
-            <!-- Filtro por categoría -->
-            <div class="col-md-4">
-                <select name="categoriaFiltro" class="form-select">
-                    <option value="">Todas las categorías</option>
-                    @foreach (var categoria in Model.Categorias ?? new List<SelectListItem>())
-                    {
-                        <option value="@categoria.Value"
-                                selected="@(Model.CategoriaFiltro?.ToString() == categoria.Value ? "selected" : null)">
-                            @categoria.Text
-                        </option>
-                    }
-                </select>
-            </div>
-            <!-- Botones de acción -->
-            <div class="col-md-3 d-flex align-items-center">
-                <a href="@Url.Action("LimpiarFiltrosProductos", "Admin")" class="btn btn-clear">
-                    <i class="lni lni-close"></i> Limpiar
-                </a>
-            </div>
-            <!-- Campos ocultos para mantener otros parámetros -->
-            <input type="hidden" name="pagina" value="1" />
-            <input type="hidden" name="cantidadPorPagina" value="10" />
-        </form>
-    </div>
+        </div>
 
-    <div class="col-md-4 text-end">
-        <button type="button" class="main-btn primary-btn btn-hover" onclick="abrirModalProducto('crear')">
-            <i class="lni lni-plus"></i> Agregar Producto
-        </button>
-    </div>
+        <!-- Campo de búsqueda -->
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
+                <input type="text" name="busqueda" class="form-control bg-light border-0" 
+                       placeholder="Buscar por nombre o descripción..." 
+                       value="@Model.Busqueda" />
+            </div>
+        </div>
+
+        <!-- Filtro por categoría -->
+        <div class="col-md-3">
+            <select name="categoriaFiltro" class="form-select bg-light border-0" onchange="this.form.submit()">
+                <option value="">Todas las categorías</option>
+                @foreach (var categoria in Model.Categorias ?? new List<SelectListItem>())
+                {
+                    <option value="@categoria.Value"
+                            selected="@(Model.CategoriaFiltro?.ToString() == categoria.Value ? "selected" : null)">
+                        @categoria.Text
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="col-md-2 text-end">
+             <div class="d-flex justify-content-end align-items-center gap-2">
+                 <button type="submit" class="btn btn-primary d-none">Buscar</button>
+                 <a href="@Url.Action("LimpiarFiltrosProductos", "Admin")" class="btn btn-outline-secondary btn-hover rounded-pill" title="Limpiar Filtros">
+                    <i class="lni lni-reload"></i> 
+                </a>
+                <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalProducto('crear')">
+                    <i class="lni lni-plus me-2"></i> Nuevo
+                </button>
+            </div>
+        </div>
+
+        <!-- Campos ocultos para mantener otros parámetros -->
+        <input type="hidden" name="pagina" value="1" />
+        <input type="hidden" name="cantidadPorPagina" value="10" />
+    </form>
 </div>
 
 <!-- Mensaje cuando no hay resultados CON FILTROS APLICADOS -->
@@ -70,136 +81,75 @@
     </div>
 }
 
-<!-- Tabla de Productos -->
-<div class="table-wrapper table-responsive">
-    <table class="table premium-table">
-        <thead>
-            <tr>
-                <th class="lead-name"><h6>Nombre</h6></th>
-                <th class="lead-email"><h6>Descripción</h6></th>
-                <th class="lead-role"><h6>Precio</h6></th>
-                <th><h6>Stock Mínimo</h6></th>
-                <th><h6>Estado</h6></th>
-                <th><h6>Categoría</h6></th>
-                <th><h6>Acciones</h6></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Productos != null && Model.Productos.Any())
-            {
-                foreach (var producto in Model.Productos)
-                {
-                    <tr>
-                        <td class="min-width">
-                            <div class="lead">
-                                <div class="lead-image">
-                                    <img src="assets/images/lead/lead-1.png" alt="" />
-                                </div>
-                                <div class="lead-text">
-                                    <p>@producto.Nombre</p>
-                                </div>
+<!-- Grilla de Productos -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
+    @if (Model.Productos != null && Model.Productos.Any())
+    {
+        foreach (var producto in Model.Productos)
+        {
+            <div class="col">
+                <div class="product-card">
+                    <div class="product-img-wrapper" style="height: 180px;">
+                        @if (!string.IsNullOrEmpty(producto.Imagen))
+                        {
+                            <img src="@producto.Imagen" class="product-img" alt="@producto.Nombre" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'product-placeholder\'><i class=\'lni lni-image mb-2\'></i><span class=\'text-sm\'>Sin imagen</span></div>';">
+                        }
+                        else
+                        {
+                            <div class="product-placeholder">
+                                <i class="lni lni-image mb-2"></i>
+                                <span class="text-sm">Sin imagen</span>
                             </div>
-                        </td>
-                        <td class="min-width">
-                            <div class="lead-text">
-                                <p title="@producto.Descripcion">
-                                    @(producto.Descripcion?.Length > 50 ? producto.Descripcion.Substring(0, 50) + "..." : producto.Descripcion)
-                                </p>
-                            </div>
-                        </td>
-                        <td class="min-width">
-                            <span class="status-btn success-btn">@producto.Precio.ToString("C")</span>
-                        </td>
-                        <td class="min-width">
-                            <span class="status-btn info-btn">@producto.StockMinimo</span>
-                        </td>
-                        <td class="min-width">
-                            <span class="status-btn @(producto.Estado ? "active-btn" : "inactive-btn")">
-                                @(producto.Estado ? "Activo" : "Inactivo")
-                            </span>
-                        </td>
-                        <td class="min-width">
-                            <span class="status-btn warning-btn">
-                                @(Model.Categorias?.FirstOrDefault(c => c.Value == producto.Id_Categoria.ToString())?.Text ?? "N/A")
-                            </span>
-                        </td>
-                        <td>
+                        }
+                        
+                        <!-- Status Badges Float -->
+                        <div class="position-absolute top-0 end-0 p-2 d-flex flex-column gap-1 align-items-end" id="badge-disponibilidad-@producto.Id_Producto">
+                            @if (!producto.Estado)
+                            {
+                                <span class="badge bg-danger shadow-sm"><i class="lni lni-ban me-1"></i> Inactivo</span>
+                            }
+                            <span class="badge bg-warning text-dark shadow-sm opacity-90"><i class="lni lni-tag me-1"></i> @(Model.Categorias?.FirstOrDefault(c => c.Value == producto.Id_Categoria.ToString())?.Text ?? "N/A")</span>
+                        </div>
+                    </div>
+                    
+                    <div class="product-details">
+                        <h5 class="product-title" title="@producto.Nombre">@producto.Nombre</h5>
+                        <p class="product-desc" title="@producto.Descripcion">
+                            @(string.IsNullOrEmpty(producto.Descripcion) ? "Sin descripción disponible." : producto.Descripcion)
+                        </p>
+                        
+                        <!-- Actions Footer -->
+                        <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                            <span class="product-price fs-5">@producto.Precio.ToString("C")</span>
                             <div class="action d-flex gap-2">
-                                <!-- Ver -->
-                                <a href="javascript:void(0);"
-                                   onclick="abrirModalProducto('ver', @producto.Id_Producto)"
-                                   class="text-primary" title="Ver">
+                                <button type="button" class="btn btn-sm btn-light text-primary rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="abrirModalProducto('ver', @producto.Id_Producto)" title="Ver">
                                     <i class="lni lni-eye"></i>
-                                </a>
-
-                                <!-- Editar -->
-                                <a href="javascript:void(0);"
-                                   onclick="abrirModalProducto('editar', @producto.Id_Producto)"
-                                   class="text-warning" title="Editar">
+                                </button>
+                                <button type="button" class="btn btn-sm btn-light text-warning rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="abrirModalProducto('editar', @producto.Id_Producto)" title="Editar">
                                     <i class="lni lni-pencil"></i>
-                                </a>
-
-                                <!-- Eliminar -->
-                                <a class="text-danger" href="javascript:void(0);"
-                                   onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
-                                   title="Eliminar">
+                                </button>
+                                <button type="button" class="btn btn-sm btn-light text-danger rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Eliminar">
                                     <i class="lni lni-trash-can"></i>
-                                </a>
-
-                                <!-- Deshabilitar -->
+                                </button>
                                 @if (producto.Estado)
                                 {
-                                    <a class="text-secondary" href="javascript:void(0);"
-                                       onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
-                                       title="Deshabilitar">
+                                    <button type="button" class="btn btn-sm btn-light text-secondary rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Deshabilitar">
                                         <i class="lni lni-ban"></i>
-                                    </a>
+                                    </button>
                                 }
-                                <!-- Habilitar -->
-                                @if (!producto.Estado)
+                                else
                                 {
-                                    <a class="text-success" href="javascript:void(0);"
-                                       onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')"
-                                       title="Habilitar">
+                                    <button type="button" class="btn btn-sm btn-light text-success rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Habilitar">
                                         <i class="lni lni-checkmark-circle"></i>
-                                    </a>
+                                    </button>
                                 }
                             </div>
-                        </td>
-                    </tr>
-                }
-            }
-            else if (Model.Productos != null && !Model.Productos.Any())
-            {
-                <tr>
-                    <td colspan="7" class="text-center py-4">
-                        <div class="text-muted">
-                            <i class="lni lni-package me-2"></i>
-                            @if (!string.IsNullOrEmpty(Model.Busqueda) || Model.CategoriaFiltro.HasValue)
-                            {
-                                <span>No se encontraron productos con los filtros aplicados</span>
-                            }
-                            else
-                            {
-                                <span>No hay productos registrados</span>
-                            }
                         </div>
-                    </td>
-                </tr>
-            }
-            else
-            {
-                <tr>
-                    <td colspan="7" class="text-center py-4">
-                        <div class="text-muted">
-                            <i class="lni lni-warning me-2"></i>
-                            Error al cargar los productos
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
 </div>
 
 <div id="modalContainerProductos"></div>
@@ -246,7 +196,7 @@
                            cantidadPorPagina = 10,
                            busqueda = Model.Busqueda,
                            categoriaFiltro = Model.CategoriaFiltro
-                       })">
+                           })">
                         <i class="lni lni-chevron-right"></i>
                     </a>
                 </li>
@@ -262,15 +212,6 @@
             
             <p class="text-sm text-muted">
                 Mostrando @inicio-@fin de @Model.TotalProductos registros
-                
-                @if (!string.IsNullOrEmpty(Model.Busqueda) || Model.CategoriaFiltro.HasValue)
-                {
-                    <span class="ms-2">
-                        <a href="@Url.Action("LimpiarFiltrosProductos")" class="text-primary text-decoration-underline">
-                            (Ver todos)
-                        </a>
-                    </span>
-                }
             </p>
         </div>
     </div>
@@ -279,18 +220,10 @@
 <script>
     // ========== FUNCIONALIDAD PARA PRODUCTOS ==========
 
-    // Auto-submit del filtro de categoría cuando cambia
-    document.querySelector('#filtrosProductosForm select[name="categoriaFiltro"]')?.addEventListener('change', function() {
-        document.getElementById('filtrosProductosForm').submit();
-    });
-
-    // Manejar el evento de enter en el campo de búsqueda
-    document.querySelector('#filtrosProductosForm input[name="busqueda"]')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('filtrosProductosForm').submit();
-        }
-    });
+    // Auto-submit del filtro de categoría cuando cambia (Duplicate listener fixed by inline onchange)
+    // document.querySelector('#filtrosProductosForm select[name="categoriaFiltro"]')?.addEventListener('change', ...
+    
+    // Manejar el evento de enter en el campo de búsqueda (Standard form submission handles this naturally now)
 
     function abrirModalProducto(accion, productoId = null) {
         console.log('Abriendo modal producto:', accion, 'Producto ID:', productoId);
@@ -332,12 +265,54 @@
                     return;
                 }
         
-                const modal = new bootstrap.Modal(modalElement);
+                const modal = new bootstrap.Modal(modalElement, {
+                    backdrop: 'static', // Evitar cierre accidental al hacer clic fuera si hay cambios (opcional, pero ayuda)
+                    keyboard: false // Opcional
+                });
         
                 // Configurar el evento cuando el modal se muestra completamente
                 modalElement.addEventListener('shown.bs.modal', function () {
                     console.log('Modal mostrado, configurando submit para:', accion);
                     configurarSubmitFormProducto(accion);
+                    inicializarValidacionEspanol(); // También captura el estado inicial
+                });
+
+                // Interceptar el cierre del modal
+                modalElement.addEventListener('hide.bs.modal', function (e) {
+                    const state = window.modalProductoState;
+                    console.log('Intento de cierre. Guardado:', state.isSaved, 'Ignorar:', state.ignoreClose);
+
+                    if (state.ignoreClose || state.isSaved) {
+                        return; // Permitir cerrar
+                    }
+
+                    const form = document.getElementById('productoForm');
+                    if (form) {
+                        const currentData = obtenerDatosFormularioString(form);
+                        console.log('Comparando datos. Inicial:', state.initialData, 'Actual:', currentData);
+                        
+                        // Solo si hay cambios 
+                         if (state.initialData && currentData !== state.initialData) {
+                             e.preventDefault(); // Detener cierre
+                             console.log('Cambios detectados, mostrando alerta.');
+
+                            Swal.fire({
+                                title: '¿Desea descartar los cambios?',
+                                text: "Los cambios no guardados se perderán.",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#d33',
+                                cancelButtonColor: '#3085d6',
+                                confirmButtonText: 'Sí, descartar',
+                                cancelButtonText: 'Cancelar'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    state.ignoreClose = true;
+                                    modal.hide();
+                                }
+                            });
+                         }
+                    }
                 });
         
                 modal.show();
@@ -368,6 +343,32 @@
 
             console.log('Submit del formulario para acción:', accion);
 
+            // Validación Manual con SweetAlert2
+            const precioInput = newForm.querySelector('[name="Precio"]');
+            const stockInput = newForm.querySelector('[name="StockMinimo"]');
+            
+            // Validar Precio Negativo
+            if (precioInput && parseFloat(precioInput.value) < 0) {
+                 Swal.fire({
+                    icon: 'warning',
+                    title: 'Precio Inválido',
+                    text: 'El precio no puede ser negativo.',
+                    confirmButtonText: 'Corregir'
+                });
+                return false;
+            }
+
+            // Validar Stock Mínimo < 1
+            if (stockInput && parseFloat(stockInput.value) < 1) {
+                 Swal.fire({
+                    icon: 'warning',
+                    title: 'Stock Inválido',
+                    text: 'El stock mínimo debe ser al menos 1.',
+                    confirmButtonText: 'Corregir'
+                });
+                return false;
+            }
+
             // Limpiar errores previos
             limpiarErrores();
 
@@ -383,6 +384,8 @@
 
             // Crear FormData directamente desde el formulario
             const formData = new FormData(newForm);
+            // Asegurar que el controlador sepa que es una petición AJAX
+            formData.append('isAjax', 'true');
 
             // Enviar la solicitud
             const url = '@Url.Action("GuardarProducto", "Admin")';
@@ -390,6 +393,9 @@
 
             fetch(url, {
                 method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: formData
             })
             .then(response => {
@@ -406,18 +412,10 @@
                                 fieldErrors: {}
                             };
                         }
-                        if (!response.ok) {
-                            return {
-                                success: false,
-                                message: `Error del servidor: ${response.status}`,
-                                errors: [text.substring(0, 200)],
-                                fieldErrors: {}
-                            };
-                        }
                         return {
                             success: false,
-                            message: 'Respuesta inesperada del servidor',
-                            errors: [text],
+                            message: `Error del servidor: ${response.status}`,
+                            errors: [text.substring(0, 200)],
                             fieldErrors: {}
                         };
                     }
@@ -427,7 +425,20 @@
                 if (!result) return;
 
                 if (result.success) {
-                    mostrarMensajeExito(result.message);
+                    window.modalProductoState.isSaved = true; // Marcar como guardado para permitir cierre
+                    
+                    // Usar Toastify con estilo de _Alert.cshtml
+                    Toastify({
+                        text: `<strong>Éxito:</strong> ${result.message}`,
+                        duration: 3000,
+                        className: "info",
+                        gravity: "bottom", // `top` or `bottom`
+                        position: "right", // `left`, `center` or `right`
+                        style: {
+                            background: "linear-gradient(to right, rgba(15, 146, 43, 1), #96c93d)",
+                        },
+                        escapeMarkup: false
+                    }).showToast();
             
                     setTimeout(() => {
                         const modal = bootstrap.Modal.getInstance(document.getElementById('productoModal'));
@@ -437,36 +448,150 @@
                 } else {
                     if (result.errors || result.fieldErrors) {
                         mostrarErroresEnFormulario(result.errors || [], result.fieldErrors || null);
+                        
+                        // Si hay errores generales, mostrarlos también con Toastify rojo
+                        if(result.errors && result.errors.length > 0) {
+                             Toastify({
+                                text: `<strong>Error:</strong> ${result.errors.join('<br>')}`,
+                                duration: 3000,
+                                className: "info",
+                                gravity: "bottom", 
+                                position: "right", 
+                                style: {
+                                    background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                                },
+                                escapeMarkup: false
+                            }).showToast();
+                        }
+
                     } else {
-                        mostrarErrorGeneral(result.message || 'Error desconocido');
+                        // Error genérico con Toastify rojo
+                         Toastify({
+                            text: `<strong>Error:</strong> ${result.message || 'Error desconocido'}`,
+                            duration: 3000,
+                            className: "info",
+                            gravity: "bottom", 
+                            position: "right", 
+                            style: {
+                                background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                            },
+                            escapeMarkup: false
+                        }).showToast();
                     }
                 }
             })
             .catch(err => {
                 console.error('Error en fetch:', err);
-                mostrarErrorGeneral('Error de conexión: ' + err.message);
+                 Toastify({
+                    text: `<strong>Error de conexión:</strong> ${err.message}`,
+                    duration: 3000,
+                    className: "info",
+                    gravity: "bottom", 
+                    position: "right", 
+                    style: {
+                        background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    },
+                    escapeMarkup: false
+                }).showToast();
             });
         });
     }
 
     function confirmarEliminacionProducto(productoId, nombreProducto) {
-        if (confirm(`¿Está seguro que desea eliminar el producto "${nombreProducto}"?`)) {
-            window.location.href = '@Url.Action("EliminarProducto", "Admin")'
-                + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
-        }
+        Swal.fire({
+            title: 'Eliminar Producto',
+            html: `¿Está seguro que desea eliminar <strong>${nombreProducto}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("EliminarProducto", "Admin")'
+                    + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+            }
+        });
     }
 
     function confirmarDeshabilitacionProducto(productoId, nombreProducto) {
-        if (confirm(`¿Está seguro que desea deshabilitar el producto "${nombreProducto}"?`)) {
-            window.location.href = '@Url.Action("DeshabilitarProducto", "Admin")'
-                + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
-        }
+        Swal.fire({
+            title: 'Deshabilitar Producto',
+            html: `¿Desea deshabilitar <strong>${nombreProducto}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, deshabilitar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("DeshabilitarProducto", "Admin")'
+                    + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+            }
+        });
     }
 
     function confirmarHabilitacionProducto(productoId, nombreProducto) {
-        if (confirm(`¿Está seguro que desea habilitar el producto "${nombreProducto}"?`)) {
-            window.location.href = '@Url.Action("HabilitarProducto", "Admin")'
-                + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+        Swal.fire({
+            title: 'Habilitar Producto',
+            html: `¿Desea habilitar <strong>${nombreProducto}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, habilitar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("HabilitarProducto", "Admin")'
+                    + `?id=${productoId}&busqueda=@Model.Busqueda&categoriaFiltro=@Model.CategoriaFiltro&pagina=@Model.PaginaActual`;
+            }
+        });
+    }
+
+    // Estado del modal para control de cambios (Usar window para evitar errores de redeclaración al recargar partial)
+    window.modalProductoState = {
+        initialData: null,
+        isSaved: false,
+        ignoreClose: false
+    };
+
+    function obtenerDatosFormularioString(form) {
+        const data = {};
+        // Usar FormData para capturar todo consistentemente
+        const formData = new FormData(form);
+        for (let [key, value] of formData.entries()) {
+             // Ignorar campos irrelevantes o tokens si cambiaran dinámicamente (pero en modal no deben cambiar)
+             if (key === '__RequestVerificationToken') continue; 
+             data[key] = value;
+        }
+        return JSON.stringify(data);
+    }
+
+    function inicializarValidacionEspanol() {
+        const form = document.getElementById('productoForm');
+        if (form) {
+            // Capturar estado inicial
+            window.modalProductoState.initialData = obtenerDatosFormularioString(form);
+            window.modalProductoState.isSaved = false;
+            window.modalProductoState.ignoreClose = false;
+            console.log('Estado inicial capturado:', window.modalProductoState.initialData);
+
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('invalid', function () {
+                    if (this.validity.valueMissing) {
+                        this.setCustomValidity('Por favor, complete este campo.');
+                    } else if (this.validity.typeMismatch) {
+                        this.setCustomValidity('Por favor, ingrese un valor válido.');
+                    } else if (this.validity.rangeUnderflow) {
+                        this.setCustomValidity(`El valor debe ser mayor o igual a ${this.min}.`);
+                    } else if (this.validity.stepMismatch) {
+                        this.setCustomValidity('Por favor, ingrese un valor válido para el paso especificado.');
+                    } else {
+                        this.setCustomValidity(''); 
+                    }
+                });
+
+                input.addEventListener('input', function () {
+                    this.setCustomValidity('');
+                });
+            });
         }
     }
+
 </script>

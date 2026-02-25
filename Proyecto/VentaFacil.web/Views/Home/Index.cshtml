@@ -74,38 +74,7 @@
         margin-bottom: 0;
     }
 
-    .welcome-banner {
-        background: var(--primary-gradient);
-        border-radius: 20px;
-        padding: 2.5rem;
-        color: white;
-        margin-bottom: 2rem;
-        position: relative;
-        overflow: hidden;
-        box-shadow: var(--card-shadow);
-    }
 
-    .welcome-banner::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    .welcome-banner::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -5%;
-        width: 200px;
-        height: 200px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
 
     .list-group-item {
         border: none;
@@ -148,10 +117,10 @@
 <div class="container-fluid py-4">
     
     <!-- Welcome Banner using User.Identity only -->
-    <div class="welcome-banner d-flex justify-content-between align-items-center" style="background: #fff; color: #1e293b;">
+    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem;">
         <div class="position-relative z-1">
-            <h1 class="fw-bold mb-2">¡Hola, @User.Identity?.Name! 👋</h1>
-            <p class="mb-0 opacity-90 fs-5">Aquí tienes un resumen de la actividad de tu negocio.</p>
+            <h1 class="hero-title fw-bold mb-2 text-white">¡Hola, @User.Identity?.Name! 👋</h1>
+            <p class="mb-0 text-white-50 fs-5">Aquí tienes un resumen de la actividad de tu negocio.</p>
         </div>
         <div class="position-relative z-1 d-none d-md-block">
             <div class="d-flex gap-2">

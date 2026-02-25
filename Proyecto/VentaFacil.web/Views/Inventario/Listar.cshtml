@@ -1,203 +1,89 @@
-﻿@model IEnumerable<VentaFacil.web.Models.Dto.InventarioDto>
+﻿@model VentaFacil.web.Models.Response.Inventario.ListInventarioResponse
 
 @{
-    ViewData["Title"] = "Inventario";
+    ViewData["Title"] = "Gestión de Inventario";
     Layout = "_LayoutPlantilla";
-    
-    var totalInsumos = Model?.Count() ?? 0;
-    var stockBajo = Model?.Count(i => i.StockActual <= i.StockMinimo) ?? 0;
-    var valorTotal = 0; // Se podría calcular si el DTO tuviera costo
+
+    // Usar datos del modelo para las stats
+    var totalInsumos = Model.TotalInsumos;
+    var stockBajo = Model.StockBajo;
 }
 
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    .premium-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-    }
-
-    .premium-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--hover-shadow);
-    }
-
-    .stat-card {
-        position: relative;
-        padding: 1.5rem;
-        height: 100%;
-        display: flex;
-        align-items: center;
-    }
-
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin-right: 1rem;
-    }
-
-    .table-container {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .premium-table thead th {
-        background-color: #f8fafc;
-        color: #222 !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 1rem;
-    }
-
-    .premium-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155;
-    }
-
-    .premium-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .premium-table tbody tr:hover {
-        background-color: #f8fafc;
-    }
-
-    .action-btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        border: none;
-        background: transparent;
-    }
-
-    .action-btn:hover {
-        background-color: #f1f5f9;
-        transform: scale(1.1);
-    }
-
-    .animate-fade-in {
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
-
-<!-- ========== table components start ========== -->
-<div class="tables-wrapper">
-    <div class="title-wrapper pt-30">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="title">
-                        <h2 class="fw-bold text-dark">Gestión de Inventario</h2>
-                        <p class="text-muted text-sm">Control de insumos y stock en tiempo real</p>
-                    </div>
+<div class="pt-30">
+    <!-- Header -->
+    <div class="title-wrapper pt-30 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="title">
+                    <h2 class="fw-bold text-dark">Gestión de Inventario</h2>
+                    <p class="text-muted text-sm">Control de insumos y stock en tiempo real</p>
                 </div>
-                <div class="col-md-6">
-                    <div class="breadcrumb-wrapper">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Inventario</li>
-                            </ol>
-                        </nav>
-                    </div>
+            </div>
+            <div class="col-md-6">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Inventario</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Alertas -->
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="border-left: 4px solid #10b981 !important;">
+    <!-- Filtros y Acciones -->
+    <div class="premium-card mb-4 p-4">
+        <form method="get" asp-action="Listar" class="row g-3 align-items-center" id="filtrosInventarioForm">
+             <!-- Stats Summary Mini -->
+            <div class="col-md-3">
+                 <div class="d-flex align-items-center">
+                    <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-archive fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Inventario General</h6>
+                        <p class="text-sm text-muted mb-0">@Model.TotalRegistros insumos totales</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campo de búsqueda -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
+                    <input type="text" name="busqueda" class="form-control bg-light border-0" 
+                           placeholder="Buscar insumo..." 
+                           value="@Model.Busqueda" />
+                     <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="col-md-5 text-end">
+                <div class="d-flex justify-content-end align-items-center gap-2">
+                     <button type="button" class="main-btn success-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#entradaModal">
+                        <i class="lni lni-download me-2"></i> Entrada
+                    </button>
+                    <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalInventario('crear')">
+                        <i class="lni lni-plus me-2"></i> Nuevo Insumo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Campos ocultos -->
+            <input type="hidden" name="pagina" value="1" />
+            <input type="hidden" name="cantidadPorPagina" value="10" />
+        </form>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="premium-card stat-card">
                 <div class="d-flex align-items-center">
-                    <i class="lni lni-checkmark-circle fs-4 me-2"></i>
-                    <div>@TempData["Success"]</div>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-left: 4px solid #ef4444 !important;">
-                <div class="d-flex align-items-center">
-                    <i class="lni lni-warning fs-4 me-2"></i>
-                    <div>@TempData["Error"]</div>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-
-        <!-- Header Actions -->
-        <div class="premium-card mb-4 p-4">
-            <div class="row align-items-center">
-                <div class="col-md-4">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-                            <i class="lni lni-archive fs-4"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">Inventario General</h6>
-                            <p class="text-sm text-muted mb-0">Vista general de existencias</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="position-relative">
-                        <input type="text" id="searchInput" class="form-control rounded-pill ps-5 py-2" placeholder="Buscar insumo...">
-                        <i class="lni lni-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                    </div>
-                </div>
-                <div class="col-md-4 text-end">
-                    <div class="d-flex justify-content-end align-items-center gap-2">
-                        <button type="button" class="main-btn success-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#entradaModal">
-                            <i class="lni lni-download me-2"></i> Entrada
-                        </button>
-                        <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createModal">
-                            <i class="lni lni-plus me-2"></i> Nuevo Insumo
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="row g-4 mb-4">
-            <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="premium-card stat-card">
-                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
-                        <i class="lni lni-package"></i>
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-package fs-4"></i>
                     </div>
                     <div>
                         <h3 class="mb-0 fw-bold">@totalInsumos</h3>
@@ -205,10 +91,12 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="premium-card stat-card">
-                    <div class="stat-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="lni lni-warning"></i>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="premium-card stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-warning fs-4"></i>
                     </div>
                     <div>
                         <h3 class="mb-0 fw-bold">@stockBajo</h3>
@@ -217,221 +105,204 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Inventory Table -->
-        <div class="table-container animate-fade-in">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h5 class="fw-bold mb-1">📦 Listado de Insumos</h5>
-                    <p class="text-sm text-muted mb-0">Gestiona las existencias de tu inventario</p>
-                </div>
+    <!-- Alertas -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="lni lni-warning me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Tabla de Inventario -->
+    <div class="table-container animate-fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold mb-1">📦 Listado de Insumos</h5>
+                <p class="text-sm text-muted mb-0">Gestiona las existencias de tu inventario</p>
             </div>
-            <div class="table-responsive">
-                <table class="table premium-table">
-                    <thead>
-                        <tr>
-
-                            <th>Nombre</th>
-                            <th>Unidad</th>
-                            <th>Stock Actual</th>
-                            <th>Stock Mínimo</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
+        </div>
+        <div class="table-responsive">
+            <table class="table premium-table">
+                <thead>
+                    <tr>
+                         <th class="lead-name"><h6>Nombre</h6></th>
+                        <th><h6>Unidad</h6></th>
+                        <th><h6>Stock Actual</h6></th>
+                        <th><h6>Stock Mínimo</h6></th>
+                        <th class="text-center"><h6>Estado</h6></th>
+                        <th class="text-center"><h6>Acciones</h6></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Inventarios != null && Model.Inventarios.Any())
+                    {
+                        foreach (var item in Model.Inventarios)
                         {
-                            foreach (var item in Model)
-                            {
-                                var isLowStock = item.StockActual <= item.StockMinimo;
-                                <tr>
-
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            var isLowStock = item.StockActual <= item.StockMinimo;
+                            <tr>
+                                <td class="min-width">
+                                    <div class="lead">
+                                        <div class="lead-image">
+                                             <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                                                 <i class="lni lni-tag text-muted"></i>
                                             </div>
-                                            <span class="fw-medium">@item.Nombre</span>
                                         </div>
-                                    </td>
-                                    <td><span class="badge bg-light text-dark border">@item.UnidadMedida</span></td>
-                                    <td>
-                                        <span class="fw-bold @(isLowStock ? "text-danger" : "text-dark")">@item.StockActual</span>
-                                    </td>
-                                    <td><span class="text-muted">@item.StockMinimo</span></td>
-                                    <td class="text-center">
-                                        @if (isLowStock)
-                                        {
-                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
-                                                <i class="lni lni-warning me-1"></i> Bajo Stock
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                                                <i class="lni lni-checkmark-circle me-1"></i> Disponible
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <button type="button" class="action-btn text-primary" title="Editar"
-                                                    data-bs-toggle="modal" data-bs-target="#editModal"
-                                                    data-id="@item.Id_Inventario"
-                                                    data-nombre="@item.Nombre"
-                                                    data-unidad="@((int)item.UnidadMedida)"
-                                                    data-stock="@item.StockActual"
-                                                    data-minimo="@item.StockMinimo">
-                                                <i class="lni lni-pencil"></i>
-                                            </button>
-
-                                            <!-- Entrada Rápida -->
-                                            <button type="button" class="action-btn text-success" title="Registrar Entrada"
-                                                    data-bs-toggle="modal" data-bs-target="#entradaModal"
-                                                    data-id="@item.Id_Inventario">
-                                                <i class="lni lni-plus"></i>
-                                            </button>
-
-                                            <!-- Salida Rápida -->
-                                            <button type="button" class="action-btn text-danger" title="Registrar Salida"
-                                                    data-bs-toggle="modal" data-bs-target="#salidaModal"
-                                                    data-id="@item.Id_Inventario">
-                                                <i class="lni lni-minus"></i>
-                                            </button>
-
-                                            <a href="@Url.Action("HistorialMovimientos", new { idInventario = item.Id_Inventario })"
-                                               class="action-btn text-info" title="Historial">
-                                                <i class="lni lni-agenda"></i>
-                                            </a>
+                                        <div class="lead-text">
+                                            <p>@item.Nombre</p>
                                         </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="7" class="text-center py-5">
-                                    <div class="empty-state">
-                                        <div class="mb-3">
-                                            <div class="avatar-lg bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
-                                                <i class="lni lni-package fs-2 text-muted"></i>
-                                            </div>
-                                        </div>
-                                        <h5 class="fw-bold text-muted">No hay insumos registrados</h5>
-                                        <p class="text-muted text-sm mb-0">Comienza registrando nuevos insumos en el sistema.</p>
+                                    </div>
+                                </td>
+                                <td class="min-width">
+                                    <span class="status-btn active-btn">@item.UnidadMedida</span>
+                                </td>
+                                <td class="min-width">
+                                    <span class="status-btn @(isLowStock ? "inactive-btn" : "success-btn")">@item.StockActual</span>
+                                </td>
+                                <td class="min-width">
+                                    <span class="status-btn info-btn">@item.StockMinimo</span>
+                                </td>
+                                <td class="min-width text-center">
+                                    @if (isLowStock)
+                                    {
+                                        <span class="status-btn inactive-btn">
+                                            <i class="lni lni-warning me-1"></i> Bajo Stock
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-btn success-btn">
+                                            <i class="lni lni-checkmark-circle me-1"></i> Disponible
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="action d-flex justify-content-center gap-2">
+                                        <!-- Edit Action using AJAX Modal -->
+                                        <button type="button" class="text-primary btn btn-link p-0" title="Editar"
+                                                onclick="abrirModalInventario('editar', @item.Id_Inventario)">
+                                            <i class="lni lni-pencil"></i>
+                                        </button>
+
+                                        <!-- Entrada Rápida -->
+                                        <button type="button" class="text-success btn btn-link p-0" title="Registrar Entrada"
+                                                data-bs-toggle="modal" data-bs-target="#entradaModal"
+                                                data-id="@item.Id_Inventario">
+                                            <i class="lni lni-plus"></i>
+                                        </button>
+
+                                        <!-- Salida Rápida -->
+                                        <button type="button" class="text-danger btn btn-link p-0" title="Registrar Salida"
+                                                data-bs-toggle="modal" data-bs-target="#salidaModal"
+                                                data-id="@item.Id_Inventario">
+                                            <i class="lni lni-minus"></i>
+                                        </button>
+
+                                        <!-- Eliminar -->
+                                        <button type="button" class="text-danger btn btn-link p-0" title="Eliminar"
+                                                onclick="confirmarEliminacionInventario(@item.Id_Inventario, '@item.Nombre.Replace("'", "\\'")')">
+                                            <i class="lni lni-trash-can"></i>
+                                        </button>
+                                        
+                                         <a href="@Url.Action("HistorialMovimientos", new { idInventario = item.Id_Inventario })"
+                                           class="text-info" title="Historial">
+                                            <i class="lni lni-agenda"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
                         }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="empty-state">
+                                    <div class="mb-3">
+                                        <div class="avatar-lg bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                                            <i class="lni lni-package fs-2 text-muted"></i>
+                                        </div>
+                                    </div>
+                                    <h5 class="fw-bold text-muted">No se encontraron insumos</h5>
+                                    <p class="text-muted text-sm mb-0">Intenta cambiar los filtros o registra nuevos insumos.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
-</div>
+    
+    <!-- Paginación -->
+    @if (Model.TotalPaginas > 1 && Model.Inventarios != null && Model.Inventarios.Any())
+    {
+        <div class="pagination-wrapper mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link" 
+                           href="@Url.Action("Listar", new { 
+                               pagina = Model.PaginaActual - 1, 
+                               cantidadPorPagina = 10,
+                               busqueda = Model.Busqueda
+                           })">
+                            <i class="lni lni-chevron-left"></i>
+                        </a>
+                    </li>
 
-<!-- Create Modal -->
-<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content rounded-4 border-0 shadow-lg">
-            <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold" id="createModalLabel">Registrar Nuevo Insumo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body py-4">
-                <form id="createForm" asp-action="Registrar" method="post">
-                    <div id="createErrors" class="alert alert-danger d-none rounded-3 shadow-sm border-0"></div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="Nombre" class="form-label fw-bold text-sm text-muted">Nombre del Insumo</label>
-                                <input type="text" id="Nombre" name="Nombre" class="form-control rounded-pill bg-light border-0 px-3" placeholder="Ej. Harina" required />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="UnidadMedida" class="form-label fw-bold text-sm text-muted">Unidad de Medida</label>
-                                <select id="UnidadMedida" name="UnidadMedida" class="form-select rounded-pill bg-light border-0 px-3" asp-items="Html.GetEnumSelectList<VentaFacil.web.Models.Enum.UnidadMedida>()" required>
-                                    <option value="">Seleccione una unidad</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="StockActual" class="form-label fw-bold text-sm text-muted">Stock Inicial</label>
-                                <input type="number" id="StockActual" name="StockActual" class="form-control rounded-pill bg-light border-0 px-3" min="0" value="0" required />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="StockMinimo" class="form-label fw-bold text-sm text-muted">Stock Mínimo</label>
-                                <input type="number" id="StockMinimo" name="StockMinimo" class="form-control rounded-pill bg-light border-0 px-3" min="0" value="0" required />
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer border-top-0 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="submitForm('createForm')">Registrar Insumo</button>
+                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link" 
+                               href="@Url.Action("Listar", new { 
+                                   pagina = i, 
+                                   cantidadPorPagina = 10,
+                                   busqueda = Model.Busqueda
+                               })">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                        <a class="page-link" 
+                           href="@Url.Action("Listar", new { 
+                               pagina = Model.PaginaActual + 1, 
+                               cantidadPorPagina = 10,
+                               busqueda = Model.Busqueda
+                           })">
+                            <i class="lni lni-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="pagination-info text-center mt-2">
+                <p class="text-sm text-muted">
+                    Mostrando @((Model.PaginaActual - 1) * 10 + 1)-@Math.Min(Model.PaginaActual * 10, Model.TotalRegistros) de @Model.TotalRegistros registros
+                </p>
             </div>
         </div>
-    </div>
+    }
 </div>
 
-<!-- Edit Modal -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content rounded-4 border-0 shadow-lg">
-            <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold" id="editModalLabel">Editar Insumo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body py-4">
-                <form id="editForm" asp-action="Editar" method="post">
-                    <div id="editErrors" class="alert alert-danger d-none rounded-3 shadow-sm border-0"></div>
-                    <input type="hidden" id="Edit_Id_Inventario" name="Id_Inventario" />
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="Edit_Nombre" class="form-label fw-bold text-sm text-muted">Nombre del Insumo</label>
-                                <input type="text" id="Edit_Nombre" name="Nombre" class="form-control rounded-pill bg-light border-0 px-3" required />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="Edit_UnidadMedida" class="form-label fw-bold text-sm text-muted">Unidad de Medida</label>
-                                <select id="Edit_UnidadMedida" name="UnidadMedida" class="form-select rounded-pill bg-light border-0 px-3" asp-items="Html.GetEnumSelectList<VentaFacil.web.Models.Enum.UnidadMedida>()" required>
-                                    <option value="">Seleccione una unidad</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="Edit_StockActual" class="form-label fw-bold text-sm text-muted">Stock Actual</label>
-                                <input type="number" id="Edit_StockActual" name="StockActual" class="form-control rounded-pill bg-light border-0 px-3" min="0" required />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="Edit_StockMinimo" class="form-label fw-bold text-sm text-muted">Stock Mínimo</label>
-                                <input type="number" id="Edit_StockMinimo" name="StockMinimo" class="form-control rounded-pill bg-light border-0 px-3" min="0" required />
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer border-top-0 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="submitForm('editForm')">Guardar Cambios</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Container for AJAX Modals -->
+<div id="modalContainerInventario"></div>
 
-<!-- Entrada Modal -->
+<!-- Formulario para eliminación (oculto) -->
+<form id="deleteForm" method="post" action="@Url.Action("Eliminar")" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="deleteId" />
+</form>
+
+<!-- Entrada Modal (Legacy/Specific) -->
 <div class="modal fade" id="entradaModal" tabindex="-1" aria-labelledby="entradaModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -445,9 +316,10 @@
                     
                     <div class="form-group mb-3">
                         <label for="Entrada_IdInventario" class="form-label fw-bold text-sm text-muted">Insumo</label>
-                        <select id="Entrada_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model, "Id_Inventario", "Nombre"))">
+                        <select id="Entrada_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))">
                             <option value="">Seleccione Insumo</option>
                         </select>
+                         <small class="text-muted">Nota: Solo se muestran los insumos de la página actual en este select.</small>
                     </div>
 
                     <div class="form-group mb-3">
@@ -463,13 +335,13 @@
             </div>
             <div class="modal-footer border-top-0 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="submitForm('entradaForm')">Registrar Entrada</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="submitMovimientoForm('entradaForm')">Registrar Entrada</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Salida Modal -->
+<!-- Salida Modal (Legacy/Specific) -->
 <div class="modal fade" id="salidaModal" tabindex="-1" aria-labelledby="salidaModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -483,9 +355,10 @@
                     
                     <div class="form-group mb-3">
                         <label for="Salida_IdInventario" class="form-label fw-bold text-sm text-muted">Insumo</label>
-                        <select id="Salida_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model, "Id_Inventario", "Nombre"))">
+                        <select id="Salida_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))">
                             <option value="">Seleccione Insumo</option>
                         </select>
+                         <small class="text-muted">Nota: Solo se muestran los insumos de la página actual en este select.</small>
                     </div>
 
                     <div class="form-group mb-3">
@@ -501,7 +374,7 @@
             </div>
             <div class="modal-footer border-top-0 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="submitForm('salidaForm')">Registrar Salida</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="submitMovimientoForm('salidaForm')">Registrar Salida</button>
             </div>
         </div>
     </div>
@@ -509,69 +382,198 @@
 
 @section Scripts {
     <script>
-        // Configuración de modal de edición
-        var editModal = document.getElementById('editModal');
-        editModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            var id = button.getAttribute('data-id');
-            var nombre = button.getAttribute('data-nombre');
-            var unidad = button.getAttribute('data-unidad');
-            var stock = button.getAttribute('data-stock');
-            var minimo = button.getAttribute('data-minimo');
+        // Clean up client-search listener if it existed
+        
+        // ==========================================
+        // Lógica para Modals AJAX (Crear/Editar)
+        // ==========================================
+        let initialFormValues = {};
 
-            var modal = this;
-            modal.querySelector('#Edit_Id_Inventario').value = id;
-            modal.querySelector('#Edit_Nombre').value = nombre;
-            modal.querySelector('#Edit_UnidadMedida').value = unidad;
-            modal.querySelector('#Edit_StockActual').value = stock;
-            modal.querySelector('#Edit_StockMinimo').value = minimo;
-        });
+        window.abrirModalInventario = function(accion, inventarioId = null) {
+            let url = '';
+            const params = new URLSearchParams();
+            params.append('accion', accion);
+            if (inventarioId) params.append('inventarioId', inventarioId);
 
-        // Configuración de modal de Entrada
-        var entradaModal = document.getElementById('entradaModal');
-        entradaModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            // Si el botón tiene data-id (es botón de fila), preseleccionamos
-            var id = button.getAttribute('data-id');
-            var modal = this;
-            if (id) {
-                var select = modal.querySelector('#Entrada_IdInventario');
-                if (select) select.value = id;
-            }
-        });
+            url = '@Url.Action("ObtenerModalInventario", "Inventario")' + '?' + params.toString();
 
-        // Configuración de modal de Salida
-        var salidaModal = document.getElementById('salidaModal');
-        salidaModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            // Si el botón tiene data-id (es botón de fila), preseleccionamos
-            var id = button.getAttribute('data-id');
-            var modal = this;
-            if (id) {
-                var select = modal.querySelector('#Salida_IdInventario');
-                if (select) select.value = id;
-            }
-        });
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar el modal');
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('modalContainerInventario').innerHTML = data;
+                    const modalElement = document.getElementById('inventarioModal');
+                    const modal = new bootstrap.Modal(modalElement);
+                    
+                    modalElement.addEventListener('shown.bs.modal', function () {
+                        capturarValoresIniciales();
+                        configurarSubmitFormInventario(accion);
+                    });
 
-        // Search logic
-        const searchInput = document.getElementById('searchInput');
-        if(searchInput) {
-            searchInput.addEventListener('keyup', function() {
-                const value = this.value.toLowerCase();
-                const rows = document.querySelectorAll('.premium-table tbody tr');
-                
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.indexOf(value) > -1 ? '' : 'none';
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error(error);
+                    Toastify({
+                        text: "Error al abrir el modal",
+                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                    }).showToast();
                 });
-            });
+        };
+
+        function capturarValoresIniciales() {
+            const form = document.getElementById('inventarioForm');
+            if(!form) return;
+            
+            initialFormValues = {
+                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
+                UnidadMedida: form.querySelector('[name="UnidadMedida"]')?.value || '',
+                StockActual: form.querySelector('[name="StockActual"]')?.value || '0',
+                StockMinimo: form.querySelector('[name="StockMinimo"]')?.value || '0'
+            };
         }
 
-        // Form submission logic with modern buttons
-        function submitForm(formId) {
+        function obtenerCambios(form, accion) {
+            const cambios = [];
+            const currentValues = {
+                Nombre: form.querySelector('[name="Nombre"]')?.value || '',
+                UnidadMedida: form.querySelector('[name="UnidadMedida"]')?.value || '',
+                StockActual: form.querySelector('[name="StockActual"]')?.value || '0',
+                StockMinimo: form.querySelector('[name="StockMinimo"]')?.value || '0'
+            };
+
+            if (accion === 'editar') {
+                if (currentValues.Nombre !== initialFormValues.Nombre) {
+                    cambios.push(`<strong>Nombre:</strong> ${initialFormValues.Nombre} <i class="lni lni-arrow-right"></i> ${currentValues.Nombre}`);
+                }
+                if (currentValues.UnidadMedida !== initialFormValues.UnidadMedida) {
+                     const select = form.querySelector('[name="UnidadMedida"]');
+                     const oldText = select.querySelector(`option[value="${initialFormValues.UnidadMedida}"]`)?.text || initialFormValues.UnidadMedida;
+                     const newText = select.options[select.selectedIndex]?.text || currentValues.UnidadMedida;
+                     cambios.push(`<strong>Unidad:</strong> ${oldText} <i class="lni lni-arrow-right"></i> ${newText}`);
+                }
+                if (parseFloat(currentValues.StockActual) !== parseFloat(initialFormValues.StockActual)) {
+                    cambios.push(`<strong>Stock Actual:</strong> ${initialFormValues.StockActual} <i class="lni lni-arrow-right"></i> ${currentValues.StockActual}`);
+                }
+                 if (parseFloat(currentValues.StockMinimo) !== parseFloat(initialFormValues.StockMinimo)) {
+                    cambios.push(`<strong>Stock Mínimo:</strong> ${initialFormValues.StockMinimo} <i class="lni lni-arrow-right"></i> ${currentValues.StockMinimo}`);
+                }
+            } else {
+                cambios.push(`<strong>Nombre:</strong> ${currentValues.Nombre}`);
+                const select = form.querySelector('[name="UnidadMedida"]');
+                const uniText = select.options[select.selectedIndex]?.text || '';
+                cambios.push(`<strong>Unidad:</strong> ${uniText}`);
+                cambios.push(`<strong>Stock Inicial:</strong> ${currentValues.StockActual}`);
+            }
+            return cambios;
+        }
+
+        window.configurarSubmitFormInventario = function(accion) {
+            const form = document.getElementById('inventarioForm');
+            if(!form) return;
+
+             const newForm = form.cloneNode(true);
+             form.parentNode.replaceChild(newForm, form);
+
+             newForm.addEventListener('submit', function(e) {
+                 e.preventDefault();
+                 e.stopPropagation();
+
+                 if (!newForm.checkValidity()) {
+                     newForm.classList.add('was-validated');
+                     return;
+                 }
+
+                 const cambios = obtenerCambios(newForm, accion);
+                 let html = '';
+                 
+                 if (cambios.length === 0) {
+                     html = '<div class="alert alert-warning">No se han detectado cambios.</div>';
+                 } else {
+                     html = accion === 'crear' ? '<p>Datos del nuevo insumo:</p>' : '<p>Cambios detectados:</p>';
+                     html += '<ul class="list-group list-group-flush text-start">';
+                     cambios.forEach(c => html += `<li class="list-group-item">${c}</li>`);
+                     html += '</ul>';
+                 }
+
+                 Swal.fire({
+                    title: 'Confirmar',
+                    html: html,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar',
+                     confirmButtonColor: '#365CF5'
+                 }).then((result) => {
+                     if (result.isConfirmed) {
+                         enviarFormularioInventario(newForm);
+                     }
+                 });
+             });
+        };
+
+        function enviarFormularioInventario(form) {
+            const formData = new FormData(form);
+             Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+
+             fetch(form.action, {
+                 method: 'POST',
+                 body: formData,
+                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
+             })
+             .then(r => r.json())
+             .then(data => {
+                 Swal.close();
+                 if(data.success) {
+                     const modal = bootstrap.Modal.getInstance(document.getElementById('inventarioModal'));
+                     modal.hide();
+                     Toastify({
+                        text: "¡Éxito! Operación realizada",
+                        style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                     }).showToast();
+                     setTimeout(() => window.location.reload(), 1000);
+                 } else {
+                      let msg = data.errors ? data.errors.join('<br>') : 'Error desconocido';
+                      Toastify({
+                        text: "Error: " + msg,
+                        duration: 5000,
+                        escapeMarkup: false,
+                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                     }).showToast();
+                 }
+             })
+             .catch(err => {
+                 Swal.close();
+                 Toastify({ text: "Error de conexión", style: { background: "#ff5f6d" } }).showToast();
+             });
+        }
+
+        window.confirmarEliminacionInventario = function(id, name) {
+            Swal.fire({
+                title: 'Eliminar Insumo',
+                html: `¿Eliminar <strong>${name}</strong>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar'
+            }).then((result) => {
+                if(result.isConfirmed) {
+                    Swal.fire({ title: 'Eliminando...', didOpen: () => Swal.showLoading() });
+                    const form = document.getElementById('deleteForm');
+                    document.getElementById('deleteId').value = id;
+                    form.submit();
+                }
+            });
+        };
+
+        // ==========================================
+        // Lógica para Entrada/Salida (Legacy)
+        // ==========================================
+        function submitMovimientoForm(formId) {
             var form = document.getElementById(formId);
             var formData = new FormData(form);
-            var errorDiv = document.getElementById(formId.replace('Form', 'Errors')); // createForm -> createErrors
+            var errorDiv = document.getElementById(formId.replace('Form', 'Errors'));
             
             // Get submit button
             const modal = form.closest('.modal');
@@ -608,7 +610,10 @@
                             errorDiv.innerHTML = '<p class="mb-0">Ocurrió un error inesperado.</p>';
                         }
                     } else {
-                        alert('Error: ' + (data.errors ? data.errors.join(', ') : 'Ocurrió un error inesperado.'));
+                         Toastify({
+                            text: 'Error: ' + (data.errors ? data.errors.join(', ') : 'Ocurrió un error inesperado.'),
+                            style: { background: "#ff5f6d" }
+                        }).showToast();
                     }
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
@@ -620,11 +625,33 @@
                     errorDiv.classList.remove('d-none');
                     errorDiv.innerHTML = '<p class="mb-0">Ocurrió un error de conexión.</p>';
                 } else {
-                    alert('Ocurrió un error de conexión.');
+                    Toastify({ text: 'Ocurrió un error de conexión.', style: { background: "#ff5f6d" } }).showToast();
                 }
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             });
         }
+        
+        // Configuración de modal de Entrada
+        var entradaModal = document.getElementById('entradaModal');
+        entradaModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            if (id) {
+                var select = this.querySelector('#Entrada_IdInventario');
+                if (select) select.value = id;
+            }
+        });
+
+        // Configuración de modal de Salida
+        var salidaModal = document.getElementById('salidaModal');
+        salidaModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            if (id) {
+                var select = this.querySelector('#Salida_IdInventario');
+                if (select) select.value = id;
+            }
+        });
     </script>
 }

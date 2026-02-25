@@ -28,6 +28,9 @@ namespace VentaFacil.web.Models
         public int StockMinimo { get; set; }
 
         [Required]
+        public int StockActual { get; set; }
+
+        [Required]
         public bool Estado { get; set; } = true;
 
         

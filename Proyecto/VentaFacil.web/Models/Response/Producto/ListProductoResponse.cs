@@ -12,6 +12,7 @@ namespace VentaFacil.web.Models.Response.Producto
 
         public string Busqueda { get; set; }
         public int? CategoriaFiltro { get; set; }
+        public bool MostrarInactivos { get; set; }
         public int PaginaActual { get; set; }
         public int CantidadPorPagina { get; set; } = 10;
         public int TotalProductos { get; set; }

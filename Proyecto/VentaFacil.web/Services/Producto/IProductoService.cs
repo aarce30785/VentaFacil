@@ -9,12 +9,14 @@ namespace VentaFacil.web.Services.Producto
     public interface IProductoService
     {
         Task<ListProductoResponse> ListarTodosAsync();
+        Task<ListProductoResponse> ListarActivosAsync();
         Task<RegisterProductoResponse> RegisterAsync(ProductoDto productoDto);
         Task<EditProductoResponse> EditarAsync(ProductoDto productoDto);
         Task<ProductoDto?> ObtenerPorIdAsync(int idProducto);
         Task<EditProductoResponse> EliminarAsync(int idProducto);
         Task<EditProductoResponse> DeshabilitarAsync(int idProducto);
         Task<EditProductoResponse> HabilitarAsync(int idProducto);
+        Task<EditProductoResponse> ActualizarStockAsync(int idProducto, int cantidad);
         Task<List<ProductoMasVendidoDto>> GetProductosMasVendidosAsync();
     }
 }
