@@ -37,6 +37,9 @@ USER appuser
 # Copiar desde la etapa de build ASEGURANDO el propietario
 COPY --from=build --chown=appuser:appuser /app/publish .
 
+# Asegurar que la carpeta Plantilla tenga la mayúscula correcta (corrección para Git en Windows vs Linux)
+RUN if [ -d "/app/wwwroot/plantilla" ] && [ ! -d "/app/wwwroot/Plantilla" ]; then mv /app/wwwroot/plantilla /app/wwwroot/Plantilla; fi
+
 # Exponer puertos
 EXPOSE 8080
 

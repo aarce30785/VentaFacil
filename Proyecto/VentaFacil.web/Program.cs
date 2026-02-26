@@ -279,28 +279,13 @@ namespace VentaFacil.web
             {
                 Console.WriteLine("⚠ HTTPS redirection deshabilitado (Hostinger)");
             }
-            var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
-            provider.Mappings[".css"] = "text/css";
-            provider.Mappings[".js"] = "text/javascript";
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                ContentTypeProvider = provider
-            });
+            app.UseStaticFiles();
 
-            // Diagnóstico de carpetas estáticas y FORZAR WebRootPath si es necesario
+            // Diagnóstico de carpetas estáticas
             Console.WriteLine("=== DIAGNÓSTICO DE CARPETAS ESTÁTICAS ===");
-            if (isRunningInContainer && (string.IsNullOrEmpty(app.Environment.WebRootPath) || !app.Environment.WebRootPath.Contains("/app/wwwroot")))
-            {
-                app.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-                Console.WriteLine($"⚠️ WebRootPath forzado a: {app.Environment.WebRootPath}");
-            }
-
             string wwwroot = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            Console.WriteLine($"WebRootPath actual: {wwwroot}");
-
             string[] checkFolders = { 
                 wwwroot, 
-                Path.Combine(wwwroot, "css"),
                 Path.Combine(wwwroot, "images"), 
                 Path.Combine(wwwroot, "images", "productos"),
                 Path.Combine(wwwroot, "Plantilla"),
@@ -316,11 +301,6 @@ namespace VentaFacil.web
                     try {
                         var files = Directory.GetFiles(folder);
                         Console.WriteLine($"   Files found: {files.Length}");
-                        foreach (var file in files.Take(5)) // Mostrar hasta 5 archivos para no inundar el log
-                        {
-                            Console.WriteLine($"     - {Path.GetFileName(file)}");
-                        }
-                        if (files.Length > 5) Console.WriteLine("     ...");
                     } catch (Exception ex) {
                         Console.WriteLine($"   Error reading: {ex.Message}");
                     }
