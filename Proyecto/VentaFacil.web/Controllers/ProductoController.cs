@@ -13,13 +13,16 @@ namespace VentaFacil.web.Controllers
     {
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
+        private readonly IWebHostEnvironment _environment;
 
         public ProductoController(
             IProductoService registerProductoService,
-            ICategoriaService categoriaService)
+            ICategoriaService categoriaService,
+            IWebHostEnvironment environment)
         {
             _productoService = registerProductoService;
             _categoriaService = categoriaService;
+            _environment = environment;
         }
 
         [HttpGet]
@@ -209,18 +212,31 @@ namespace VentaFacil.web.Controllers
                 // Guardar imagen si se envió
                 if (ImagenFile != null && ImagenFile.Length > 0)
                 {
-                    var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/productos");
-                    if (!Directory.Exists(imagesPath))
+                    Console.WriteLine($"[DEBUG] Recibida imagen: {ImagenFile.FileName}, Tamaño: {ImagenFile.Length} bytes");
+                    try 
                     {
-                        Directory.CreateDirectory(imagesPath);
+                        var imagesPath = Path.Combine(_environment.WebRootPath, "images", "productos");
+                        if (!Directory.Exists(imagesPath))
+                        {
+                            Console.WriteLine($"[DEBUG] Creando directorio de productos: {imagesPath}");
+                            Directory.CreateDirectory(imagesPath);
+                        }
+                        var fileName = Guid.NewGuid() + Path.GetExtension(ImagenFile.FileName);
+                        var filePath = Path.Combine(imagesPath, fileName);
+                        
+                        Console.WriteLine($"[DEBUG] Guardando archivo en: {filePath}");
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await ImagenFile.CopyToAsync(stream);
+                        }
+                        productoDto.Imagen = "/images/productos/" + fileName;
+                        Console.WriteLine("[DEBUG] Imagen guardada exitosamente.");
                     }
-                    var fileName = Guid.NewGuid() + Path.GetExtension(ImagenFile.FileName);
-                    var filePath = Path.Combine(imagesPath, fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    catch (Exception imgEx)
                     {
-                        await ImagenFile.CopyToAsync(stream);
+                        Console.WriteLine($"[ERROR] Error guardando imagen: {imgEx.Message}");
+                        return StatusCode(500, new { success = false, message = "Error al guardar la imagen", errors = new List<string> { imgEx.Message } });
                     }
-                    productoDto.Imagen = "/images/productos/" + fileName;
                 }
 
                 bool success;

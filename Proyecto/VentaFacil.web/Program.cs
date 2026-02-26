@@ -376,24 +376,22 @@ namespace VentaFacil.web
 
         private static void InitializeTablesAndSeed(SqlConnection conn, string connectionString)
         {
-            Console.WriteLine("=== INICIANDO VERIFICACIÓN/CREACIÓN DE ESQUEMA ===");
+            Console.WriteLine("=== [DB INIT] INICIANDO VERIFICACIÓN DE ESQUEMA ===");
+            
+            string baseDir = Directory.GetCurrentDirectory();
+            string[] potentialPaths = {
+                "/app/init/init.sql",
+                Path.Combine(baseDir, "init", "init.sql"),
+                Path.Combine(baseDir, "init.sql"),
+                "init.sql"
+            };
 
-            // Determinar ruta del script
-            string scriptPath = "/app/init/init.sql";
-            if (!File.Exists(scriptPath))
-            {
-                scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "init", "init.sql");
-            }
+            string? scriptPath = potentialPaths.FirstOrDefault(File.Exists);
 
-            if (File.Exists(scriptPath))
+            if (scriptPath != null)
             {
-                Console.WriteLine($"Ejecutando script de inicialización: {scriptPath}");
+                Console.WriteLine($"=== [DB INIT] Script encontrado en: {scriptPath}");
                 string script = File.ReadAllText(scriptPath);
-
-                // Dividir el script por 'GO' si es necesario (SQL Server no acepta GO en un solo comando)
-                // O mejor aún, ejecutar como un bloque único si no contiene GOs problemáticos.
-                // init.sql parece ser un conjunto de IF NOT EXISTS, lo cual es safe.
-                
                 try
                 {
                     // Dividir el script por 'GO' para ejecución por lotes
@@ -402,36 +400,48 @@ namespace VentaFacil.web
                         @"^\s*GO\s*$",
                         System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
+                    Console.WriteLine($"=== [DB INIT] Ejecutando {batches.Length} lotes de comandos...");
+                    int successCount = 0;
+
                     foreach (var batch in batches)
                     {
                         if (string.IsNullOrWhiteSpace(batch)) continue;
 
-                        using var cmd = new SqlCommand(batch, conn);
-                        cmd.ExecuteNonQuery();
+                        try
+                        {
+                            using var cmd = new SqlCommand(batch, conn);
+                            cmd.ExecuteNonQuery();
+                            successCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"❌ [DB INIT] Error en lote {successCount + 1}: {ex.Message}");
+                            string snippet = batch.Length > 100 ? batch.Substring(0, 100).Trim() + "..." : batch.Trim();
+                            Console.WriteLine($"   Comando: {snippet}");
+                        }
                     }
-                    Console.WriteLine("✅ Tablas verificadas/creadas exitosamente");
+                    Console.WriteLine($"=== [DB INIT] Proceso completado. Lotes exitosos: {successCount}/{batches.Length}");
                 }
-                catch (Exception sqlEx)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠️ Error ejecutando script de inicialización: {sqlEx.Message}");
-                    // Si falla el bloque completo, intentamos por partes o continuamos al seeder
+                    Console.WriteLine($"❌ [DB INIT] Error crítico leyendo/procesando script: {ex.Message}");
                 }
             }
             else
             {
-                Console.WriteLine($"❌ No se encontró script de inicialización en: {scriptPath}");
+                Console.WriteLine("❌ [DB INIT] ERROR: No se encontró el script init.sql en ninguna de las rutas:");
+                foreach (var path in potentialPaths) Console.WriteLine($"   - {path}");
             }
 
-            // SIEMPRE EJECUTAR SEEDER
-            Console.WriteLine("Ejecutando seeder...");
+            Console.WriteLine("=== [DB INIT] Ejecutando seeder de datos iniciales...");
             try
             {
                 DbSeeder.Seed(connectionString);
-                Console.WriteLine("✅ Seeder completado");
+                Console.WriteLine("✅ [DB INIT] Seeder completado");
             }
             catch (Exception seederEx)
             {
-                Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
+                Console.WriteLine($"⚠️ [DB INIT] Error en seeder: {seederEx.Message}");
             }
         }
 

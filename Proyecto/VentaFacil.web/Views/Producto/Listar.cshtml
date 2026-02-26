@@ -276,7 +276,9 @@
     }
 </div>
 
-<div id="modalContainerProductos"></div>
+@section Modals {
+    <div id="modalContainerProductos"></div>
+}
 
 <!-- Generic Confirmation Modal -->
 <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
@@ -335,9 +337,16 @@
             url = '@Url.Action("ObtenerModalProducto", "Producto")' + '?' + params.toString();
 
             fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error('Error al cargar el modal: ' + response.status);
-                    return response.text();
+                .then(async response => {
+                    const contentType = response.headers.get("content-type");
+                    if (response.ok && contentType && contentType.indexOf("text/html") !== -1) {
+                         return response.text();
+                    } else if (!response.ok) {
+                         const text = await response.text();
+                         throw new Error(`Error del servidor (${response.status}). Verifique los logs.`);
+                    } else {
+                         throw new Error("Respuesta inesperada del servidor.");
+                    }
                 })
                 .then(data => {
                     document.getElementById('modalContainerProductos').innerHTML = data;
@@ -507,9 +516,16 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json().catch(() => {
-                return { success: false, message: 'Error al procesar la respuesta del servidor' };
-            }))
+            .then(async response => {
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json();
+                } else {
+                    const text = await response.text();
+                    console.error("Respuesta no-JSON recibida:", text);
+                    return { success: false, message: "El servidor devolvió un error (HTML). Verifique los logs del servidor.", debug: text };
+                }
+            })
             .then(result => {
                 Swal.close();
                 if (result && result.success) {
@@ -535,20 +551,18 @@
                         msg = result.errors.join('<br>');
                     }
                     
-                    Toastify({
-                        text: "<strong>Error:</strong> " + msg,
-                        duration: 5000,
-                        gravity: "bottom",
-                        position: "right",
-                        escapeMarkup: false,
-                        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
-                    }).showToast();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al Guardar',
+                        html: msg
+                    });
                 }
             })
             .catch(err => {
                 Swal.close();
+                console.error("Catch fetch error:", err);
                 Toastify({
-                    text: "Error de conexión: " + err.message,
+                    text: "Error de conexión o red: " + err.message,
                     duration: 5000,
                     style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
                 }).showToast();
@@ -635,7 +649,15 @@
                 },
                 body: JSON.stringify({ idProducto: productoId, cantidad: cantidad })
             })
-            .then(response => response.json())
+            .then(async response => {
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json();
+                } else {
+                    const text = await response.text();
+                    return { success: false, message: "Error del servidor (no JSON)" };
+                }
+            })
             .then(data => {
                 if (data.success) {
                     const nuevoStock = currentStock + cantidad;

@@ -66,6 +66,10 @@
     </main>
     <!-- ======== main-wrapper end =========== -->
 
+    <!-- Container for modals outside main content for accessibility -->
+    <div id="globalModalContainer"></div>
+    @await RenderSectionAsync("Modals", required: false)
+
     <!-- ========= All Javascript files linkup ======== -->
     <script src="~/Plantilla/js/bootstrap.bundle.min.js" defer></script>
     <script src="~/Plantilla/js/polyfill.js" defer></script>
