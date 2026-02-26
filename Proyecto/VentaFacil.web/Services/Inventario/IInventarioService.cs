@@ -7,10 +7,12 @@ namespace VentaFacil.web.Services.Inventario
     public interface IInventarioService
     {
         Task<List<InventarioDto>> ListarTodosAsync();
+        Task<List<InventarioDto>> ListarTodosAsync(bool incluirInactivos);
         Task<InventarioDto?> GetByIdAsync(int id);
-        Task<bool> RegistrarAsync(InventarioDto dto);
+        Task<bool> RegistrarAsync(InventarioDto dto, int idUsuario);
         Task<bool> EditarAsync(InventarioDto dto, int idUsuario);
         Task<bool> EliminarAsync(int id);
+        Task<bool> HabilitarAsync(int id);
         Task<bool> AgregarUnidadAsync(int id, int idUsuario);
         Task<bool> QuitarUnidadAsync(int id, int idUsuario);
         Task<bool> RegistrarEntradaAsync(int idInventario, int cantidad, string observaciones, int idUsuario);

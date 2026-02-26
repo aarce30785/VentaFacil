@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using VentaFacil.web.Data;
+using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Inventario;
 using VentaFacil.web.Services.Inventario;
@@ -17,19 +20,21 @@ namespace VentaFacil.web.Controllers
         private readonly IInventarioService _inventarioService;
         private readonly IMovimientoService _movimientoService;
         private readonly IPdfService _pdfService;
+        private readonly ApplicationDbContext _context;
 
-        public InventarioController(IInventarioService inventarioService, IMovimientoService movimientoService, IPdfService pdfService)
+        public InventarioController(IInventarioService inventarioService, IMovimientoService movimientoService, IPdfService pdfService, ApplicationDbContext context)
         {
             _inventarioService = inventarioService;
             _movimientoService = movimientoService;
             _pdfService = pdfService;
+            _context = context;
         }
 
         // GET: Inventario/Listar
         // GET: Inventario/Listar
-        public async Task<IActionResult> Listar(string? busqueda = null, int pagina = 1, int cantidadPorPagina = 10)
+        public async Task<IActionResult> Listar(string? busqueda = null, int pagina = 1, int cantidadPorPagina = 10, bool mostrarInactivos = false)
         {
-            var inventarios = await _inventarioService.ListarTodosAsync();
+            var inventarios = await _inventarioService.ListarTodosAsync(mostrarInactivos);
             
             // Filtrado
             if (!string.IsNullOrEmpty(busqueda))
@@ -59,7 +64,8 @@ namespace VentaFacil.web.Controllers
                 TotalRegistros = totalRegistros,
                 Busqueda = busqueda,
                 TotalInsumos = inventarios.Count,
-                StockBajo = inventarios.Count(i => i.StockActual <= i.StockMinimo)
+                StockBajo = inventarios.Count(i => i.StockMinimo > 0 && i.StockActual <= i.StockMinimo),
+                MostrarInactivos = mostrarInactivos
             };
 
             return View(response);
@@ -94,7 +100,8 @@ namespace VentaFacil.web.Controllers
                 return View(dto);
             }
 
-            var result = await _inventarioService.RegistrarAsync(dto);
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId") ?? 1;
+            var result = await _inventarioService.RegistrarAsync(dto, usuarioId);
             if (result)
             {
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -214,7 +221,77 @@ namespace VentaFacil.web.Controllers
             return RedirectToAction("Listar");
         }
 
-        // GET: Inventario/RegistrarEntrada
+        // POST: Inventario/HabilitarInsumo
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HabilitarInsumo(int id, string? busqueda, int pagina = 1)
+        {
+            var result = await _inventarioService.HabilitarAsync(id);
+            if (result)
+                TempData["Success"] = "Insumo habilitado correctamente.";
+            else
+                TempData["Error"] = "No se pudo habilitar el insumo.";
+
+            return RedirectToAction(nameof(Listar), new { busqueda, pagina, mostrarInactivos = true });
+        }
+
+        // GET: Inventario/ConfiguracionAlertas — carga el partial modal vía AJAX
+        [HttpGet]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> ConfiguracionAlertas()
+        {
+            var config = await _context.ConfiguracionNotificacion.FirstOrDefaultAsync()
+                         ?? new ConfiguracionNotificacion();
+            return PartialView("_ConfigAlertasModal", config);
+        }
+
+        // POST: Inventario/GuardarConfiguracionAlertas
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GuardarConfiguracionAlertas(ConfiguracionNotificacion model)
+        {
+            try
+            {
+                // Si el toggle está apagado, limpiar el correo
+                if (!model.AlertaStockEmail)
+                    model.CorreoDestino = null;
+
+                // Validar que haya correo si el toggle está activo
+                if (model.AlertaStockEmail && string.IsNullOrWhiteSpace(model.CorreoDestino))
+                {
+                    TempData["Error"] = "Debe ingresar un correo destino para activar las alertas por email.";
+                    return RedirectToAction(nameof(Listar));
+                }
+
+                var existing = await _context.ConfiguracionNotificacion.FirstOrDefaultAsync();
+                if (existing == null)
+                {
+                    model.FechaActualizacion = DateTime.Now;
+                    _context.ConfiguracionNotificacion.Add(model);
+                }
+                else
+                {
+                    existing.AlertaStockEmail  = model.AlertaStockEmail;
+                    existing.CorreoDestino     = model.CorreoDestino;
+                    existing.FechaActualizacion = DateTime.Now;
+                    _context.ConfiguracionNotificacion.Update(existing);
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["Success"] = model.AlertaStockEmail
+                    ? $"Alertas de stock por email activadas. Se enviará a: {model.CorreoDestino}"
+                    : "Alertas de stock por email desactivadas.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error al guardar la configuración: " + ex.Message;
+            }
+
+            return RedirectToAction(nameof(Listar));
+        }
+
+
         public async Task<IActionResult> RegistrarEntrada()
         {
             var inventarios = await _inventarioService.ListarTodosAsync();
@@ -284,6 +361,11 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrarSalida(VentaFacil.web.Models.ViewModel.RegistrarEntradaViewModel viewModel)
         {
+            if (string.IsNullOrWhiteSpace(viewModel.Observaciones))
+            {
+                ModelState.AddModelError("Observaciones", "El motivo de salida es obligatorio");
+            }
+
             // Usamos el mismo ViewModel ya que los campos son idénticos (Id, Cantidad, Observaciones)
             if (!ModelState.IsValid)
             {
@@ -292,6 +374,24 @@ namespace VentaFacil.web.Controllers
                      return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
                 }
                 return RedirectToAction(nameof(Listar)); // Fallback simple para salida si no es ajax
+            }
+
+            var inventario = await _inventarioService.GetByIdAsync(viewModel.IdInventario);
+            if (inventario == null)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, errors = new[] { "El insumo no existe." } });
+                return RedirectToAction(nameof(Listar));
+            }
+
+            if (inventario.StockActual < viewModel.Cantidad)
+            {
+                var errorMsg = $"Inventario insuficiente (Disponible: {inventario.StockActual})";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, errors = new[] { errorMsg } });
+                
+                TempData["Error"] = errorMsg;
+                return RedirectToAction(nameof(Listar));
             }
 
             var usuarioId = HttpContext.Session.GetInt32("UsuarioId") ?? 1; 
@@ -309,10 +409,10 @@ namespace VentaFacil.web.Controllers
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                 return Json(new { success = false, errors = new[] { "No se pudo registrar la salida. Verifique si hay stock suficiente." } });
+                 return Json(new { success = false, errors = new[] { "No se pudo registrar la salida." } });
             }
 
-            TempData["Error"] = "No se pudo registrar la salida (Stock insuficiente).";
+            TempData["Error"] = "No se pudo registrar la salida.";
             return RedirectToAction(nameof(Listar));
         }
 
@@ -323,7 +423,7 @@ namespace VentaFacil.web.Controllers
             
             if (!string.IsNullOrEmpty(tipoMovimiento))
             {
-                movimientos = movimientos.Where(m => m.Tipo_Movimiento.Contains(tipoMovimiento)).ToList();
+                movimientos = movimientos.Where(m => m.Tipo_Movimiento != null && m.Tipo_Movimiento.Contains(tipoMovimiento)).ToList();
             }
 
             ViewBag.IdInventario = idInventario;
@@ -331,7 +431,7 @@ namespace VentaFacil.web.Controllers
             ViewBag.FechaFin = fechaFin;
             ViewBag.TipoMovimiento = tipoMovimiento;
             
-            return View(movimientos);
+            return PartialView("_HistorialMovimientosModal", movimientos);
         }
 
         public async Task<IActionResult> ExportarHistorialPdf(int idInventario, DateTime? fechaInicio, DateTime? fechaFin, string? tipoMovimiento)
@@ -339,7 +439,7 @@ namespace VentaFacil.web.Controllers
             var movimientos = await _movimientoService.ListarMovimientosAsync(idInventario, fechaInicio, fechaFin);
             if (!string.IsNullOrEmpty(tipoMovimiento))
             {
-                movimientos = movimientos.Where(m => m.Tipo_Movimiento.Contains(tipoMovimiento)).ToList();
+                movimientos = movimientos.Where(m => m.Tipo_Movimiento != null && m.Tipo_Movimiento.Contains(tipoMovimiento)).ToList();
             }
 
             var inventario = await _inventarioService.GetByIdAsync(idInventario);
@@ -354,7 +454,7 @@ namespace VentaFacil.web.Controllers
             var movimientos = await _movimientoService.ListarMovimientosAsync(idInventario, fechaInicio, fechaFin);
             if (!string.IsNullOrEmpty(tipoMovimiento))
             {
-                movimientos = movimientos.Where(m => m.Tipo_Movimiento.Contains(tipoMovimiento)).ToList();
+                movimientos = movimientos.Where(m => m.Tipo_Movimiento != null && m.Tipo_Movimiento.Contains(tipoMovimiento)).ToList();
             }
 
             var builder = new System.Text.StringBuilder();
@@ -362,7 +462,7 @@ namespace VentaFacil.web.Controllers
 
             foreach (var mov in movimientos)
             {
-                builder.AppendLine($"{mov.Id_Movimiento},{mov.Tipo_Movimiento},{mov.Cantidad},{mov.Fecha},{mov.Id_Usuario}");
+                builder.AppendLine($"{mov.Id_Movimiento},{mov.Tipo_Movimiento},{mov.Cantidad},{mov.Fecha},{mov.Nombre_Usuario}");
             }
 
             var content = builder.ToString();
@@ -375,37 +475,34 @@ namespace VentaFacil.web.Controllers
             return File(result, "text/csv", $"Historial_{idInventario}_{DateTime.Now:yyyyMMdd}.csv");
         }
 
-        // GET: Inventario/CorregirMovimiento/5
-        [Authorize(Roles = "Administrador,EncargadoInventario")]
-        public async Task<IActionResult> CorregirMovimiento(int id)
-        {
-            
-            var movimientos = await _movimientoService.ListarMovimientosAsync(null, null, null);
-            var mov = movimientos.FirstOrDefault(m => m.Id_Movimiento == id);
-            
-            if (mov == null) return NotFound();
-
-            return View(mov);
-        }
-
-        // POST: Inventario/CorregirMovimiento
+        // POST: Inventario/AnularMovimiento
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador,EncargadoInventario")]
-        public async Task<IActionResult> CorregirMovimiento(int Id_Movimiento, int Cantidad, string Tipo_Movimiento, string Motivo)
+        public async Task<IActionResult> AnularMovimiento(int Id_Movimiento, string Motivo)
         {
             var usuarioId = HttpContext.Session.GetInt32("UsuarioId") ?? 0;
-            if (usuarioId == 0) return RedirectToAction("InicioSesion", "Login");
+            if (usuarioId == 0) return Json(new { success = false, message = "Sesión expirada" });
 
-            var result = await _movimientoService.CorregirMovimientoAsync(Id_Movimiento, Cantidad, Tipo_Movimiento, Motivo, usuarioId);
+            if (string.IsNullOrWhiteSpace(Motivo)) return Json(new { success = false, message = "El motivo de anulación es obligatorio." });
+
+            var result = await _movimientoService.AnularMovimientoAsync(Id_Movimiento, Motivo, usuarioId);
 
             if (result)
             {
-                TempData["Success"] = "Movimiento corregido correctamente.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = "Movimiento anulado correctamente." });
+                }
+                TempData["Success"] = "Movimiento anulado correctamente.";
                 return RedirectToAction(nameof(Listar));
             }
 
-            TempData["Error"] = "No se pudo corregir el movimiento.";
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = false, message = "No se pudo anular el movimiento. Compruebe si hay suficiente stock para la anulación." });
+            }
+            TempData["Error"] = "No se pudo anular el movimiento.";
             return RedirectToAction(nameof(Listar));
         }
 

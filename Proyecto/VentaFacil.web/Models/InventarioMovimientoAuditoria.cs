@@ -18,23 +18,23 @@ namespace VentaFacil.web.Models
         
         public int CantidadNueva { get; set; }
         
-        public string TipoMovimientoAnterior { get; set; }
+        public string? TipoMovimientoAnterior { get; set; }
         
-        public string TipoMovimientoNuevo { get; set; }
+        public string? TipoMovimientoNuevo { get; set; }
         
-        public string MotivoCambio { get; set; }
+        public string? MotivoCambio { get; set; }
         
         public DateTime FechaCambio { get; set; } = DateTime.Now;
         
         public int Id_UsuarioResponsable { get; set; }
 
         [ForeignKey("Id_Movimiento")]
-        public virtual InventarioMovimiento Movimiento { get; set; }
+        public virtual InventarioMovimiento? Movimiento { get; set; }
 
         [ForeignKey("Id_Inventario")]
-        public virtual Inventario Inventario { get; set; }
+        public virtual Inventario? Inventario { get; set; }
 
         [ForeignKey("Id_UsuarioResponsable")]
-        public virtual Usuario UsuarioResponsable { get; set; }
+        public virtual Usuario? UsuarioResponsable { get; set; }
     }
 }

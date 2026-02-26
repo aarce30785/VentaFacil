@@ -208,9 +208,9 @@ namespace VentaFacil.web.Services.PDF
                 {
                     table.AddCell(new Paragraph(item.Id_Movimiento.ToString()).SetFont(fontRegular));
                     table.AddCell(new Paragraph(item.Fecha.ToString("dd/MM/yyyy HH:mm")).SetFont(fontRegular));
-                    table.AddCell(new Paragraph(item.Tipo_Movimiento).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.Tipo_Movimiento ?? "—").SetFont(fontRegular));
                     table.AddCell(new Paragraph(item.Cantidad.ToString()).SetFont(fontRegular));
-                    table.AddCell(new Paragraph(item.Id_Usuario.ToString()).SetFont(fontRegular));
+                    table.AddCell(new Paragraph(item.Nombre_Usuario ?? item.Id_Usuario.ToString()).SetFont(fontRegular));
                 }
 
                 document.Add(table);

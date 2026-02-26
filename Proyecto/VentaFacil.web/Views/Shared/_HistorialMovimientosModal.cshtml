@@ -1,0 +1,140 @@
+@model IEnumerable<VentaFacil.web.Models.Dto.InventarioMovimientoDto>
+
+<div class="modal fade" id="historialModal" tabindex="-1" aria-labelledby="historialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="historialModalLabel">
+                    <i class="lni lni-agenda text-primary me-2"></i> Kardex de Movimientos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body py-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <form id="filtroHistorialForm" class="d-flex gap-2 align-items-center flex-wrap" onsubmit="event.preventDefault(); aplicarFiltroHistorial();">
+                        <input type="hidden" id="historialIdInventario" name="idInventario" value="@ViewBag.IdInventario" />
+                        
+                        <input type="date" id="filtroFechaInicio" name="fechaInicio" class="form-control form-control-sm rounded-pill" style="width: 130px;" 
+                               value="@(ViewBag.FechaInicio != null ? ((DateTime)ViewBag.FechaInicio).ToString("yyyy-MM-dd") : "")" title="Fecha Inicio">
+                        
+                        <input type="date" id="filtroFechaFin" name="fechaFin" class="form-control form-control-sm rounded-pill" style="width: 130px;" 
+                               value="@(ViewBag.FechaFin != null ? ((DateTime)ViewBag.FechaFin).ToString("yyyy-MM-dd") : "")" title="Fecha Fin">
+                        
+                        <select id="filtroTipoMovimiento" name="tipoMovimiento" class="form-select form-select-sm rounded-pill" style="width: 120px;">
+                            <option value="">Todos</option>
+                            <option value="Entrada" selected="@(ViewBag.TipoMovimiento == "Entrada")">Entrada</option>
+                            <option value="Salida" selected="@(ViewBag.TipoMovimiento == "Salida")">Salida</option>
+                            <option value="Anulado" selected="@(ViewBag.TipoMovimiento == "Anulado")">Anulado</option>
+                        </select>
+                        
+                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3" title="Filtrar">
+                            <i class="lni lni-funnel"></i>
+                        </button>
+                    </form>
+
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("ExportarHistorialPdf", "Inventario", new { idInventario = ViewBag.IdInventario, fechaInicio = ViewBag.FechaInicio, fechaFin = ViewBag.FechaFin, tipoMovimiento = ViewBag.TipoMovimiento })" 
+                           class="btn btn-sm btn-danger rounded-pill px-3" title="Exportar PDF" target="_blank" id="btnExportPdf">
+                            <i class="lni lni-empty-file me-1"></i> PDF
+                        </a>
+                        
+                        <a href="@Url.Action("ExportarHistorialExcel", "Inventario", new { idInventario = ViewBag.IdInventario, fechaInicio = ViewBag.FechaInicio, fechaFin = ViewBag.FechaFin, tipoMovimiento = ViewBag.TipoMovimiento })" 
+                           class="btn btn-sm btn-success rounded-pill px-3" title="Exportar Excel" target="_blank" id="btnExportExcel">
+                            <i class="lni lni-grid-alt me-1"></i> Excel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-container animate-fade-in border rounded-3 p-3 bg-light">
+                    <div class="table-responsive">
+                        <table class="table premium-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th><h6>Fecha</h6></th>
+                                    <th><h6>Tipo de Movimiento</h6></th>
+                                    <th><h6>Cantidad</h6></th>
+                                    <th><h6>Usuario</h6></th>
+                                    <th class="text-center"><h6>Acciones</h6></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        var tipo = item.Tipo_Movimiento ?? "";
+                                        string movimientoClase = (tipo.Contains("Entrada") || tipo == "Inventario Inicial" || tipo.Contains("Reversa por Anulación (Entrada)"))
+                                                                  ? "success-btn"
+                                                                  : tipo == "Anulado" ? "secondary-btn"
+                                                                  : tipo.Contains("Reversa") ? "info-btn"
+                                                                  : "danger-btn";
+
+                                        <tr>
+                                            <td class="min-width">
+                                                <span class="text-sm fw-bold">@item.Fecha.ToString("dd/MM/yyyy HH:mm")</span>
+                                            </td>
+                                            <td class="min-width">
+                                                <span class="status-btn @movimientoClase">@item.Tipo_Movimiento</span>
+                                            </td>
+                                            <td class="min-width">
+                                                <span class="status-btn warning-btn">@item.Cantidad</span>
+                                            </td>
+                                            <td class="min-width">
+                                                <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                                                    <span class="text-primary fw-bold" style="font-size: 0.7rem;">@(string.IsNullOrEmpty(item.Nombre_Usuario) ? "U" : item.Nombre_Usuario.Substring(0, 1).ToUpper())</span>
+                                                </div>
+                                                <span class="text-sm">@item.Nombre_Usuario</span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if ((User.IsInRole("Administrador") || User.IsInRole("EncargadoInventario")) && tipo != "Anulado" && !tipo.Contains("Reversa"))
+                                                {
+                                                    <button type="button" class="text-danger btn btn-link p-0" title="Anular movimiento"
+                                                            onclick="anularMovimiento(@item.Id_Movimiento)">
+                                                        <i class="lni lni-close text-danger"></i> Anular
+                                                    </button>
+                                                }
+                                                else if (tipo == "Anulado")
+                                                {
+                                                    <span class="badge bg-secondary text-white"><i class="lni lni-ban"></i> Anulado</span>
+                                                }
+                                                else if (tipo.Contains("Reversa"))
+                                                {
+                                                    <span class="badge bg-info text-white"><i class="lni lni-arrows-horizontal"></i> Reversa</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <div class="empty-state">
+                                                <div class="mb-3">
+                                                    <div class="avatar-lg bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 64px; height: 64px;">
+                                                        <i class="lni lni-agenda fs-2 text-muted"></i>
+                                                    </div>
+                                                </div>
+                                                <h6 class="fw-bold text-muted">Historial vacío</h6>
+                                                <p class="text-muted text-sm mb-0">No se encontraron movimientos registrados.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

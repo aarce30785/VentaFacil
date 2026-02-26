@@ -62,6 +62,13 @@
             <!-- Botones de Acción -->
             <div class="col-md-5 text-end">
                 <div class="d-flex justify-content-end align-items-center gap-2">
+                    @if (User.IsInRole("Administrador"))
+                    {
+                        <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-3"
+                                onclick="abrirConfigAlertas()" title="Configurar alertas de stock">
+                            <i class="lni lni-alarm me-1"></i> Alertas
+                        </button>
+                    }
                      <button type="button" class="main-btn success-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#entradaModal">
                         <i class="lni lni-download me-2"></i> Entrada
                     </button>
@@ -74,6 +81,19 @@
             <!-- Campos ocultos -->
             <input type="hidden" name="pagina" value="1" />
             <input type="hidden" name="cantidadPorPagina" value="10" />
+
+            <!-- Toggle: Mostrar inhabilitados -->
+            <div class="col-12 mt-2">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="mostrarInactivos" value="true"
+                           id="mostrarInactivosCheck"
+                           @(Model.MostrarInactivos ? "checked" : "")
+                           onchange="document.getElementById('filtrosInventarioForm').submit();">
+                    <label class="form-check-label text-sm text-muted" for="mostrarInactivosCheck">
+                        Mostrar insumos inhabilitados
+                    </label>
+                </div>
+            </div>
         </form>
     </div>
 
@@ -148,7 +168,8 @@
                     {
                         foreach (var item in Model.Inventarios)
                         {
-                            var isLowStock = item.StockActual <= item.StockMinimo;
+                            var isLowStock = item.StockMinimo > 0 && item.StockActual <= item.StockMinimo;
+                            var sinStockMinimo = item.StockMinimo <= 0;
                             <tr>
                                 <td class="min-width">
                                     <div class="lead">
@@ -159,6 +180,10 @@
                                         </div>
                                         <div class="lead-text">
                                             <p>@item.Nombre</p>
+                                            @if (!item.Estado)
+                                            {
+                                                <span class="badge bg-danger" style="font-size:0.7rem;"><i class="lni lni-ban me-1"></i>Inhabilitado</span>
+                                            }
                                         </div>
                                     </div>
                                 </td>
@@ -166,13 +191,19 @@
                                     <span class="status-btn active-btn">@item.UnidadMedida</span>
                                 </td>
                                 <td class="min-width">
-                                    <span class="status-btn @(isLowStock ? "inactive-btn" : "success-btn")">@item.StockActual</span>
+                                    <span class="status-btn @(isLowStock ? "inactive-btn" : (sinStockMinimo ? "info-btn" : "success-btn"))">@item.StockActual</span>
                                 </td>
                                 <td class="min-width">
                                     <span class="status-btn info-btn">@item.StockMinimo</span>
                                 </td>
                                 <td class="min-width text-center">
-                                    @if (isLowStock)
+                                    @if (sinStockMinimo)
+                                    {
+                                        <span class="status-btn warning-btn">
+                                            <i class="lni lni-warning me-1"></i> Sin mínimo config.
+                                        </span>
+                                    }
+                                    else if (isLowStock)
                                     {
                                         <span class="status-btn inactive-btn">
                                             <i class="lni lni-warning me-1"></i> Bajo Stock
@@ -193,30 +224,40 @@
                                             <i class="lni lni-pencil"></i>
                                         </button>
 
-                                        <!-- Entrada Rápida -->
-                                        <button type="button" class="text-success btn btn-link p-0" title="Registrar Entrada"
-                                                data-bs-toggle="modal" data-bs-target="#entradaModal"
-                                                data-id="@item.Id_Inventario">
-                                            <i class="lni lni-plus"></i>
-                                        </button>
+                                        @if (item.Estado)
+                                        {
+                                            <!-- Entrada Rápida -->
+                                            <button type="button" class="text-success btn btn-link p-0" title="Registrar Entrada"
+                                                    data-bs-toggle="modal" data-bs-target="#entradaModal"
+                                                    data-id="@item.Id_Inventario">
+                                                <i class="lni lni-plus"></i>
+                                            </button>
+                                            <!-- Salida Rápida -->
+                                            <button type="button" class="text-danger btn btn-link p-0" title="Registrar Salida"
+                                                    data-bs-toggle="modal" data-bs-target="#salidaModal"
+                                                    data-id="@item.Id_Inventario">
+                                                <i class="lni lni-minus"></i>
+                                            </button>
+                                            <!-- Inhabilitar -->
+                                            <button type="button" class="text-danger btn btn-link p-0" title="Inhabilitar"
+                                                    onclick="confirmarEliminacionInventario(@item.Id_Inventario, '@Html.Raw(item.Nombre.Replace("'", "\\'"))')">
+                                                <i class="lni lni-trash-can"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <!-- Habilitar -->
+                                            <button type="button" class="text-success btn btn-link p-0" title="Habilitar"
+                                                    onclick="confirmarHabilitarInsumo(@item.Id_Inventario, '@Html.Raw(item.Nombre.Replace("'", "\\'"))')">
+                                                <i class="lni lni-checkmark-circle"></i>
+                                            </button>
+                                        }
+                                         <button type="button" class="text-info btn btn-link p-0" title="Historial"
+                                                 onclick="abrirModalHistorial(@item.Id_Inventario)">
+                                             <i class="lni lni-agenda"></i>
+                                         </button>
 
-                                        <!-- Salida Rápida -->
-                                        <button type="button" class="text-danger btn btn-link p-0" title="Registrar Salida"
-                                                data-bs-toggle="modal" data-bs-target="#salidaModal"
-                                                data-id="@item.Id_Inventario">
-                                            <i class="lni lni-minus"></i>
-                                        </button>
 
-                                        <!-- Eliminar -->
-                                        <button type="button" class="text-danger btn btn-link p-0" title="Eliminar"
-                                                onclick="confirmarEliminacionInventario(@item.Id_Inventario, '@item.Nombre.Replace("'", "\\'")')">
-                                            <i class="lni lni-trash-can"></i>
-                                        </button>
-                                        
-                                         <a href="@Url.Action("HistorialMovimientos", new { idInventario = item.Id_Inventario })"
-                                           class="text-info" title="Historial">
-                                            <i class="lni lni-agenda"></i>
-                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -295,11 +336,50 @@
 
 <!-- Container for AJAX Modals -->
 <div id="modalContainerInventario"></div>
+<div id="historialModalContainer"></div>
+
+<!-- Modal de Anulación de Movimiento -->
+<div class="modal fade" id="anulacionModal" tabindex="-1" aria-labelledby="anulacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="anulacionModalLabel">
+                    <i class="lni lni-ban text-danger me-2"></i>Anular Movimiento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="text-muted mb-3">El stock volverá a su estado anterior. Esta acción no se puede deshacer.</p>
+                <input type="hidden" id="anulacion_IdMovimiento" />
+                <div class="form-group">
+                    <label for="anulacion_Motivo" class="form-label fw-bold text-sm text-muted">Motivo de la anulación <span class="text-danger">*</span></label>
+                    <textarea id="anulacion_Motivo" class="form-control rounded-3 bg-light border-0 px-3" rows="3"
+                              placeholder="Describa el motivo de la anulación..."></textarea>
+                    <div id="anulacion_Error" class="text-danger text-sm mt-1 d-none">El motivo es obligatorio.</div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" id="btnConfirmarAnulacion">
+                    <i class="lni lni-ban me-1"></i> Confirmar Anulación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Formulario para eliminación (oculto) -->
 <form id="deleteForm" method="post" action="@Url.Action("Eliminar")" style="display:none;">
     @Html.AntiForgeryToken()
     <input type="hidden" name="id" id="deleteId" />
+</form>
+
+<!-- Formulario para rehabilitar (oculto) -->
+<form id="habilitarForm" method="post" action="@Url.Action("HabilitarInsumo")" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="habilitarId" />
+    <input type="hidden" name="busqueda" value="@Model.Busqueda" />
+    <input type="hidden" name="pagina" value="@Model.PaginaActual" />
 </form>
 
 <!-- Entrada Modal (Legacy/Specific) -->
@@ -312,13 +392,15 @@
             </div>
             <div class="modal-body py-4">
                 <form id="entradaForm" asp-action="RegistrarEntrada" method="post">
+                    @Html.AntiForgeryToken()
                     <div id="entradaErrors" class="alert alert-danger d-none rounded-3 shadow-sm border-0"></div>
                     
                     <div class="form-group mb-3">
                         <label for="Entrada_IdInventario" class="form-label fw-bold text-sm text-muted">Insumo</label>
-                        <select id="Entrada_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))">
+                        <select id="Entrada_IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))" disabled>
                             <option value="">Seleccione Insumo</option>
                         </select>
+                        <input type="hidden" id="Entrada_IdInventario_Hidden" name="IdInventario" />
                          <small class="text-muted">Nota: Solo se muestran los insumos de la página actual en este select.</small>
                     </div>
 
@@ -351,13 +433,15 @@
             </div>
             <div class="modal-body py-4">
                 <form id="salidaForm" asp-action="RegistrarSalida" method="post">
+                    @Html.AntiForgeryToken()
                     <div id="salidaErrors" class="alert alert-danger d-none rounded-3 shadow-sm border-0"></div>
                     
                     <div class="form-group mb-3">
                         <label for="Salida_IdInventario" class="form-label fw-bold text-sm text-muted">Insumo</label>
-                        <select id="Salida_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))">
+                        <select id="Salida_IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))" disabled>
                             <option value="">Seleccione Insumo</option>
                         </select>
+                        <input type="hidden" id="Salida_IdInventario_Hidden" name="IdInventario" />
                          <small class="text-muted">Nota: Solo se muestran los insumos de la página actual en este select.</small>
                     </div>
 
@@ -368,7 +452,7 @@
 
                     <div class="form-group">
                         <label for="Salida_Observaciones" class="form-label fw-bold text-sm text-muted">Observaciones</label>
-                        <textarea id="Salida_Observaciones" name="Observaciones" class="form-control rounded-3 bg-light border-0 px-3" rows="2" placeholder="Motivo de la salida"></textarea>
+                        <textarea id="Salida_Observaciones" name="Observaciones" class="form-control rounded-3 bg-light border-0 px-3" rows="2" placeholder="Motivo de la salida" required></textarea>
                     </div>
                 </form>
             </div>
@@ -551,18 +635,37 @@
 
         window.confirmarEliminacionInventario = function(id, name) {
             Swal.fire({
-                title: 'Eliminar Insumo',
-                html: `¿Eliminar <strong>${name}</strong>?`,
+                title: 'Inhabilitar Insumo',
+                html: `¿Inhabilitar <strong>${name}</strong>? Podrá reactivarlo luego.`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                confirmButtonText: 'Sí, eliminar'
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: 'Sí, inhabilitar'
             }).then((result) => {
                 if(result.isConfirmed) {
-                    Swal.fire({ title: 'Eliminando...', didOpen: () => Swal.showLoading() });
+                    Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading() });
                     const form = document.getElementById('deleteForm');
                     document.getElementById('deleteId').value = id;
                     form.submit();
+                }
+            });
+        };
+
+        window.confirmarHabilitarInsumo = function(id, name) {
+            Swal.fire({
+                title: 'Habilitar Insumo',
+                html: `¿Desea habilitar nuevamente <strong>${name}</strong>?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#365CF5',
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: 'Sí, habilitar'
+            }).then((result) => {
+                if(result.isConfirmed) {
+                    Swal.fire({ title: 'Habilitando...', didOpen: () => Swal.showLoading() });
+                    document.getElementById('habilitarId').value = id;
+                    document.getElementById('habilitarForm').submit();
                 }
             });
         };
@@ -572,6 +675,32 @@
         // ==========================================
         function submitMovimientoForm(formId) {
             var form = document.getElementById(formId);
+            
+            // Custom validation with SweetAlert2 instead of HTML5 browser validation
+            let isValid = true;
+            let errorMessage = '';
+
+            const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    const label = form.querySelector(`label[for="${input.id}"]`);
+                    const fieldName = label ? label.innerText : 'este campo';
+                    errorMessage += `<li>El campo <b>${fieldName}</b> es obligatorio.</li>`;
+                }
+            });
+
+            if (!isValid) {
+                Swal.fire({
+                    title: 'Campos Incompletos',
+                    html: `<ul class="text-start mb-0">${errorMessage}</ul>`,
+                    icon: 'warning',
+                    confirmButtonColor: '#365CF5',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
             var formData = new FormData(form);
             var errorDiv = document.getElementById(formId.replace('Form', 'Errors'));
             
@@ -600,18 +729,21 @@
                 if (data.success) {
                     location.reload();
                 } else {
-                    if(errorDiv) {
-                        errorDiv.classList.remove('d-none');
-                        if (data.errors) {
-                            data.errors.forEach(error => {
-                                errorDiv.innerHTML += `<p class="mb-0">${error}</p>`;
-                            });
-                        } else {
-                            errorDiv.innerHTML = '<p class="mb-0">Ocurrió un error inesperado.</p>';
-                        }
+                    if (data.errors && data.errors.length > 0) {
+                        let errorHtml = '<ul class="text-start mb-0">';
+                        data.errors.forEach(e => errorHtml += `<li>${e}</li>`);
+                        errorHtml += '</ul>';
+                        
+                        Swal.fire({
+                            title: 'No se pudo completar',
+                            html: errorHtml,
+                            icon: 'error',
+                            confirmButtonColor: '#365CF5',
+                            confirmButtonText: 'Entendido'
+                        });
                     } else {
                          Toastify({
-                            text: 'Error: ' + (data.errors ? data.errors.join(', ') : 'Ocurrió un error inesperado.'),
+                            text: 'Ocurrió un error inesperado al registrar el movimiento.',
                             style: { background: "#ff5f6d" }
                         }).showToast();
                     }
@@ -621,12 +753,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                if(errorDiv) {
-                    errorDiv.classList.remove('d-none');
-                    errorDiv.innerHTML = '<p class="mb-0">Ocurrió un error de conexión.</p>';
-                } else {
-                    Toastify({ text: 'Ocurrió un error de conexión.', style: { background: "#ff5f6d" } }).showToast();
-                }
+                Toastify({ text: 'Ocurrió un error de conexión.', style: { background: "#ff5f6d" } }).showToast();
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             });
@@ -639,7 +766,9 @@
             var id = button.getAttribute('data-id');
             if (id) {
                 var select = this.querySelector('#Entrada_IdInventario');
+                var hiddenInput = this.querySelector('#Entrada_IdInventario_Hidden');
                 if (select) select.value = id;
+                if (hiddenInput) hiddenInput.value = id;
             }
         });
 
@@ -650,8 +779,166 @@
             var id = button.getAttribute('data-id');
             if (id) {
                 var select = this.querySelector('#Salida_IdInventario');
+                var hiddenInput = this.querySelector('#Salida_IdInventario_Hidden');
                 if (select) select.value = id;
+                if (hiddenInput) hiddenInput.value = id;
             }
         });
+
+        // ==========================================
+        // Lógica para Kardex / Historial Modal
+        // ==========================================
+        window.abrirModalHistorial = function(idInventario) {
+            Swal.fire({ title: 'Cargando Historial...', didOpen: () => Swal.showLoading() });
+            fetch(`@Url.Action("HistorialMovimientos", "Inventario")?idInventario=${idInventario}`)
+                .then(response => response.text())
+                .then(html => {
+                    Swal.close();
+                    document.getElementById('historialModalContainer').innerHTML = html;
+                    var modal = new bootstrap.Modal(document.getElementById('historialModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    Swal.close();
+                    Toastify({ text: "Error al cargar historial", style: { background: "#ff5f6d" } }).showToast();
+                });
+        };
+
+        window.aplicarFiltroHistorial = function() {
+            var idInventario = document.getElementById('historialIdInventario').value;
+            var fechaInicio = document.getElementById('filtroFechaInicio').value;
+            var fechaFin = document.getElementById('filtroFechaFin').value;
+            var tipoMovimiento = document.getElementById('filtroTipoMovimiento').value;
+
+            // Actualizar modal
+            Swal.fire({ title: 'Filtrando...', didOpen: () => Swal.showLoading() });
+            
+            var url = `@Url.Action("HistorialMovimientos", "Inventario")?idInventario=${idInventario}`;
+            if(fechaInicio) url += `&fechaInicio=${fechaInicio}`;
+            if(fechaFin) url += `&fechaFin=${fechaFin}`;
+            if(tipoMovimiento) url += `&tipoMovimiento=${tipoMovimiento}`;
+
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    Swal.close();
+                    // Para no cerrar y hacer parpadear el modal, extraemos solo el contenido
+                    var tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    var newBody = tempDiv.querySelector('.modal-body');
+                    if (newBody) {
+                        document.querySelector('#historialModal .modal-body').innerHTML = newBody.innerHTML;
+                        
+                        // Actualizar URLs de Exportación
+                        document.getElementById('btnExportPdf').href = `@Url.Action("ExportarHistorialPdf", "Inventario")?idInventario=${idInventario}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&tipoMovimiento=${tipoMovimiento}`;
+                        document.getElementById('btnExportExcel').href = `@Url.Action("ExportarHistorialExcel", "Inventario")?idInventario=${idInventario}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&tipoMovimiento=${tipoMovimiento}`;
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    Toastify({ text: "Error al filtrar", style: { background: "#ff5f6d" } }).showToast();
+                });
+        };
+
+        // ==========================================
+        // Modal dedicado para Anulación de Movimiento
+        // Usa getInstance() o crea nueva instancia cada vez para evitar estado inválido
+        // ==========================================
+        var _anulacionConfirmada = false;
+
+        function getAnulacionModal() {
+            var el = document.getElementById('anulacionModal');
+            return bootstrap.Modal.getOrCreateInstance(el);
+        }
+
+        document.getElementById('anulacionModal').addEventListener('show.bs.modal', function() {
+            document.getElementById('anulacion_Motivo').value = '';
+            document.getElementById('anulacion_Error').classList.add('d-none');
+            var btn = document.getElementById('btnConfirmarAnulacion');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="lni lni-ban me-1"></i> Confirmar Anulación';
+        });
+
+        document.getElementById('anulacionModal').addEventListener('shown.bs.modal', function() {
+            document.getElementById('anulacion_Motivo').focus();
+        });
+
+        document.getElementById('btnConfirmarAnulacion').addEventListener('click', function() {
+            var motivo = document.getElementById('anulacion_Motivo').value.trim();
+            var idMovimiento = document.getElementById('anulacion_IdMovimiento').value;
+
+            if (!motivo) {
+                document.getElementById('anulacion_Error').classList.remove('d-none');
+                document.getElementById('anulacion_Motivo').focus();
+                return;
+            }
+            document.getElementById('anulacion_Error').classList.add('d-none');
+
+            var btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Anulando...';
+
+            var formData = new FormData();
+            formData.append('Id_Movimiento', idMovimiento);
+            formData.append('Motivo', motivo);
+            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (token) formData.append('__RequestVerificationToken', token);
+
+            fetch('@Url.Action("AnularMovimiento", "Inventario")', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                _anulacionConfirmada = true;
+                getAnulacionModal().hide();
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Anulado!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#365CF5'
+                    }).then(() => location.reload());
+                } else {
+                    _anulacionConfirmada = false;
+                    Swal.fire('Error', data.message || 'Error desconocido', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="lni lni-ban me-1"></i> Confirmar Anulación';
+                }
+            })
+            .catch(err => {
+                _anulacionConfirmada = false;
+                getAnulacionModal().hide();
+                Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+            });
+        });
+
+        window.anularMovimiento = function(idMovimiento) {
+            document.getElementById('anulacion_IdMovimiento').value = idMovimiento;
+            _anulacionConfirmada = false;
+
+            var histEl = document.getElementById('historialModal');
+            var histModal = histEl ? bootstrap.Modal.getInstance(histEl) : null;
+
+            // Al cerrar anulación sin éxito, reabrir el historial
+            document.getElementById('anulacionModal').addEventListener('hidden.bs.modal', function onAnulHidden() {
+                document.getElementById('anulacionModal').removeEventListener('hidden.bs.modal', onAnulHidden);
+                if (!_anulacionConfirmada && histEl && document.body.contains(histEl)) {
+                    bootstrap.Modal.getOrCreateInstance(histEl).show();
+                }
+            });
+
+            if (histModal) {
+                // Cerramos historial y esperamos que termine para abrir anulación
+                histEl.addEventListener('hidden.bs.modal', function onHistHidden() {
+                    histEl.removeEventListener('hidden.bs.modal', onHistHidden);
+                    getAnulacionModal().show();
+                });
+                histModal.hide();
+            } else {
+                getAnulacionModal().show();
+            }
+        };
     </script>
 }

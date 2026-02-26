@@ -112,7 +112,7 @@ namespace VentaFacil.web.Data
                 new { Nombre = "Pizza Margarita", Descripcion = "Pizza con salsa de tomate, queso mozzarella y albahaca.", Precio = 4500m, Imagen = "", StockMinimo = 8, Estado = true, Categoria = "Comida" },
                 new { Nombre = "Refresco Natural", Descripcion = "Refresco de frutas naturales.", Precio = 1200m, Imagen = "", StockMinimo = 20, Estado = true, Categoria = "Bebida" },
                 new { Nombre = "Café Americano", Descripcion = "Café negro tradicional.", Precio = 1000m, Imagen = "", StockMinimo = 15, Estado = true, Categoria = "Bebida" },
-                new { Nombre = "Postre Brownie", Descripcion = "Brownie de chocolate con nueces.", Precio = 2000m, Imagen = "", StockMinimo = 5, Estado = true, Categoria = "Otros" }
+                new { Nombre = "Postre Brownie", Descripcion = "Brownie de chocolate con nueces.", Precio = 2000m, Imagen = "", StockMinimo = 5,  Estado = true, Categoria = "Otros" }
             };
             foreach (var prod in productosDemo)
             {

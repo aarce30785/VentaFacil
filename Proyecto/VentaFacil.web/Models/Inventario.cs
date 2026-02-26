@@ -23,5 +23,7 @@ namespace VentaFacil.web.Models
 
         [Required]
         public UnidadMedida UnidadMedida { get; set; }
+
+        public bool Estado { get; set; } = true;
     }
 }

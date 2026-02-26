@@ -88,6 +88,7 @@ CREATE TABLE Inventario (
     StockActual INT NOT NULL,
     StockMinimo INT NOT NULL,
     UnidadMedida INT NOT NULL,
+    Estado BIT DEFAULT 1,
     CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
 );
 
@@ -322,3 +323,17 @@ BEGIN
         CONSTRAINT TokUsr_Fk FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id_Usr)
     )
 END;
+
+-- Tabla ConfiguracionNotificacion (una sola fila global)
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[ConfiguracionNotificacion]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE ConfiguracionNotificacion (
+        Id                  INT IDENTITY(1,1) PRIMARY KEY,
+        AlertaStockEmail    BIT NOT NULL DEFAULT 0,
+        CorreoDestino       VARCHAR(255) NULL,
+        FechaActualizacion  DATETIME DEFAULT GETDATE()
+    );
+    -- Fila inicial con alertas de email desactivadas por defecto
+    INSERT INTO ConfiguracionNotificacion (AlertaStockEmail, CorreoDestino) VALUES (0, NULL);
+END;
+

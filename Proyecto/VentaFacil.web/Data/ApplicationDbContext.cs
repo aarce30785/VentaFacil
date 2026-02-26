@@ -38,6 +38,7 @@ namespace VentaFacil.web.Data
         // CONFIGURACIÓN
         public DbSet<DeduccionLey> DeduccionLey { get; set; }
         public DbSet<ImpuestoRenta> ImpuestoRenta { get; set; }
+        public DbSet<ConfiguracionNotificacion> ConfiguracionNotificacion { get; set; }
 
         // BONIFICACIONES
         public DbSet<Bonificacion> Bonificacion { get; set; }
@@ -191,6 +192,7 @@ namespace VentaFacil.web.Data
 
             modelBuilder.Entity<Inventario>(entity =>
             {
+                entity.Property(i => i.Estado).HasDefaultValue(true);
                 entity.ToTable(tb => tb.HasTrigger("trg_Audit_Inventario_Update"));
             });
         }

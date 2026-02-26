@@ -26,5 +26,14 @@ namespace VentaFacil.web.Services.Movimiento
         /// <param name="idUsuario">ID del usuario que realiza la corrección.</param>
         /// <returns>True si la corrección fue exitosa.</returns>
         Task<bool> CorregirMovimientoAsync(int idMovimiento, int nuevaCantidad, string nuevoTipo, string motivo, int idUsuario);
+
+        /// <summary>
+        /// Anula un movimiento de inventario devolviendo su efecto sobre el stock.
+        /// </summary>
+        /// <param name="idMovimiento">ID del movimiento a anular.</param>
+        /// <param name="motivo">Motivo de la anulación.</param>
+        /// <param name="idUsuario">ID del usuario que anula.</param>
+        /// <returns>True si fue exitoso.</returns>
+        Task<bool> AnularMovimientoAsync(int idMovimiento, string motivo, int idUsuario);
     }
 }

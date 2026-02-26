@@ -17,5 +17,8 @@ namespace VentaFacil.web.Models.Response.Inventario
         // Totales para las stats cards
         public int TotalInsumos { get; set; }
         public int StockBajo { get; set; }
+
+        // Filtro de estado
+        public bool MostrarInactivos { get; set; }
     }
 }

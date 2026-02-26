@@ -15,10 +15,9 @@ namespace VentaFacil.web.Models
         [Column("Id_Inventario")]
         public int Id_Inventario { get; set; }
 
-        [Required]
         [MaxLength(255)]
         [Column("Tipo_Movimiento")]
-        public string Tipo_Movimiento { get; set; }
+        public string? Tipo_Movimiento { get; set; }
 
         [Required]
         [Column("Cantidad")]
@@ -34,8 +33,9 @@ namespace VentaFacil.web.Models
 
         // Propiedad de navegación
         [ForeignKey("Id_Inventario")]
-        public Inventario Inventario { get; set; }
+        public Inventario? Inventario { get; set; }
 
-        public string Observaciones { get; set; }
+        public string? Observaciones { get; set; }
     }
 }
+

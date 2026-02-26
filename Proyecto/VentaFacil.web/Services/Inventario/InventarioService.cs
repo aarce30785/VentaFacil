@@ -18,10 +18,20 @@ namespace VentaFacil.web.Services.Inventario
             _context = context;
         }
 
-        // Listar todos los inventarios
+        // Listar todos los inventarios (solo activos)
         public async Task<List<InventarioDto>> ListarTodosAsync()
         {
-            var inventarios = await _context.Inventario.ToListAsync();
+            return await ListarTodosAsync(incluirInactivos: false);
+        }
+
+        // Listar inventarios con opción de incluir inhabilitados
+        public async Task<List<InventarioDto>> ListarTodosAsync(bool incluirInactivos)
+        {
+            var query = _context.Inventario.AsQueryable();
+            if (!incluirInactivos)
+                query = query.Where(i => i.Estado);
+
+            var inventarios = await query.ToListAsync();
             var dtos = new List<InventarioDto>();
             foreach (var inv in inventarios)
             {
@@ -31,7 +41,8 @@ namespace VentaFacil.web.Services.Inventario
                     Nombre = inv.Nombre,
                     StockActual = inv.StockActual,
                     StockMinimo = inv.StockMinimo,
-                    UnidadMedida = inv.UnidadMedida
+                    UnidadMedida = inv.UnidadMedida,
+                    Estado = inv.Estado
                 });
             }
             return dtos;
@@ -53,7 +64,7 @@ namespace VentaFacil.web.Services.Inventario
         }
 
         // Registrar nuevo inventario
-        public async Task<bool> RegistrarAsync(InventarioDto dto)
+        public async Task<bool> RegistrarAsync(InventarioDto dto, int idUsuario)
         {
             var inventario = new Models.Inventario
             {
@@ -68,8 +79,6 @@ namespace VentaFacil.web.Services.Inventario
             // Si hay stock inicial, registrar movimiento y auditoría
             if (dto.StockActual > 0)
             {
-                var usuarioId = 1; 
-                // Usaremos 1 como un fallback o "Sistema".
 
                 var movimiento = new InventarioMovimiento
                 {
@@ -77,12 +86,12 @@ namespace VentaFacil.web.Services.Inventario
                     Tipo_Movimiento = "Inventario Inicial",
                     Cantidad = dto.StockActual,
                     Fecha = DateTime.Now,
-                    Id_Usuario = usuarioId
+                    Id_Usuario = idUsuario
                 };
                 _context.InventarioMovimiento.Add(movimiento);
                 await _context.SaveChangesAsync();
 
-                await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, inventario.Id_Inventario, 0, dto.StockActual, "Inventario Inicial", "Creación de Inventario", usuarioId);
+                await RegistrarAuditoriaAsync(movimiento.Id_Movimiento, inventario.Id_Inventario, 0, dto.StockActual, "Inventario Inicial", "Creación de Inventario", idUsuario);
             }
 
             return true;
@@ -121,12 +130,24 @@ namespace VentaFacil.web.Services.Inventario
             return true;
         }
 
-        // Eliminar inventario
+        // Eliminar inventario (Soft Delete)
         public async Task<bool> EliminarAsync(int id)
         {
             var inventario = await _context.Inventario.FindAsync(id);
             if (inventario == null) return false;
-            _context.Inventario.Remove(inventario);
+
+            inventario.Estado = false;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Habilitar inventario (Soft Enable)
+        public async Task<bool> HabilitarAsync(int id)
+        {
+            var inventario = await _context.Inventario.FindAsync(id);
+            if (inventario == null) return false;
+
+            inventario.Estado = true;
             await _context.SaveChangesAsync();
             return true;
         }
@@ -260,7 +281,7 @@ namespace VentaFacil.web.Services.Inventario
         public async Task<List<InventarioDto>> ObtenerStockMinimoAsync()
         {
             return await _context.Inventario
-                .Where(i => i.StockActual <= i.StockMinimo)
+                .Where(i => i.Estado && i.StockMinimo > 0 && i.StockActual <= i.StockMinimo)
                 .Select(i => new InventarioDto
                 {
                     Id_Inventario = i.Id_Inventario,
@@ -274,7 +295,7 @@ namespace VentaFacil.web.Services.Inventario
         public async Task<List<InventarioDto>> GetStockMinimoAsync()
         {
             var inventarios = await _context.Inventario
-                .Where(i => i.StockActual <= i.StockMinimo)
+                .Where(i => i.Estado && i.StockMinimo > 0 && i.StockActual <= i.StockMinimo)
                 .Select(i => new InventarioDto
                 {
                     Id_Inventario = i.Id_Inventario,

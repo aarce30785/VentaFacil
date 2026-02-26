@@ -1,0 +1,102 @@
+@model VentaFacil.web.Models.ConfiguracionNotificacion
+
+<div class="modal fade" id="configAlertasModal" tabindex="-1" aria-labelledby="configAlertasModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="configAlertasModalLabel">
+                    <i class="lni lni-alarm me-2 text-primary"></i> Configuración de Alertas de Stock
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="configAlertasForm" method="post" action="@Url.Action("GuardarConfiguracionAlertas", "Inventario")">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@Model.Id" />
+
+                <div class="modal-body py-4 px-4">
+
+                    <div class="alert alert-info border-0 rounded-3 mb-4" style="font-size: 0.88rem;">
+                        <i class="lni lni-information me-2"></i>
+                        Las <strong>notificaciones visuales</strong> del Dashboard siempre se muestran.
+                        Aquí solo controlas si además se envía un <strong>correo electrónico</strong>.
+                    </div>
+
+                    <!-- Toggle: Email activo -->
+                    <div class="d-flex align-items-center justify-content-between mb-4 p-3 bg-light rounded-3">
+                        <div>
+                            <p class="mb-0 fw-semibold">Alertas por correo electrónico</p>
+                            <small class="text-muted">Recibir un email cuando un insumo quede bajo su mínimo configurado</small>
+                        </div>
+                        <div class="form-check form-switch ms-3">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="alertaStockEmailToggle" name="AlertaStockEmail" value="true"
+                                   @(Model.AlertaStockEmail ? "checked" : "")
+                                   onchange="toggleCorreoField()">
+                        </div>
+                    </div>
+
+                    <!-- Campo correo destino -->
+                    <div id="correDestinoCampo" class="@(!Model.AlertaStockEmail ? "d-none" : "")">
+                        <label for="correoDestino" class="form-label fw-semibold text-sm text-muted">
+                            Correo destino <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="lni lni-envelope"></i>
+                            </span>
+                            <input type="email" id="correoDestino" name="CorreoDestino"
+                                   class="form-control bg-light border-0"
+                                   placeholder="admin@ejemplo.com"
+                                   value="@Model.CorreoDestino"
+                                   maxlength="255" />
+                        </div>
+                        <small class="text-muted">Se enviará una alerta a esta dirección cuando se detecte stock bajo.</small>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="main-btn dark-btn-outline btn-hover rounded-full px-4"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="main-btn primary-btn btn-hover rounded-full px-4">
+                        <i class="lni lni-save me-1"></i> Guardar preferencias
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCorreoField() {
+        const toggle = document.getElementById('alertaStockEmailToggle');
+        const campo  = document.getElementById('correDestinoCampo');
+        const input  = document.getElementById('correoDestino');
+        if (toggle.checked) {
+            campo.classList.remove('d-none');
+            input.setAttribute('required', 'required');
+        } else {
+            campo.classList.add('d-none');
+            input.removeAttribute('required');
+            input.value = '';
+        }
+    }
+
+    // Inicializar Bootstrap Modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const el = document.getElementById('configAlertasModal');
+        if (el) {
+            const modal = new bootstrap.Modal(el);
+            modal.show();
+
+            el.addEventListener('hidden.bs.modal', function() {
+                const container = document.getElementById('configAlertasContainer');
+                if (container) container.innerHTML = '';
+            });
+        }
+    });
+</script>
