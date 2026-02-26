@@ -13,4 +13,4 @@ RUN apk add --no-cache dos2unix && dos2unix /run.sh && chmod +x /run.sh
 EXPOSE 25
 
 # Run script
-CMD ["/run.sh"]
+ENTRYPOINT ["/run.sh"]

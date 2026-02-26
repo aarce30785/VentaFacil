@@ -5,6 +5,7 @@
     image: alpine:latest
     user: root
     command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && chmod -R 775 /var/opt/mssql/data && mkdir -p /datakeys && chown -R 1000:1000 /datakeys && echo '✅ Permissions fixed'"
+    init: true
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
@@ -22,6 +23,7 @@
       MSSQL_MEMORY_LIMIT_MB: 2048 # Aumentado para mejor rendimiento
       MSSQL_COLLATION: 'SQL_Latin1_General_CP1_CI_AS'
       TZ: 'America/Guatemala' # Ajusta a tu zona horaria
+    init: true
     ports:
       - "1433:1433"
     volumes:
@@ -54,6 +56,7 @@
       - EmailSettings__Host=postfix
       - EmailSettings__Port=25
       - EmailSettings__From=no-reply@ventafacil-web.com
+    init: true
     ports:
       - "8080:8080"
     volumes:
@@ -82,6 +85,7 @@
     container_name: ventafacil-postfix
     environment:
       - SERVER_HOSTNAME=ventafacil-web.com
+    init: true
     networks:
       - ventafacil-network
     restart: always
@@ -90,6 +94,7 @@
   nginx:
     image: nginx:alpine
     container_name: ventafacil-nginx
+    init: true
     ports:
       - "80:80"
       - "443:443"
