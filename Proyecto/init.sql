@@ -102,6 +102,7 @@ BEGIN
         StockActual INT NOT NULL,
         StockMinimo INT NOT NULL,
         UnidadMedida INT NOT NULL,
+        Estado BIT DEFAULT 1,
         CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
     );
 END
@@ -397,5 +398,12 @@ IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'StockActual' AND Object_I
 BEGIN
     ALTER TABLE Producto ADD StockActual INT DEFAULT 0 NOT NULL;
     PRINT '✅ Columna StockActual añadida a Producto';
+END
+GO
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Estado' AND Object_ID = Object_ID(N'Inventario'))
+BEGIN
+    ALTER TABLE Inventario ADD Estado BIT DEFAULT 1 NOT NULL;
+    PRINT '✅ Columna Estado añadida a Inventario';
 END
 GO

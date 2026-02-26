@@ -396,8 +396,19 @@ namespace VentaFacil.web
                 
                 try
                 {
-                    using var cmd = new SqlCommand(script, conn);
-                    cmd.ExecuteNonQuery();
+                    // Dividir el script por 'GO' para ejecución por lotes
+                    string[] batches = System.Text.RegularExpressions.Regex.Split(
+                        script,
+                        @"^\s*GO\s*$",
+                        System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                    foreach (var batch in batches)
+                    {
+                        if (string.IsNullOrWhiteSpace(batch)) continue;
+
+                        using var cmd = new SqlCommand(batch, conn);
+                        cmd.ExecuteNonQuery();
+                    }
                     Console.WriteLine("✅ Tablas verificadas/creadas exitosamente");
                 }
                 catch (Exception sqlEx)
