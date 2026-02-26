@@ -61,7 +61,7 @@
       - "8080:8080"
     volumes:
       - dataprotection_keys:/app/keys
-      - uploads:/wwwroot/uploads
+      - uploads:/app/wwwroot/images/productos
       - ./init.sql:/app/init/init.sql:ro
       - ./logs:/app/logs # Para logs de la aplicación
     networks:
