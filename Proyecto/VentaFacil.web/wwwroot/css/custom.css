@@ -367,14 +367,21 @@
 }
 
 .product-placeholder {
-    color: #ccc;
-    font-size: 3rem;
+    color: #94a3b8;
+    background-color: #f1f5f9;
+    font-size: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
     width: 100%;
+    gap: 0.5rem;
+}
+
+.product-placeholder i {
+    font-size: 2.5rem;
+    opacity: 0.5;
 }
 
 .product-details {

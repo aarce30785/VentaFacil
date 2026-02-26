@@ -11,8 +11,6 @@ using VentaFacil.web.Services.Caja;
 using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Facturacion;
 using VentaFacil.web.Services.Inventario;
-using VentaFacil.web.Services.Inventario;
-using VentaFacil.web.Services.Movimiento;
 using VentaFacil.web.Services.Movimiento;
 using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
@@ -31,6 +29,11 @@ namespace VentaFacil.web
     {
         public static void Main(string[] args)
         {
+            // Set default culture to es-CR (Costa Rica)
+            var cultureInfo = new System.Globalization.CultureInfo("es-CR");
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
             var builder = WebApplication.CreateBuilder(args);
 
             builder.WebHost.UseShutdownTimeout(TimeSpan.FromMinutes(10));
@@ -277,6 +280,32 @@ namespace VentaFacil.web
                 Console.WriteLine("⚠ HTTPS redirection deshabilitado (Hostinger)");
             }
             app.UseStaticFiles();
+
+            // Diagnóstico de carpetas estáticas
+            Console.WriteLine("=== DIAGNÓSTICO DE CARPETAS ESTÁTICAS ===");
+            string wwwroot = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            string[] checkFolders = { 
+                wwwroot, 
+                Path.Combine(wwwroot, "images"), 
+                Path.Combine(wwwroot, "images", "productos"),
+                Path.Combine(wwwroot, "Plantilla"),
+                Path.Combine(wwwroot, "Plantilla", "css")
+            };
+
+            foreach (var folder in checkFolders)
+            {
+                bool exists = Directory.Exists(folder);
+                Console.WriteLine($"Folder: {folder} - Exists: {exists}");
+                if (exists)
+                {
+                    try {
+                        var files = Directory.GetFiles(folder);
+                        Console.WriteLine($"   Files found: {files.Length}");
+                    } catch (Exception ex) {
+                        Console.WriteLine($"   Error reading: {ex.Message}");
+                    }
+                }
+            }
 
             app.UseRouting();
 
