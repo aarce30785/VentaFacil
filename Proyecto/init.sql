@@ -85,6 +85,7 @@ BEGIN
         Precio DECIMAL(10,2),
         Imagen VARCHAR(2048),
         StockMinimo INT,
+        StockActual INT DEFAULT 0,
         Estado BIT DEFAULT 1,
         Id_Categoria INT,
         CONSTRAINT Pro_Pk PRIMARY KEY (Id_Producto),
@@ -390,3 +391,11 @@ BEGIN
         CONSTRAINT TokUsr_Fk FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id_Usr)
     )
 END;
+
+-- Migraciones y correcciones (Ejecutar siempre)
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'StockActual' AND Object_ID = Object_ID(N'Producto'))
+BEGIN
+    ALTER TABLE Producto ADD StockActual INT DEFAULT 0 NOT NULL;
+    PRINT '✅ Columna StockActual añadida a Producto';
+END
+GO

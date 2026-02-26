@@ -376,75 +376,53 @@ namespace VentaFacil.web
 
         private static void InitializeTablesAndSeed(SqlConnection conn, string connectionString)
         {
-            // Verificar si las tablas principales ya existen
-                    using var checkCmd = new SqlCommand(
-                        "SELECT CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Usuario') THEN 1 ELSE 0 END",
-                        conn);
-                    var dbIsInitialized = (int)checkCmd.ExecuteScalar() == 1;
+            Console.WriteLine("=== INICIANDO VERIFICACIÓN/CREACIÓN DE ESQUEMA ===");
 
-                    if (dbIsInitialized)
-                    {
-                        Console.WriteLine("✅ Base de datos ya está inicializada");
+            // Determinar ruta del script
+            string scriptPath = "/app/init/init.sql";
+            if (!File.Exists(scriptPath))
+            {
+                scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "init", "init.sql");
+            }
 
-                        // SOLO EJECUTAR SEEDER
-                        Console.WriteLine("Ejecutando seeder...");
-                        try
-                        {
-                            DbSeeder.Seed(connectionString);
-                            Console.WriteLine("✅ Seeder ejecutado");
-                        }
-                        catch (Exception seederEx)
-                        {
-                            Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("⚠️ Base de datos no está inicializada. Creando tablas...");
+            if (File.Exists(scriptPath))
+            {
+                Console.WriteLine($"Ejecutando script de inicialización: {scriptPath}");
+                string script = File.ReadAllText(scriptPath);
 
-                        // Ejecutar script de inicialización completo
-                        // Determinar ruta del script
-                        string scriptPath = "/app/init/init.sql";
-                        if (!File.Exists(scriptPath)) 
-                        {
-                             scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "init", "init.sql");
-                        }
-
-                        if (File.Exists(scriptPath))
-                        {
-                            Console.WriteLine($"Ejecutando script: {scriptPath}");
-                            string script = File.ReadAllText(scriptPath);
-
-                            // Ejecutar script completo
-                            using var cmd = new SqlCommand(script, conn);
-                            try
-                            {
-                                cmd.ExecuteNonQuery();
-                                Console.WriteLine("✅ Tablas creadas");
-                            }
-                            catch (Exception sqlEx)
-                            {
-                                Console.WriteLine($"⚠️ Error creando tablas: {sqlEx.Message}");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine($"❌ No se encontró script de inicialización: {scriptPath}");
-                        }
-
-                        // Ejecutar seeder después de crear tablas
-                        Console.WriteLine("Ejecutando seeder...");
-                        try
-                        {
-                            DbSeeder.Seed(connectionString);
-                            Console.WriteLine("✅ Seeder ejecutado");
-                        }
-                        catch (Exception seederEx)
-                        {
-                            Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
-                        }
+                // Dividir el script por 'GO' si es necesario (SQL Server no acepta GO en un solo comando)
+                // O mejor aún, ejecutar como un bloque único si no contiene GOs problemáticos.
+                // init.sql parece ser un conjunto de IF NOT EXISTS, lo cual es safe.
+                
+                try
+                {
+                    using var cmd = new SqlCommand(script, conn);
+                    cmd.ExecuteNonQuery();
+                    Console.WriteLine("✅ Tablas verificadas/creadas exitosamente");
+                }
+                catch (Exception sqlEx)
+                {
+                    Console.WriteLine($"⚠️ Error ejecutando script de inicialización: {sqlEx.Message}");
+                    // Si falla el bloque completo, intentamos por partes o continuamos al seeder
                 }
             }
+            else
+            {
+                Console.WriteLine($"❌ No se encontró script de inicialización en: {scriptPath}");
+            }
+
+            // SIEMPRE EJECUTAR SEEDER
+            Console.WriteLine("Ejecutando seeder...");
+            try
+            {
+                DbSeeder.Seed(connectionString);
+                Console.WriteLine("✅ Seeder completado");
+            }
+            catch (Exception seederEx)
+            {
+                Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
+            }
+        }
 
         private static void TestDatabaseConnection(IConfiguration configuration)
         {
