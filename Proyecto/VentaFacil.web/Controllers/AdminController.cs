@@ -21,19 +21,22 @@ namespace VentaFacil.web.Controllers
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
         private readonly IPasswordResetService _passwordResetService;
+        private readonly IWebHostEnvironment _environment;
 
         public AdminController(
             IAdminService adminService,
             IUsuarioService usuarioService,
             IProductoService productoService,
             ICategoriaService categoriaService,
-            IPasswordResetService passwordResetService)
+            IPasswordResetService passwordResetService,
+            IWebHostEnvironment environment)
         {
             _adminService = adminService;
             _usuarioService = usuarioService;
             _productoService = productoService;
             _categoriaService = categoriaService;
             _passwordResetService = passwordResetService;
+            _environment = environment;
         }
 
         public async Task<IActionResult> Index()
@@ -509,18 +512,31 @@ namespace VentaFacil.web.Controllers
                 // Guardar imagen si se envió
                 if (ImagenFile != null && ImagenFile.Length > 0)
                 {
-                    var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/productos");
-                    if (!Directory.Exists(imagesPath))
+                    Console.WriteLine($"[DEBUG-ADMIN] Recibida imagen: {ImagenFile.FileName}, Tamaño: {ImagenFile.Length} bytes");
+                    try 
                     {
-                        Directory.CreateDirectory(imagesPath);
+                        var imagesPath = Path.Combine(_environment.WebRootPath, "images", "productos");
+                        if (!Directory.Exists(imagesPath))
+                        {
+                            Console.WriteLine($"[DEBUG-ADMIN] Creando directorio de productos: {imagesPath}");
+                            Directory.CreateDirectory(imagesPath);
+                        }
+                        var fileName = Guid.NewGuid() + Path.GetExtension(ImagenFile.FileName);
+                        var filePath = Path.Combine(imagesPath, fileName);
+                        
+                        Console.WriteLine($"[DEBUG-ADMIN] Guardando archivo en: {filePath}");
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await ImagenFile.CopyToAsync(stream);
+                        }
+                        productoDto.Imagen = "/images/productos/" + fileName;
+                        Console.WriteLine("[DEBUG-ADMIN] Imagen guardada exitosamente.");
                     }
-                    var fileName = Guid.NewGuid() + Path.GetExtension(ImagenFile.FileName);
-                    var filePath = Path.Combine(imagesPath, fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    catch (Exception imgEx)
                     {
-                        await ImagenFile.CopyToAsync(stream);
+                        Console.WriteLine($"[ERROR-ADMIN] Error guardando imagen: {imgEx.Message}");
+                        return StatusCode(500, new { success = false, message = "Error al guardar la imagen", errors = new List<string> { imgEx.Message } });
                     }
-                    productoDto.Imagen = "/images/productos/" + fileName;
                 }
 
                 // Resto del método igual...

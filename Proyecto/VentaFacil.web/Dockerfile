@@ -22,20 +22,20 @@ RUN dotnet publish "VentaFacil.web.csproj" -c $BUILD_CONFIGURATION -o /app/publi
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Crear directorios necesarios
-RUN mkdir -p /app/keys /wwwroot/uploads /app/logs /app/init && \
-    chmod 755 /app/keys /wwwroot/uploads /app/logs /app/init
+# Crear directorios necesarios DENTRO de /app
+RUN mkdir -p /app/keys /app/wwwroot/images/productos /app/logs /app/init && \
+    chmod 755 /app/keys /app/wwwroot/images/productos /app/logs /app/init
 
 # Instalar herramientas de diagnóstico
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Configurar usuario no-root
 RUN useradd -m -u 1000 -s /bin/sh appuser && \
-    chown -R appuser:appuser /app /wwwroot
+    chown -R appuser:appuser /app
 USER appuser
 
-# Copiar desde la etapa de build
-COPY --from=build /app/publish .
+# Copiar desde la etapa de build ASEGURANDO el propietario
+COPY --from=build --chown=appuser:appuser /app/publish .
 
 # Exponer puertos
 EXPOSE 8080
