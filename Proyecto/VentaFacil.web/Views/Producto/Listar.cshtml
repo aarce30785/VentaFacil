@@ -189,6 +189,9 @@
                                     <a href="javascript:void(0);" onclick="abrirModalProducto('editar', @producto.Id_Producto)" class="btn btn-sm btn-light text-warning rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Editar">
                                         <i class="lni lni-pencil"></i>
                                     </a>
+                                    <a href="javascript:void(0);" onclick="abrirModalReceta(@producto.Id_Producto)" class="btn btn-sm btn-light text-info rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Receta">
+                                        <i class="lni lni-restaurant"></i>
+                                    </a>
                                     <a href="javascript:void(0);" onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@(producto.Nombre?.Replace("'", "\\'") ?? "")')" class="btn btn-sm btn-light text-danger rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Eliminar">
                                         <i class="lni lni-trash-can"></i>
                                     </a>
@@ -555,6 +558,30 @@
             });
         }
 
+        // ABRIR MODAL RECETA
+        window.abrirModalReceta = function(productoId) {
+            const url = '@Url.Action("ObtenerRecetaModal", "Producto")' + '?productoId=' + productoId;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar la receta');
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('modalContainerProductos').innerHTML = data;
+                    const modalElement = document.getElementById('recetaModal');
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                })
+                .catch(error => {
+                    Toastify({
+                        text: "Error al cargar receta: " + error.message,
+                        duration: 3000,
+                        style: { background: "#ff5f6d" }
+                    }).showToast();
+                });
+        };
+
         // CONFIRMACIONES SWEETALERT
         window.confirmarEliminacionProducto = function(productoId, nombreProducto) {
             Swal.fire({
@@ -673,6 +700,115 @@
                     duration: 3000,
                     style: { background: "#ff5f6d" }
                 }).showToast();
+            });
+        };
+        // ===== LÓGICA DE RECETAS (Modal) =====
+        window.agregarInsumoTabla = function() {
+            const select = document.getElementById('selectInsumoToAdd');
+            const countInput = document.getElementById('cantidadInsumoToAdd');
+            
+            const inventarioId = select.value;
+            const nombreText = select.options[select.selectedIndex]?.text;
+            const cantidad = parseInt(countInput.value) || 0;
+            
+            if (!inventarioId || cantidad <= 0) {
+                Toastify({ text: "Seleccione un insumo y una cantidad válida", duration: 3000, style: { background: "#ff5f6d" } }).showToast();
+                return;
+            }
+            
+            const tbody = document.querySelector('#tablaReceta tbody');
+            
+            // Verificar si ya existe
+            let trExistent = tbody.querySelector(`tr[data-inventario-id="${inventarioId}"]`);
+            if (trExistent) {
+                let cantInput = trExistent.querySelector('.cantidad-insumo');
+                cantInput.value = parseInt(cantInput.value) + cantidad;
+            } else {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-inventario-id', inventarioId);
+                tr.innerHTML = `
+                    <td class="align-middle">${nombreText}</td>
+                    <td class="align-middle">
+                        <input type="number" class="form-control form-control-sm cantidad-insumo" value="${cantidad}" min="1" />
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarFilaInsumo(this)">
+                            <i class="lni lni-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+            
+            document.getElementById('emptyRecetaMsg').style.display = 'none';
+            
+            // Reset inputs
+            select.value = '';
+            countInput.value = '1';
+        };
+        
+        window.eliminarFilaInsumo = function(btn) {
+            btn.closest('tr').remove();
+            const tbody = document.querySelector('#tablaReceta tbody');
+            if (tbody.children.length === 0) {
+                document.getElementById('emptyRecetaMsg').style.display = 'block';
+            }
+        };
+        
+        window.guardarReceta = function() {
+            const productoId = document.getElementById('recetaProductoId').value;
+            const tbody = document.querySelector('#tablaReceta tbody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            const insumos = [];
+            rows.forEach(row => {
+                const inventarioId = row.getAttribute('data-inventario-id');
+                const cantidad = row.querySelector('.cantidad-insumo').value;
+                
+                insumos.push({
+                    Id_Inventario: parseInt(inventarioId),
+                    Cantidad: parseInt(cantidad)
+                });
+            });
+            
+            const payload = {
+                ProductoId: parseInt(productoId),
+                Insumos: insumos
+            };
+            
+            Swal.fire({
+                title: 'Guardando receta...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            fetch('@Url.Action("GuardarReceta", "Producto")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('recetaModal'));
+                    if (modal) modal.hide();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'Error al guardar la receta', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Ocurrió un error inesperado al conectar con el servidor', 'error');
             });
         };
     </script>

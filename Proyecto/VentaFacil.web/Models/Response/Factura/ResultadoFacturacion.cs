@@ -9,15 +9,17 @@ namespace VentaFacil.web.Models.Response.Factura
         public int FacturaId { get; set; }
         public FacturaDto Factura { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
+        public List<string> Warnings { get; set; } = new List<string>();
 
-        public static ResultadoFacturacion Exitoso(FacturaDto factura, string mensaje = "")
+        public static ResultadoFacturacion Exitoso(FacturaDto factura, string mensaje = "", List<string> warnings = null)
         {
             return new ResultadoFacturacion
             {
                 Success = true,
                 Message = mensaje,
                 FacturaId = factura?.Id_Factura ?? 0,
-                Factura = factura
+                Factura = factura,
+                Warnings = warnings ?? new List<string>()
             };
         }
 

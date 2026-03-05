@@ -59,7 +59,7 @@ namespace VentaFacil.web.Services.Facturacion
                 var ventaId = await CrearVentaSimpleAsync(pedido, metodoPago);
                 await CrearDetallesVentaAsync(ventaId, pedido);
                 var factura = await CrearFacturaAsync(ventaId, pedido, montoPagado, moneda, metodoPago);
-
+                var warnings = await ProcesarDeduccionInventarioAsync(pedido, factura.Id_Factura);
                 
                 var facturaDto = await ObtenerFacturaCompletaAsync(factura.Id_Factura);
 
@@ -94,7 +94,7 @@ namespace VentaFacil.web.Services.Facturacion
                     factura.Id_Factura, pedidoId);
 
                 
-                return ResultadoFacturacion.Exitoso(facturaDto, "Factura generada exitosamente");
+                return ResultadoFacturacion.Exitoso(facturaDto, "Factura generada exitosamente", warnings);
             }
             catch (Exception ex)
             {
@@ -121,8 +121,8 @@ namespace VentaFacil.web.Services.Facturacion
                 var ventaId = await CrearVentaSimpleAsync(pedido, MetodoPago.Efectivo);
                 await CrearDetallesVentaAsync(ventaId, pedido);
                 var factura = await CrearFacturaAsync(ventaId, pedido, montoPagado, "USD", MetodoPago.Efectivo, tasaCambio);
+                var warnings = await ProcesarDeduccionInventarioAsync(pedido, factura.Id_Factura);
 
-              
                 var facturaDto = await ObtenerFacturaCompletaAsync(factura.Id_Factura);
 
                 
@@ -130,7 +130,7 @@ namespace VentaFacil.web.Services.Facturacion
 
                 _logger.LogInformation("✅ Factura en dólares {FacturaId} generada exitosamente", factura.Id_Factura);
 
-                return ResultadoFacturacion.Exitoso(facturaDto, "Factura en dólares generada exitosamente");
+                return ResultadoFacturacion.Exitoso(facturaDto, "Factura en dólares generada exitosamente", warnings);
             }
             catch (Exception ex)
             {
@@ -214,6 +214,7 @@ namespace VentaFacil.web.Services.Facturacion
 
                 var numeroFactura = $"F-{factura.Id_Factura:0000}";
                 await _pedidoService.ActualizarPedidoConFactura(ventaId, factura.Id_Factura, numeroFactura);
+                var warnings = await ProcesarDeduccionInventarioAsync(pedido, factura.Id_Factura);
 
                
                 var facturaDto = await ObtenerFacturaCompletaAsync(factura.Id_Factura);
@@ -223,7 +224,7 @@ namespace VentaFacil.web.Services.Facturacion
 
                 _logger.LogInformation("✅ Factura mixta {FacturaId} generada exitosamente", factura.Id_Factura);
 
-                return ResultadoFacturacion.Exitoso(facturaDto, "Factura generada exitosamente");
+                return ResultadoFacturacion.Exitoso(facturaDto, "Factura generada exitosamente", warnings);
             }
             catch (Exception ex)
             {
@@ -470,6 +471,7 @@ namespace VentaFacil.web.Services.Facturacion
                 errores.Add("El pedido no tiene productos");
             }
 
+            var requerimientosInsumos = new Dictionary<int, int>();
            
             foreach (var item in pedido.Items)
             {
@@ -482,7 +484,6 @@ namespace VentaFacil.web.Services.Facturacion
                 {
                     errores.Add($"El producto '{item.NombreProducto}' tiene cantidad inválida");
                 }
-
                 
                 var productoExiste = await _context.Producto
                     .AnyAsync(p => p.Id_Producto == item.Id_Producto && p.Estado);
@@ -490,6 +491,26 @@ namespace VentaFacil.web.Services.Facturacion
                 if (!productoExiste)
                 {
                     errores.Add($"El producto '{item.NombreProducto}' no existe en el catálogo");
+                }
+                else
+                {
+                    var insumos = await _context.ProductoInsumo.Where(pi => pi.Id_Producto == item.Id_Producto).ToListAsync();
+                    foreach (var insumo in insumos)
+                    {
+                        if (requerimientosInsumos.ContainsKey(insumo.Id_Inventario))
+                            requerimientosInsumos[insumo.Id_Inventario] += insumo.Cantidad * item.Cantidad;
+                        else
+                            requerimientosInsumos[insumo.Id_Inventario] = insumo.Cantidad * item.Cantidad;
+                    }
+                }
+            }
+
+            foreach (var req in requerimientosInsumos)
+            {
+                var inventario = await _context.Inventario.FindAsync(req.Key);
+                if (inventario != null && inventario.StockActual < req.Value)
+                {
+                    errores.Add($"No hay stock suficiente de insumo: {inventario.Nombre} (Disponible: {inventario.StockActual})");
                 }
             }
 
@@ -543,6 +564,54 @@ namespace VentaFacil.web.Services.Facturacion
 
             _logger.LogInformation("✅ Factura {FacturaId} creada para venta {VentaId}", factura.Id_Factura, ventaId);
             return factura;
+        }
+
+        private async Task<List<string>> ProcesarDeduccionInventarioAsync(PedidoDto pedido, int facturaId)
+        {
+            var warnings = new List<string>();
+            var requerimientosInsumos = new Dictionary<int, int>();
+            
+            foreach (var item in pedido.Items)
+            {
+                var insumos = await _context.ProductoInsumo.Where(pi => pi.Id_Producto == item.Id_Producto).ToListAsync();
+                foreach (var insumo in insumos)
+                {
+                    if (requerimientosInsumos.ContainsKey(insumo.Id_Inventario))
+                        requerimientosInsumos[insumo.Id_Inventario] += insumo.Cantidad * item.Cantidad;
+                    else
+                        requerimientosInsumos[insumo.Id_Inventario] = insumo.Cantidad * item.Cantidad;
+                }
+            }
+            
+            var usuarioId = await ObtenerUsuarioIdAutenticado();
+            
+            foreach (var req in requerimientosInsumos)
+            {
+                var inventario = await _context.Inventario.FindAsync(req.Key);
+                if (inventario != null)
+                {
+                    inventario.StockActual -= req.Value;
+                    
+                    var movimiento = new InventarioMovimiento
+                    {
+                        Id_Inventario = inventario.Id_Inventario,
+                        Tipo_Movimiento = $"Salida por Venta #F-{facturaId:0000}",
+                        Cantidad = req.Value,
+                        Fecha = DateTime.Now,
+                        Id_Usuario = usuarioId,
+                        Observaciones = "Deducción automática por receta de venta"
+                    };
+                    _context.InventarioMovimiento.Add(movimiento);
+                    
+                    if (inventario.StockActual < inventario.StockMinimo)
+                    {
+                        warnings.Add($"Advertencia: El producto {inventario.Nombre} ha quedado por debajo del stock mínimo");
+                    }
+                }
+            }
+            
+            await _context.SaveChangesAsync();
+            return warnings;
         }
 
         private async Task GenerarYGuardarPdfAsync(int facturaId)

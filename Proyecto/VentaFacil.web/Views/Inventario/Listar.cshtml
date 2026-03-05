@@ -337,6 +337,7 @@
 <!-- Container for AJAX Modals -->
 <div id="modalContainerInventario"></div>
 <div id="historialModalContainer"></div>
+<div id="auditoriaModalContainer"></div>
 
 <!-- Modal de Anulación de Movimiento -->
 <div class="modal fade" id="anulacionModal" tabindex="-1" aria-labelledby="anulacionModalLabel" aria-hidden="true">
@@ -939,6 +940,44 @@
             } else {
                 getAnulacionModal().show();
             }
+        };
+
+        window.verAuditoria = function(idMovimiento) {
+            var histEl = document.getElementById('historialModal');
+            var histModal = histEl ? bootstrap.Modal.getInstance(histEl) : null;
+            
+            if (histModal) {
+                histModal.hide();
+            }
+
+            Swal.fire({ title: 'Cargando Auditoría...', didOpen: () => Swal.showLoading() });
+
+            fetch(`@Url.Action("AuditoriaMovimiento", "Inventario")?idMovimiento=${idMovimiento}`)
+                .then(response => response.text())
+                .then(html => {
+                    Swal.close();
+                    document.getElementById('auditoriaModalContainer').innerHTML = html;
+                    var audModalEl = document.getElementById('auditoriaModal');
+                    var audModal = new bootstrap.Modal(audModalEl);
+                    
+                    // Restore History modal when Audit modal is closed
+                    audModalEl.addEventListener('hidden.bs.modal', function onAudHidden() {
+                         audModalEl.removeEventListener('hidden.bs.modal', onAudHidden);
+                         if (histEl && document.body.contains(histEl)) {
+                             bootstrap.Modal.getOrCreateInstance(histEl).show();
+                         }
+                    });
+
+                    audModal.show();
+                })
+                .catch(error => {
+                    Swal.close();
+                    Toastify({ text: "Error al cargar auditoría", style: { background: "#ff5f6d" } }).showToast();
+                    
+                    if (histEl && document.body.contains(histEl)) {
+                         bootstrap.Modal.getOrCreateInstance(histEl).show();
+                    }
+                });
         };
     </script>
 }

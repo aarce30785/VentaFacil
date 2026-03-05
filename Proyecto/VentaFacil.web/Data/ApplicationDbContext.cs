@@ -23,6 +23,7 @@ namespace VentaFacil.web.Data
         public DbSet<Inventario> Inventario { get; set; }
         public DbSet<InventarioMovimiento> InventarioMovimiento { get; set; }
         public DbSet<InventarioMovimientoAuditoria> InventarioMovimientoAuditoria { get; set; }
+        public DbSet<ProductoInsumo> ProductoInsumo { get; set; }
         public DbSet<Caja> Caja { get; set; }
         public DbSet<CajaRetiro> CajaRetiro { get; set; }
 
@@ -194,6 +195,23 @@ namespace VentaFacil.web.Data
             {
                 entity.Property(i => i.Estado).HasDefaultValue(true);
                 entity.ToTable(tb => tb.HasTrigger("trg_Audit_Inventario_Update"));
+            });
+
+            // Configuración para ProductoInsumo
+            modelBuilder.Entity<ProductoInsumo>(entity =>
+            {
+                entity.ToTable("ProductoInsumo");
+                entity.HasKey(pi => pi.Id_ProductoInsumo);
+
+                entity.HasOne(pi => pi.Producto)
+                      .WithMany(p => p.Insumos)
+                      .HasForeignKey(pi => pi.Id_Producto)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pi => pi.Inventario)
+                      .WithMany()
+                      .HasForeignKey(pi => pi.Id_Inventario)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
         public override int SaveChanges()

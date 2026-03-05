@@ -122,6 +122,20 @@ BEGIN
     );
 END
 
+-- Tabla ProductoInsumo
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ProductoInsumo]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE ProductoInsumo (
+        Id_ProductoInsumo INT IDENTITY (1,1),
+        Id_Producto INT NOT NULL,
+        Id_Inventario INT NOT NULL,
+        Cantidad INT NOT NULL,
+        CONSTRAINT PI_Pk PRIMARY KEY (Id_ProductoInsumo),
+        CONSTRAINT PI_Prod_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto),
+        CONSTRAINT PI_Inv_Fk FOREIGN KEY (Id_Inventario) REFERENCES Inventario(Id_Inventario)
+    );
+END
+
 -- Tabla Venta
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Venta]') AND type in (N'U'))
 BEGIN

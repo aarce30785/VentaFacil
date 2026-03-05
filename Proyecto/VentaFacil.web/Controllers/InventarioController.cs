@@ -506,6 +506,65 @@ namespace VentaFacil.web.Controllers
             return RedirectToAction(nameof(Listar));
         }
 
+        // GET: Inventario/CorregirMovimiento
+        [HttpGet]
+        [Authorize(Roles = "Administrador,EncargadoInventario")]
+        public async Task<IActionResult> CorregirMovimiento(int idMovimiento)
+        {
+            var movimientos = await _movimientoService.ListarMovimientosAsync(null, null, null);
+            var movimiento = movimientos.FirstOrDefault(m => m.Id_Movimiento == idMovimiento);
+
+            if (movimiento == null || movimiento.Tipo_Movimiento == "Anulado" || movimiento.Tipo_Movimiento.Contains("Reversa"))
+            {
+                TempData["Error"] = "El movimiento no existe o no puede ser corregido.";
+                return RedirectToAction(nameof(Listar));
+            }
+
+            return View("CorregirMovimiento", movimiento);
+        }
+
+        // POST: Inventario/CorregirMovimiento
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador,EncargadoInventario")]
+        public async Task<IActionResult> CorregirMovimiento(int Id_Movimiento, int Cantidad, string Tipo_Movimiento, string Motivo)
+        {
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId") ?? 0;
+            if (usuarioId == 0) return RedirectToAction("Login", "Acceso");
+
+            if (Cantidad <= 0)
+            {
+                TempData["Error"] = "La cantidad debe ser mayor a cero.";
+                return RedirectToAction(nameof(CorregirMovimiento), new { idMovimiento = Id_Movimiento });
+            }
+
+            if (string.IsNullOrWhiteSpace(Motivo))
+            {
+                TempData["Error"] = "El motivo de la corrección es obligatorio.";
+                return RedirectToAction(nameof(CorregirMovimiento), new { idMovimiento = Id_Movimiento });
+            }
+
+            var result = await _movimientoService.CorregirMovimientoAsync(Id_Movimiento, Cantidad, Tipo_Movimiento, Motivo, usuarioId);
+
+            if (result)
+            {
+                TempData["Success"] = "Movimiento corregido exitosamente.";
+                return RedirectToAction(nameof(Listar));
+            }
+
+            TempData["Error"] = "Error al corregir el movimiento. Verifica que el inventario no resulte negativo tras el ajuste.";
+            return RedirectToAction(nameof(CorregirMovimiento), new { idMovimiento = Id_Movimiento });
+        }
+
+        // GET: Inventario/AuditoriaMovimiento
+        [HttpGet]
+        public async Task<IActionResult> AuditoriaMovimiento(int idMovimiento)
+        {
+            var auditorias = await _movimientoService.ListarAuditoriasAsync(idMovimiento);
+            ViewBag.IdMovimiento = idMovimiento;
+            return PartialView("_AuditoriaModal", auditorias);
+        }
+
         [HttpGet]
         public async Task<IActionResult> NotificacionesStockMinimo()
         {

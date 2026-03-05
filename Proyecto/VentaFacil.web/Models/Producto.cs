@@ -36,5 +36,7 @@ namespace VentaFacil.web.Models
         
         [Column("Id_Categoria")]
         public int Id_Categoria { get; set; }
+
+        public virtual ICollection<ProductoInsumo> Insumos { get; set; } = new List<ProductoInsumo>();
     }
 }

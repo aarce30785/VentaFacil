@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
 
 namespace VentaFacil.web.Services.Movimiento
@@ -35,5 +36,12 @@ namespace VentaFacil.web.Services.Movimiento
         /// <param name="idUsuario">ID del usuario que anula.</param>
         /// <returns>True si fue exitoso.</returns>
         Task<bool> AnularMovimientoAsync(int idMovimiento, string motivo, int idUsuario);
+
+        /// <summary>
+        /// Obtiene el historial de auditoría de un movimiento específico.
+        /// </summary>
+        /// <param name="idMovimiento">ID del movimiento a consultar.</param>
+        /// <returns>Lista de registros de auditoría.</returns>
+        Task<List<InventarioMovimientoAuditoria>> ListarAuditoriasAsync(int idMovimiento);
     }
 }
