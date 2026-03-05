@@ -516,11 +516,15 @@ namespace VentaFacil.web.Controllers
 
             if (movimiento == null || movimiento.Tipo_Movimiento == "Anulado" || movimiento.Tipo_Movimiento.Contains("Reversa"))
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "El movimiento no existe o no puede ser corregido." });
+                }
                 TempData["Error"] = "El movimiento no existe o no puede ser corregido.";
                 return RedirectToAction(nameof(Listar));
             }
 
-            return View("CorregirMovimiento", movimiento);
+            return PartialView("_CorregirMovimientoModal", movimiento);
         }
 
         // POST: Inventario/CorregirMovimiento
@@ -530,16 +534,18 @@ namespace VentaFacil.web.Controllers
         public async Task<IActionResult> CorregirMovimiento(int Id_Movimiento, int Cantidad, string Tipo_Movimiento, string Motivo)
         {
             var usuarioId = HttpContext.Session.GetInt32("UsuarioId") ?? 0;
-            if (usuarioId == 0) return RedirectToAction("Login", "Acceso");
+            if (usuarioId == 0) return Json(new { success = false, message = "Sesión expirada" });
 
             if (Cantidad <= 0)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(new { success = false, message = "La cantidad debe ser mayor a cero." });
                 TempData["Error"] = "La cantidad debe ser mayor a cero.";
                 return RedirectToAction(nameof(CorregirMovimiento), new { idMovimiento = Id_Movimiento });
             }
 
             if (string.IsNullOrWhiteSpace(Motivo))
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(new { success = false, message = "El motivo de la corrección es obligatorio." });
                 TempData["Error"] = "El motivo de la corrección es obligatorio.";
                 return RedirectToAction(nameof(CorregirMovimiento), new { idMovimiento = Id_Movimiento });
             }
@@ -548,10 +554,12 @@ namespace VentaFacil.web.Controllers
 
             if (result)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(new { success = true, message = "Movimiento corregido exitosamente." });
                 TempData["Success"] = "Movimiento corregido exitosamente.";
                 return RedirectToAction(nameof(Listar));
             }
 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(new { success = false, message = "Error al corregir el movimiento. Verifica que el inventario no resulte negativo tras el ajuste." });
             TempData["Error"] = "Error al corregir el movimiento. Verifica que el inventario no resulte negativo tras el ajuste.";
             return RedirectToAction(nameof(CorregirMovimiento), new { idMovimiento = Id_Movimiento });
         }

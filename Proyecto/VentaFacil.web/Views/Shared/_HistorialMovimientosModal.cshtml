@@ -100,9 +100,10 @@
                                                     <div class="d-flex align-items-center justify-content-center gap-2">
                                                         @if (User.IsInRole("Administrador") || User.IsInRole("EncargadoInventario"))
                                                         {
-                                                            <a href="@Url.Action("CorregirMovimiento", "Inventario", new { idMovimiento = item.Id_Movimiento })" class="text-primary btn btn-link p-0" title="Editar movimiento">
+                                                            <button type="button" class="text-primary btn btn-link p-0" title="Editar movimiento"
+                                                                    onclick="corregirMovimiento(@item.Id_Movimiento)">
                                                                 <i class="lni lni-pencil text-primary"></i> Editar
-                                                            </a>
+                                                            </button>
                                                             <button type="button" class="text-danger btn btn-link p-0" title="Anular movimiento"
                                                                     onclick="anularMovimiento(@item.Id_Movimiento)">
                                                                 <i class="lni lni-close text-danger"></i> Anular

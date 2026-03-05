@@ -338,6 +338,7 @@
 <div id="modalContainerInventario"></div>
 <div id="historialModalContainer"></div>
 <div id="auditoriaModalContainer"></div>
+<div id="corregirModalContainer"></div>
 
 <!-- Modal de Anulación de Movimiento -->
 <div class="modal fade" id="anulacionModal" tabindex="-1" aria-labelledby="anulacionModalLabel" aria-hidden="true">
@@ -977,6 +978,96 @@
                     if (histEl && document.body.contains(histEl)) {
                          bootstrap.Modal.getOrCreateInstance(histEl).show();
                     }
+                });
+        };
+
+        window.corregirMovimiento = function(idMovimiento) {
+            var histEl = document.getElementById('historialModal');
+            var histModal = histEl ? bootstrap.Modal.getInstance(histEl) : null;
+            
+            if (histModal) {
+                histModal.hide();
+            }
+
+            Swal.fire({ title: 'Cargando...', didOpen: () => Swal.showLoading() });
+
+            fetch(`@Url.Action("CorregirMovimiento", "Inventario")?idMovimiento=${idMovimiento}`)
+                .then(response => {
+                    // Check if it's a redirect (error) or JSON error response
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || "Error al cargar el movimiento.");
+                        });
+                    }
+                    if (!response.ok) throw new Error("Error en la solicitud.");
+                    return response.text();
+                })
+                .then(html => {
+                    Swal.close();
+                    document.getElementById('corregirModalContainer').innerHTML = html;
+                    var corregirModalEl = document.getElementById('corregirMovimientoModal');
+                    var corregirModal = new bootstrap.Modal(corregirModalEl);
+                    
+                    // Manejo del formulario dentro del modal
+                    document.getElementById('btnGuardarCorreccion').addEventListener('click', function() {
+                        var form = document.getElementById('corregirMovimientoForm');
+                        if (!form.checkValidity()) {
+                            form.reportValidity();
+                            return;
+                        }
+
+                        var btn = this;
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+
+                        var formData = new FormData(form);
+                        
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                corregirModal.hide();
+                                Swal.fire({
+                                    title: '¡Corrección aplicada!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    confirmButtonColor: '#365CF5'
+                                }).then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', data.message || 'Error desconocido', 'error');
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="lni lni-checkmark me-1"></i> Guardar Corrección';
+                            }
+                        })
+                        .catch(err => {
+                            Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="lni lni-checkmark me-1"></i> Guardar Corrección';
+                        });
+                    });
+
+                    // Restore History modal when Corregir modal is closed (if no reload happened)
+                    corregirModalEl.addEventListener('hidden.bs.modal', function onCorregirHidden() {
+                         corregirModalEl.removeEventListener('hidden.bs.modal', onCorregirHidden);
+                         if (histEl && document.body.contains(histEl)) {
+                             bootstrap.Modal.getOrCreateInstance(histEl).show();
+                         }
+                    });
+
+                    corregirModal.show();
+                })
+                .catch(error => {
+                    Swal.close();
+                    Swal.fire('Atención', error.message || "No se pudo cargar la vista de corrección.", 'error').then(() => {
+                        if (histEl && document.body.contains(histEl)) {
+                            bootstrap.Modal.getOrCreateInstance(histEl).show();
+                        }
+                    });
                 });
         };
     </script>
