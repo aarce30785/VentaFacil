@@ -87,6 +87,15 @@
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a asp-controller="Asistencia" asp-action="Index">
+                    <span class="icon">
+                        <i class="fas fa-clock"></i>
+                    </span>
+                    <span class="text">Mis Horas</span>
+                </a>
+            </li>
+
             <span class="divider"><hr /></span>
             
             @if (User.IsInRole("Administrador"))

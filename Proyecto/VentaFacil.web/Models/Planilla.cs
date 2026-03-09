@@ -23,7 +23,11 @@ namespace VentaFacil.web.Models
 
         public DateTime? FechaFinal { get; set; }
 
-        public int HorasTrabajadas { get; set; }
+        public DateTime? HoraInicioPausa { get; set; }
+        public DateTime? HoraFinPausa { get; set; }
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal HorasTrabajadas { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal HorasExtras { get; set; }
@@ -41,5 +45,8 @@ namespace VentaFacil.web.Models
         public decimal SalarioNeto { get; set; }
 
         public string EstadoRegistro { get; set; } = string.Empty;
+
+        /// <summary>Nota explicativa (ej: deducción omitida por salario ₡0).</summary>
+        public string? Observaciones { get; set; }
     }
 }

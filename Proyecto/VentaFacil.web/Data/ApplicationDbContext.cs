@@ -19,6 +19,8 @@ namespace VentaFacil.web.Data
         public DbSet<Usuario> Usuario { get; set; }
         public DbSet<Rol> Rol { get; set; }
         public DbSet<Categoria> Categoria { get; set; }
+
+        public DbSet<ConfiguracionPlanilla> ConfiguracionPlanilla { get; set; }
         public DbSet<Producto> Producto { get; set; }
         public DbSet<Inventario> Inventario { get; set; }
         public DbSet<InventarioMovimiento> InventarioMovimiento { get; set; }

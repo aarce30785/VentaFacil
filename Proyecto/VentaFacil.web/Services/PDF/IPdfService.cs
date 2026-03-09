@@ -10,5 +10,6 @@ namespace VentaFacil.web.Services.PDF
         byte[] GenerarFacturaPdf(FacturaDto facturaDto);
         byte[] GenerarHistorialMovimientosPdf(List<InventarioMovimientoDto> movimientos, string nombreInsumo);
         byte[] GenerarReporteNomina(NominaDetalleDto data);
+        byte[] GenerarExcelNomina(NominaDetalleDto data);
     }
 }

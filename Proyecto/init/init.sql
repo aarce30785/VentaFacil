@@ -28,7 +28,8 @@ CREATE TABLE Nomina (
     Estado VARCHAR(20) NOT NULL,
     TotalBruto DECIMAL(10,2) NOT NULL,
     TotalDeducciones DECIMAL(10,2) NOT NULL,
-    TotalNeto DECIMAL(10,2) NOT NULL
+    TotalNeto DECIMAL(10,2) NOT NULL,
+    Observaciones VARCHAR(500) NULL
 );
 
 -- Tabla Planilla
@@ -37,7 +38,7 @@ CREATE TABLE Planilla (
     Id_Usr INT,
     FechaInicio DATETIME,
     FechaFinal DATETIME,
-    HorasTrabajadas INT,
+    HorasTrabajadas DECIMAL(10,2),
     -- Campo original
     Salario DECIMAL(10,2),
 
@@ -50,12 +51,25 @@ CREATE TABLE Planilla (
     SalarioBruto       DECIMAL(10,2) NULL,
     SalarioNeto        DECIMAL(10,2) NULL,
     Observaciones      VARCHAR(400)  NULL,
+    HoraInicioPausa    DATETIME      NULL,
+    HoraFinPausa       DATETIME      NULL,
 
     CONSTRAINT Plan_Pk PRIMARY KEY (Id_Planilla),
     CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr)
         REFERENCES Usuario(Id_Usr),
     CONSTRAINT FK_Planilla_Nomina FOREIGN KEY (Id_Nomina)
         REFERENCES Nomina(Id_Nomina)
+);
+
+-- Tabla ConfiguracionPlanilla
+CREATE TABLE ConfiguracionPlanilla (
+    Id_Configuracion INT IDENTITY(1,1),
+    Id_Usr INT NOT NULL,
+    TarifaPorHora DECIMAL(10,2) NOT NULL,
+    FechaActualizacion DATETIME DEFAULT GETDATE(),
+    
+    CONSTRAINT ConfPlanilla_Pk PRIMARY KEY (Id_Configuracion),
+    CONSTRAINT ConfPlanillaUsr_Fk FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr)
 );
 
 -- Tabla Categoria
@@ -281,7 +295,6 @@ CREATE TABLE BonificacionAuditoria (
 );
 
 -- Alterar Tabla Usuario para Horario
--- Alterar Tabla Usuario para Horario
 IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraEntrada' AND Object_ID = Object_ID(N'Usuario'))
 BEGIN
     ALTER TABLE Usuario ADD HoraEntrada TIME NULL
@@ -291,6 +304,30 @@ IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraSalida' AND Object_ID
 BEGIN
     ALTER TABLE Usuario ADD HoraSalida TIME NULL
 END
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'TarifaPorHora' AND Object_ID = Object_ID(N'Usuario'))
+BEGIN
+    ALTER TABLE Usuario ADD TarifaPorHora DECIMAL(10,2) NULL
+END
+
+-- Alterar Tabla Planilla para Pausas y cambiar tipo de HorasTrabajadas
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraInicioPausa' AND Object_ID = Object_ID(N'Planilla'))
+BEGIN
+    ALTER TABLE Planilla ADD HoraInicioPausa DATETIME NULL
+END
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraFinPausa' AND Object_ID = Object_ID(N'Planilla'))
+BEGIN
+    ALTER TABLE Planilla ADD HoraFinPausa DATETIME NULL
+END
+
+-- Intento de cambiar el tipo de HorasTrabajadas si la base de datos ya existe (esto no fallaría el init.sql si no hay constraint)
+BEGIN TRY
+    ALTER TABLE Planilla ALTER COLUMN HorasTrabajadas DECIMAL(10,2)
+END TRY
+BEGIN CATCH
+    -- Ignorar si falla por alguna restriccion
+END CATCH
 
 -- Roles base
 INSERT INTO Rol (Nombre_Rol, Descripcion) VALUES ('Administrador', 'Acceso completo al sistema');

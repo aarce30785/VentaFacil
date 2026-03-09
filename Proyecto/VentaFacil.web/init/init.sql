@@ -28,7 +28,8 @@ CREATE TABLE Nomina (
     Estado VARCHAR(20) NOT NULL,
     TotalBruto DECIMAL(10,2) NOT NULL,
     TotalDeducciones DECIMAL(10,2) NOT NULL,
-    TotalNeto DECIMAL(10,2) NOT NULL
+    TotalNeto DECIMAL(10,2) NOT NULL,
+    Observaciones VARCHAR(500) NULL
 );
 
 -- Tabla Planilla
@@ -37,7 +38,7 @@ CREATE TABLE Planilla (
     Id_Usr INT,
     FechaInicio DATETIME,
     FechaFinal DATETIME,
-    HorasTrabajadas INT,
+    HorasTrabajadas DECIMAL(10,2),
     -- Campo original
     Salario DECIMAL(10,2),
 
@@ -50,12 +51,25 @@ CREATE TABLE Planilla (
     SalarioBruto       DECIMAL(10,2) NULL,
     SalarioNeto        DECIMAL(10,2) NULL,
     Observaciones      VARCHAR(400)  NULL,
+    HoraInicioPausa    DATETIME      NULL,
+    HoraFinPausa       DATETIME      NULL,
 
     CONSTRAINT Plan_Pk PRIMARY KEY (Id_Planilla),
     CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr)
         REFERENCES Usuario(Id_Usr),
     CONSTRAINT FK_Planilla_Nomina FOREIGN KEY (Id_Nomina)
         REFERENCES Nomina(Id_Nomina)
+);
+
+-- Tabla ConfiguracionPlanilla
+CREATE TABLE ConfiguracionPlanilla (
+    Id_Configuracion INT IDENTITY(1,1),
+    Id_Usr INT NOT NULL,
+    TarifaPorHora DECIMAL(10,2) NOT NULL,
+    FechaActualizacion DATETIME DEFAULT GETDATE(),
+    
+    CONSTRAINT ConfPlanilla_Pk PRIMARY KEY (Id_Configuracion),
+    CONSTRAINT ConfPlanillaUsr_Fk FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr)
 );
 
 -- Tabla Categoria
@@ -282,7 +296,6 @@ CREATE TABLE BonificacionAuditoria (
     CONSTRAINT FK_BonificacionAuditoria_Usuario FOREIGN KEY (Id_UsuarioResponsable) REFERENCES Usuario(Id_Usr)
 );
 
--- Alterar Tabla Usuario para Horario
 -- Alterar Tabla Usuario para Horario
 IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraEntrada' AND Object_ID = Object_ID(N'Usuario'))
 BEGIN

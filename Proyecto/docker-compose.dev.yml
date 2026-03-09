@@ -10,7 +10,7 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - sqlserver_data_dev:/var/opt/mssql/data
+      - sqlserver_data_v2:/var/opt/mssql/data
     mem_limit: 2g
     depends_on:
       fix-permissions:
@@ -52,7 +52,7 @@ services:
     user: root
     command: sh -c "chown -R 10001:0 /var/opt/mssql/data && chmod -R 775 /var/opt/mssql/data && echo '✅ Permissions fixed'"
     volumes:
-      - sqlserver_data_dev:/var/opt/mssql/data
+      - sqlserver_data_v2:/var/opt/mssql/data
 
   # Servicio de Correo (Postfix) - Modo Desarrollo
   postfix:
@@ -67,7 +67,7 @@ services:
       - ventafacil-dev-network
 
 volumes:
-  sqlserver_data_dev:
+  sqlserver_data_v2:
 
 
 networks:

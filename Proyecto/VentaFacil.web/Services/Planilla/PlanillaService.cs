@@ -35,12 +35,50 @@ namespace VentaFacil.web.Services.Planilla
                         response.Message = "Hora de salida inválida: La hora de salida no puede ser anterior a la de entrada.";
                         return response;
                     }
+
+                    if (dto.FechaFinal.Value.Date != dto.FechaInicio.Date)
+                    {
+                        response.Success = false;
+                        response.Message = "Hora de salida inválida: La hora de salida debe ser el mismo día que la hora de entrada.";
+                        return response;
+                    }
+
+                    if (dto.HoraInicioPausa.HasValue && dto.HoraInicioPausa.Value < dto.FechaInicio)
+                    {
+                        response.Success = false;
+                        response.Message = "La hora de inicio de pausa no puede ser anterior a la hora de entrada.";
+                        return response;
+                    }
+
+                    if (dto.HoraFinPausa.HasValue && dto.HoraInicioPausa.HasValue && dto.HoraFinPausa.Value < dto.HoraInicioPausa.Value)
+                    {
+                        response.Success = false;
+                        response.Message = "La hora de fin de pausa no puede ser anterior al inicio de pausa.";
+                        return response;
+                    }
+
+                    if (dto.HoraFinPausa.HasValue && dto.HoraFinPausa.Value > dto.FechaFinal.Value)
+                    {
+                        response.Success = false;
+                        response.Message = "La hora de fin de pausa no puede ser posterior a la de salida.";
+                        return response;
+                    }
                 }
 
                 Models.Planilla planilla;
+                // Obtener usuario para sacar tarifa
+                var usuario = await _context.Usuario.FindAsync(dto.Id_Usr);
+                if (usuario == null)
+                {
+                    response.Success = false;
+                    response.Message = "Usuario no encontrado.";
+                    return response;
+                }
 
-                // Tarifa base simulada para el cálculo (esto vendría de configuración o usuario en un caso real)
-                decimal tarifaPorHora = 2500m;
+                var configuracion = await _context.ConfiguracionPlanilla.FirstOrDefaultAsync(c => c.Id_Usr == dto.Id_Usr);
+
+                // Tarifa base (fallback a 2500m si es nula o no hay configuración)
+                decimal tarifaPorHora = configuracion?.TarifaPorHora ?? 2500m;
 
                 if (dto.Id_Planilla.HasValue && dto.Id_Planilla.Value > 0)
                 {
@@ -55,6 +93,8 @@ namespace VentaFacil.web.Services.Planilla
                     // Actualizar datos
                     planilla.FechaInicio = dto.FechaInicio;
                     planilla.FechaFinal = dto.FechaFinal;
+                    planilla.HoraInicioPausa = dto.HoraInicioPausa;
+                    planilla.HoraFinPausa = dto.HoraFinPausa;
                 }
                 else
                 {
@@ -64,6 +104,8 @@ namespace VentaFacil.web.Services.Planilla
                         Id_Usr = dto.Id_Usr,
                         FechaInicio = dto.FechaInicio,
                         FechaFinal = dto.FechaFinal,
+                        HoraInicioPausa = dto.HoraInicioPausa,
+                        HoraFinPausa = dto.HoraFinPausa,
                         HorasExtras = 0,
                         Bonificaciones = 0,
                         Deducciones = 0,
@@ -76,9 +118,20 @@ namespace VentaFacil.web.Services.Planilla
                 if (planilla.FechaFinal.HasValue)
                 {
                     TimeSpan duracion = planilla.FechaFinal.Value - planilla.FechaInicio;
-                    planilla.HorasTrabajadas = (int)duracion.TotalHours;
+                    double horasPausa = 0;
+
+                    if (planilla.HoraInicioPausa.HasValue && planilla.HoraFinPausa.HasValue)
+                    {
+                        TimeSpan duracionPausa = planilla.HoraFinPausa.Value - planilla.HoraInicioPausa.Value;
+                        horasPausa = duracionPausa.TotalHours;
+                    }
+
+                    double horasEfectivas = duracion.TotalHours - horasPausa;
+                    if (horasEfectivas < 0) horasEfectivas = 0;
+
+                    planilla.HorasTrabajadas = (decimal)horasEfectivas;
                     planilla.EstadoRegistro = "Completada";
-                    planilla.SalarioBruto = (decimal)duracion.TotalHours * tarifaPorHora;
+                    planilla.SalarioBruto = planilla.HorasTrabajadas * tarifaPorHora;
                 }
                 else
                 {
@@ -123,38 +176,74 @@ namespace VentaFacil.web.Services.Planilla
                     return response;
                 }
 
+                // =====================================================================
+                // VALIDACIÓN: Bloquear si la planilla ya está incluida en una nómina
+                //             activa (cualquier estado distinto de "Anulada")
+                // =====================================================================
+                if (planilla.Id_Nomina.HasValue)
+                {
+                    var nominaAsociada = await _context.Nomina.FindAsync(planilla.Id_Nomina.Value);
+                    if (nominaAsociada != null && nominaAsociada.Estado != "Anulada")
+                    {
+                        response.Success = false;
+                        response.Message = $"No se pueden registrar horas extras: la jornada ya fue incorporada " +
+                                           $"a la nómina #{nominaAsociada.Id_Nomina} (estado: {nominaAsociada.Estado}). " +
+                                           $"Solo es posible en jornadas que aún no hayan sido procesadas en nómina.";
+                        return response;
+                    }
+                }
+
                 // Tarifa simulada para extras
                 decimal tarifaExtra = 3500m;
 
-                // Validar límite legal de horas extras (Ej: Máximo 4 horas por día o 12 horas totales de jornada)
-                // Asumimos un máximo de 4 horas extras por jornada para este ejemplo
+                // Validar límite legal de horas extras: máximo 4 horas por jornada (Código de Trabajo CR)
                 decimal maxHorasExtras = 4;
                 if (dto.HorasExtras > maxHorasExtras)
                 {
                     response.Success = false;
-                    response.Message = "Horas extras exceden límite legal (Máximo 4 horas permitidas).";
+                    response.Message = "Horas extras exceden límite legal";
                     return response;
                 }
 
-                // Validar horario (Turno)
-                // Si el usuario tiene turno definido, verificar que las extras sean fuera de ese turno
-                // Esta validación es compleja si no tenemos la fecha/hora exacta de las extras, 
-                // pero podemos validar que si hay extras, la jornada total (Trabajadas + Extras) sea coherente.
-                
-                // Cargar usuario para ver turno
+                // =====================================================================
+                // VALIDACIÓN: Turno del empleado
+                // Si el empleado tiene horario definido y la jornada ya tiene registro
+                // de entrada/salida, verificar que las horas extras sean coherentes
+                // con su turno (es decir, que la jornada haya cerrado correctamente).
+                // =====================================================================
                 var usuario = await _context.Usuario.FindAsync(planilla.Id_Usr);
-                if (usuario != null && usuario.HoraEntrada.HasValue && usuario.HoraSalida.HasValue)
+                if (dto.HorasExtras > 0 && usuario != null &&
+                    usuario.HoraEntrada.HasValue && usuario.HoraSalida.HasValue)
                 {
-                    // Lógica opcional: Si se quisiera validar contra el reloj
+                    if (!planilla.FechaFinal.HasValue)
+                    {
+                        response.Success = false;
+                        response.Message = "No se pueden registrar horas extras en una jornada sin hora de salida registrada. " +
+                                           "Complete primero el registro de la jornada.";
+                        return response;
+                    }
+
+                    // Calcular final del turno regular: FechaInicio.Date + HoraSalida del turno
+                    var finTurnoRegular = planilla.FechaInicio.Date
+                        .Add(usuario.HoraSalida.Value);
+
+                    // Las horas extras solo aplican si la salida real fue después del turno
+                    if (planilla.FechaFinal.Value <= finTurnoRegular)
+                    {
+                        response.Success = false;
+                        response.Message = "Las horas extras solo pueden registrarse cuando la hora de salida " +
+                                           "supera el horario regular del empleado " +
+                                           $"(turno hasta {usuario.HoraSalida.Value:hh\\:mm}).";
+                        return response;
+                    }
                 }
 
                 planilla.HorasExtras = dto.HorasExtras;
                 planilla.Bonificaciones = dto.MontoBonificaciones;
 
-                // Recalcular Bruto: (Base ya existente) + (Extras * Tarifa) + Bonos
-                // Nota: En un escenario real se recalcularía todo desde cero, aquí sumamos al bruto base implícito
-                decimal salarioBaseEstimado = planilla.SalarioBruto - (planilla.HorasExtras * tarifaExtra) - planilla.Bonificaciones; // Revertir cálculo anterior si hubiera
-                if (salarioBaseEstimado < 0) salarioBaseEstimado = planilla.HorasTrabajadas * 2500m; // Fallback
+                // Recalcular Bruto: revertir extras/bonos previos y aplicar los nuevos
+                decimal salarioBaseEstimado = planilla.SalarioBruto - (planilla.HorasExtras * tarifaExtra) - planilla.Bonificaciones;
+                if (salarioBaseEstimado < 0) salarioBaseEstimado = planilla.HorasTrabajadas * 2500m;
 
                 planilla.SalarioBruto = salarioBaseEstimado + (planilla.HorasExtras * tarifaExtra) + planilla.Bonificaciones;
 
@@ -182,14 +271,13 @@ namespace VentaFacil.web.Services.Planilla
             try
             {
                 // Buscar planillas en el rango que no tengan nómina asignada o sean pendientes
-                var query = _context.Planilla.AsQueryable();
+                var query = _context.Planilla.Include(p => p.Usuario).AsQueryable();
 
                 query = query.Where(p => p.FechaInicio >= dto.FechaInicio && p.FechaFinal <= dto.FechaFinal && p.Id_Nomina == null);
 
                 if (dto.IncluirSoloUsuariosActivos)
                 {
-                    // Asumiendo que Usuario tiene una propiedad Activo, si no existe, omitir esta línea
-                    // query = query.Where(p => p.Usuario.Activo); 
+                    query = query.Where(p => p.Usuario.Estado); 
                 }
 
                 var planillasParaNomina = await query.ToListAsync();
@@ -205,6 +293,16 @@ namespace VentaFacil.web.Services.Planilla
                 var jornadasIncompletas = planillasParaNomina.Where(p => p.EstadoRegistro == "Incompleta").ToList();
                 if (jornadasIncompletas.Any())
                 {
+                    var empleadosFaltantes = jornadasIncompletas
+                        .Select(j => j.Usuario?.Nombre ?? $"ID: {j.Id_Usr}")
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var empleado in empleadosFaltantes)
+                    {
+                        response.ErroresValidacion.Add($"Empleado {empleado}: Tiene registros de jornada Incompletas (Falta registrar salida).");
+                    }
+
                     response.Success = false;
                     response.Message = "No se puede generar la nómina porque existen jornadas incompletas. Por favor revise los registros de los colaboradores.";
                     return response;
@@ -213,24 +311,52 @@ namespace VentaFacil.web.Services.Planilla
                 // =================================================================================
                 // CÁLCULO AUTOMÁTICO DE DEDUCCIONES
                 // =================================================================================
-                
+
                 // 1. Obtener Configuraciones
                 var deduccionesLey = await _context.DeduccionLey.Where(d => d.Activo).ToListAsync();
                 var tramosRenta = await _context.ImpuestoRenta.Where(i => i.Anio == 2025).OrderBy(i => i.LimiteInferior).ToListAsync();
+
+                // ===========================================
+                // PL-3002: Validar tasas configuradas
+                // ===========================================
+                var deduccionesSinTasa = deduccionesLey.Where(d => d.Porcentaje == 0).ToList();
+                if (deduccionesSinTasa.Any())
+                {
+                    foreach (var ded in deduccionesSinTasa)
+                    {
+                        response.ErroresValidacion.Add(
+                            $"Tasa de deducción '{ded.Nombre}' no definida (porcentaje = 0%). " +
+                            $"Configure la tasa antes de procesar la nómina.");
+                    }
+                    response.Success = false;
+                    response.Message = "No se puede generar la nómina: existen deducciones activas sin tasa configurada. Revise la configuración de deducciones.";
+                    return response;
+                }
 
                 foreach (var planilla in planillasParaNomina)
                 {
                     decimal salarioBruto = planilla.SalarioBruto;
                     decimal totalDeduccionesEmpleado = 0;
 
+                    // ===========================================
+                    // Escenario 3: Salario bruto = 0, omitir
+                    // ===========================================
+                    if (salarioBruto == 0)
+                    {
+                        planilla.Deducciones = 0;
+                        planilla.SalarioNeto = 0;
+                        planilla.Observaciones = "Sin deducción aplicada: el salario bruto es ₡0.00 para este período (sin horas registradas o tarifa no configurada).";
+                        continue;
+                    }
+
+                    // Limpiar observaciones previas si el bruto es válido
+                    planilla.Observaciones = null;
+
                     // 2. Calcular Cargas Sociales (SEM, IVM, LPT, etc.)
                     foreach (var ded in deduccionesLey)
                     {
-                        if (ded.Porcentaje > 0)
-                        {
-                            decimal monto = salarioBruto * (ded.Porcentaje / 100m);
-                            totalDeduccionesEmpleado += monto;
-                        }
+                        decimal monto = salarioBruto * (ded.Porcentaje / 100m);
+                        totalDeduccionesEmpleado += monto;
                     }
 
                     // 3. Calcular Impuesto de Renta
@@ -320,7 +446,7 @@ namespace VentaFacil.web.Services.Planilla
             return response;
         }
 
-        public async Task<BaseResponse> RevertirNominaAsync(int idNomina)
+        public async Task<BaseResponse> RevertirNominaAsync(int idNomina, string justificacion)
         {
             var response = new BaseResponse();
             try
@@ -345,6 +471,7 @@ namespace VentaFacil.web.Services.Planilla
 
                 // Cambiar estado de la nómina
                 nomina.Estado = "Anulada";
+                nomina.Observaciones = justificacion;
 
                 // Liberar las planillas asociadas
                 foreach (var planilla in nomina.Planillas)
@@ -515,30 +642,133 @@ namespace VentaFacil.web.Services.Planilla
 
             if (nomina == null) return null;
 
+            var deduccionesLey = await _context.DeduccionLey
+                .Where(d => d.Activo)
+                .OrderBy(d => d.Nombre)
+                .ToListAsync();
+
             var dto = new NominaDetalleDto
             {
-                Id_Nomina = nomina.Id_Nomina,
-                FechaInicio = nomina.FechaInicio,
-                FechaFinal = nomina.FechaFinal,
+                Id_Nomina    = nomina.Id_Nomina,
+                FechaInicio  = nomina.FechaInicio,
+                FechaFinal   = nomina.FechaFinal,
                 FechaGeneracion = nomina.FechaGeneracion,
-                Estado = nomina.Estado,
-                TotalBruto = nomina.TotalBruto,
+                Estado       = nomina.Estado,
+                Observaciones = nomina.Observaciones,
+                TotalBruto   = nomina.TotalBruto,
                 TotalDeducciones = nomina.TotalDeducciones,
-                TotalNeto = nomina.TotalNeto,
-                Detalles = nomina.Planillas.Select(p => new PlanillaDetalleItemDto
+                TotalNeto    = nomina.TotalNeto,
+                DeduccionesAplicadas = deduccionesLey.Select(d => new DeduccionResumenDto
                 {
-                    NombreUsuario = p.Usuario.Nombre,
-                    Identificacion = p.Usuario.Correo, // Usando correo como ID secundario
-                    HorasTrabajadas = p.HorasTrabajadas,
-                    HorasExtras = p.HorasExtras,
-                    Bonificaciones = p.Bonificaciones,
-                    SalarioBruto = p.SalarioBruto,
-                    Deducciones = p.Deducciones,
-                    SalarioNeto = p.SalarioNeto
-                }).ToList()
+                    Nombre = d.Nombre,
+                    Porcentaje = d.Porcentaje
+                }).ToList(),
+                Detalles = new List<PlanillaDetalleItemDto>()
             };
 
+            foreach (var p in nomina.Planillas)
+            {
+                var item = new PlanillaDetalleItemDto
+                {
+                    NombreUsuario  = p.Usuario?.Nombre ?? $"ID {p.Id_Usr}",
+                    Identificacion = p.Usuario?.Correo ?? "-",
+                    HorasTrabajadas = p.HorasTrabajadas,
+                    HorasExtras    = p.HorasExtras,
+                    Bonificaciones = p.Bonificaciones,
+                    SalarioBruto   = p.SalarioBruto,
+                    Deducciones    = p.Deducciones,
+                    SalarioNeto    = p.SalarioNeto,
+                    Observaciones  = p.Observaciones,  // Nota explicativa (ej: bruto ₡0)
+                    DeduccionesDetalle = new List<DeduccionDetalleItemDto>()
+                };
+
+                // Calcular desglose por deducción (₡0 si bruto es 0)
+                foreach (var ded in deduccionesLey)
+                {
+                    item.DeduccionesDetalle.Add(new DeduccionDetalleItemDto
+                    {
+                        Nombre = ded.Nombre,
+                        Porcentaje = ded.Porcentaje,
+                        Monto = p.SalarioBruto * (ded.Porcentaje / 100m)
+                    });
+                }
+
+                // Detalle diario: un Planilla = una jornada
+                item.DiasLaborados.Add(new PlanillaDiaDto
+                {
+                    Id_Planilla      = p.Id_Planilla,
+                    FechaInicio      = p.FechaInicio,
+                    FechaFinal       = p.FechaFinal,
+                    HoraInicioPausa  = p.HoraInicioPausa,
+                    HoraFinPausa     = p.HoraFinPausa,
+                    HorasTrabajadas  = p.HorasTrabajadas,
+                    HorasExtras      = p.HorasExtras,
+                    SalarioBruto     = p.SalarioBruto,
+                    EstadoRegistro   = p.EstadoRegistro,
+                    Id_Nomina        = p.Id_Nomina
+                });
+
+                dto.Detalles.Add(item);
+            }
+
             return dto;
+        }
+
+        // ===================================================================
+        // HISTORIAL LABORAL (5 AÑOS)
+        // ===================================================================
+        public async Task<HistorialLaboralResponse> ObtenerHistorialUsuarioAsync(int idUsuario, int pagina, int porPagina = 20)
+        {
+            var response = new HistorialLaboralResponse { PaginaActual = pagina, CantidadPorPagina = porPagina };
+
+            try
+            {
+                var fechaLimite = DateTime.Now.AddYears(-5);
+
+                var usuario = await _context.Usuario.FindAsync(idUsuario);
+                if (usuario == null)
+                {
+                    response.Success = false;
+                    response.Message = "Usuario no encontrado.";
+                    return response;
+                }
+
+                response.Id_Usr = idUsuario;
+                response.NombreUsuario = usuario.Nombre;
+
+                var query = _context.Planilla
+                    .Where(p => p.Id_Usr == idUsuario && p.FechaInicio >= fechaLimite)
+                    .OrderByDescending(p => p.FechaInicio);
+
+                response.TotalRegistros = await query.CountAsync();
+                response.TotalPaginas   = (int)Math.Ceiling(response.TotalRegistros / (double)porPagina);
+
+                var jornadas = await query
+                    .Skip((pagina - 1) * porPagina)
+                    .Take(porPagina)
+                    .ToListAsync();
+
+                response.Jornadas = jornadas.Select(p => new PlanillaDiaDto
+                {
+                    Id_Planilla     = p.Id_Planilla,
+                    FechaInicio     = p.FechaInicio,
+                    FechaFinal      = p.FechaFinal,
+                    HoraInicioPausa = p.HoraInicioPausa,
+                    HoraFinPausa    = p.HoraFinPausa,
+                    HorasTrabajadas = p.HorasTrabajadas,
+                    HorasExtras     = p.HorasExtras,
+                    SalarioBruto    = p.SalarioBruto,
+                    EstadoRegistro  = p.EstadoRegistro,
+                    Id_Nomina       = p.Id_Nomina
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "Error al obtener el historial: " + ex.Message;
+            }
+
+            return response;
         }
     }
 }

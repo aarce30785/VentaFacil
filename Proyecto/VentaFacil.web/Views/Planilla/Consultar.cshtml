@@ -115,6 +115,16 @@
                                 <option value="Anulada" selected="@(ViewBag.Filtros?.Estado == "Anulada")">Anulada</option>
                             </select>
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label mb-0">Desde:</label>
+                            <input type="date" name="FechaInicio" class="form-control form-control-sm rounded-pill"
+                                   value="@(ViewBag.Filtros?.FechaInicio?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label mb-0">Hasta:</label>
+                            <input type="date" name="FechaFinal" class="form-control form-control-sm rounded-pill"
+                                   value="@(ViewBag.Filtros?.FechaFinal?.ToString("yyyy-MM-dd"))" />
+                        </div>
                         <div class="col-md-3 d-flex align-items-end">
                             <button type="submit" class="btn btn-info btn-premium me-2">
                                 <i class="fas fa-search"></i> Filtrar
@@ -122,6 +132,7 @@
                             <a href="@Url.Action("Consultar", "Planilla")" class="btn btn-light btn-premium">Limpiar</a>
                         </div>
                     </form>
+
                 </div>
             </div>
         </div>
@@ -198,20 +209,25 @@
                                     <td class="fw-bold text-success">@item.TotalNeto.ToString("C", numberFormat)</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
-                                            <a href="#" class="btn btn-info btn-premium btn-sm disabled" title="Ver Detalle">
+                                            <a href="@Url.Action("DetalleNomina", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-info btn-premium btn-sm" title="Ver Detalle">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="@Url.Action("ExportarNomina", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-secondary btn-premium btn-sm" title="Descargar PDF" target="_blank">
                                                 <i class="fas fa-file-pdf"></i>
                                             </a>
+                                            <a href="@Url.Action("ExportarNominaExcel", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-success btn-premium btn-sm" title="Descargar Excel" target="_blank">
+                                                <i class="fas fa-file-excel"></i>
+                                            </a>
                                             @if (item.Estado != "Anulada")
                                             {
-                                                <form asp-action="RevertirNomina" method="post" style="display:inline;">
-                                                    <input type="hidden" name="idNomina" value="@item.Id_Nomina" />
-                                                    <button type="submit" class="btn btn-danger btn-premium btn-sm" title="Anular" onclick="return confirm('¿Está seguro de anular esta nómina?');">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button"
+                                                        class="btn btn-danger btn-premium btn-sm"
+                                                        title="Anular"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalAnular"
+                                                        data-nomina-id="@item.Id_Nomina">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
                                             }
                                         </div>
                                     </td>
@@ -221,10 +237,11 @@
                         else
                         {
                             <tr>
-                                <td colspan="10" class="text-center text-muted py-3">
+                                <td colspan="10" class="text-center text-muted py-4">
                                     <div class="empty-state">
-                                        <i class="fas fa-folder-open mb-2" style="font-size: 2em;"></i>
-                                        <p class="m-0">No se encontraron nóminas registradas.</p>
+                                        <i class="fas fa-calendar-times mb-3" style="font-size: 2.5em; opacity:.35"></i>
+                                        <p class="fw-semibold mb-1">No se encontraron nóminas para el periodo seleccionado</p>
+                                        <p class="small text-muted mb-0">Intente cambiar el periodo o criterio de búsqueda.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -255,3 +272,51 @@
         </div>
     </div>
 </div>
+
+<!-- ── Modal Anular Nómina (Consultar) ───────────────────────────────── -->
+<div class="modal fade" id="modalAnular" tabindex="-1" aria-labelledby="modalAnularLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg" style="border-radius:16px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#dc3545,#c82333);border-radius:16px 16px 0 0;">
+                <h5 class="modal-title text-white fw-bold" id="modalAnularLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Anular Nómina
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <form asp-action="RevertirNomina" asp-controller="Planilla" method="post" id="formAnular">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idNomina" id="anularNominaId" value="" />
+
+                <div class="modal-body p-4">
+                    <p class="text-muted">Esta acción anulará la nómina seleccionada y liberará sus jornadas. No puede deshacerse. Por favor ingrese una justificación:</p>
+                    <div class="mb-3">
+                        <label for="justificacionInput" class="form-label fw-semibold">Motivo / Justificación</label>
+                        <textarea name="justificacion" id="justificacionInput" class="form-control" rows="3" placeholder="Ej: Error en el cálculo de horas de X empleado..." required minlength="10"></textarea>
+                        <div class="form-text">Mínimo 10 caracteres.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> Confirmar Anulación
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modalEl = document.getElementById('modalAnular');
+        if (!modalEl) return;
+        modalEl.addEventListener('show.bs.modal', function (event) {
+            var btn = event.relatedTarget;
+            var nominaId = btn.getAttribute('data-nomina-id');
+            document.getElementById('anularNominaId').value = nominaId;
+            document.getElementById('justificacionInput').value = '';
+        });
+    })();
+</script>
