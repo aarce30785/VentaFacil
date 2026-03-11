@@ -20,7 +20,7 @@ services:
       MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
       MSSQL_PID: 'Developer'
       MSSQL_TCP_PORT: 1433
-      MSSQL_MEMORY_LIMIT_MB: 1536 # Dejar margen para el contenedor (buffer)
+      MSSQL_MEMORY_LIMIT_MB: 2048 # Aumentado para mejor rendimiento
       MSSQL_COLLATION: 'SQL_Latin1_General_CP1_CI_AS'
       TZ: 'America/Guatemala' # Ajusta a tu zona horaria
     init: true
@@ -32,11 +32,14 @@ services:
       - sqlserver_secrets:/var/opt/mssql/secrets
       - ./sqlserver/backups:/var/opt/mssql/backup # Para backups
     mem_limit: 2g # Ajustado para VPS de 4GB
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'VentaFacilDb123!' -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
     networks:
-      ventafacil-network:
-        aliases:
-          - sqlserver
-          - ventafacil-db
+      - ventafacil-network
     restart: unless-stopped
 
   ventafacil.web:
@@ -67,9 +70,17 @@ services:
     networks:
       - ventafacil-network
     depends_on:
-      - sqlserver
-      - postfix
+      sqlserver:
+        condition: service_healthy
+      postfix:
+        condition: service_started
     mem_limit: 512m
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
   # Servicio de Correo (Postfix) - Custom Build (Alpine)
   postfix:
