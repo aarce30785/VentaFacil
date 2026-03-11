@@ -20,6 +20,7 @@ BEGIN
         Estado BIT DEFAULT 1,
         FechaCreacion DATETIME DEFAULT GETDATE(),
         Rol INT,
+        SessionToken VARCHAR(255) NULL,
         CONSTRAINT Usr_Pk PRIMARY KEY (Id_Usr),
         CONSTRAINT UsrRol_Fk FOREIGN KEY (Rol) REFERENCES Rol(Id_Rol)
     );
@@ -48,7 +49,9 @@ BEGIN
         Id_Usr INT,
         FechaInicio DATETIME,
         FechaFinal DATETIME,
-        HorasTrabajadas INT,
+        HoraInicioPausa DATETIME NULL,
+        HoraFinPausa DATETIME NULL,
+        HorasTrabajadas DECIMAL(10,2),
         Salario DECIMAL(10,2),
         Bonificaciones     DECIMAL(10,2) NULL,
         Deducciones        DECIMAL(10,2) NULL,
@@ -84,7 +87,6 @@ BEGIN
         Descripcion VARCHAR(1024),
         Precio DECIMAL(10,2),
         Imagen VARCHAR(2048),
-        StockMinimo INT,
         Estado BIT DEFAULT 1,
         Id_Categoria INT,
         CONSTRAINT Pro_Pk PRIMARY KEY (Id_Producto),
@@ -356,15 +358,8 @@ BEGIN
 END
 
 -- Alterar Tabla Usuario para Horario
-IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraEntrada' AND Object_ID = Object_ID(N'Usuario'))
-BEGIN
-    ALTER TABLE Usuario ADD HoraEntrada TIME NULL
-END
-
-IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraSalida' AND Object_ID = Object_ID(N'Usuario'))
-BEGIN
-    ALTER TABLE Usuario ADD HoraSalida TIME NULL
-END
+-- Se eliminan HoraEntrada y HoraSalida porque no existen en el modelo C#
+-- y se movieron a otros controles o fueron descartadas.
 
 -- Alterar Tabla Caja para control de USD
 IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Monto_Inicial_USD' AND Object_ID = Object_ID(N'Caja'))
