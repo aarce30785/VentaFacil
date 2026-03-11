@@ -139,19 +139,16 @@
                                     <span class="text-sm">Sin imagen</span>
                                 </div>
                             }
+                            
                             <!-- Status Badge Float -->
                             <div class="position-absolute top-0 end-0 p-2" id="badge-disponibilidad-@producto.Id_Producto">
-                                @if (!producto.MaximoProducible.HasValue)
+                                @if (producto.StockActual <= 0)
                                 {
-                                    <span class="badge bg-secondary shadow-sm" title="Sin receta asignada"><i class="lni lni-question-circle me-1"></i> Sin Receta</span>
+                                    <span class="badge bg-danger shadow-sm"><i class="lni lni-warning me-1"></i> Agotado</span>
                                 }
-                                else if (producto.MaximoProducible <= 0)
+                                else if (producto.StockActual <= producto.StockMinimo)
                                 {
-                                    <span class="badge bg-danger shadow-sm"><i class="lni lni-warning me-1"></i> Agotado (Por Insumos)</span>
-                                }
-                                else if (producto.MaximoProducible <= 5)
-                                {
-                                    <span class="badge bg-warning text-dark shadow-sm"><i class="lni lni-warning me-1"></i> Poco (Max @producto.MaximoProducible)</span>
+                                    <span class="badge bg-warning text-dark shadow-sm"><i class="lni lni-warning me-1"></i> Bajo Stock</span>
                                 }
                                 else
                                 {
@@ -166,7 +163,21 @@
                                 @(string.IsNullOrEmpty(producto.Descripcion) ? "Sin descripción disponible." : producto.Descripcion)
                             </p>
                             
-
+                            <!-- Stock Control -->
+                            <div class="d-flex align-items-center justify-content-between mb-3 bg-light rounded p-2">
+                                <span class="text-sm fw-bold text-muted">Stock:</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-sm btn-white border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px; background: white;" 
+                                            onclick="actualizarStockRapido(@producto.Id_Producto, -1, @producto.StockMinimo)" title="Disminuir">
+                                        <i class="lni lni-minus text-danger" style="font-size: 12px;"></i>
+                                    </button>
+                                    <span class="fw-bold fs-5 mx-1" id="stock-val-@producto.Id_Producto">@producto.StockActual</span>
+                                    <button type="button" class="btn btn-sm btn-white border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px; background: white;" 
+                                            onclick="actualizarStockRapido(@producto.Id_Producto, 1, @producto.StockMinimo)" title="Aumentar">
+                                        <i class="lni lni-plus text-success" style="font-size: 12px;"></i>
+                                    </button>
+                                </div>
+                            </div>
                             
                             <!-- Actions Footer -->
                             <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
@@ -177,9 +188,6 @@
                                     </a>
                                     <a href="javascript:void(0);" onclick="abrirModalProducto('editar', @producto.Id_Producto)" class="btn btn-sm btn-light text-warning rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Editar">
                                         <i class="lni lni-pencil"></i>
-                                    </a>
-                                    <a href="javascript:void(0);" onclick="abrirModalReceta(@producto.Id_Producto)" class="btn btn-sm btn-light text-info rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Receta">
-                                        <i class="lni lni-restaurant"></i>
                                     </a>
                                     <a href="javascript:void(0);" onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@(producto.Nombre?.Replace("'", "\\'") ?? "")')" class="btn btn-sm btn-light text-danger rounded-circle" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Eliminar">
                                         <i class="lni lni-trash-can"></i>
@@ -375,6 +383,8 @@
                 Nombre: form.querySelector('[name="Nombre"]')?.value || '',
                 Precio: form.querySelector('[name="Precio"]')?.value || '',
                 Id_Categoria: form.querySelector('[name="Id_Categoria"]')?.value || '',
+                StockMinimo: form.querySelector('[name="StockMinimo"]')?.value || '',
+                StockActual: form.querySelector('[name="StockActual"]')?.value || '',
                 Descripcion: form.querySelector('[name="Descripcion"]')?.value || '',
                 Estado: form.querySelector('[name="Estado"]')?.checked || false
             };
@@ -386,6 +396,8 @@
                 Nombre: form.querySelector('[name="Nombre"]')?.value || '',
                 Precio: form.querySelector('[name="Precio"]')?.value || '',
                 Id_Categoria: form.querySelector('[name="Id_Categoria"]')?.value || '',
+                StockMinimo: form.querySelector('[name="StockMinimo"]')?.value || '',
+                StockActual: form.querySelector('[name="StockActual"]')?.value || '',
                 Descripcion: form.querySelector('[name="Descripcion"]')?.value || '',
                 Estado: form.querySelector('[name="Estado"]')?.checked || false,
                 ImagenFile: form.querySelector('[name="ImagenFile"]')?.files?.length > 0
@@ -405,7 +417,12 @@
                     const newText = select.options[select.selectedIndex]?.text || 'N/A';
                     cambios.push(`<strong>Categoría:</strong> ${oldText} <i class="lni lni-arrow-right"></i> ${newText}`);
                 }
-
+                if (currentValues.StockMinimo !== initialFormValues.StockMinimo) {
+                    cambios.push(`<strong>Stock Mínimo:</strong> ${initialFormValues.StockMinimo} <i class="lni lni-arrow-right"></i> ${currentValues.StockMinimo}`);
+                }
+                if (currentValues.StockActual !== initialFormValues.StockActual) {
+                    cambios.push(`<strong>Stock Actual:</strong> ${initialFormValues.StockActual} <i class="lni lni-arrow-right"></i> ${currentValues.StockActual}`);
+                }
                 if (currentValues.Descripcion !== initialFormValues.Descripcion) {
                     cambios.push(`<strong>Descripción:</strong> <em>(Se ha modificado)</em>`);
                 }
@@ -552,30 +569,6 @@
             });
         }
 
-        // ABRIR MODAL RECETA
-        window.abrirModalReceta = function(productoId) {
-            const url = '@Url.Action("ObtenerRecetaModal", "Producto")' + '?productoId=' + productoId;
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error('Error al cargar la receta');
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById('modalContainerProductos').innerHTML = data;
-                    const modalElement = document.getElementById('recetaModal');
-                    const modal = new bootstrap.Modal(modalElement);
-                    modal.show();
-                })
-                .catch(error => {
-                    Toastify({
-                        text: "Error al cargar receta: " + error.message,
-                        duration: 3000,
-                        style: { background: "#ff5f6d" }
-                    }).showToast();
-                });
-        };
-
         // CONFIRMACIONES SWEETALERT
         window.confirmarEliminacionProducto = function(productoId, nombreProducto) {
             Swal.fire({
@@ -634,94 +627,27 @@
             });
         };
 
+        window.actualizarStockRapido = function(productoId, cantidad, stockMinimo) {
+            const currentStockElem = document.getElementById(`stock-val-${productoId}`);
+            if (!currentStockElem) return;
 
-        // ===== LÓGICA DE RECETAS (Modal) =====
-        window.agregarInsumoTabla = function() {
-            const select = document.getElementById('selectInsumoToAdd');
-            const countInput = document.getElementById('cantidadInsumoToAdd');
-            
-            const inventarioId = select.value;
-            const nombreText = select.options[select.selectedIndex]?.text;
-            const cantidad = parseInt(countInput.value) || 0;
-            
-            if (!inventarioId || cantidad <= 0) {
-                Toastify({ text: "Seleccione un insumo y una cantidad válida", duration: 3000, style: { background: "#ff5f6d" } }).showToast();
+            const currentStock = parseInt(currentStockElem.innerText);
+            if (currentStock + cantidad < 0) {
+                Toastify({
+                    text: "El stock no puede ser negativo",
+                    duration: 2000,
+                    style: { background: "#ff5f6d" }
+                }).showToast();
                 return;
             }
-            
-            const tbody = document.querySelector('#tablaReceta tbody');
-            
-            // Verificar si ya existe
-            let trExistent = tbody.querySelector(`tr[data-inventario-id="${inventarioId}"]`);
-            if (trExistent) {
-                let cantInput = trExistent.querySelector('.cantidad-insumo');
-                cantInput.value = parseInt(cantInput.value) + cantidad;
-            } else {
-                const tr = document.createElement('tr');
-                tr.setAttribute('data-inventario-id', inventarioId);
-                tr.innerHTML = `
-                    <td class="align-middle">${nombreText}</td>
-                    <td class="align-middle">
-                        <input type="number" class="form-control form-control-sm cantidad-insumo" value="${cantidad}" min="1" />
-                    </td>
-                    <td class="align-middle text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarFilaInsumo(this)">
-                            <i class="lni lni-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            }
-            
-            document.getElementById('emptyRecetaMsg').style.display = 'none';
-            
-            // Reset inputs
-            select.value = '';
-            countInput.value = '1';
-        };
-        
-        window.eliminarFilaInsumo = function(btn) {
-            btn.closest('tr').remove();
-            const tbody = document.querySelector('#tablaReceta tbody');
-            if (tbody.children.length === 0) {
-                document.getElementById('emptyRecetaMsg').style.display = 'block';
-            }
-        };
-        
-        window.guardarReceta = function() {
-            const productoId = document.getElementById('recetaProductoId').value;
-            const tbody = document.querySelector('#tablaReceta tbody');
-            const rows = tbody.querySelectorAll('tr');
-            
-            const insumos = [];
-            rows.forEach(row => {
-                const inventarioId = row.getAttribute('data-inventario-id');
-                const cantidad = row.querySelector('.cantidad-insumo').value;
-                
-                insumos.push({
-                    Id_Inventario: parseInt(inventarioId),
-                    Cantidad: parseInt(cantidad)
-                });
-            });
-            
-            const payload = {
-                ProductoId: parseInt(productoId),
-                Insumos: insumos
-            };
-            
-            Swal.fire({
-                title: 'Guardando receta...',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-            
-            fetch('@Url.Action("GuardarReceta", "Producto")', {
+
+            fetch('@Url.Action("ActualizarStock", "Producto")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ idProducto: productoId, cantidad: cantidad })
             })
             .then(async response => {
                 const contentType = response.headers.get("content-type");
@@ -734,22 +660,41 @@
             })
             .then(data => {
                 if (data.success) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('recetaModal'));
-                    if (modal) modal.hide();
+                    const nuevoStock = currentStock + cantidad;
+                    currentStockElem.innerText = nuevoStock;
                     
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Éxito',
-                        text: data.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    // Actualizar badge de disponibilidad
+                    const badgeContainer = document.getElementById(`badge-disponibilidad-${productoId}`);
+                    if (badgeContainer) {
+                        if (nuevoStock <= 0) {
+                            badgeContainer.innerHTML = `<span class="badge bg-danger text-white rounded-pill px-3 py-2"><i class="lni lni-warning me-1"></i> Agotado</span>`;
+                        } else if (nuevoStock <= stockMinimo) {
+                            badgeContainer.innerHTML = `<span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i class="lni lni-warning me-1"></i> Bajo Stock</span>`;
+                        } else {
+                            badgeContainer.innerHTML = `<span class="badge bg-success text-white rounded-pill px-3 py-2"><i class="lni lni-checkmark-circle me-1"></i> Disponible</span>`;
+                        }
+                    }
+
+                    Toastify({
+                        text: cantidad > 0 ? "+ Stock actualizado" : "- Stock actualizado",
+                        duration: 1500,
+                        style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                    }).showToast();
                 } else {
-                    Swal.fire('Error', data.message || 'Error al guardar la receta', 'error');
+                    Toastify({
+                        text: "Error: " + data.message,
+                        duration: 3000,
+                        style: { background: "#ff5f6d" }
+                    }).showToast();
                 }
             })
-            .catch(error => {
-                Swal.fire('Error', 'Ocurrió un error inesperado al conectar con el servidor', 'error');
+            .catch(err => {
+                console.error(err);
+                Toastify({
+                    text: "Error de conexión",
+                    duration: 3000,
+                    style: { background: "#ff5f6d" }
+                }).showToast();
             });
         };
     </script>

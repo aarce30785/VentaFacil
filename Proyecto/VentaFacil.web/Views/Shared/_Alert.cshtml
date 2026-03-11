@@ -1,19 +1,6 @@
-@{
-    var alertMessage = TempData["AlertMessage"]?.ToString() ?? 
-                       TempData["Success"]?.ToString() ?? 
-                       TempData["Error"]?.ToString() ?? 
-                       TempData["Warning"]?.ToString() ?? 
-                       TempData["Info"]?.ToString();
-                       
-    var alertType = TempData["AlertType"]?.ToString()?.ToLower() ?? "info";
-    
-    if (TempData["Success"] != null) alertType = "success";
-    if (TempData["Error"] != null) alertType = "error";
-    if (TempData["Warning"] != null) alertType = "warning";
-}
-
-@if (!string.IsNullOrEmpty(alertMessage))
+@if (TempData["AlertMessage"] != null)
 {
+    var alertType = TempData["AlertType"]?.ToString()?.ToLower() ?? "info";
     var alertTitle = TempData["AlertTitle"]?.ToString();
 
     // Map Bootstrap types to SweetAlert2 types
@@ -46,7 +33,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             Toastify({
-                text: "@Html.Raw(string.IsNullOrEmpty(alertTitle) ? "" : $"<strong>{alertTitle}:</strong> ") @Html.Raw(alertMessage)",
+                text: "@Html.Raw(string.IsNullOrEmpty(alertTitle) ? "" : $"<strong>{alertTitle}:</strong> ") @Html.Raw(TempData["AlertMessage"])",
                 duration: 3000,
                 gravity: "bottom", // `top` or `bottom`
                 position: "right", // `left`, `center` or `right`

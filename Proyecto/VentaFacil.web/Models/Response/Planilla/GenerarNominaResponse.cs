@@ -8,6 +8,5 @@
         public decimal TotalBruto { get; set; }
         public decimal TotalDeducciones { get; set; }
         public decimal TotalNeto { get; set; }
-        public List<string> ErroresValidacion { get; set; } = new List<string>();
     }
 }

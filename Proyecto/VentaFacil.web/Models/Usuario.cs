@@ -20,9 +20,9 @@ namespace VentaFacil.web.Models
         public bool Estado { get; set; } = true;
         public DateTime FechaCreacion { get; set; }
 
-        [MaxLength(255)]
-        public string? SessionToken { get; set; }
-
+        // Horario Laboral (Turno)
+        public TimeSpan? HoraEntrada { get; set; }
+        public TimeSpan? HoraSalida { get; set; }
 
         [ForeignKey("Rol")]
         public int Rol { get; set; }

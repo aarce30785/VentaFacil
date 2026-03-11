@@ -16,6 +16,7 @@ namespace VentaFacil.web.Services.Producto
         Task<EditProductoResponse> EliminarAsync(int idProducto);
         Task<EditProductoResponse> DeshabilitarAsync(int idProducto);
         Task<EditProductoResponse> HabilitarAsync(int idProducto);
+        Task<EditProductoResponse> ActualizarStockAsync(int idProducto, int cantidad);
         Task<List<ProductoMasVendidoDto>> GetProductosMasVendidosAsync();
     }
 }

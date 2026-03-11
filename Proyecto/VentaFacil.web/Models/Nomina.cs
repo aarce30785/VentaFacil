@@ -28,8 +28,6 @@ namespace VentaFacil.web.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalNeto { get; set; }
 
-        public string? Observaciones { get; set; }
-
         public virtual ICollection<Planilla> Planillas { get; set; }
     }
 }

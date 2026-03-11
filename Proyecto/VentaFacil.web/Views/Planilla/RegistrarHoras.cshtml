@@ -114,29 +114,6 @@
                         <input type="hidden" asp-for="FechaFinal" />
                         <span asp-validation-for="FechaFinal" class="text-danger"></span>
                     </div>
-                    <div class="mb-3" id="divPausa">
-                        <label class="form-label">Tiempos de Pausa (Opcional)</label>
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <label class="form-label small">Inicio Pausa</label>
-                                <div class="input-group clockpicker" data-autoclose="true">
-                                    <input type="text" id="horaInicioPausaTime" class="form-control" placeholder="00:00">
-                                    <span class="input-group-text"><i class="far fa-clock"></i></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small">Fin Pausa</label>
-                                <div class="input-group clockpicker" data-autoclose="true">
-                                    <input type="text" id="horaFinPausaTime" class="form-control" placeholder="00:00">
-                                    <span class="input-group-text"><i class="far fa-clock"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" asp-for="HoraInicioPausa" />
-                        <input type="hidden" asp-for="HoraFinPausa" />
-                        <span asp-validation-for="HoraInicioPausa" class="text-danger"></span>
-                        <span asp-validation-for="HoraFinPausa" class="text-danger"></span>
-                    </div>
                     <div class="mb-3">
                         <label asp-for="Observaciones" class="form-label">Observaciones</label>
                         <textarea asp-for="Observaciones" class="form-control" rows="2" style="border-radius: 16px;"></textarea>
@@ -168,16 +145,12 @@
             // Inputs ocultos (Modelo)
             const hiddenInicio = document.querySelector('input[name="FechaInicio"]');
             const hiddenFinal = document.querySelector('input[name="FechaFinal"]');
-            const hiddenInicioPausa = document.querySelector('input[name="HoraInicioPausa"]');
-            const hiddenFinPausa = document.querySelector('input[name="HoraFinPausa"]');
 
             // Inputs visibles
             const dateInicio = document.getElementById('fechaInicioDate');
             const timeInicio = document.getElementById('fechaInicioTime');
             const dateFinal = document.getElementById('fechaFinalDate');
             const timeFinal = document.getElementById('fechaFinalTime');
-            const timeInicioPausa = document.getElementById('horaInicioPausaTime');
-            const timeFinPausa = document.getElementById('horaFinPausaTime');
 
             // Inicializar valores desde el modelo (si existen)
             function initInputsFromModel(hiddenInput, dateInput, timeInput) {
@@ -206,8 +179,6 @@
 
             initInputsFromModel(hiddenInicio, dateInicio, timeInicio);
             initInputsFromModel(hiddenFinal, dateFinal, timeFinal);
-            initInputsFromModel(hiddenInicioPausa, dateInicio, timeInicioPausa);
-            initInputsFromModel(hiddenFinPausa, dateInicio, timeFinPausa);
 
             // Función para actualizar el input hidden
             function updateHiddenInput(dateInput, timeInput, hiddenInput) {
@@ -267,20 +238,11 @@
             [dateFinal, timeFinal].forEach(el => {
                 el.addEventListener('change', () => updateHiddenInput(dateFinal, timeFinal, hiddenFinal));
             });
-
-            [timeInicioPausa].forEach(el => {
-                el.addEventListener('change', () => updateHiddenInput(dateInicio, timeInicioPausa, hiddenInicioPausa));
-            });
-            [timeFinPausa].forEach(el => {
-                el.addEventListener('change', () => updateHiddenInput(dateInicio, timeFinPausa, hiddenFinPausa));
-            });
             
             // JQuery event listener para clockpicker (a veces nativo change no salta igual)
             $('.clockpicker').find('input').change(function() {
                 if(this.id === 'fechaInicioTime') updateHiddenInput(dateInicio, timeInicio, hiddenInicio);
                 if(this.id === 'fechaFinalTime') updateHiddenInput(dateFinal, timeFinal, hiddenFinal);
-                if(this.id === 'horaInicioPausaTime') updateHiddenInput(dateInicio, timeInicioPausa, hiddenInicioPausa);
-                if(this.id === 'horaFinPausaTime') updateHiddenInput(dateInicio, timeFinPausa, hiddenFinPausa);
             });
 
 
@@ -308,9 +270,6 @@
             // Antes de enviar, asegurar que los hidden están actualizados
             form.addEventListener('submit', function() {
                 updateHiddenInput(dateInicio, timeInicio, hiddenInicio);
-                updateHiddenInput(dateInicio, timeInicioPausa, hiddenInicioPausa);
-                updateHiddenInput(dateInicio, timeFinPausa, hiddenFinPausa);
-                
                 if (!checkIncompleta.checked) {
                     updateHiddenInput(dateFinal, timeFinal, hiddenFinal);
                 } else {

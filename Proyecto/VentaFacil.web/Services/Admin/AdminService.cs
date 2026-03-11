@@ -106,7 +106,8 @@ namespace VentaFacil.web.Services.Admin
                     Contrasena = PasswordHelper.HashPassword(Guid.NewGuid().ToString() + "A1!"),
                     Rol = usuarioDto.Rol,
                     Estado = false, // Inactivo por defecto hasta que active su cuenta
-                    FechaCreacion = DateTime.Now
+                    FechaCreacion = DateTime.Now,
+                   
                 };
 
                 _context.Usuario.Add(usuario);

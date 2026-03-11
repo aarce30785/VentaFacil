@@ -1,4 +1,4 @@
-@using VentaFacil.web.Controllers
+﻿@using VentaFacil.web.Controllers
 @using VentaFacil.web.Models.Enum
 @using System.Globalization
 @model ProcesarPagoViewModel
@@ -191,10 +191,7 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-lg">Total a Pagar</span>
-                            <div class="text-end">
-                                <div class="fw-bold text-primary text-xl" id="displayTotalCRC">@Model.Total.ToString("C", numberFormat)</div>
-                                <div class="text-muted fw-bold mt-1" id="displayTotalUSD" style="display:none;font-size:1.1rem"></div>
-                            </div>
+                            <span class="fw-bold text-primary text-xl">@Model.Total.ToString("C", numberFormat)</span>
                         </div>
                     </div>
                 </div>
@@ -252,7 +249,6 @@
                             </div>
                         </div>
                         <span asp-validation-for="MetodoPago" class="text-danger d-block mb-3"></span>
-
 
                         <!-- SECCIÓN PAGO ÚNICO -->
                         <div id="singlePaymentSection">
@@ -387,7 +383,7 @@
                         <div class="bg-light p-4 rounded-3 mb-4 text-start">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Total Pedido:</span>
-                                <span class="fw-bold">@Model.Total.ToString("C", numberFormat)</span>
+                                <span class="fw-bold">@Model.Total.ToString("C")</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Método:</span>
@@ -427,29 +423,10 @@
 
 @section Scripts {
     <script>
-        function mostrarAlerta(mensaje) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atención',
-                text: mensaje.replace('⚠️ ', ''),
-                confirmButtonColor: '#4f46e5',
-                confirmButtonText: 'Entendido',
-                customClass: {
-                    popup: 'rounded-4'
-                }
-            });
-        }
-
         let pagos = [];
-        const totalPedido = @Model.Total.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const totalPedido = @Model.Total;
 
         function seleccionarMetodo(metodo, elemento) {
-            
-            if (metodo !== 'Efectivo') {
-                mostrarAlerta('Función no Implementada en este momento');
-                return;
-            }
-
             // Actualizar input hidden
             document.getElementById('inputMetodoPago').value = metodo;
             
@@ -509,45 +486,16 @@
                         $('#TasaCambio').prop('readonly', false).removeClass('bg-light');
                         $('#bccrBadge').remove();
                     }
-                    
-                    const tasaRef = parseFloat($('#TasaCambio').val()) || tasaVentaBccr || 1;
-                    if (tasaRef > 0) {
-                         const totalEnUSD = totalPedido / tasaRef;
-                         $('#displayTotalUSD').text('Total USD: $' + totalEnUSD.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})).show();
-                         
-                         // Auto-completar el monto a pagar en dólares (aplicar el cambio)
-                         $('#MontoPagado').val(totalEnUSD.toFixed(2));
-                    }
-
                 } else {
                     $('#tasaCambioGroup').fadeOut();
                     $('#TasaCambio').prop('required', false);
                     $('#simboloMoneda').text('¢');
-                    $('#displayTotalUSD').hide();
-                    
-                    // Auto-completar el monto a pagar en colones
-                    $('#MontoPagado').val(totalPedido.toFixed(2));
                 }
                 calcularCambio();
                 actualizarReflejo();
             }).trigger('change');
 
-            $('#TasaCambio').on('input change', function() {
-                // Actualizar total USD y monto recibido si cambia la tasa manualmente
-                const moneda = $('#monedaSelect').val();
-                if (moneda === 'USD') {
-                    const manualTasa = parseFloat($('#TasaCambio').val()) || 1;
-                    if (manualTasa > 0) {
-                         const totalEnUSDVal = totalPedido / manualTasa;
-                         $('#displayTotalUSD').text('Total USD: $' + totalEnUSDVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-                         $('#MontoPagado').val(totalEnUSDVal.toFixed(2));
-                    }
-                }
-                calcularCambio();
-                actualizarReflejo();
-            });
-
-            $('#MontoPagado').on('input change', function() {
+            $('#MontoPagado, #TasaCambio').on('input change', function() {
                 calcularCambio();
                 actualizarReflejo();
             });
@@ -593,11 +541,11 @@
                 const tasa = parseFloat($('#splitTasa').val()) || 1;
 
                 if (monto <= 0) {
-                    mostrarAlerta('Ingrese un monto válido');
+                    alert('Ingrese un monto válido');
                     return;
                 }
                 if (moneda === 'USD' && tasa <= 0) {
-                    mostrarAlerta('Ingrese una tasa de cambio válida');
+                    alert('Ingrese una tasa de cambio válida');
                     return;
                 }
 
@@ -695,26 +643,9 @@
                     $('#cambioMensaje').text('Monto insuficiente').removeClass('bg-success text-white').addClass('bg-danger text-white');
                 }
 
-                let textoMetodo = metodo || 'No seleccionado';
-                let textoMontoPagado = '';
-
-                if (metodo === 'Mixto') {
-                    textoMontoPagado = '¢' + totalPagadoCRC.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                } else {
-                    const moneda = $('#monedaSelect').val();
-                    textoMetodo += ` (${moneda})`;
-                    
-                    if (moneda === 'USD') {
-                        const montoUSD = parseFloat($('#MontoPagado').val()) || 0;
-                        textoMontoPagado = `$${montoUSD.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (Equiv. ¢${totalPagadoCRC.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2})})`;
-                    } else {
-                        textoMontoPagado = '¢' + totalPagadoCRC.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    }
-                }
-
                 // Modal info update
-                $('#modalMetodoPago').text(textoMetodo);
-                $('#modalMontoPagado').text(textoMontoPagado);
+                $('#modalMetodoPago').text(metodo || 'No seleccionado');
+                $('#modalMontoPagado').text('₡' + totalPagadoCRC.toFixed(2));
                 $('#modalCambio').text(cambioTexto);
             }
 
@@ -724,7 +655,7 @@
                 
                 const metodo = $('#inputMetodoPago').val();
                 if (!metodo) {
-                    mostrarAlerta('⚠️ Por favor seleccione un método de pago');
+                    alert('⚠️ Por favor seleccione un método de pago');
                     return;
                 }
 
@@ -732,7 +663,7 @@
 
                 if (metodo === 'Mixto') {
                     if (pagos.length === 0) {
-                        mostrarAlerta('⚠️ Agregue al menos un pago');
+                        alert('⚠️ Agregue al menos un pago');
                         return;
                     }
                     pagos.forEach(pago => {
@@ -744,18 +675,18 @@
                     const tasa = parseFloat($('#TasaCambio').val()) || 1;
                     
                     if (monto <= 0) {
-                        mostrarAlerta('⚠️ Ingrese un monto válido');
+                        alert('⚠️ Ingrese un monto válido');
                         return;
                     }
                     if (moneda === 'USD' && tasa <= 0) {
-                        mostrarAlerta('⚠️ Ingrese una tasa de cambio válida');
+                        alert('⚠️ Ingrese una tasa de cambio válida');
                         return;
                     }
                     totalPagadoCRC = moneda === 'USD' ? monto * tasa : monto;
                 }
 
                 if (totalPagadoCRC < totalPedido - 0.01) {
-                    mostrarAlerta('⚠️ El monto pagado es insuficiente para cubrir la totalidad del pedido.');
+                    alert('⚠️ El monto pagado es insuficiente');
                     return;
                 }
 

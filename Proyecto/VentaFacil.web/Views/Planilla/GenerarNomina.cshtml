@@ -2,26 +2,54 @@
 @model GenerarNominaDto
 
 <style>
-    :root { --card-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05); }
-    .premium-card { background:#fff; border-radius:16px; box-shadow:var(--card-shadow); border:1px solid rgba(0,0,0,.05); margin-bottom:2rem; padding:2rem 1.5rem; }
-    .form-label { font-weight:600; color:#374151; }
-    .form-select, .form-control { border-radius:30px; }
-    .btn-premium { border-radius:30px !important; font-weight:600; padding:.5rem 1.5rem; }
-    .periodo-btn { border-radius: 12px; padding: .75rem 1.5rem; transition: all .2s; font-weight:600; border:2px solid; }
-    .periodo-btn.active, .periodo-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(58,92,245,.25); }
+    :root {
+        --card-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+    }
+    .form-select, .form-control {
+        border-radius: 30px;
+        font-size: 1rem;
+    }
+    .btn-premium {
+        border-radius: 30px !important;
+        font-weight: 600;
+        padding: 0.5rem 1.5rem;
+    }
+    .card-title {
+        font-weight: 700;
+        color: #6d4c41;
+    }
 </style>
 
 <div class="title-wrapper pt-30">
     <div class="row align-items-center">
-        <div class="col-md-6"><div class="title"><h2 class="fw-bold text-dark">Generar Nómina</h2></div></div>
         <div class="col-md-6">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb justify-content-md-end">
-                    <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")">Inicio</a></li>
-                    <li class="breadcrumb-item"><a href="@Url.Action("Consultar","Planilla")">Planilla</a></li>
-                    <li class="breadcrumb-item active">Generar Nómina</li>
-                </ol>
-            </nav>
+            <div class="title">
+                <h2 class="fw-bold text-dark">Generar Nómina</h2>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Consultar", "Planilla")">Planilla</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Generar Nómina</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
     </div>
 </div>
@@ -31,91 +59,52 @@
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success alert-dismissible">
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                <i class="fas fa-check me-1"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <strong><i class="icon fas fa-check"></i> Éxito</strong> @TempData["Success"]
             </div>
         }
         @if (TempData["Error"] != null)
         {
             <div class="alert alert-danger alert-dismissible">
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                <strong><i class="fas fa-ban me-1"></i> Error:</strong> @TempData["Error"]
-                @if (ViewBag.ErroresValidacion != null)
-                {
-                    <hr />
-                    <ul class="mb-0">
-                        @foreach (var error in ViewBag.ErroresValidacion as List<string>)
-                        { <li><i class="lni lni-warning"></i> @error</li> }
-                    </ul>
-                }
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <strong><i class="icon fas fa-ban"></i> Error</strong> @TempData["Error"]
             </div>
         }
-
         <div class="row justify-content-center">
-            <div class="col-md-9 col-lg-7">
+            <div class="col-md-8 col-lg-6">
                 <div class="premium-card">
-                    <h4 class="fw-bold mb-4 text-dark"><i class="fas fa-cogs text-primary me-2"></i>Parámetros de Generación</h4>
-
-                    {{-- Selector de período rápido --}}
                     <div class="mb-4">
-                        <label class="form-label d-block mb-2">Período predefinido</label>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button type="button" id="btnSemanal" onclick="setPeriodo('Semanal')"
-                                    class="periodo-btn btn btn-outline-primary @(Model.TipoPeriodo=="Semanal"?"active":"")">
-                                <i class="fas fa-calendar-week me-1"></i> Semanal (Lun – Dom)
-                            </button>
-                            <button type="button" id="btnTrimestral" onclick="setPeriodo('Trimestral')"
-                                    class="periodo-btn btn btn-outline-secondary @(Model.TipoPeriodo=="Trimestral"?"active":"")">
-                                <i class="fas fa-calendar-alt me-1"></i> Trimestral
-                            </button>
-                            <button type="button" id="btnPersonalizado" onclick="setPeriodo('Personalizado')"
-                                    class="periodo-btn btn btn-outline-secondary @(Model.TipoPeriodo=="Personalizado"?"active":"")">
-                                <i class="fas fa-sliders-h me-1"></i> Personalizado
-                            </button>
-                        </div>
+                        <h4 class="card-title mb-0">Parámetros de Generación</h4>
                     </div>
-
-                    <form asp-controller="Planilla" asp-action="GenerarNomina" method="post" id="formGenerarNomina">
+                    <form asp-controller="Planilla" asp-action="GenerarNomina" method="post">
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                        <input type="hidden" asp-for="TipoPeriodo" id="hidTipoPeriodo" />
-
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label asp-for="FechaInicio" class="form-label">Fecha Inicio</label>
-                                <input asp-for="FechaInicio" type="date" class="form-control" id="inputInicio" />
+                                <input asp-for="FechaInicio" type="date" class="form-control" />
                                 <span asp-validation-for="FechaInicio" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="FechaFinal" class="form-label">Fecha Final</label>
-                                <input asp-for="FechaFinal" type="date" class="form-control" id="inputFin" />
+                                <input asp-for="FechaFinal" type="date" class="form-control" />
                                 <span asp-validation-for="FechaFinal" class="text-danger"></span>
                             </div>
                         </div>
-
-                        <div class="mb-3" id="periodoInfo">
-                            <div class="alert alert-info mb-0 py-2">
-                                <i class="fas fa-info-circle me-1"></i>
-                                <span id="periodoDesc"></span>
-                            </div>
-                        </div>
-
                         <div class="mb-3">
                             <div class="form-check form-switch">
                                 <input asp-for="IncluirSoloUsuariosActivos" class="form-check-input" type="checkbox" />
                                 <label asp-for="IncluirSoloUsuariosActivos" class="form-check-label">
-                                    Incluir solo colaboradores activos
+                                    Incluir solo usuarios activos
                                 </label>
                             </div>
                         </div>
-
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-success btn-premium">
-                                <i class="fas fa-cogs me-1"></i> Generar Nómina
+                                <i class="fas fa-cogs"></i> Generar Nómina
                             </button>
-                            <a href="@Url.Action("Consultar","Planilla")" class="btn btn-secondary btn-premium">
-                                <i class="fas fa-times me-1"></i> Volver
+                            <a href="@Url.Action("Consultar", "Planilla")" class="btn btn-secondary btn-premium">
+                                <i class="fas fa-times"></i> Volver
                             </a>
                         </div>
                     </form>
@@ -124,63 +113,3 @@
         </div>
     </div>
 </div>
-
-<script>
-(function () {
-    // Calcula lunes de la semana actual
-    function getMondayOfWeek(d) {
-        d = d || new Date();
-        var day = d.getDay(); // 0=dom
-        var diff = (day === 0) ? -6 : 1 - day;
-        var mon = new Date(d);
-        mon.setDate(mon.getDate() + diff);
-        return mon;
-    }
-    function toInputDate(d) {
-        return d.toISOString().split('T')[0];
-    }
-    function getQuarterRange() {
-        var now = new Date();
-        var q = Math.floor(now.getMonth() / 3);
-        var start = new Date(now.getFullYear(), q * 3, 1);
-        var end   = new Date(now.getFullYear(), q * 3 + 3, 0);
-        return { start, end };
-    }
-
-    window.setPeriodo = function(tipo) {
-        document.getElementById('hidTipoPeriodo').value = tipo;
-        var inicio = document.getElementById('inputInicio');
-        var fin    = document.getElementById('inputFin');
-        var desc   = document.getElementById('periodoDesc');
-        var info   = document.getElementById('periodoInfo');
-
-        document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('active'));
-
-        if (tipo === 'Semanal') {
-            var lun = getMondayOfWeek();
-            var dom = new Date(lun); dom.setDate(dom.getDate() + 6);
-            inicio.value = toInputDate(lun);
-            fin.value    = toInputDate(dom);
-            desc.textContent = 'Semana del ' + lun.toLocaleDateString('es-CR') + ' al ' + dom.toLocaleDateString('es-CR');
-            inicio.readOnly = true; fin.readOnly = true;
-            document.getElementById('btnSemanal').classList.add('active');
-        } else if (tipo === 'Trimestral') {
-            var q = getQuarterRange();
-            inicio.value = toInputDate(q.start);
-            fin.value    = toInputDate(q.end);
-            desc.textContent = 'Trimestre actual: ' + q.start.toLocaleDateString('es-CR') + ' al ' + q.end.toLocaleDateString('es-CR');
-            inicio.readOnly = true; fin.readOnly = true;
-            document.getElementById('btnTrimestral').classList.add('active');
-        } else {
-            inicio.readOnly = false; fin.readOnly = false;
-            desc.textContent = 'Seleccione el rango de fechas manualmente.';
-            document.getElementById('btnPersonalizado').classList.add('active');
-        }
-        info.style.display = 'block';
-    };
-
-    // Inicializar según el valor del modelo (viene del servidor)
-    var tipoPeriodo = document.getElementById('hidTipoPeriodo').value || 'Semanal';
-    setPeriodo(tipoPeriodo);
-})();
-</script>

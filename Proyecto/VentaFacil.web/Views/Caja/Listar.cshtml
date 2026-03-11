@@ -1,4 +1,4 @@
-@model IEnumerable<VentaFacil.web.Models.Dto.CajaDto>
+﻿@model IEnumerable<VentaFacil.web.Models.Dto.CajaDto>
 
 @{
     ViewData["Title"] = "Caja";
@@ -83,63 +83,36 @@
     }
 </style>
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
-        <div class="position-relative z-1">
-            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-wallet me-2"></i>Administrar Caja</h1>
-            <p class="mb-0 text-white-50 fs-5">Control de apertura, cierre y movimientos de caja.</p>
-        </div>
-        <div class="position-relative z-1 d-none d-md-block">
-            <div class="d-flex gap-2">
-                @if (cajaAbierta == null)
-                {
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #1e293b; border: 2px solid #FFD700;" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
-                        <i class="lni lni-plus me-2"></i> Abrir caja
-                    </button>
-                }
-                else
-                {
-                    <a href="@Url.Action("GenerarArqueo", "Caja", new { idCaja = cajaAbierta.Id_Caja })" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #1e293b; border: 2px solid #FFD700;" target="_blank">
-                        <i class="lni lni-printer me-2"></i> Arqueo / Corte
-                    </a>
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #dc2626; border: 2px solid #FFD700;" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
-                        <i class="lni lni-lock me-2"></i> Cerrar Caja
-                    </button>
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #d97706; border: 2px solid #FFD700;" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
-                        <i class="lni lni-minus me-2"></i> Retiro
-                    </button>
-                }
-            </div>
+<div class="premium-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">Administrar Caja</h2>
+        <div>
+            @if (cajaAbierta == null)
+            {
+                <button type="button" class="btn btn-primary btn-premium" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
+                    <i class="fas fa-cash-register me-1"></i> Abrir caja
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-danger btn-premium" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
+                    <i class="fas fa-lock me-1"></i> Cerrar caja
+                </button>
+                <button type="button" class="btn btn-warning btn-premium" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
+                    <i class="fas fa-minus-circle me-1"></i> Retiro de caja
+                </button>
+            }
         </div>
     </div>
-
-    <div class="premium-card">
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="lni lni-warning me-2"></i> @TempData["Error"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        <div class="table-container">
+    <div class="table-container">
         <table class="table premium-table">
             <thead>
                 <tr>
-                    
+                    <th>@Html.DisplayNameFor(model => model.Id_Usuario)</th>
                     <th>@Html.DisplayNameFor(model => model.Fecha_Apertura)</th>
                     <th>@Html.DisplayNameFor(model => model.Fecha_Cierre)</th>
                     <th>@Html.DisplayNameFor(model => model.Monto_Inicial)</th>
                     <th>@Html.DisplayNameFor(model => model.Monto)</th>
-                    <th>@Html.DisplayNameFor(model => model.Monto_Inicial_USD)</th>
-                    <th>@Html.DisplayNameFor(model => model.Monto_USD)</th>
                     <th>@Html.DisplayNameFor(model => model.Estado)</th>
                     <th></th>
                 </tr>
@@ -147,13 +120,11 @@
             <tbody>
             @foreach (var item in Model) {
                 <tr>
-                    
+                    <td>@Html.DisplayFor(modelItem => item.Id_Usuario)</td>
                     <td>@Html.DisplayFor(modelItem => item.Fecha_Apertura)</td>
                     <td>@Html.DisplayFor(modelItem => item.Fecha_Cierre)</td>
-                    <td class="text-success fw-bold">@((item.Monto_Inicial).ToString("C"))</td>
-                    <td class="text-success fw-bold">@(((decimal)(item.Monto ?? 0)).ToString("C"))</td>
-                    <td class="text-info fw-bold">$@((item.Monto_Inicial_USD).ToString("N2"))</td>
-                    <td class="text-info fw-bold">$@(((decimal)(item.Monto_USD ?? 0)).ToString("N2"))</td>
+                    <td>@Html.DisplayFor(modelItem => item.Monto_Inicial)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Monto)</td>
                     <td>@Html.DisplayFor(modelItem => item.Estado)</td>
                     <td class="caja-actions">
                         <button type="button" class="btn btn-mustard btn-sm" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
@@ -164,7 +135,6 @@
             }
             </tbody>
         </table>
-        </div>
     </div>
 </div>
 
@@ -180,12 +150,8 @@
         <form asp-action="Abrir" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group mb-3">
-                <label for="montoInicial" class="control-label fw-bold">Fondo Inicial Colones (¢)</label>
-                <input type="number" step="0.01" min="0" name="montoInicial" class="form-control" required placeholder="0.00" />
-            </div>
-            <div class="form-group mb-3">
-                <label for="montoInicialUSD" class="control-label fw-bold text-info">Fondo Inicial Dólares ($)</label>
-                <input type="number" step="0.01" min="0" name="montoInicialUSD" value="0.00" class="form-control" required placeholder="0.00" />
+                <label for="montoInicial" class="control-label">Monto Inicial</label>
+                <input name="montoInicial" class="form-control" />
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary">Abrir Caja</button>
@@ -202,45 +168,13 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cerrarCajaModalLabel">Cierre de Caja</h5>
+        <h5 class="modal-title" id="cerrarCajaModalLabel">Cerrar Caja</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <div class="alert alert-info py-2 mb-3 d-flex justify-content-between">
-            <div>
-                <strong>Sistema (CRC): </strong>
-                <span class="fs-5 text-success fw-bold">@(((decimal)(cajaAbierta?.Monto ?? 0)).ToString("C"))</span>
-            </div>
-            <div>
-                <strong>Sistema (USD): </strong>
-                <span class="fs-5 text-info fw-bold">$@(((decimal)(cajaAbierta?.Monto_USD ?? 0)).ToString("N2"))</span>
-            </div>
-        </div>
-        <form asp-action="CerrarConfirmado" method="post" id="formCerrarCaja">
+        <p>¿Estás seguro que deseas cerrar la caja?</p>
+        <form asp-action="CerrarConfirmado" method="post">
             <input type="hidden" name="id" value="@cajaAbierta?.Id_Caja" />
-            <input type="hidden" id="montoEsperadoCierre" value="@(cajaAbierta?.Monto ?? 0)" />
-            <input type="hidden" id="montoEsperadoCierreUSD" value="@(cajaAbierta?.Monto_USD ?? 0)" />
-            
-            <div class="row">
-                <div class="col-md-6 form-group mb-3">
-                    <label for="montoFisico" class="control-label fw-bold">Físico Colones (¢)</label>
-                    <input type="number" step="0.01" min="0" id="montoFisico" name="montoFisico" class="form-control" required placeholder="Dinero real ¢..." />
-                </div>
-                <div class="col-md-6 form-group mb-3">
-                    <label for="montoFisicoUSD" class="control-label fw-bold text-info">Físico Dólares ($)</label>
-                    <input type="number" step="0.01" min="0" id="montoFisicoUSD" name="montoFisicoUSD" class="form-control" required placeholder="Dinero real $..." />
-                </div>
-            </div>
-
-            <div id="discrepanciaContainer" style="display:none;" class="p-3 mb-3 rounded">
-                <p class="mb-1 fw-bold" id="discrepanciaTexto"></p>
-                <p class="mb-1 fw-bold" id="discrepanciaTextoUSD"></p>
-                <div class="form-group mt-2">
-                    <label for="justificacion" class="control-label text-danger">Justificación de la Diferencia</label>
-                    <textarea id="justificacion" name="justificacion" class="form-control" rows="2" placeholder="Explique la causa del sobrante o faltante..."></textarea>
-                </div>
-            </div>
-
             <div class="modal-footer">
                 <button type="submit" class="btn btn-danger">Confirmar cierre</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -264,12 +198,12 @@
             <input type="hidden" name="id" value="@cajaAbierta?.Id_Caja" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group mb-3">
-                <label for="monto" class="control-label fw-bold">Monto a retirar (¢)</label>
-                <input type="number" step="0.01" min="0.01" name="monto" class="form-control" required placeholder="0.00" />
+                <label for="monto" class="control-label">Monto a retirar</label>
+                <input name="monto" class="form-control" />
             </div>
             <div class="form-group mb-3">
-                <label for="motivo" class="control-label fw-bold">Motivo o Justificación</label>
-                <input type="text" name="motivo" class="form-control" required placeholder="Ej: Pago a proveedores, compra de insumos..." />
+                <label for="motivo" class="control-label">Motivo</label>
+                <input name="motivo" class="form-control" />
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-warning">Retirar</button>
@@ -306,62 +240,5 @@
             var modal = $(this);
             modal.find('.modal-body').load('/Caja/Retiros/' + cajaId);
         });
-
-        function calcularDiscrepancias() {
-            var esperadoCRC = parseFloat($('#montoEsperadoCierre').val()) || 0;
-            var fisicoCRC = parseFloat($('#montoFisico').val()) || 0;
-            var difCRC = fisicoCRC - esperadoCRC;
-
-            var esperadoUSD = parseFloat($('#montoEsperadoCierreUSD').val()) || 0;
-            var fisicoUSD = parseFloat($('#montoFisicoUSD').val()) || 0;
-            var difUSD = fisicoUSD - esperadoUSD;
-            
-            var container = $('#discrepanciaContainer');
-            var spanTextCRC = $('#discrepanciaTexto');
-            var spanTextUSD = $('#discrepanciaTextoUSD');
-            var txtJustif = $('#justificacion');
-
-            var hasDiffCRC = Math.abs(difCRC) > 0.01;
-            var hasDiffUSD = Math.abs(difUSD) > 0.01;
-
-            if (hasDiffCRC || hasDiffUSD) {
-                container.show();
-                txtJustif.prop('required', true);
-                
-                // Color de fondo general
-                if (difCRC >= 0 && difUSD >= 0) {
-                    container.css('background-color', '#d1e7dd');
-                } else {
-                    container.css('background-color', '#f8d7da');
-                }
-
-                if(hasDiffCRC) {
-                    if (difCRC > 0) {
-                        spanTextCRC.html('CRC Sobran: <span class="text-success">' + difCRC.toLocaleString('es-CR', {style:'currency', currency:'CRC'}) + '</span>').show();
-                    } else {
-                        spanTextCRC.html('CRC Faltan: <span class="text-danger">' + Math.abs(difCRC).toLocaleString('es-CR', {style:'currency', currency:'CRC'}) + '</span>').show();
-                    }
-                } else {
-                    spanTextCRC.hide();
-                }
-
-                if(hasDiffUSD) {
-                    if (difUSD > 0) {
-                        spanTextUSD.html('USD Sobran: <span class="text-success">$' + difUSD.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</span>').show();
-                    } else {
-                        spanTextUSD.html('USD Faltan: <span class="text-danger">$' + Math.abs(difUSD).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</span>').show();
-                    }
-                } else {
-                    spanTextUSD.hide();
-                }
-
-            } else {
-                container.hide();
-                txtJustif.prop('required', false);
-                txtJustif.val('');
-            }
-        }
-
-        $('#montoFisico, #montoFisicoUSD').on('input', calcularDiscrepancias);
     </script>
 }

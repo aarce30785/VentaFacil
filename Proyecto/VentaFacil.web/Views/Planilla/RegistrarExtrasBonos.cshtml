@@ -2,52 +2,15 @@
 @model RegistrarExtrasBonosDto
 
 @{
-    ViewData["Title"] = "Extras y Bonificaciones";
+    ViewData["Title"] = "Registrar Extras y Bonificaciones";
     Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
 }
-
-<style>
-    .section-header {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        border-radius: 12px 12px 0 0;
-        padding: 1rem 1.5rem;
-        color: #fff;
-    }
-    .section-header.warning {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    }
-    .section-block {
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        overflow: hidden;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(0,0,0,0.06);
-    }
-    .section-body { padding: 1.5rem; background: #fff; }
-    .limit-badge {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
-        border-radius: 8px;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.82rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-    .table-bonos th { background: #f8fafc; font-size: 0.82rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
-    .badge-motivo { background: #ede9fe; color: #5b21b6; border-radius: 20px; padding: 2px 10px; font-size: 0.8rem; }
-    .audit-row-old { color: #dc2626; text-decoration: line-through; }
-    .audit-row-new { color: #16a34a; font-weight: 600; }
-</style>
 
 <div class="title-wrapper pt-30">
     <div class="row align-items-center">
         <div class="col-md-6">
             <div class="title">
-                <h2>Extras y Bonificaciones</h2>
-                <p class="text-muted">Gestión de horas extras e incentivos por planilla</p>
+                <h2>Registrar Extras y Bonificaciones</h2>
             </div>
         </div>
         <div class="col-md-6">
@@ -55,8 +18,8 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Inicio</a></li>
-                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Planilla")">Planilla</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Extras y Bonificaciones</li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Consultar", "Planilla")">Planilla</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Registrar Extras y Bonificaciones</li>
                     </ol>
                 </nav>
             </div>
@@ -65,493 +28,82 @@
 </div>
 
 <div class="form-layout-wrapper">
+    <div class="row">
+        <div class="col-lg-12">
 
-    @* ============================================================
-       SECCIÓN A – SELECTOR DE PLANILLA (compartido para ambas secciones)
-       ============================================================ *@
-    <div class="section-block">
-        <div class="section-header">
-            <h5 class="mb-0"><i class="lni lni-layers me-2"></i>Seleccionar Planilla del Empleado</h5>
-        </div>
-        <div class="section-body">
-            <div class="row align-items-end">
-                <div class="col-md-8">
-                    <label class="form-label fw-semibold">Planilla</label>
-                    <select id="selectorPlanilla" class="form-control form-select">
-                        <option value="">-- Seleccione una planilla --</option>
-                        @if (ViewBag.Planillas != null)
-                        {
-                            foreach (SelectListItem item in ViewBag.Planillas)
-                            {
-                                <option value="@item.Value">@item.Text</option>
-                            }
-                        }
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <button type="button" id="btnCargarBonificaciones" class="btn btn-primary w-100" disabled>
-                        <i class="lni lni-refresh me-1"></i> Cargar Información
-                    </button>
-                </div>
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h5><i class="icon fas fa-check"></i> Éxito</h5>
+                @TempData["Success"]
             </div>
-        </div>
-    </div>
+        }
 
-    @* ============================================================
-       SECCIÓN B – HORAS EXTRAS
-       ============================================================ *@
-    <div class="section-block">
-        <div class="section-header warning">
-            <h5 class="mb-0"><i class="lni lni-timer me-2"></i>Registrar Horas Extras</h5>
-        </div>
-        <div class="section-body">
-            <div class="mb-3">
-                <span class="limit-badge"><i class="lni lni-warning me-1"></i> Límite legal: máximo 4 horas extras por jornada</span>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h5><i class="icon fas fa-ban"></i> Error</h5>
+                @TempData["Error"]
             </div>
-            <form id="formExtras">
-                @Html.AntiForgeryToken()
-                <input type="hidden" id="extrasIdPlanilla" name="Id_Planilla" value="" />
-                <div class="row align-items-end g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Horas Extras</label>
-                        <input type="number" id="campoHorasExtras" name="HorasExtras" class="form-control"
-                               step="0.5" min="0" max="4" placeholder="0 – 4 horas" />
-                        <small class="text-muted">Máximo 4 horas por jornada</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Observaciones (opcional)</label>
-                        <input type="text" id="campoObservacionesExtras" name="Observaciones" class="form-control"
-                               placeholder="Comentarios adicionales..." />
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" id="btnGuardarExtras" class="btn btn-warning w-100" disabled>
-                            <i class="lni lni-save me-1"></i> Guardar
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+        }
 
-    @* ============================================================
-       SECCIÓN C – BONIFICACIONES INDIVIDUALES
-       ============================================================ *@
-    <div class="section-block">
-        <div class="section-header" style="background:linear-gradient(135deg,#10b981,#059669)">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="lni lni-star me-2"></i>Bonificaciones</h5>
-                <button type="button" id="btnNuevaBonificacion" class="btn btn-light btn-sm" disabled>
-                    <i class="lni lni-plus me-1"></i> Agregar Bonificación
-                </button>
-            </div>
-        </div>
-        <div class="section-body p-0">
-            <div id="tablaBonificacionesWrapper" class="p-3">
-                <div class="text-center text-muted py-4" id="msgSinPlanilla">
-                    <i class="lni lni-information" style="font-size:2rem;opacity:.4"></i>
-                    <p class="mt-2">Seleccione una planilla para ver sus bonificaciones.</p>
-                </div>
-                <div id="tablaBonificacionesContainer" style="display:none;">
-                    <table class="table table-bonos table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Motivo</th>
-                                <th>Monto (₡)</th>
-                                <th>Fecha</th>
-                                <th>Registrado</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaBonificacionesCuerpo"></tbody>
-                    </table>
-                    <div id="noHayBonificaciones" class="text-center text-muted py-3" style="display:none;">
-                        <i class="lni lni-tag"></i> No hay bonificaciones registradas para esta planilla.
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Formulario de Extras y Bonos</h3>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <form asp-controller="Planilla" asp-action="RegistrarExtrasBonos" method="post">
+                        <div class="card-body">
 
-</div>
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-@* ============================================================
-   MODAL – Agregar / Editar Bonificación
-   ============================================================ *@
-<div class="modal fade" id="modalBonificacion" tabindex="-1" aria-labelledby="modalBonificacionLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff">
-                <h5 class="modal-title" id="modalBonificacionLabel"><i class="lni lni-star me-2"></i>Bonificación</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="formBonificacion" novalidate>
-                @Html.AntiForgeryToken()
-                <input type="hidden" id="bonId" value="" />
-                <input type="hidden" id="bonIdPlanilla" value="" />
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Motivo <span class="text-danger">*</span></label>
-                        <input type="text" id="bonMotivo" class="form-control" placeholder="Ej: Bono por ventas, incentivo cumpleaños..." maxlength="255" required />
-                        <div class="invalid-feedback">El motivo es obligatorio.</div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Monto (₡) <span class="text-danger">*</span></label>
-                            <input type="number" id="bonMonto" class="form-control" step="0.01" min="1" placeholder="0.00" required />
-                            <div class="invalid-feedback">El monto debe ser mayor a 0.</div>
+                            <div class="form-group">
+                                <label asp-for="Id_Planilla">Planilla</label>
+                                <select asp-for="Id_Planilla" class="form-control" asp-items="ViewBag.Planillas">
+                                    <option value="">-- Seleccione una planilla --</option>
+                                </select>
+                                <span asp-validation-for="Id_Planilla" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="HorasExtras">Horas Extras</label>
+                                        <input asp-for="HorasExtras" type="number" step="0.5" class="form-control" placeholder="0.00" />
+                                        <span asp-validation-for="HorasExtras" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="MontoBonificaciones">Monto en Bonificaciones</label>
+                                        <input asp-for="MontoBonificaciones" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                                        <span asp-validation-for="MontoBonificaciones" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Observaciones">Observaciones (Opcional)</label>
+                                <textarea asp-for="Observaciones" class="form-control" rows="3" placeholder="Comentarios adicionales..."></textarea>
+                                <span asp-validation-for="Observaciones" class="text-danger"></span>
+                            </div>
+
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Fecha <span class="text-danger">*</span></label>
-                            <input type="date" id="bonFecha" class="form-control" required />
-                            <div class="invalid-feedback">La fecha es obligatoria.</div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                            <a href="@Url.Action("Consultar", "Planilla")" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
                         </div>
-                    </div>
+                    </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="lni lni-close me-1"></i> Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-success" id="btnConfirmarBonificacion">
-                        <i class="lni lni-save me-1"></i> <span id="txtBtnConfirmar">Guardar</span>
-                    </button>
-                </div>
-            </form>
+            </div>
+        </div>
         </div>
     </div>
 </div>
-
-@* ============================================================
-   MODAL – Historial de Auditoría
-   ============================================================ *@
-<div class="modal fade" id="modalAuditoria" tabindex="-1" aria-labelledby="modalAuditoriaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff">
-                <h5 class="modal-title"><i class="lni lni-history me-2"></i>Historial de Cambios</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div id="loadingAuditoria" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted">Cargando historial...</p>
-                </div>
-                <div id="auditoriaCuerpoWrapper" style="display:none;">
-                    <table class="table table-sm table-bordered mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Monto Anterior (₡)</th>
-                                <th>Monto Nuevo (₡)</th>
-                                <th>Acción</th>
-                                <th>Responsable</th>
-                            </tr>
-                        </thead>
-                        <tbody id="auditoriaCuerpo"></tbody>
-                    </table>
-                    <div id="sinHistorial" class="text-center text-muted py-3" style="display:none;">
-                        <i class="lni lni-information"></i> No hay registros de cambios para esta bonificación.
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-<script>
-(function () {
-    'use strict';
-
-    // ─── Helpers ───────────────────────────────────────────────────────────────
-    const antiforgery = () => document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
-
-    function fmt(n) {
-        return '₡' + Number(n).toLocaleString('es-CR', { minimumFractionDigits: 2 });
-    }
-
-    function today() {
-        return new Date().toISOString().split('T')[0];
-    }
-
-    // ─── State ─────────────────────────────────────────────────────────────────
-    let planillaActual = null;
-
-    // ─── Selector de planilla ──────────────────────────────────────────────────
-    document.getElementById('selectorPlanilla').addEventListener('change', function () {
-        const val = this.value;
-        const hasPlanilla = !!val;
-        document.getElementById('btnCargarBonificaciones').disabled = !hasPlanilla;
-        document.getElementById('btnGuardarExtras').disabled = !hasPlanilla;
-        document.getElementById('btnNuevaBonificacion').disabled = !hasPlanilla;
-        if (!hasPlanilla) {
-            planillaActual = null;
-            document.getElementById('tablaBonificacionesContainer').style.display = 'none';
-            document.getElementById('msgSinPlanilla').style.display = '';
-        }
-    });
-
-    document.getElementById('btnCargarBonificaciones').addEventListener('click', function () {
-        const sel = document.getElementById('selectorPlanilla');
-        planillaActual = sel.value;
-        document.getElementById('extrasIdPlanilla').value = planillaActual;
-        cargarBonificaciones(planillaActual);
-    });
-
-    // ─── Cargar tabla bonificaciones ───────────────────────────────────────────
-    async function cargarBonificaciones(idPlanilla) {
-        try {
-            const res = await fetch(`/Planilla/ObtenerBonificaciones?idPlanilla=${idPlanilla}`);
-            const json = await res.json();
-            if (!json.success) { return; }
-            renderTabla(json.data);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    function renderTabla(data) {
-        document.getElementById('msgSinPlanilla').style.display = 'none';
-        document.getElementById('tablaBonificacionesContainer').style.display = '';
-        const tbody = document.getElementById('tablaBonificacionesCuerpo');
-        tbody.innerHTML = '';
-
-        if (!data || data.length === 0) {
-            document.getElementById('noHayBonificaciones').style.display = '';
-            return;
-        }
-        document.getElementById('noHayBonificaciones').style.display = 'none';
-
-        data.forEach((b, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${idx + 1}</td>
-                <td><span class="badge-motivo">${escapeHtml(b.motivo)}</span></td>
-                <td class="fw-bold text-success">${fmt(b.monto)}</td>
-                <td>${b.fecha}</td>
-                <td class="text-muted small">${b.fechaRegistro}</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirEditar(${b.id}, '${escapeHtml(b.motivo)}', ${b.monto}, '${b.fecha}')">
-                        <i class="lni lni-pencil"></i> Editar
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger me-1" onclick="confirmarEliminar(${b.id})">
-                        <i class="lni lni-trash"></i> Eliminar
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="verHistorial(${b.id})">
-                        <i class="lni lni-history"></i> Historial
-                    </button>
-                </td>`;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function escapeHtml(str) {
-        return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    // ─── Modal Bonificación – Nuevo ───────────────────────────────────────────
-    document.getElementById('btnNuevaBonificacion').addEventListener('click', () => {
-        document.getElementById('bonId').value = '';
-        document.getElementById('bonIdPlanilla').value = planillaActual;
-        document.getElementById('bonMotivo').value = '';
-        document.getElementById('bonMonto').value = '';
-        document.getElementById('bonFecha').value = today();
-        document.getElementById('txtBtnConfirmar').textContent = 'Guardar';
-        document.getElementById('modalBonificacionLabel').innerHTML = '<i class="lni lni-star me-2"></i>Nueva Bonificación';
-        document.getElementById('formBonificacion').classList.remove('was-validated');
-        new bootstrap.Modal(document.getElementById('modalBonificacion')).show();
-    });
-
-    // ─── Modal Bonificación – Editar (global para onclick) ────────────────────
-    window.abrirEditar = function (id, motivo, monto, fecha) {
-        document.getElementById('bonId').value = id;
-        document.getElementById('bonIdPlanilla').value = planillaActual;
-        document.getElementById('bonMotivo').value = motivo;
-        document.getElementById('bonMonto').value = monto;
-        document.getElementById('bonFecha').value = fecha;
-        document.getElementById('txtBtnConfirmar').textContent = 'Actualizar';
-        document.getElementById('modalBonificacionLabel').innerHTML = '<i class="lni lni-pencil me-2"></i>Editar Bonificación';
-        document.getElementById('formBonificacion').classList.remove('was-validated');
-        new bootstrap.Modal(document.getElementById('modalBonificacion')).show();
-    };
-
-    // ─── Guardar / Editar (submit del form) ───────────────────────────────────
-    document.getElementById('formBonificacion').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        this.classList.add('was-validated');
-        if (!this.checkValidity()) return;
-
-        const id        = document.getElementById('bonId').value;
-        const idPlanilla = parseInt(document.getElementById('bonIdPlanilla').value);
-        const motivo    = document.getElementById('bonMotivo').value.trim();
-        const monto     = parseFloat(document.getElementById('bonMonto').value);
-        const fecha     = document.getElementById('bonFecha').value;
-        const esEdicion = !!id;
-
-        const url = esEdicion
-            ? `/Planilla/EditarBonificacion?id=${id}`
-            : `/Planilla/GuardarBonificacion`;
-
-        const payload = { Id_Planilla: idPlanilla, Motivo: motivo, Monto: monto, Fecha: fecha };
-
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': antiforgery()
-                },
-                body: JSON.stringify(payload)
-            });
-            const json = await res.json();
-
-            bootstrap.Modal.getInstance(document.getElementById('modalBonificacion'))?.hide();
-
-            if (json.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: esEdicion ? 'Bonificación actualizada' : 'Bonificación agregada',
-                    text: json.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                cargarBonificaciones(planillaActual);
-            } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: json.message });
-            }
-        } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error de red', text: err.message });
-        }
-    });
-
-    // ─── Eliminar ─────────────────────────────────────────────────────────────
-    window.confirmarEliminar = function (id) {
-        Swal.fire({
-            title: '¿Eliminar bonificación?',
-            text: 'Esta acción no se puede deshacer.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (!result.isConfirmed) return;
-
-            const form = new FormData();
-            form.append('__RequestVerificationToken', antiforgery());
-
-            try {
-                const res = await fetch(`/Planilla/EliminarBonificacion?id=${id}`, {
-                    method: 'POST',
-                    headers: { 'RequestVerificationToken': antiforgery() },
-                    body: form
-                });
-                const json = await res.json();
-                if (json.success) {
-                    Swal.fire({ icon: 'success', title: 'Eliminada', text: json.message, timer: 1800, showConfirmButton: false });
-                    cargarBonificaciones(planillaActual);
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: json.message });
-                }
-            } catch (err) {
-                Swal.fire({ icon: 'error', title: 'Error de red', text: err.message });
-            }
-        });
-    };
-
-    // ─── Historial de Auditoría ───────────────────────────────────────────────
-    window.verHistorial = async function (id) {
-        document.getElementById('auditoriaCuerpoWrapper').style.display = 'none';
-        document.getElementById('loadingAuditoria').style.display = '';
-        document.getElementById('sinHistorial').style.display = 'none';
-        new bootstrap.Modal(document.getElementById('modalAuditoria')).show();
-
-        try {
-            const res = await fetch(`/Planilla/ObtenerAuditoriaBonificacion?id=${id}`);
-            const json = await res.json();
-
-            document.getElementById('loadingAuditoria').style.display = 'none';
-            document.getElementById('auditoriaCuerpoWrapper').style.display = '';
-
-            const tbody = document.getElementById('auditoriaCuerpo');
-            tbody.innerHTML = '';
-
-            if (!json.data || json.data.length === 0) {
-                document.getElementById('sinHistorial').style.display = '';
-                return;
-            }
-
-            json.data.forEach(a => {
-                const esElim = a.montoNuevo === 0 && a.motivoCambio?.includes('Eliminaci');
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${a.fechaCambio}</td>
-                    <td class="audit-row-old">${fmt(a.montoAnterior)}</td>
-                    <td class="${esElim ? 'text-danger' : 'audit-row-new'}">${esElim ? '<em>Eliminada</em>' : fmt(a.montoNuevo)}</td>
-                    <td>${escapeHtml(a.motivoCambio ?? '-')}</td>
-                    <td><span class="badge bg-secondary">${escapeHtml(a.responsable)}</span></td>`;
-                tbody.appendChild(tr);
-            });
-        } catch (err) {
-            document.getElementById('loadingAuditoria').style.display = 'none';
-            document.getElementById('auditoriaCuerpoWrapper').style.display = '';
-            document.getElementById('sinHistorial').style.display = '';
-        }
-    };
-
-    // ─── Horas Extras (form submit) ───────────────────────────────────────────
-    document.getElementById('formExtras').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const id_planilla = document.getElementById('extrasIdPlanilla').value;
-        const horas       = parseFloat(document.getElementById('campoHorasExtras').value || '0');
-        const obs         = document.getElementById('campoObservacionesExtras').value;
-
-        if (!id_planilla) {
-            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Seleccione una planilla primero.' });
-            return;
-        }
-
-        const form = new FormData();
-        form.append('Id_Planilla', id_planilla);
-        form.append('HorasExtras', horas);
-        form.append('MontoBonificaciones', 0);
-        form.append('Observaciones', obs);
-        form.append('__RequestVerificationToken', antiforgery());
-
-        try {
-            const res  = await fetch('/Planilla/RegistrarExtrasBonos', { method: 'POST', body: form });
-            const json = await res.json().catch(() => null);
-
-            // Distinguir respuesta: puede ser redirect (HTML) si Success → TempData
-            // Manejar ambas vías
-            if (!json) {
-                // Respuesta de redirección exitosa
-                Swal.fire({ icon: 'success', title: 'Guardado', text: 'Horas extras registradas.', timer: 2000, showConfirmButton: false });
-                return;
-            }
-
-            if (json.success === false && json.message && json.message.includes('exceden límite legal')) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Operación bloqueada',
-                    text: 'Horas extras exceden límite legal',
-                    confirmButtonColor: '#dc2626'
-                });
-            } else if (json.success === false) {
-                Swal.fire({ icon: 'error', title: 'Error', text: json.message });
-            } else {
-                Swal.fire({ icon: 'success', title: 'Guardado', text: json.message ?? 'Horas extras registradas.', timer: 2000, showConfirmButton: false });
-            }
-        } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error de red', text: err.message });
-        }
-    });
-
-})();
-</script>
-}

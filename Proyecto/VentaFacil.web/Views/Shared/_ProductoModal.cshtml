@@ -70,6 +70,31 @@
                                 </select>
                                 <span asp-validation-for="Id_Categoria" class="text-danger"></span>
                             </div>
+                        </div>
+
+                        <!-- Stock Mínimo -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="StockMinimo" class="form-label">Stock Mínimo</label>
+                                <input asp-for="StockMinimo" type="number" min="1" class="form-control"
+                                       placeholder="0"
+                                       required
+                                       readonly="@esSoloLectura" />
+                                <span asp-validation-for="StockMinimo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                         <!-- Stock Actual -->
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="StockActual" class="form-label">Stock Actual</label>
+                                <input asp-for="StockActual" type="number" min="0" class="form-control"
+                                       placeholder="0"
+                                       required
+                                       readonly="@esSoloLectura" />
+                                <span asp-validation-for="StockActual" class="text-danger"></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Descripción -->

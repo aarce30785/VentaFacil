@@ -77,24 +77,6 @@ namespace VentaFacil.web.Controllers
             return File(pdfBytes, "application/pdf", fileName);
         }
 
-        [HttpGet("ExportarNominaExcel")]
-        public async Task<IActionResult> ExportarNominaExcel(int idNomina)
-        {
-            var detalle = await _planillaService.ObtenerDetalleNominaParaExportarAsync(idNomina);
-            if (detalle == null)
-            {
-                TempData["Error"] = "Nómina no encontrada.";
-                return RedirectToAction("Consultar");
-            }
-
-            var excelBytes = _pdfService.GenerarExcelNomina(detalle);
-            string fileName = $"Nomina_{detalle.FechaInicio:yyyyMMdd}_{detalle.FechaFinal:yyyyMMdd}.xlsx";
-
-            return File(excelBytes,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                fileName);
-        }
-
         // ============================
         // REGISTRAR HORAS
         // ============================
@@ -156,29 +138,23 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrarExtrasBonos(RegistrarExtrasBonosDto dto)
         {
-            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest"
-                          || Request.Headers["Accept"].ToString().Contains("application/json");
-
             if (!ModelState.IsValid)
             {
-                if (isAjax)
-                    return Json(new { success = false, message = "Datos inv\u00e1lidos." });
-
                 var planillas = await _planillaService.ObtenerPlanillasParaExtrasAsync();
                 ViewBag.Planillas = new SelectList(planillas, "Id_Planilla", "InfoCompleta");
+
                 return View("~/Views/Planilla/RegistrarExtrasBonos.cshtml", dto);
             }
 
             var response = await _planillaService.RegistrarExtrasBonosAsync(dto);
 
-            if (isAjax)
-                return Json(new { success = response.Success, message = response.Message });
-
             if (!response.Success)
             {
                 TempData["Error"] = response.Message;
+
                 var planillas = await _planillaService.ObtenerPlanillasParaExtrasAsync();
                 ViewBag.Planillas = new SelectList(planillas, "Id_Planilla", "InfoCompleta");
+
                 return View("~/Views/Planilla/RegistrarExtrasBonos.cshtml", dto);
             }
 
@@ -187,23 +163,15 @@ namespace VentaFacil.web.Controllers
         }
 
         // ============================
-        // GENERAR NÓMINA (solo Administrador)
+        // GENERAR NÓMINA
         // ============================
         [HttpGet("GenerarNomina")]
-        [Authorize(Roles = "Administrador")]
         public IActionResult GenerarNomina()
         {
-            // Por defecto: semana actual (Lunes - Domingo)
-            var hoy = System.DateTime.Today;
-            int diasDesdeElLunes = ((int)hoy.DayOfWeek + 6) % 7; // 0=lunes
-            var lunes   = hoy.AddDays(-diasDesdeElLunes);
-            var domingo = lunes.AddDays(6);
-
             var modelo = new GenerarNominaDto
             {
-                TipoPeriodo               = "Semanal",
-                FechaInicio               = lunes,
-                FechaFinal                = domingo,
+                FechaInicio = System.DateTime.Today,
+                FechaFinal = System.DateTime.Today,
                 IncluirSoloUsuariosActivos = true
             };
 
@@ -211,7 +179,6 @@ namespace VentaFacil.web.Controllers
         }
 
         [HttpPost("GenerarNomina")]
-        [Authorize(Roles = "Administrador")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerarNomina(GenerarNominaDto dto)
         {
@@ -225,48 +192,21 @@ namespace VentaFacil.web.Controllers
             if (!response.Success)
             {
                 TempData["Error"] = response.Message;
-                if (response.ErroresValidacion != null && response.ErroresValidacion.Any())
-                {
-                    ViewBag.ErroresValidacion = response.ErroresValidacion;
-                }
                 return View("~/Views/Planilla/GenerarNomina.cshtml", dto);
             }
 
             TempData["Success"] = response.Message;
-            return RedirectToAction("DetalleNomina", new { idNomina = response.Id_Nomina });
+            return RedirectToAction("Consultar");
         }
 
         // ============================
-        // DETALLE NÓMINA
-        // ============================
-        [HttpGet("DetalleNomina/{idNomina}")]
-        public async Task<IActionResult> DetalleNomina(int idNomina)
-        {
-            var dto = await _planillaService.ObtenerDetalleNominaParaExportarAsync(idNomina);
-            if (dto == null)
-            {
-                TempData["Error"] = "Nómina no encontrada.";
-                return RedirectToAction("Consultar");
-            }
-
-            return View("~/Views/Planilla/DetalleNomina.cshtml", dto);
-        }
-
-        // ============================
-        // REVERTIR NÓMINA (solo Administrador)
+        // REVERTIR NÓMINA
         // ============================
         [HttpPost("RevertirNomina")]
-        [Authorize(Roles = "Administrador")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RevertirNomina(int idNomina, string justificacion)
+        public async Task<IActionResult> RevertirNomina(int idNomina)
         {
-            if (string.IsNullOrWhiteSpace(justificacion))
-            {
-                TempData["Error"] = "Debe proporcionar una justificación para anular la nómina.";
-                return RedirectToAction("Consultar");
-            }
-
-            var response = await _planillaService.RevertirNominaAsync(idNomina, justificacion);
+            var response = await _planillaService.RevertirNominaAsync(idNomina);
 
             if (!response.Success)
             {
@@ -281,45 +221,13 @@ namespace VentaFacil.web.Controllers
         }
 
         // ============================
-        // HISTORIAL LABORAL (5 AÑOS)
-        // ============================
-        [HttpGet("HistorialLaboral")]
-        public async Task<IActionResult> HistorialLaboral(int? idUsuario, int pagina = 1)
-        {
-            bool esAdmin = User.IsInRole("Administrador");
-
-            // Si no es admin, forzar a ver solo el propio historial
-            int usuarioFinal = esAdmin && idUsuario.HasValue
-                ? idUsuario.Value
-                : GetUserId();
-
-            var resultado = await _planillaService.ObtenerHistorialUsuarioAsync(usuarioFinal, pagina);
-
-            if (!resultado.Success)
-                TempData["Error"] = resultado.Message;
-
-            ViewBag.EsAdmin  = esAdmin;
-            if (esAdmin) await CargarUsuariosViewBag(usuarioFinal);
-
-            return View("~/Views/Planilla/HistorialLaboral.cshtml", resultado);
-        }
-
-        // ============================
         // BONIFICACIONES
         // ============================
         [HttpGet("ObtenerBonificaciones")]
         public async Task<IActionResult> ObtenerBonificaciones(int idPlanilla)
         {
             var bonificaciones = await _bonificacionService.ObtenerBonificacionesPorPlanillaAsync(idPlanilla);
-            var data = bonificaciones.Select(b => new {
-                b.Id,
-                b.Id_Planilla,
-                b.Monto,
-                b.Motivo,
-                Fecha = b.Fecha.ToString("yyyy-MM-dd"),
-                FechaRegistro = b.FechaRegistro.ToString("yyyy-MM-dd HH:mm")
-            });
-            return Json(new { success = true, data });
+            return Json(new { success = true, data = bonificaciones });
         }
 
         [HttpPost("GuardarBonificacion")]
@@ -352,21 +260,6 @@ namespace VentaFacil.web.Controllers
             return Json(response);
         }
 
-        [HttpGet("ObtenerAuditoriaBonificacion")]
-        public async Task<IActionResult> ObtenerAuditoriaBonificacion(int id)
-        {
-            var registros = await _bonificacionService.ObtenerAuditoriaBonificacionAsync(id);
-            var data = registros.Select(a => new {
-                a.Id,
-                a.MontoAnterior,
-                a.MontoNuevo,
-                a.MotivoCambio,
-                FechaCambio = a.FechaCambio.ToString("yyyy-MM-dd HH:mm"),
-                Responsable = a.UsuarioResponsable?.Nombre ?? $"ID {a.Id_UsuarioResponsable}"
-            });
-            return Json(new { success = true, data });
-        }
-
         // ============================
         // METODO AUXILIAR
         // ============================
@@ -383,34 +276,6 @@ namespace VentaFacil.web.Controllers
                 return userId;
             }
             return 0;
-        }
-
-        // ============================
-        // APROBACIÓN DE HORAS
-        // ============================
-        [HttpGet("AprobacionHoras")]
-        [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> AprobacionHoras()
-        {
-            var pendientes = await _planillaService.ObtenerPlanillasPendientesAsync();
-            return View("~/Views/Planilla/AprobacionHoras.cshtml", pendientes);
-        }
-
-        [HttpPost("ProcesarAprobacion")]
-        [Authorize(Roles = "Administrador")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcesarAprobacion(int idPlanilla, string estado, string observaciones)
-        {
-            var response = await _planillaService.AprobarRechazarPlanillaAsync(idPlanilla, estado, observaciones);
-            if (response.Success)
-            {
-                TempData["Success"] = response.Message;
-            }
-            else
-            {
-                TempData["Error"] = response.Message;
-            }
-            return RedirectToAction("AprobacionHoras");
         }
 
     }

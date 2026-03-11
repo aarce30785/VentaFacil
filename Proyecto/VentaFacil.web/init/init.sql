@@ -12,7 +12,6 @@ CREATE TABLE Usuario (
     Nombre VARCHAR(255),
     Correo VARCHAR(255),
     Contrasena VARCHAR(255),
-    SessionToken VARCHAR(255) NULL,
     Estado BIT DEFAULT 1,
     FechaCreacion DATETIME DEFAULT GETDATE(),
     Rol INT,
@@ -29,8 +28,7 @@ CREATE TABLE Nomina (
     Estado VARCHAR(20) NOT NULL,
     TotalBruto DECIMAL(10,2) NOT NULL,
     TotalDeducciones DECIMAL(10,2) NOT NULL,
-    TotalNeto DECIMAL(10,2) NOT NULL,
-    Observaciones VARCHAR(500) NULL
+    TotalNeto DECIMAL(10,2) NOT NULL
 );
 
 -- Tabla Planilla
@@ -39,7 +37,7 @@ CREATE TABLE Planilla (
     Id_Usr INT,
     FechaInicio DATETIME,
     FechaFinal DATETIME,
-    HorasTrabajadas DECIMAL(10,2),
+    HorasTrabajadas INT,
     -- Campo original
     Salario DECIMAL(10,2),
 
@@ -52,25 +50,12 @@ CREATE TABLE Planilla (
     SalarioBruto       DECIMAL(10,2) NULL,
     SalarioNeto        DECIMAL(10,2) NULL,
     Observaciones      VARCHAR(400)  NULL,
-    HoraInicioPausa    DATETIME      NULL,
-    HoraFinPausa       DATETIME      NULL,
 
     CONSTRAINT Plan_Pk PRIMARY KEY (Id_Planilla),
     CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr)
         REFERENCES Usuario(Id_Usr),
     CONSTRAINT FK_Planilla_Nomina FOREIGN KEY (Id_Nomina)
         REFERENCES Nomina(Id_Nomina)
-);
-
--- Tabla ConfiguracionPlanilla
-CREATE TABLE ConfiguracionPlanilla (
-    Id_Configuracion INT IDENTITY(1,1),
-    Id_Usr INT NOT NULL,
-    TarifaPorHora DECIMAL(10,2) NOT NULL,
-    FechaActualizacion DATETIME DEFAULT GETDATE(),
-    
-    CONSTRAINT ConfPlanilla_Pk PRIMARY KEY (Id_Configuracion),
-    CONSTRAINT ConfPlanillaUsr_Fk FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr)
 );
 
 -- Tabla Categoria
@@ -88,6 +73,8 @@ CREATE TABLE Producto (
     Descripcion VARCHAR(1024),
     Precio DECIMAL(10,2),
     Imagen VARCHAR(2048),
+    StockMinimo INT,
+    StockActual INT NOT NULL,
     Estado BIT DEFAULT 1,
     Id_Categoria INT,
     CONSTRAINT Pro_Pk PRIMARY KEY (Id_Producto),
@@ -104,17 +91,6 @@ CREATE TABLE Inventario (
     Estado BIT DEFAULT 1,
     CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
 );
-
--- Tabla ProductoInsumo
-CREATE TABLE ProductoInsumo (
-    Id_ProductoInsumo INT IDENTITY(1,1) PRIMARY KEY,
-    Id_Producto INT NOT NULL,
-    Id_Inventario INT NOT NULL,
-    Cantidad INT NOT NULL,
-    CONSTRAINT FK_ProductoInsumo_Producto FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto) ON DELETE CASCADE,
-    CONSTRAINT FK_ProductoInsumo_Inventario FOREIGN KEY (Id_Inventario) REFERENCES Inventario(Id_Inventario)
-);
-
 
 -- Tabla InventarioMovimiento
 CREATE TABLE InventarioMovimiento (
@@ -232,11 +208,6 @@ CREATE TABLE Caja (
     Fecha_Cierre DATETIME NULL,
     Monto_Inicial DECIMAL(10,2) NOT NULL,
     Monto DECIMAL(10,2) NULL,
-    
-    -- Campos USD independientes
-    Monto_Inicial_USD DECIMAL(10,2) DEFAULT 0 NOT NULL,
-    Monto_USD DECIMAL(10,2) DEFAULT 0 NULL,
-
     Estado VARCHAR(20) NOT NULL,
     CONSTRAINT FK_Caja_Usuario FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
 );
@@ -247,7 +218,6 @@ CREATE TABLE CajaRetiro (
     Id_Caja INT NOT NULL,
     Id_Usuario INT NOT NULL,
     Monto DECIMAL(10,2) NOT NULL,
-    Moneda VARCHAR(3) DEFAULT 'CRC' NOT NULL, -- Indicador CRC o USD
     Motivo VARCHAR(255) NOT NULL,
     FechaHora DATETIME NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_CajaRetiro_Caja FOREIGN KEY (Id_Caja) REFERENCES Caja(Id_Caja),
@@ -312,7 +282,17 @@ CREATE TABLE BonificacionAuditoria (
     CONSTRAINT FK_BonificacionAuditoria_Usuario FOREIGN KEY (Id_UsuarioResponsable) REFERENCES Usuario(Id_Usr)
 );
 
+-- Alterar Tabla Usuario para Horario
+-- Alterar Tabla Usuario para Horario
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraEntrada' AND Object_ID = Object_ID(N'Usuario'))
+BEGIN
+    ALTER TABLE Usuario ADD HoraEntrada TIME NULL
+END
 
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraSalida' AND Object_ID = Object_ID(N'Usuario'))
+BEGIN
+    ALTER TABLE Usuario ADD HoraSalida TIME NULL
+END
 
 -- Roles base
 INSERT INTO Rol (Nombre_Rol, Descripcion) VALUES ('Administrador', 'Acceso completo al sistema');

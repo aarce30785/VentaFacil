@@ -156,14 +156,5 @@ namespace VentaFacil.web.Services.Movimiento
             await _context.SaveChangesAsync();
             return true;
         }
-
-        public async Task<List<InventarioMovimientoAuditoria>> ListarAuditoriasAsync(int idMovimiento)
-        {
-            return await _context.InventarioMovimientoAuditoria
-                .Include(a => a.UsuarioResponsable)
-                .Where(a => a.Id_Movimiento == idMovimiento)
-                .OrderByDescending(a => a.FechaCambio)
-                .ToListAsync();
-        }
     }
 }

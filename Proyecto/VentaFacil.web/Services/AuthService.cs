@@ -40,23 +40,11 @@ namespace VentaFacil.web.Services
                     return response;
                 }
 
-                if (!string.IsNullOrEmpty(usuario.SessionToken) && !loginDto.ForzarReemplazo)
-                {
-                    response.Success = false;
-                    response.RequiereConfirmacion = true;
-                    response.Message = "Existe una sesión activa en otro dispositivo. ¿Desea cerrarla y continuar?";
-                    return response;
-                }
-
-                usuario.SessionToken = Guid.NewGuid().ToString();
-                await _context.SaveChangesAsync();
-
                 response.Success = true;
                 response.Message = "login exitoso";
                 response.Nombre = usuario.Nombre;
                 response.Rol = usuario.RolNavigation?.Nombre_Rol;
                 response.UsuarioId = usuario.Id_Usr;
-                response.SessionToken = usuario.SessionToken;
             }
             catch (Exception ex)
             {
@@ -66,16 +54,6 @@ namespace VentaFacil.web.Services
             }
 
             return response;
-        }
-
-        public async Task LogoutAsync(int usuarioId)
-        {
-            var usuario = await _context.Usuario.FindAsync(usuarioId);
-            if (usuario != null)
-            {
-                usuario.SessionToken = null;
-                await _context.SaveChangesAsync();
-            }
         }
     }
 }

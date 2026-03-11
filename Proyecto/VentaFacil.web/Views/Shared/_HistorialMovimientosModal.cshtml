@@ -87,7 +87,14 @@
                                                 <span class="text-sm">@item.Nombre_Usuario</span>
                                             </td>
                                             <td class="text-center">
-                                                @if (tipo == "Anulado")
+                                                @if ((User.IsInRole("Administrador") || User.IsInRole("EncargadoInventario")) && tipo != "Anulado" && !tipo.Contains("Reversa"))
+                                                {
+                                                    <button type="button" class="text-danger btn btn-link p-0" title="Anular movimiento"
+                                                            onclick="anularMovimiento(@item.Id_Movimiento)">
+                                                        <i class="lni lni-close text-danger"></i> Anular
+                                                    </button>
+                                                }
+                                                else if (tipo == "Anulado")
                                                 {
                                                     <span class="badge bg-secondary text-white"><i class="lni lni-ban"></i> Anulado</span>
                                                 }
@@ -97,22 +104,7 @@
                                                 }
                                                 else
                                                 {
-                                                    <div class="d-flex align-items-center justify-content-center gap-2">
-                                                        @if (User.IsInRole("Administrador") || User.IsInRole("EncargadoInventario"))
-                                                        {
-                                                            <button type="button" class="text-primary btn btn-link p-0" title="Editar movimiento"
-                                                                    onclick="corregirMovimiento(@item.Id_Movimiento)">
-                                                                <i class="lni lni-pencil text-primary"></i> Editar
-                                                            </button>
-                                                            <button type="button" class="text-danger btn btn-link p-0" title="Anular movimiento"
-                                                                    onclick="anularMovimiento(@item.Id_Movimiento)">
-                                                                <i class="lni lni-close text-danger"></i> Anular
-                                                            </button>
-                                                        }
-                                                        <button type="button" class="text-info btn btn-link p-0" title="Ver Auditoría" onclick="verAuditoria(@item.Id_Movimiento)">
-                                                            <i class="lni lni-timer text-info"></i> Auditoría
-                                                        </button>
-                                                    </div>
+                                                    <span class="text-muted">-</span>
                                                 }
                                             </td>
                                         </tr>

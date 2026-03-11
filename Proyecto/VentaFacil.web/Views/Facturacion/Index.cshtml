@@ -256,14 +256,7 @@
                                             <span class="fw-medium">@factura.Cliente</span>
                                         </div>
                                     </td>
-                                    <td class="text-end">
-                                        <div class="fw-bold text-dark">@factura.Total.ToString("C", numberFormat) @factura.Moneda</div>
-                                        @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
-                                        {
-                                            <small class="text-success fw-bold d-block">Pagado: @factura.MontoPagado.ToString("C", numberFormat)</small>
-                                            <small class="text-danger fw-bold d-block">Saldo: @((factura.Total - factura.MontoPagado).ToString("C", numberFormat))</small>
-                                        }
-                                    </td>
+<td class="text-end"><span class="fw-bold text-dark">@factura.Total.ToString("C", numberFormat) @factura.Moneda</span></td>
                                     <td><span class="badge bg-light text-dark border">@factura.MetodoPago</span></td>
                                     <td class="text-center">
                                         @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Activa)
@@ -278,10 +271,6 @@
                                         {
                                             <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill">Nota de Crédito</span>
                                         }
-                                        else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
-                                        {
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill">Pendiente / Parcial</span>
-                                        }
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
@@ -289,7 +278,7 @@
                                                class="action-btn text-info" title="Ver Detalle">
                                                 <i class="lni lni-eye"></i>
                                             </a>
-                                            <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = factura.Id_Factura, esCopia = true })" 
+                                            <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = factura.Id_Factura })" 
                                                class="action-btn text-secondary" title="Imprimir PDF" target="_blank">
                                                 <i class="lni lni-printer"></i>
                                             </a>
@@ -302,12 +291,6 @@
                                                 
                                                 <button type="button" class="action-btn text-warning" title="Devolución" onclick="abrirModalDevolucion(@factura.Id_Factura, '@factura.NumeroFactura')">
                                                     <i class="lni lni-reload"></i>
-                                                </button>
-                                            }
-                                            else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
-                                            {
-                                                <button type="button" class="action-btn text-success" title="Registrar Abono" onclick="abrirModalAbono(@factura.Id_Factura, '@factura.NumeroFactura', @Math.Max(0, factura.Total - factura.MontoPagado).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))">
-                                                    <i class="lni lni-coin"></i>
                                                 </button>
                                             }
                                         </div>
@@ -388,56 +371,10 @@
     </div>
 </div>
 
-<!-- Modal Registrar Abono -->
-<div class="modal fade" id="modalAbono" tabindex="-1" role="dialog" aria-labelledby="modalAbonoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content rounded-4 border-0 shadow-lg">
-            <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold text-success" id="modalAbonoLabel">Registrar Abono</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="formAbono" method="post" action="@Url.Action("RegistrarAbono", "Facturacion")">
-                @Html.AntiForgeryToken()
-                <div class="modal-body py-4">
-                    <input type="hidden" id="abonoFacturaId" name="facturaId" />
-                    
-                    <div class="text-center mb-4">
-                        <div class="avatar-lg bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
-                            <i class="lni lni-coin fs-2"></i>
-                        </div>
-                        <h6 class="fw-bold text-dark mb-2">Factura <span id="abonoNumeroFactura"></span></h6>
-                        <p class="text-danger fw-bold fs-5 mb-0">Saldo Pendiente: ¢<span id="abonoSaldoPendiente"></span></p>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="metodoPagoAbono" class="form-label fw-bold text-sm text-muted">Método de Pago</label>
-                            <select class="form-select" id="metodoPagoAbono" name="metodoPagoAbono" required>
-                                <option value="Efectivo">Efectivo</option>
-                                <option value="Tarjeta">Tarjeta</option>
-                                <option value="Transferencia">Transferencia</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="montoAbono" class="form-label fw-bold text-sm text-muted">Monto (¢)</label>
-                            <input type="number" class="form-control" id="montoAbono" name="montoAbono" step="0.01" min="0.01" required placeholder="0.00" />
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-pill px-4">Registrar Abono</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
     <script>
         var modalAnular = new bootstrap.Modal(document.getElementById('modalAnular'));
         var modalDevolucion = new bootstrap.Modal(document.getElementById('modalDevolucion'));
-        var modalAbono = new bootstrap.Modal(document.getElementById('modalAbono'));
 
         function abrirModalAnular(id, numero) {
             $('#anularFacturaId').val(id);
@@ -450,15 +387,6 @@
             var url = '@Url.Action("DetalleFactura", "Facturacion")' + '?facturaId=' + id;
             $('#btnIrADevolucion').attr('href', url);
             modalDevolucion.show();
-        }
-
-        function abrirModalAbono(id, numero, saldo) {
-            $('#abonoFacturaId').val(id);
-            $('#abonoNumeroFactura').text(numero);
-            $('#abonoSaldoPendiente').text(parseFloat(saldo).toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-            $('#montoAbono').val(parseFloat(saldo).toFixed(2));
-            $('#montoAbono').attr('max', parseFloat(saldo).toFixed(2));
-            modalAbono.show();
         }
     </script>
 }

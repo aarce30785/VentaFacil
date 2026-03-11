@@ -27,8 +27,15 @@ namespace VentaFacil.web.Models.Dto
         [Display(Name = "Imagen")]
         public string? Imagen { get; set; }
 
-        public int? MaximoProducible { get; set; }
+        [Display(Name = "Stock Mínimo")]
+        [Required(ErrorMessage = "El stock mínimo es obligatorio")]
+        [Range(1, int.MaxValue, ErrorMessage = "El stock mínimo debe ser al menos 1")]
+        public int StockMinimo { get; set; }
 
+        [Display(Name = "Stock Actual")]
+        [Required(ErrorMessage = "El stock actual es obligatorio")]
+        [Range(0, int.MaxValue, ErrorMessage = "El stock actual no puede ser negativo")]
+        public int StockActual { get; set; }
 
         [Display(Name = "Estado")]
         public bool Estado { get; set; }

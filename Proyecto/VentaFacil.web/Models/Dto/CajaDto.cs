@@ -18,17 +18,11 @@ namespace VentaFacil.web.Models.Dto
         [Display(Name = "Fecha Cierre")]
         public DateTime? Fecha_Cierre { get; set; }
 
-        [Display(Name = "Monto Inicial CRC")]
+        [Display(Name = "Monto Inicial")]
         public decimal Monto_Inicial { get; set; }
 
-        [Display(Name = "Monto CRC")]
+        [Display(Name = "Monto")]
         public decimal? Monto { get; set; }
-
-        [Display(Name = "Monto Inicial USD")]
-        public decimal Monto_Inicial_USD { get; set; }
-
-        [Display(Name = "Monto USD")]
-        public decimal? Monto_USD { get; set; }
 
         [Display(Name = "Estado")]
         public string Estado { get; set; }
