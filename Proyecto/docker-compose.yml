@@ -20,7 +20,7 @@ services:
       MSSQL_SA_PASSWORD: 'VentaFacilDb123!'
       MSSQL_PID: 'Developer'
       MSSQL_TCP_PORT: 1433
-      MSSQL_MEMORY_LIMIT_MB: 3072 # Aumentado para aprovechar los 4GB del contenedor
+      MSSQL_MEMORY_LIMIT_MB: 1536 # Dejar margen para el contenedor (buffer)
       MSSQL_COLLATION: 'SQL_Latin1_General_CP1_CI_AS'
       TZ: 'America/Guatemala' # Ajusta a tu zona horaria
     init: true
@@ -31,7 +31,7 @@ services:
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
       - ./sqlserver/backups:/var/opt/mssql/backup # Para backups
-    mem_limit: 4g # Ajustado para VPS de 4GB
+    mem_limit: 2g # Ajustado para VPS de 4GB
     networks:
       - ventafacil-network
     restart: unless-stopped
