@@ -33,7 +33,10 @@ services:
       - ./sqlserver/backups:/var/opt/mssql/backup # Para backups
     mem_limit: 2g # Ajustado para VPS de 4GB
     networks:
-      - ventafacil-network
+      ventafacil-network:
+        aliases:
+          - sqlserver
+          - ventafacil-db
     restart: unless-stopped
 
   ventafacil.web:
