@@ -37,7 +37,8 @@ BEGIN
         Estado VARCHAR(20) NOT NULL,
         TotalBruto DECIMAL(10,2) NOT NULL,
         TotalDeducciones DECIMAL(10,2) NOT NULL,
-        TotalNeto DECIMAL(10,2) NOT NULL
+        TotalNeto DECIMAL(10,2) NOT NULL,
+        Observaciones VARCHAR(MAX) NULL
     );
 END
 
