@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
@@ -24,13 +24,19 @@ namespace VentaFacil.web.Controllers
         public ProductoController(
             IProductoService registerProductoService,
             ICategoriaService categoriaService,
-            IWebHostEnvironment environment,
-            VentaFacil.web.Data.ApplicationDbContext context)
+
+            IWebHostEnvironment environment)
         {
             _productoService = registerProductoService;
             _categoriaService = categoriaService;
             _environment = environment;
+
+            VentaFacil.web.Data.ApplicationDbContext context)
+        {
+            _productoService = registerProductoService;
+            _categoriaService = categoriaService;
             _context = context;
+
         }
 
         [HttpGet]
