@@ -103,6 +103,7 @@ BEGIN
         StockActual INT NOT NULL,
         StockMinimo INT NOT NULL,
         UnidadMedida INT NOT NULL,
+        Estado BIT DEFAULT 1,
         CONSTRAINT Inv_Pk PRIMARY KEY (Id_Inventario)
     );
 END
@@ -260,11 +261,11 @@ BEGIN
         Id_Usuario INT NOT NULL,
         Fecha_Apertura DATETIME NOT NULL DEFAULT GETDATE(),
         Fecha_Cierre DATETIME NULL,
-        Monto_Inicial DECIMAL(10,2) NOT NULL,
-        Monto DECIMAL(10,2) NULL,
-        Monto_Inicial_USD DECIMAL(10,2) NOT NULL DEFAULT 0,
-        Monto_USD DECIMAL(10,2) NULL,
-        Estado VARCHAR(20) NOT NULL,
+        Monto_Inicial DECIMAL(18,2) NOT NULL,
+        Monto DECIMAL(18,2) NULL,
+        Monto_Inicial_USD DECIMAL(18,2) NOT NULL DEFAULT 0,
+        Monto_USD DECIMAL(18,2) NULL,
+        Estado VARCHAR(50) NOT NULL,
         CONSTRAINT FK_Caja_Usuario FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
     );
 END
