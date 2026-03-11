@@ -75,25 +75,21 @@
     }
 </style>
 
-<div class="dashboard-wrapper">
+<div class="container-fluid py-4">
     <!-- Header -->
-    <div class="title-wrapper pt-30 mb-5">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div class="title">
-                    <h2 class="fw-bold text-dark">Gestión de Planilla</h2>
-                    <p class="text-muted text-sm">Control centralizado de nómina y personal</p>
-                </div>
-            </div>
-             <div class="col-md-6">
-                 <div class="breadcrumb-wrapper">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Planilla</li>
-                        </ol>
-                    </nav>
-                </div>
+    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-agenda me-2"></i>Gestión de Planilla</h1>
+            <p class="mb-0 text-white-50 fs-5">Control centralizado de nómina y personal.</p>
+        </div>
+        <div class="position-relative z-1 d-none d-md-block">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Planilla</li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
@@ -165,6 +161,27 @@
                         </div>
                         <h3 class="menu-title">Historial de Nóminas</h3>
                         <p class="menu-desc">Consulta y reportes de pagos anteriores</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Configuración -->
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <h5 class="fw-bold text-muted mb-3 ps-2 border-start border-4 border-secondary">Configuración</h5>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <a asp-controller="ConfiguracionPlanilla" asp-action="Index" class="menu-card-link">
+                <div class="premium-card">
+                    <div class="menu-card-content">
+                        <div class="menu-icon bg-secondary bg-opacity-10 text-secondary">
+                            <i class="lni lni-cog"></i>
+                        </div>
+                        <h3 class="menu-title">Configuración</h3>
+                        <p class="menu-desc">Tarifas por hora de empleados y deducciones</p>
                     </div>
                 </div>
             </a>

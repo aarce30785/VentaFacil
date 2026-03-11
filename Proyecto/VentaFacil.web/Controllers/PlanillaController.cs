@@ -385,5 +385,33 @@ namespace VentaFacil.web.Controllers
             return 0;
         }
 
+        // ============================
+        // APROBACIÓN DE HORAS
+        // ============================
+        [HttpGet("AprobacionHoras")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> AprobacionHoras()
+        {
+            var pendientes = await _planillaService.ObtenerPlanillasPendientesAsync();
+            return View("~/Views/Planilla/AprobacionHoras.cshtml", pendientes);
+        }
+
+        [HttpPost("ProcesarAprobacion")]
+        [Authorize(Roles = "Administrador")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcesarAprobacion(int idPlanilla, string estado, string observaciones)
+        {
+            var response = await _planillaService.AprobarRechazarPlanillaAsync(idPlanilla, estado, observaciones);
+            if (response.Success)
+            {
+                TempData["Success"] = response.Message;
+            }
+            else
+            {
+                TempData["Error"] = response.Message;
+            }
+            return RedirectToAction("AprobacionHoras");
+        }
+
     }
 }

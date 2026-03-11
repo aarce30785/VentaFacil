@@ -335,35 +335,7 @@ namespace VentaFacil.web.Controllers
             return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina, mostrarInactivos });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ActualizarStock([FromBody] Dictionary<string, int> data)
-        {
-            try
-            {
-                if (!data.ContainsKey("idProducto") || !data.ContainsKey("cantidad"))
-                {
-                    return BadRequest(new { success = false, message = "Datos inválidos." });
-                }
 
-                int idProducto = data["idProducto"];
-                int cantidad = data["cantidad"];
-
-                var resultado = await _productoService.ActualizarStockAsync(idProducto, cantidad);
-
-                if (resultado.Success)
-                {
-                    return Ok(new { success = true, message = resultado.Message });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = resultado.Message });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = $"Error interno: {ex.Message}" });
-            }
-        }
 
         private async Task<List<SelectListItem>> GetCategoriasSelectList()
         {

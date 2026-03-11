@@ -1,4 +1,4 @@
-﻿using iText.Kernel.Pdf;
+using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
@@ -450,7 +450,58 @@ namespace VentaFacil.web.Services.PDF
                 totalTable.AddCell(new Cell().Add(new Paragraph("TOTAL:").SetFont(fontBold).SetFontSize(14).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
                 totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Total.ToString("C2", numberFormat)).SetFont(fontBold).SetFontSize(14).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
 
+                if (facturaDto.TasaCambio > 0 && facturaDto.TasaCambio != 1)
+                {
+                    totalTable.AddCell(new Cell().Add(new Paragraph("Equivalente (USD):").SetFont(fontRegular).SetFontSize(9).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    totalTable.AddCell(new Cell().Add(new Paragraph($"${(facturaDto.Total / facturaDto.TasaCambio.Value).ToString("N2")}").SetFont(fontRegular).SetFontSize(9).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    
+                    totalTable.AddCell(new Cell().Add(new Paragraph("Tasa de Cambio:").SetFont(fontRegular).SetFontSize(9).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.TasaCambio.Value.ToString("C2", numberFormat)).SetFont(fontRegular).SetFontSize(9).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                }
+
                 document.Add(totalTable);
+
+                if (facturaDto.Pagos != null && facturaDto.Pagos.Any())
+                {
+                    document.Add(new Paragraph("\n"));
+                    document.Add(new Paragraph("Desglose de Pago:").SetFont(fontBold).SetFontSize(10));
+                    
+                    Table pagosTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1 })).UseAllAvailableWidth();
+                    foreach (var pago in facturaDto.Pagos)
+                    {
+                        pagosTable.AddCell(new Cell().Add(new Paragraph(pago.MetodoPago).SetFont(fontRegular).SetFontSize(9)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                        pagosTable.AddCell(new Cell().Add(new Paragraph(pago.Monto.ToString("C2", numberFormat)).SetFont(fontRegular).SetFontSize(9).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    }
+                    
+                    var totalPagado = facturaDto.Pagos.Sum(p => p.Monto);
+                    pagosTable.AddCell(new Cell().Add(new Paragraph("Total Pagado:").SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    pagosTable.AddCell(new Cell().Add(new Paragraph(totalPagado.ToString("C2", numberFormat)).SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+
+                    if (totalPagado < facturaDto.Total)
+                    {
+                        pagosTable.AddCell(new Cell().Add(new Paragraph("Saldo Pendiente:").SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                        pagosTable.AddCell(new Cell().Add(new Paragraph((facturaDto.Total - totalPagado).ToString("C2", numberFormat)).SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    }
+
+                    document.Add(pagosTable);
+                }
+                else
+                {
+                    document.Add(new Paragraph("\n"));
+                    Table pagoSimpleTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1 })).UseAllAvailableWidth();
+                    string finalPagadoText = facturaDto.Moneda == "USD" ? $"${facturaDto.MontoPagado.ToString("N2")}" : facturaDto.MontoPagado.ToString("C2", numberFormat);
+
+                    pagoSimpleTable.AddCell(new Cell().Add(new Paragraph($"Pagado con {facturaDto.Moneda}:").SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    pagoSimpleTable.AddCell(new Cell().Add(new Paragraph(finalPagadoText).SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+
+                    if (facturaDto.Cambio > 0)
+                    {
+                        pagoSimpleTable.AddCell(new Cell().Add(new Paragraph("Cambio Entregado (CRC):").SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                        pagoSimpleTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Cambio.ToString("C2", numberFormat)).SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    }
+                    
+                    document.Add(pagoSimpleTable);
+                }
 
                 document.Close();
                 return stream.ToArray();
@@ -510,6 +561,166 @@ namespace VentaFacil.web.Services.PDF
                 document.Close();
                 return stream.ToArray();
             }
+        }
+        // =====================================================================
+        // GenerarArqueoPdf
+        // =====================================================================
+        public byte[] GenerarArqueoPdf(VentaFacil.web.Models.Caja caja, List<CajaRetiro> retiros)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                var writer = new PdfWriter(memoryStream);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf);
+                document.SetMargins(30, 30, 30, 30);
+
+                var fontNormal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+                var fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+
+                // Título principal
+                var title = new Paragraph("CORTE PARCIAL / ARQUEO DE CAJA")
+                    .SetFont(fontBold).SetFontSize(16).SetTextAlignment(TextAlignment.CENTER).SetMarginBottom(20);
+                document.Add(title);
+
+                // Detalles de la caja
+                document.Add(new Paragraph($"Fecha/Hora Apertura: {caja.Fecha_Apertura:dd/MM/yyyy HH:mm}").SetFont(fontNormal).SetFontSize(10));
+                document.Add(new Paragraph($"Fecha/Hora Generación: {DateTime.Now:dd/MM/yyyy HH:mm}").SetFont(fontNormal).SetFontSize(10));
+                document.Add(new Paragraph($"Monto Inicial: {caja.Monto_Inicial:C}").SetFont(fontNormal).SetFontSize(10));
+                document.Add(new Paragraph($"Saldo Actual del Sistema: {caja.Monto:C}").SetFont(fontBold).SetFontSize(12).SetMarginBottom(15));
+
+                // Tabla de Movimientos
+                if (retiros != null && retiros.Any())
+                {
+                    document.Add(new Paragraph("Detalle de Movimientos (Ingresos y Salidas):")
+                        .SetFont(fontBold).SetFontSize(11).SetMarginBottom(10));
+
+                    var table = new Table(UnitValue.CreatePercentArray(new float[] { 25, 20, 55 })).UseAllAvailableWidth();
+
+                    table.AddHeaderCell(new Cell().Add(new Paragraph("Fecha").SetFont(fontBold).SetFontSize(10).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+                    table.AddHeaderCell(new Cell().Add(new Paragraph("Monto").SetFont(fontBold).SetFontSize(10).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+                    table.AddHeaderCell(new Cell().Add(new Paragraph("Motivo / Justificación").SetFont(fontBold).SetFontSize(10).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+
+                    foreach (var m in retiros.OrderBy(x => x.FechaHora))
+                    {
+                        table.AddCell(new Cell().Add(new Paragraph(m.FechaHora.ToString("dd/MM/yyyy HH:mm")).SetFont(fontNormal).SetFontSize(9)));
+                        table.AddCell(new Cell().Add(new Paragraph(m.Monto.ToString("C")).SetFont(fontNormal).SetFontSize(9).SetFontColor(m.Monto < 0 ? iText.Kernel.Colors.ColorConstants.RED : iText.Kernel.Colors.ColorConstants.BLACK)));
+                        table.AddCell(new Cell().Add(new Paragraph(m.Motivo ?? "").SetFont(fontNormal).SetFontSize(9)));
+                    }
+
+                    document.Add(table);
+                }
+                else
+                {
+                    document.Add(new Paragraph("No hay movimientos registrados además del monto inicial.").SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA_OBLIQUE)).SetFontSize(10));
+                }
+
+                document.Close();
+                return memoryStream.ToArray();
+            }
+        }
+
+        // =====================================================================
+        // GenerarReporteVentasDiariasPdf
+        // =====================================================================
+        public byte[] GenerarReporteVentasDiariasPdf(List<VentaFacil.web.Models.Factura> facturas, DateTime fecha)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                var writer = new PdfWriter(memoryStream);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf);
+                document.SetMargins(30, 30, 30, 30);
+
+                var fontNormal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+                var fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+
+                document.Add(new Paragraph("REPORTE DE VENTAS DIARIAS")
+                    .SetFont(fontBold).SetFontSize(16).SetTextAlignment(TextAlignment.CENTER).SetMarginBottom(10));
+                
+                document.Add(new Paragraph($"Fecha: {fecha:dd/MM/yyyy}")
+                    .SetFont(fontNormal).SetFontSize(11));
+                
+                decimal totalVendido = facturas.Sum(f => f.Total);
+                document.Add(new Paragraph($"Cantidad de Facturas: {facturas.Count}")
+                    .SetFont(fontNormal).SetFontSize(11));
+                document.Add(new Paragraph($"Total Vendido: {totalVendido:C}")
+                    .SetFont(fontBold).SetFontSize(12).SetMarginBottom(15));
+
+                var table = new Table(UnitValue.CreatePercentArray(new float[] { 15, 25, 30, 15, 15 })).UseAllAvailableWidth();
+                table.AddHeaderCell(new Cell().Add(new Paragraph("No.").SetFont(fontBold).SetFontSize(10).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Hora").SetFont(fontBold).SetFontSize(10).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Cajero").SetFont(fontBold).SetFontSize(10).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Estado").SetFont(fontBold).SetFontSize(10).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Total").SetFont(fontBold).SetFontSize(10).SetTextAlignment(TextAlignment.RIGHT).SetBackgroundColor(iText.Kernel.Colors.ColorConstants.LIGHT_GRAY)));
+
+                foreach (var f in facturas.OrderBy(x => x.FechaEmision))
+                {
+                    table.AddCell(new Cell().Add(new Paragraph(f.Id_Factura.ToString()).SetFont(fontNormal).SetFontSize(9)));
+                    table.AddCell(new Cell().Add(new Paragraph(f.FechaEmision.ToString("HH:mm")).SetFont(fontNormal).SetFontSize(9)));
+                    table.AddCell(new Cell().Add(new Paragraph(f.Venta?.Usuario?.Nombre ?? "Sistema").SetFont(fontNormal).SetFontSize(9)));
+                    table.AddCell(new Cell().Add(new Paragraph(f.Estado.ToString()).SetFont(fontNormal).SetFontSize(9)));
+                    table.AddCell(new Cell().Add(new Paragraph(f.Total.ToString("C")).SetFont(fontNormal).SetFontSize(9).SetTextAlignment(TextAlignment.RIGHT)));
+                }
+
+                document.Add(table);
+                document.Close();
+                return memoryStream.ToArray();
+            }
+        }
+
+        // =====================================================================
+        // GenerarReportePersonalizadoExcel
+        // =====================================================================
+        public byte[] GenerarReportePersonalizadoExcel(List<VentaFacil.web.Models.Factura> facturas, DateTime fechaInicio, DateTime fechaFin)
+        {
+            using var wb = new XLWorkbook();
+            var ws = wb.Worksheets.Add("Ventas");
+
+            ws.Cell(1, 1).Value = "Reporte de Ventas Detallado";
+            ws.Range(1, 1, 1, 7).Merge();
+            ws.Cell(1, 1).Style.Font.SetBold(true).Font.SetFontSize(14).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+            ws.Cell(2, 1).Value = $"Periodo: {fechaInicio:dd/MM/yyyy} – {fechaFin:dd/MM/yyyy}";
+            ws.Range(2, 1, 2, 7).Merge();
+            ws.Cell(2, 1).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+            var headers = new[] { "ID", "Fecha", "Cliente", "Cajero", "Estado", "Subtotal", "Impuestos", "Total" };
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = ws.Cell(4, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.SetBold(true).Fill.SetBackgroundColor(XLColor.LightGray);
+            }
+
+            int row = 5;
+            foreach (var f in facturas.OrderBy(x => x.FechaEmision))
+            {
+                ws.Cell(row, 1).Value = f.Id_Factura;
+                ws.Cell(row, 2).Value = f.FechaEmision.ToString("dd/MM/yyyy HH:mm");
+                ws.Cell(row, 3).Value = !string.IsNullOrEmpty(f.Cliente) ? f.Cliente : "Cliente Contado";
+                ws.Cell(row, 4).Value = f.Venta?.Usuario?.Nombre ?? "Sistema";
+                ws.Cell(row, 5).Value = f.Estado.ToString();
+                ws.Cell(row, 6).Value = f.Total;
+                ws.Cell(row, 7).Value = 0m;
+                ws.Cell(row, 8).Value = f.Total;
+                
+                ws.Cell(row, 6).Style.NumberFormat.Format = "₡#,##0.00";
+                ws.Cell(row, 7).Style.NumberFormat.Format = "₡#,##0.00";
+                ws.Cell(row, 8).Style.NumberFormat.Format = "₡#,##0.00";
+                row++;
+            }
+
+            ws.Cell(row, 7).Value = "TOTAL FINAL:";
+            ws.Cell(row, 7).Style.Font.SetBold(true).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right);
+            
+            ws.Cell(row, 8).Value = facturas.Sum(f => f.Total);
+            ws.Cell(row, 8).Style.Font.SetBold(true).NumberFormat.Format = "₡#,##0.00";
+
+            ws.Columns().AdjustToContents();
+
+            using var ms = new MemoryStream();
+            wb.SaveAs(ms);
+            return ms.ToArray();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +41,7 @@ namespace VentaFacil.web.Services.Facturacion
             _cajaService = cajaService;
         }
 
-        public async Task<ResultadoFacturacion> GenerarFacturaAsync(int pedidoId, MetodoPago metodoPago, decimal montoPagado, string moneda = "CRC")
+        public async Task<ResultadoFacturacion> GenerarFacturaAsync(int pedidoId, MetodoPago metodoPago, decimal montoPagado, string moneda = "CRC", bool esPagoParcial = false)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace VentaFacil.web.Services.Facturacion
                 
                 var ventaId = await CrearVentaSimpleAsync(pedido, metodoPago);
                 await CrearDetallesVentaAsync(ventaId, pedido);
-                var factura = await CrearFacturaAsync(ventaId, pedido, montoPagado, moneda, metodoPago);
+                var factura = await CrearFacturaAsync(ventaId, pedido, montoPagado, moneda, metodoPago, null, esPagoParcial);
                 var warnings = await ProcesarDeduccionInventarioAsync(pedido, factura.Id_Factura);
                 
                 var facturaDto = await ObtenerFacturaCompletaAsync(factura.Id_Factura);
@@ -71,13 +71,13 @@ namespace VentaFacil.web.Services.Facturacion
                     if (caja != null)
                     {
                         // Registrar ingreso del monto pagado
-                        await _cajaService.RegistrarIngresoAsync(caja.Id_Caja, caja.Id_Usuario, montoPagado, "Ingreso por venta en efectivo");
+                        await _cajaService.RegistrarIngresoAsync(caja.Id_Caja, caja.Id_Usuario, montoPagado, $"Ingreso por venta en efectivo (Factura #{factura.Id_Factura})");
                         
                         // Registrar retiro del vuelto si aplica
                         var vuelto = montoPagado - factura.Total;
                         if (vuelto > 0)
                         {
-                            await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, vuelto, "Retiro de vuelto entregado al cliente");
+                            await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, vuelto, $"Retiro de vuelto entregado al cliente (Factura #{factura.Id_Factura})");
                         }
                     }
                 }
@@ -103,7 +103,7 @@ namespace VentaFacil.web.Services.Facturacion
             }
         }
 
-        public async Task<ResultadoFacturacion> GenerarFacturaDolaresAsync(int pedidoId, decimal montoPagado, decimal tasaCambio)
+        public async Task<ResultadoFacturacion> GenerarFacturaDolaresAsync(int pedidoId, decimal montoPagado, decimal tasaCambio, bool esPagoParcial = false)
         {
             try
             {
@@ -120,10 +120,24 @@ namespace VentaFacil.web.Services.Facturacion
                 
                 var ventaId = await CrearVentaSimpleAsync(pedido, MetodoPago.Efectivo);
                 await CrearDetallesVentaAsync(ventaId, pedido);
-                var factura = await CrearFacturaAsync(ventaId, pedido, montoPagado, "USD", MetodoPago.Efectivo, tasaCambio);
+                var factura = await CrearFacturaAsync(ventaId, pedido, montoPagado, "USD", MetodoPago.Efectivo, tasaCambio, esPagoParcial);
                 var warnings = await ProcesarDeduccionInventarioAsync(pedido, factura.Id_Factura);
 
                 var facturaDto = await ObtenerFacturaCompletaAsync(factura.Id_Factura);
+
+                // --- AGREGAR MOVIMIENTOS DE CAJA ---
+                var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+                if (caja != null)
+                {
+                    await _cajaService.RegistrarIngresoAsync(caja.Id_Caja, caja.Id_Usuario, montoPagado, $"Ingreso por venta en dólares (Factura #{factura.Id_Factura})", "USD");
+                    
+                    var vueltoCRC = (montoPagado * tasaCambio) - pedido.Total;
+                    if (vueltoCRC > 0)
+                    {
+                        await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, vueltoCRC, $"Retiro de vuelto entregado en CRC por pago en USD (Factura #{factura.Id_Factura})", "CRC");
+                    }
+                }
+                // --- FIN MOVIMIENTOS DE CAJA ---
 
                 
                 _ = Task.Run(() => GenerarYGuardarPdfAsync(factura.Id_Factura));
@@ -139,7 +153,7 @@ namespace VentaFacil.web.Services.Facturacion
             }
         }
 
-        public async Task<ResultadoFacturacion> GenerarFacturaMixtaAsync(int pedidoId, List<PagoFacturaDto> pagos)
+        public async Task<ResultadoFacturacion> GenerarFacturaMixtaAsync(int pedidoId, List<PagoFacturaDto> pagos, bool esPagoParcial = false)
         {
             try
             {
@@ -171,7 +185,7 @@ namespace VentaFacil.web.Services.Facturacion
                 }
 
                 
-                if (totalPagado < pedido.Total - 0.01m)
+                if (!esPagoParcial && totalPagado < pedido.Total - 0.01m)
                 {
                     return ResultadoFacturacion.Error($"El monto total pagado ({totalPagado:C}) es menor al total del pedido ({pedido.Total:C})");
                 }
@@ -187,7 +201,7 @@ namespace VentaFacil.web.Services.Facturacion
                     FechaEmision = DateTime.Now,
                     Total = pedido.Total,
                     Cliente = pedido.Cliente,
-                    Estado = EstadoFactura.Activa,
+                    Estado = (esPagoParcial && totalPagado < pedido.Total - 0.01m) ? EstadoFactura.Pendiente : EstadoFactura.Activa,
                     MontoPagado = totalPagado,
                     Moneda = "CRC",
                     MetodoPago = "Mixto",
@@ -218,6 +232,43 @@ namespace VentaFacil.web.Services.Facturacion
 
                
                 var facturaDto = await ObtenerFacturaCompletaAsync(factura.Id_Factura);
+
+                // --- AGREGAR MOVIMIENTOS DE CAJA ---
+                var cajaMixta = await _context.Caja.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+                if (cajaMixta != null)
+                {
+                    decimal totalEfectivoColones = 0;
+                    decimal totalEfectivoDolares = 0;
+
+                    foreach (var pagoDto in pagos.Where(p => p.MetodoPago == "Efectivo"))
+                    {
+                        if (pagoDto.Moneda == "USD")
+                        {
+                            totalEfectivoDolares += pagoDto.Monto;
+                        }
+                        else
+                        {
+                            totalEfectivoColones += pagoDto.Monto;
+                        }
+                    }
+
+                    if (totalEfectivoColones > 0)
+                    {
+                        await _cajaService.RegistrarIngresoAsync(cajaMixta.Id_Caja, cajaMixta.Id_Usuario, totalEfectivoColones, $"Ingreso efectivo CRC venta mixta (Factura #{factura.Id_Factura})", "CRC");
+                    }
+
+                    if (totalEfectivoDolares > 0)
+                    {
+                        await _cajaService.RegistrarIngresoAsync(cajaMixta.Id_Caja, cajaMixta.Id_Usuario, totalEfectivoDolares, $"Ingreso efectivo USD venta mixta (Factura #{factura.Id_Factura})", "USD");
+                    }
+
+                    // El vuelto de facturas mixtas se da siempre en colones por diseño actual
+                    if (factura.Cambio > 0)
+                    {
+                        await _cajaService.RegistrarRetiroAsync(cajaMixta.Id_Caja, cajaMixta.Id_Usuario, factura.Cambio, $"Retiro vuelto en CRC venta mixta (Factura #{factura.Id_Factura})", "CRC");
+                    }
+                }
+                // --- FIN MOVIMIENTOS DE CAJA ---
 
                 
                 _ = Task.Run(() => GenerarYGuardarPdfAsync(factura.Id_Factura));
@@ -295,7 +346,11 @@ namespace VentaFacil.web.Services.Facturacion
         {
             try
             {
-                var factura = await _context.Factura.FindAsync(facturaId);
+                var factura = await _context.Factura
+                    .Include(f => f.Venta)
+                    .Include(f => f.Pagos)
+                    .FirstOrDefaultAsync(f => f.Id_Factura == facturaId);
+                    
                 if (factura == null)
                 {
                     throw new Exception("Factura no encontrada");
@@ -312,11 +367,36 @@ namespace VentaFacil.web.Services.Facturacion
 
                 if (cajaCerrada)
                 {
-                    throw new Exception("No se puede anular una factura de un día cerrado.");
+                    throw new Exception("No se pueden modificar facturas de periodos cerrados");
+                }
+
+                // FA-3001: Register withdrawal if it was paid in cash
+                var montoEfectivo = factura.Pagos
+                    .Where(p => p.MetodoPago == "Efectivo" || factura.MetodoPago == "Efectivo")
+                    .Sum(p => p.Monto > 0 ? p.Monto : factura.Total);
+                    
+                if (factura.MetodoPago == "Efectivo" && (!factura.Pagos.Any(p => p.MetodoPago == "Efectivo")))
+                {
+                     montoEfectivo = factura.Total;
+                }
+
+                if (montoEfectivo > 0)
+                {
+                    var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+                    if (caja != null)
+                    {
+                        await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, montoEfectivo, $"Retiro por Anulación de Factura #{facturaId}");
+                    }
                 }
 
                 factura.Estado = EstadoFactura.Anulada;
                 factura.Justificacion = justificacion;
+                
+                // Exclude from daily totals by disabling the associated sale
+                if (factura.Venta != null)
+                {
+                    factura.Venta.Estado = false; 
+                }
                 
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Factura {FacturaId} anulada. Justificación: {Justificacion}", facturaId, justificacion);
@@ -350,10 +430,23 @@ namespace VentaFacil.web.Services.Facturacion
 
                 decimal totalDevolucion = detallesOriginales.Sum(d => d.Cantidad * d.PrecioUnitario - (d.Descuento ?? 0));
 
+                // FA-3003: Create a negative Sale to adjust daily/weekly totals
+                var usuarioId = await ObtenerUsuarioIdAutenticado();
+                var ventaNegativa = new Venta
+                {
+                    Fecha = DateTime.Now,
+                    Total = -totalDevolucion,
+                    MetodoPago = facturaOriginal.MetodoPago,
+                    Id_Usuario = usuarioId,
+                    Estado = true
+                };
+                
+                _context.Venta.Add(ventaNegativa);
+                await _context.SaveChangesAsync();
                 
                 var notaCredito = new Factura
                 {
-                    Id_Venta = facturaOriginal.Id_Venta,
+                    Id_Venta = ventaNegativa.Id_Venta,
                     FechaEmision = DateTime.Now,
                     Total = -totalDevolucion, 
                     Cliente = facturaOriginal.Cliente,
@@ -369,7 +462,46 @@ namespace VentaFacil.web.Services.Facturacion
                 _context.Factura.Add(notaCredito);
                 await _context.SaveChangesAsync();
 
-                
+                // --- MOVIMIENTO DE CAJA POR DEVOLUCIÓN ---
+                // Solo afectamos la caja si el pago original fue en efectivo (no tarjeta/transferencia)
+                var esEfectivo = facturaOriginal.MetodoPago == "Efectivo" || facturaOriginal.MetodoPago == "Mixto";
+                if (esEfectivo)
+                {
+                    var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+                    if (caja != null)
+                    {
+                        var motivoRetiro = $"Devolución - Nota de Crédito #{notaCredito.Id_Factura} (Factura #{facturaId})";
+
+                        if (facturaOriginal.Moneda == "USD" && facturaOriginal.TasaCambio.HasValue && facturaOriginal.TasaCambio > 0)
+                        {
+                            // Calcular el monto a devolver proporcionalmente en USD
+                            decimal totalFacturaOriginalAbs = Math.Abs(facturaOriginal.Total);
+                            decimal proporcion = totalFacturaOriginalAbs > 0 ? totalDevolucion / totalFacturaOriginalAbs : 0;
+                            decimal montoDevolucionUSD = Math.Round(facturaOriginal.MontoPagado * proporcion, 2);
+
+                            if (montoDevolucionUSD > 0)
+                            {
+                                await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, montoDevolucionUSD, motivoRetiro, "USD");
+                                _logger.LogInformation("💰 Retiro de caja de ${MontoUSD} USD por devolución de Factura #{FacturaId}", montoDevolucionUSD, facturaId);
+                            }
+                        }
+                        else
+                        {
+                            // Devolución en CRC (efectivo colones o mixto)
+                            if (totalDevolucion > 0)
+                            {
+                                await _cajaService.RegistrarRetiroAsync(caja.Id_Caja, caja.Id_Usuario, totalDevolucion, motivoRetiro, "CRC");
+                                _logger.LogInformation("💰 Retiro de caja de ₡{MontoCRC} CRC por devolución de Factura #{FacturaId}", totalDevolucion, facturaId);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠️ No hay caja abierta al procesar devolución de Factura #{FacturaId}. El movimiento de caja no fue registrado.", facturaId);
+                    }
+                }
+                // --- FIN MOVIMIENTO DE CAJA ---
+
                 _ = Task.Run(() => GenerarYGuardarPdfAsync(notaCredito.Id_Factura));
 
                 _logger.LogInformation("Nota de Crédito {Id} generada para Factura {FacturaId}", notaCredito.Id_Factura, facturaId);
@@ -382,7 +514,61 @@ namespace VentaFacil.web.Services.Facturacion
             }
         }
 
-        public (bool EsValido, string Mensaje) ValidarMontoPago(decimal totalPedido, decimal montoPagado, string moneda, decimal? tasaCambio)
+        public async Task<bool> RegistrarAbonoAsync(int facturaId, decimal monto, string metodoPago)
+        {
+            try
+            {
+                var factura = await _context.Factura.FindAsync(facturaId);
+                if (factura == null) throw new Exception("Factura no encontrada");
+                
+                if (factura.Estado != EstadoFactura.Pendiente)
+                    throw new Exception("Solo se pueden registrar abonos a facturas en estado Pendiente");
+
+                if (monto <= 0) throw new Exception("El monto debe ser mayor a cero");
+
+                var nuevoPago = new PagoFactura
+                {
+                    FacturaId = facturaId,
+                    MetodoPago = metodoPago,
+                    Monto = monto,
+                    Moneda = "CRC",
+                    TasaCambio = 1
+                };
+
+                _context.PagoFactura.Add(nuevoPago);
+
+                factura.MontoPagado += monto;
+                if (factura.MontoPagado >= factura.Total - 0.01m)
+                {
+                    factura.Estado = EstadoFactura.Activa; 
+                    factura.Cambio = Math.Max(0, factura.MontoPagado - factura.Total);
+                }
+
+                if (metodoPago == "Efectivo")
+                {
+                    var caja = await _context.Caja.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+                    if (caja != null)
+                    {
+                        var usuarioId = await ObtenerUsuarioIdAutenticado();
+                        await _cajaService.RegistrarIngresoAsync(caja.Id_Caja, usuarioId, monto, $"Abono a Factura {factura.Id_Factura}");
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                
+                // Regenerar PDF
+                _ = Task.Run(() => GenerarYGuardarPdfAsync(factura.Id_Factura));
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al registrar abono en factura {FacturaId}", facturaId);
+                throw;
+            }
+        }
+
+        public (bool EsValido, string Mensaje) ValidarMontoPago(decimal totalPedido, decimal montoPagado, string moneda, decimal? tasaCambio, bool esPagoParcial = false)
         {
             decimal totalAPagar = totalPedido;
 
@@ -395,7 +581,7 @@ namespace VentaFacil.web.Services.Facturacion
                 totalAPagar = totalPedido / tasaCambio.Value;
             }
 
-            if (montoPagado < totalAPagar)
+            if (!esPagoParcial && montoPagado < totalAPagar)
             {
                 return (false, $"El monto pagado ({montoPagado:C}) es menor al total del pedido ({totalAPagar:C})");
             }
@@ -540,22 +726,41 @@ namespace VentaFacil.web.Services.Facturacion
         }
 
         private async Task<Factura> CrearFacturaAsync(int ventaId, PedidoDto pedido, decimal montoPagado,
-            string moneda, MetodoPago metodoPago, decimal? tasaCambio = null)
+            string moneda, MetodoPago metodoPago, decimal? tasaCambio = null, bool esPagoParcial = false)
         {
+            decimal totalAPagar = pedido.Total;
+            if (moneda == "USD" && tasaCambio.HasValue && tasaCambio > 0)
+            {
+                totalAPagar = pedido.Total / tasaCambio.Value;
+            }
+            
+            var estado = (esPagoParcial && montoPagado < totalAPagar - 0.01m) ? EstadoFactura.Pendiente : EstadoFactura.Activa;
+
+            // El cambio siempre se devuelve en colones, por lo que aplicamos la tasa de nuevo
+            decimal cambioCalculado = 0;
+            if (moneda == "USD" && tasaCambio.HasValue && tasaCambio > 0)
+            {
+                cambioCalculado = Math.Max(0, (montoPagado * tasaCambio.Value) - pedido.Total);
+            }
+            else
+            {
+                cambioCalculado = Math.Max(0, montoPagado - totalAPagar);
+            }
+
             var factura = new Factura
             {
                 Id_Venta = ventaId,
                 FechaEmision = DateTime.Now,
                 Total = pedido.Total,
                 Cliente = pedido.Cliente,
-                Estado = EstadoFactura.Activa,
+                Estado = estado,
                 MontoPagado = montoPagado,
                 Moneda = moneda,
                 MetodoPago = metodoPago.ToString(),
+                Cambio = cambioCalculado,
                 TasaCambio = tasaCambio
             };
 
-            factura.CalcularCambio();
             _context.Factura.Add(factura);
             await _context.SaveChangesAsync();
 

@@ -260,6 +260,8 @@ BEGIN
         Fecha_Cierre DATETIME NULL,
         Monto_Inicial DECIMAL(10,2) NOT NULL,
         Monto DECIMAL(10,2) NULL,
+        Monto_Inicial_USD DECIMAL(10,2) NOT NULL DEFAULT 0,
+        Monto_USD DECIMAL(10,2) NULL,
         Estado VARCHAR(20) NOT NULL,
         CONSTRAINT FK_Caja_Usuario FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
     );
@@ -362,6 +364,17 @@ END
 IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraSalida' AND Object_ID = Object_ID(N'Usuario'))
 BEGIN
     ALTER TABLE Usuario ADD HoraSalida TIME NULL
+END
+
+-- Alterar Tabla Caja para control de USD
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Monto_Inicial_USD' AND Object_ID = Object_ID(N'Caja'))
+BEGIN
+    ALTER TABLE Caja ADD Monto_Inicial_USD DECIMAL(10,2) NOT NULL DEFAULT(0);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Monto_USD' AND Object_ID = Object_ID(N'Caja'))
+BEGIN
+    ALTER TABLE Caja ADD Monto_USD DECIMAL(10,2) NULL;
 END
 
 -- Roles base

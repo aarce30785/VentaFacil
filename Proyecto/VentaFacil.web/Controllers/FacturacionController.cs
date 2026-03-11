@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -6,6 +6,7 @@ using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Models.Response.Factura;
 using VentaFacil.web.Models.ViewModel;
+using VentaFacil.web.Services.Email;
 using VentaFacil.web.Services.Facturacion;
 using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
@@ -19,6 +20,7 @@ namespace VentaFacil.web.Controllers
         private readonly IPedidoService _pedidoService;
         private readonly IPdfService _pdfService;
         private readonly Services.BCCR.IBccrService _bccrService;
+        private readonly IEmailService _emailService;
         private readonly ILogger<FacturacionController> _logger;
         private readonly Data.ApplicationDbContext _context;
 
@@ -27,6 +29,7 @@ namespace VentaFacil.web.Controllers
             IPedidoService pedidoService,
             IPdfService pdfService,
             Services.BCCR.IBccrService bccrService,
+            IEmailService emailService,
             ILogger<FacturacionController> logger,
             Data.ApplicationDbContext context)
         {
@@ -34,6 +37,7 @@ namespace VentaFacil.web.Controllers
             _pedidoService = pedidoService;
             _pdfService = pdfService;
             _bccrService = bccrService;
+            _emailService = emailService;
             _logger = logger;
             _context = context;
         }
@@ -92,7 +96,8 @@ namespace VentaFacil.web.Controllers
                 
                 if (pedido.Items.Any(i => i.PrecioUnitario <= 0))
                 {
-                    TempData["Error"] = "No se puede facturar: Hay productos sin precio definido.";
+                    var productoSinPrecio = pedido.Items.FirstOrDefault(i => i.PrecioUnitario <= 0);
+                    TempData["Error"] = $"Error: El producto '{productoSinPrecio?.NombreProducto}' no tiene precio asignado.";
                     return RedirectToAction("Editar", "Pedidos", new { id = pedidoId });
                 }
 
@@ -165,10 +170,10 @@ namespace VentaFacil.web.Controllers
                     return RedirectToAction("Index", "Pedidos");
                 }
 
-                // Validar precios de productos nuevamente
                 if (pedido.Items.Any(i => i.PrecioUnitario <= 0))
                 {
-                    TempData["Error"] = "No se puede facturar: Hay productos sin precio definido.";
+                    var productoSinPrecio = pedido.Items.FirstOrDefault(i => i.PrecioUnitario <= 0);
+                    TempData["Error"] = $"Error: El producto '{productoSinPrecio?.NombreProducto}' no tiene precio asignado.";
                     return RedirectToAction("Editar", "Pedidos", new { id = model.PedidoId });
                 }
 
@@ -196,19 +201,19 @@ namespace VentaFacil.web.Controllers
                          }
                      }
 
-                     if (totalPagado < pedido.Total - 0.01m)
+                     if (!model.EsPagoParcial && totalPagado < pedido.Total - 0.01m)
                      {
                          ModelState.AddModelError("", $"El monto total pagado ({totalPagado:C}) es menor al total del pedido ({pedido.Total:C})");
                          await CargarDatosPedidoEnModelo(model);
                          return View(model);
                      }
 
-                     resultadoFacturacion = await _facturacionService.GenerarFacturaMixtaAsync(model.PedidoId, model.Pagos);
+                     resultadoFacturacion = await _facturacionService.GenerarFacturaMixtaAsync(model.PedidoId, model.Pagos, model.EsPagoParcial);
                 }
                 else
                 {
                     // Validar monto de pago único
-                    var resultadoValidacion = _facturacionService.ValidarMontoPago(pedido.Total, model.MontoPagado, model.Moneda, model.TasaCambio);
+                    var resultadoValidacion = _facturacionService.ValidarMontoPago(pedido.Total, model.MontoPagado, model.Moneda, model.TasaCambio, model.EsPagoParcial);
                     if (!resultadoValidacion.EsValido)
                     {
                         ModelState.AddModelError("MontoPagado", resultadoValidacion.Mensaje);
@@ -355,6 +360,80 @@ namespace VentaFacil.web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EnviarPorEmail(int facturaId, string emailDestino)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(emailDestino))
+                    return Json(new { success = false, message = "El correo es requerido." });
+
+                var facturaDto = await _facturacionService.ObtenerFacturaAsync(facturaId);
+                if (facturaDto == null)
+                    return Json(new { success = false, message = "Factura no encontrada." });
+
+                // Obtener PDF (de BD o generar on-demand)
+                byte[] pdfBytes;
+                var facturaEntity = await _context.Factura
+                    .Where(f => f.Id_Factura == facturaId)
+                    .Select(f => new { f.PdfData })
+                    .FirstOrDefaultAsync();
+
+                if (facturaEntity?.PdfData != null)
+                {
+                    pdfBytes = facturaEntity.PdfData;
+                }
+                else
+                {
+                    pdfBytes = _pdfService.GenerarFacturaPdf(facturaDto);
+                }
+
+                // Construir cuerpo del email en HTML
+                var asunto = $"VentaFácil - Factura #{facturaDto.NumeroFactura}";
+                var cuerpo = $"""
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;">
+                        <div style="background:#4f46e5;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
+                            <h1 style="color:#fff;margin:0;font-size:1.5rem;">VentaFácil</h1>
+                            <p style="color:#c7d2fe;margin:4px 0 0;">Comprobante de Pago</p>
+                        </div>
+                        <div style="background:#f8fafc;padding:24px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;">
+                            <p style="color:#334155;">Estimado cliente,</p>
+                            <p style="color:#334155;">Adjunto encontrará su factura <strong>{facturaDto.NumeroFactura}</strong> emitida el <strong>{facturaDto.FechaEmision:dd/MM/yyyy}</strong>.</p>
+                            <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+                                <tr><td style="padding:8px;color:#64748b;">Total:</td><td style="padding:8px;font-weight:bold;color:#1e293b;">{facturaDto.Total:C}</td></tr>
+                                <tr><td style="padding:8px;color:#64748b;">Método de Pago:</td><td style="padding:8px;color:#1e293b;">{facturaDto.MetodoPago}</td></tr>
+                            </table>
+                            <p style="color:#64748b;font-size:0.85rem;">Este es un mensaje automático generado por VentaFácil. Por favor no responda este correo.</p>
+                        </div>
+                    </div>
+                """;
+
+                // Enviar usando el servicio de email
+                // Como IEmailService.SendEmailAsync solo soporta body HTML (sin adjuntos),
+                // incluimos un enlace embebido y el PDF codificado en base64 en el cuerpo.
+                var pdfBase64 = Convert.ToBase64String(pdfBytes);
+                var cuerpoConPdf = cuerpo + $"""
+                    <div style="margin-top:16px;text-align:center;">
+                        <a href="data:application/pdf;base64,{pdfBase64}" download="Factura-{facturaId}.pdf"
+                           style="background:#4f46e5;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">
+                            ⬇ Descargar Factura PDF
+                        </a>
+                    </div>
+                """;
+
+                await _emailService.SendEmailAsync(emailDestino, asunto, cuerpoConPdf);
+
+                _logger.LogInformation("Factura {FacturaId} enviada por email a {Email}", facturaId, emailDestino);
+                return Json(new { success = true, message = $"Factura enviada exitosamente a {emailDestino}" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al enviar factura {FacturaId} por email a {Email}", facturaId, emailDestino);
+                return Json(new { success = false, message = $"Error al enviar el correo: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Devolucion(int facturaId, List<int> itemsDevolver)
         {
             try
@@ -377,6 +456,24 @@ namespace VentaFacil.web.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarAbono(int facturaId, decimal montoAbono, string metodoPagoAbono)
+        {
+            try
+            {
+                await _facturacionService.RegistrarAbonoAsync(facturaId, montoAbono, metodoPagoAbono);
+                TempData["Success"] = "Abono registrado exitosamente.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al registrar abono en factura {FacturaId}", facturaId);
+                TempData["Error"] = $"Error al registrar abono: {ex.Message}";
+            }
+            return RedirectToAction("Index");
+        }
+
+
         #region Métodos Privados
 
         private bool EsEstadoValidoParaFacturacion(PedidoEstado estado)
@@ -393,7 +490,8 @@ namespace VentaFacil.web.Controllers
                 return await _facturacionService.GenerarFacturaDolaresAsync(
                     model.PedidoId,
                     model.MontoPagado,
-                    model.TasaCambio.Value);
+                    model.TasaCambio.Value,
+                    model.EsPagoParcial);
             }
             else
             {
@@ -401,7 +499,8 @@ namespace VentaFacil.web.Controllers
                     model.PedidoId,
                     model.MetodoPago,
                     model.MontoPagado,
-                    model.Moneda);
+                    model.Moneda,
+                    model.EsPagoParcial);
             }
         }
 
@@ -428,6 +527,8 @@ namespace VentaFacil.web.Controllers
         public string Cliente { get; set; }
         public ModalidadPedido Modalidad { get; set; }
         public int? NumeroMesa { get; set; }
+        
+        public bool EsPagoParcial { get; set; }
 
         [Required(ErrorMessage = "El método de pago es requerido")]
         [Display(Name = "Método de Pago")]

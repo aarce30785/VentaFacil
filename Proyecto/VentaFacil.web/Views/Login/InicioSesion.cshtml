@@ -40,56 +40,78 @@
                                 <p class="text-sm mb-25">
                                     Ingresa tus credenciales para acceder al sistema.
                                 </p>
-                                <form asp-action="InicioSesion" asp-controller="Login" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="input-style-1">
-                                                <label asp-for="Correo" class="form-label">Correo electrónico</label>
-                                                <input asp-for="Correo" class="form-control" placeholder="ejemplo@correo.com" />
-                                                <span asp-validation-for="Correo" class="text-danger"></span>
+                                @if (ViewBag.RequiereConfirmacion == true)
+                                {
+                                    <div class="alert alert-warning mb-4">
+                                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Sesión Activa Detectada</h5>
+                                        <p>Existe una sesión abierta en otro dispositivo. Si continúa, la sesión anterior será cerrada automáticamente.</p>
+                                        <form asp-action="InicioSesion" asp-controller="Login" method="post" class="mt-3">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" asp-for="Correo" />
+                                            <input type="hidden" asp-for="Contrasena" />
+                                            <input type="hidden" asp-for="Recordarme" />
+                                            <input type="hidden" name="ForzarReemplazo" value="true" />
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <a href="@Url.Action("InicioSesion", "Login")" class="btn btn-secondary">Cancelar</a>
+                                                <button type="submit" class="btn btn-warning">Continuar y Cerrar Sesión Anterior</button>
                                             </div>
-                                        </div>
-                                        <!-- end col -->
-                                        <div class="col-12">
-                                            <div class="input-style-1">
-                                                <label asp-for="Contrasena" class="form-label">Contraseña</label>
-                                                <input asp-for="Contrasena" type="password" class="form-control" placeholder="Ingresa tu contraseña" />
-                                                <span asp-validation-for="Contrasena" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <!-- end col -->
-                                        <div class="col-xxl-6 col-lg-12 col-md-6">
-                                            <div class="form-check checkbox-style mb-30">
-                                                <input class="form-check-input" type="checkbox" asp-for="Recordarme" id="checkbox-remember" />
-                                                <label class="form-check-label" for="checkbox-remember">
-                                                    Recordarme
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <!-- end col -->
-                                        <div class="col-xxl-6 col-lg-12 col-md-6">
-                                            <div class="text-start text-md-end text-lg-start text-xxl-end mb-30">
-                                                <a href="#0" class="hover-underline" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
-                                                    ¿Olvidaste tu contraseña?
-                                                </a>
-                                            </div>
-                                        </div>
-                                        <!-- end col -->
-                                        <div class="col-12">
-                                            <div class="button-group d-flex flex-column align-items-center">
-                                                <button type="submit" class="main-btn primary-btn btn-hover w-100 text-center mb-3">
-                                                    Iniciar sesión
-                                                </button>
-                                                <a href="@Url.Action("Index", "Menu")" class="main-btn light-btn btn-hover w-100 text-center" style="background-color: #f8f9fa; color: #2a5298; border: 1px solid #2a5298;">
-                                                    <i class="fas fa-utensils me-2"></i> Ver Menú Público
-                                                </a>
-                                            </div>
-                                        </div>
+                                        </form>
                                     </div>
-                                    <!-- end row -->
-                                </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="InicioSesion" asp-controller="Login" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="input-style-1">
+                                                    <label asp-for="Correo" class="form-label">Correo electrónico</label>
+                                                    <input asp-for="Correo" class="form-control" placeholder="ejemplo@correo.com" />
+                                                    <span asp-validation-for="Correo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <!-- end col -->
+                                            <div class="col-12">
+                                                <div class="input-style-1">
+                                                    <label asp-for="Contrasena" class="form-label">Contraseña</label>
+                                                    <input asp-for="Contrasena" type="password" class="form-control" placeholder="Ingresa tu contraseña" />
+                                                    <span asp-validation-for="Contrasena" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- end col -->
+                                            <div class="col-xxl-6 col-lg-12 col-md-6">
+                                                <div class="form-check checkbox-style mb-30">
+                                                    <input class="form-check-input" type="checkbox" asp-for="Recordarme" id="checkbox-remember" />
+                                                    <label class="form-check-label" for="checkbox-remember">
+                                                        Recordarme
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <!-- end col -->
+                                            <div class="col-xxl-6 col-lg-12 col-md-6">
+                                                <div class="text-start text-md-end text-lg-start text-xxl-end mb-30">
+                                                    <a href="#0" class="hover-underline" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+                                                        ¿Olvidaste tu contraseña?
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <!-- end col -->
+                                            <div class="col-12">
+                                                <div class="button-group d-flex flex-column align-items-center">
+                                                    <button type="submit" class="main-btn primary-btn btn-hover w-100 text-center mb-3">
+                                                        Iniciar sesión
+                                                    </button>
+                                                    <a href="@Url.Action("Index", "Menu")" class="main-btn light-btn btn-hover w-100 text-center" style="background-color: #f8f9fa; color: #2a5298; border: 1px solid #2a5298;">
+                                                        <i class="fas fa-utensils me-2"></i> Ver Menú Público
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- end row -->
+                                    </form>
+                                }
 
                             </div>
                         </div>

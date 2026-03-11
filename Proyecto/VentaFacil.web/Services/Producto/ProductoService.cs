@@ -24,6 +24,8 @@ namespace VentaFacil.web.Services.Producto
             try
             {
                 var productos = await _context.Producto
+                    .Include(p => p.Insumos)
+                    .ThenInclude(i => i.Inventario)
                     .AsNoTracking()
                     .ToListAsync();
 
@@ -35,8 +37,9 @@ namespace VentaFacil.web.Services.Producto
                     Descripcion = p.Descripcion,
                     Precio = p.Precio,
                     Imagen = p.Imagen,
-                    StockMinimo = p.StockMinimo,
-                    StockActual = p.StockActual,
+                    MaximoProducible = p.Insumos != null && p.Insumos.Any() 
+                        ? p.Insumos.Min(i => i.Inventario != null && i.Cantidad > 0 ? i.Inventario.StockActual / i.Cantidad : 0) 
+                        : null,
                     Estado = p.Estado,
                     Id_Categoria = p.Id_Categoria
                 }).ToList();
@@ -60,6 +63,8 @@ namespace VentaFacil.web.Services.Producto
             try
             {
                 var productos = await _context.Producto
+                    .Include(p => p.Insumos)
+                    .ThenInclude(i => i.Inventario)
                     .AsNoTracking()
                     .Where(p => p.Estado)
                     .ToListAsync();
@@ -72,8 +77,9 @@ namespace VentaFacil.web.Services.Producto
                     Descripcion = p.Descripcion,
                     Precio = p.Precio,
                     Imagen = p.Imagen,
-                    StockMinimo = p.StockMinimo,
-                    StockActual = p.StockActual,
+                    MaximoProducible = p.Insumos != null && p.Insumos.Any() 
+                        ? p.Insumos.Min(i => i.Inventario != null && i.Cantidad > 0 ? i.Inventario.StockActual / i.Cantidad : 0) 
+                        : null,
                     Estado = p.Estado,
                     Id_Categoria = p.Id_Categoria
                 }).ToList();
@@ -97,25 +103,10 @@ namespace VentaFacil.web.Services.Producto
 
             try
             {
-                // Validación de integridad de datos
                 if (productoDto.Precio <= 0)
                 {
                     response.Success = false;
                     response.Message = "El precio debe ser mayor a 0.";
-                    return response;
-                }
-
-                if (productoDto.StockMinimo < 1)
-                {
-                    response.Success = false;
-                    response.Message = "El stock mínimo debe ser al menos 1.";
-                    return response;
-                }
-
-                if (productoDto.StockActual < 0)
-                {
-                    response.Success = false;
-                    response.Message = "El stock actual no puede ser negativo.";
                     return response;
                 }
 
@@ -139,8 +130,6 @@ namespace VentaFacil.web.Services.Producto
                     Descripcion = productoDto.Descripcion,
                     Precio = productoDto.Precio,
                     Imagen = productoDto.Imagen,
-                    StockMinimo = productoDto.StockMinimo,
-                    StockActual = productoDto.StockActual,
                     Estado = productoDto.Estado,
                     Id_Categoria = productoDto.Id_Categoria
                 };
@@ -177,25 +166,10 @@ namespace VentaFacil.web.Services.Producto
                     return response;
                 }
 
-                // Validación de integridad de datos
                 if (productoDto.Precio <= 0)
                 {
                     response.Success = false;
                     response.Message = "El precio debe ser mayor a 0.";
-                    return response;
-                }
-
-                if (productoDto.StockMinimo < 1)
-                {
-                    response.Success = false;
-                    response.Message = "El stock mínimo debe ser al menos 1.";
-                    return response;
-                }
-
-                if (productoDto.StockActual < 0)
-                {
-                    response.Success = false;
-                    response.Message = "El stock actual no puede ser negativo.";
                     return response;
                 }
 
@@ -215,8 +189,6 @@ namespace VentaFacil.web.Services.Producto
                 producto.Descripcion = productoDto.Descripcion;
                 producto.Precio = productoDto.Precio;
                 producto.Imagen = productoDto.Imagen;
-                producto.StockMinimo = productoDto.StockMinimo;
-                producto.StockActual = productoDto.StockActual;
                 producto.Estado = productoDto.Estado;
                 producto.Id_Categoria = productoDto.Id_Categoria;
 
@@ -240,6 +212,8 @@ namespace VentaFacil.web.Services.Producto
             try
             {
                 var producto = await _context.Producto
+                    .Include(p => p.Insumos)
+                    .ThenInclude(i => i.Inventario)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(p => p.Id_Producto == idProducto && p.Estado);
 
@@ -252,8 +226,9 @@ namespace VentaFacil.web.Services.Producto
                     Descripcion = producto.Descripcion,
                     Precio = producto.Precio,
                     Imagen = producto.Imagen,
-                    StockMinimo = producto.StockMinimo,
-                    StockActual = producto.StockActual,
+                    MaximoProducible = producto.Insumos != null && producto.Insumos.Any() 
+                        ? producto.Insumos.Min(i => i.Inventario != null && i.Cantidad > 0 ? i.Inventario.StockActual / i.Cantidad : 0) 
+                        : null,
                     Estado = producto.Estado,
                     Id_Categoria = producto.Id_Categoria
                 };
@@ -377,46 +352,7 @@ namespace VentaFacil.web.Services.Producto
             return response;
         }
 
-        public async Task<EditProductoResponse> ActualizarStockAsync(int idProducto, int cantidad)
-        {
-            var response = new EditProductoResponse();
 
-            try
-            {
-                var producto = await _context.Producto
-                    .FirstOrDefaultAsync(p => p.Id_Producto == idProducto);
-
-                if (producto == null)
-                {
-                    response.Success = false;
-                    response.Message = "Producto no encontrado.";
-                    return response;
-                }
-
-                int nuevoStock = producto.StockActual + cantidad;
-
-                if (nuevoStock < 0)
-                {
-                    response.Success = false;
-                    response.Message = "El stock no puede ser negativo.";
-                    return response;
-                }
-
-                producto.StockActual = nuevoStock;
-                await _context.SaveChangesAsync();
-
-                response.Success = true;
-                response.Message = "Stock actualizado correctamente.";
-                response.ProductoId = producto.Id_Producto;
-            }
-            catch (Exception ex)
-            {
-                response.Success = false;
-                response.Message = $"Error al actualizar stock: {ex.Message}";
-            }
-
-            return response;
-        }
 
         public async Task<List<ProductoMasVendidoDto>> GetProductosMasVendidosAsync()
         {

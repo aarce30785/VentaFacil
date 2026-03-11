@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
 <aside class="sidebar-nav-wrapper">
     <div class="navbar-logo">
@@ -19,6 +19,10 @@
                     </span>
                     <span class="text">Dashboard</span>
                 </a>
+                <a asp-controller="Menu" asp-action="Index" target="_blank">
+                    <i class="fas fa-book-open me-2"></i> Menú Público
+                </a>
+            
             </li>
             
             <li class="nav-item nav-item-has-children">
@@ -35,11 +39,7 @@
                     <span class="text">Ventas</span>
                 </a>
                 <ul id="ddmenu_2" class="collapse dropdown-nav">
-                    <li>
-                        <a asp-controller="Menu" asp-action="Index" target="_blank">
-                            <i class="fas fa-book-open me-2"></i> Menú Público
-                        </a>
-                    </li>
+                    
                     <li>
                         <a asp-controller="Pedidos" asp-action="Index">
                             <i class="fas fa-utensils me-2"></i> Pedidos
@@ -60,14 +60,7 @@
 
             <span class="divider"><hr /></span>
 
-            <li class="nav-item">
-                <a asp-controller="Caja" asp-action="Listar">
-                    <span class="icon">
-                        <i class="fas fa-cash-register"></i>
-                    </span>
-                    <span class="text">Caja</span>
-                </a>
-            </li>
+            
 
             <li class="nav-item">
                 <a href="/Producto/Listar">
@@ -110,6 +103,15 @@
                 </li>
 
                 <li class="nav-item">
+                    <a asp-controller="Planilla" asp-action="AprobacionHoras">
+                        <span class="icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </span>
+                        <span class="text">Aprobación de Horas</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a asp-controller="Configuracion" asp-action="Index">
                         <span class="icon">
                             <i class="fas fa-cogs"></i>
@@ -118,14 +120,7 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a href="#">
-                        <span class="icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </span>
-                        <span class="text">Reportes</span>
-                    </a>
-                </li>
+                
 
                 <span class="divider"><hr /></span>
 
@@ -136,11 +131,24 @@
                         </span>
                         <span class="text">Administración</span>
                     </a>
-                </li>
-            }
-           
 
-           
+                    <a asp-controller="Caja" asp-action="Listar">
+                        <span class="icon">
+                            <i class="fas fa-cash-register"></i>
+                        </span>
+                        <span class="text">Caja</span>
+                    </a>
+
+                    <a asp-controller="Reportes" asp-action="Index">
+                        <span class="icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </span>
+                        <span class="text">Reportes</span>
+                    </a>
+                </li>
+
+                
+            }
         </ul>
     </nav>
     

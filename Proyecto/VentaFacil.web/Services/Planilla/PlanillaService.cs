@@ -130,7 +130,7 @@ namespace VentaFacil.web.Services.Planilla
                     if (horasEfectivas < 0) horasEfectivas = 0;
 
                     planilla.HorasTrabajadas = (decimal)horasEfectivas;
-                    planilla.EstadoRegistro = "Completada";
+                    planilla.EstadoRegistro = "Pendiente";
                     planilla.SalarioBruto = planilla.HorasTrabajadas * tarifaPorHora;
                 }
                 else
@@ -206,34 +206,16 @@ namespace VentaFacil.web.Services.Planilla
                 }
 
                 // =====================================================================
-                // VALIDACIÓN: Turno del empleado
-                // Si el empleado tiene horario definido y la jornada ya tiene registro
-                // de entrada/salida, verificar que las horas extras sean coherentes
-                // con su turno (es decir, que la jornada haya cerrado correctamente).
+                // VALIDACIÓN: Turno del empleado (Modificado)
+                // Verificar que las horas extras se registren en una jornada terminada.
                 // =====================================================================
-                var usuario = await _context.Usuario.FindAsync(planilla.Id_Usr);
-                if (dto.HorasExtras > 0 && usuario != null &&
-                    usuario.HoraEntrada.HasValue && usuario.HoraSalida.HasValue)
+                if (dto.HorasExtras > 0)
                 {
                     if (!planilla.FechaFinal.HasValue)
                     {
                         response.Success = false;
                         response.Message = "No se pueden registrar horas extras en una jornada sin hora de salida registrada. " +
                                            "Complete primero el registro de la jornada.";
-                        return response;
-                    }
-
-                    // Calcular final del turno regular: FechaInicio.Date + HoraSalida del turno
-                    var finTurnoRegular = planilla.FechaInicio.Date
-                        .Add(usuario.HoraSalida.Value);
-
-                    // Las horas extras solo aplican si la salida real fue después del turno
-                    if (planilla.FechaFinal.Value <= finTurnoRegular)
-                    {
-                        response.Success = false;
-                        response.Message = "Las horas extras solo pueden registrarse cuando la hora de salida " +
-                                           "supera el horario regular del empleado " +
-                                           $"(turno hasta {usuario.HoraSalida.Value:hh\\:mm}).";
                         return response;
                     }
                 }
@@ -289,22 +271,43 @@ namespace VentaFacil.web.Services.Planilla
                     return response;
                 }
 
-                // VALIDACIÓN: Verificar si hay jornadas incompletas
+                // VALIDACIÓN: Verificar si hay jornadas incompletas o pendientes de aprobación
                 var jornadasIncompletas = planillasParaNomina.Where(p => p.EstadoRegistro == "Incompleta").ToList();
-                if (jornadasIncompletas.Any())
+                var jornadasPendientes = planillasParaNomina.Where(p => p.EstadoRegistro == "Pendiente").ToList();
+                
+                if (jornadasIncompletas.Any() || jornadasPendientes.Any())
                 {
-                    var empleadosFaltantes = jornadasIncompletas
-                        .Select(j => j.Usuario?.Nombre ?? $"ID: {j.Id_Usr}")
-                        .Distinct()
-                        .ToList();
-
-                    foreach (var empleado in empleadosFaltantes)
+                    if (jornadasIncompletas.Any())
                     {
-                        response.ErroresValidacion.Add($"Empleado {empleado}: Tiene registros de jornada Incompletas (Falta registrar salida).");
+                        var empleadosFaltantes = jornadasIncompletas
+                            .Select(j => j.Usuario?.Nombre ?? $"ID: {j.Id_Usr}")
+                            .Distinct()
+                            .ToList();
+                        foreach (var empleado in empleadosFaltantes)
+                            response.ErroresValidacion.Add($"Empleado {empleado}: Tiene registros de jornada Incompletas (Falta registrar salida).");
+                    }
+                    if (jornadasPendientes.Any())
+                    {
+                        var empleadosPendientes = jornadasPendientes
+                            .Select(j => j.Usuario?.Nombre ?? $"ID: {j.Id_Usr}")
+                            .Distinct()
+                            .ToList();
+                        foreach (var empleado in empleadosPendientes)
+                            response.ErroresValidacion.Add($"Empleado {empleado}: Tiene registros de jornada Pendientes (Falta aprobación).");
                     }
 
                     response.Success = false;
-                    response.Message = "No se puede generar la nómina porque existen jornadas incompletas. Por favor revise los registros de los colaboradores.";
+                    response.Message = "No se puede generar la nómina porque existen jornadas incompletas o pendientes de aprobación. Por favor revise los registros de los colaboradores.";
+                    return response;
+                }
+
+                // Filtrar las rechazadas (no se pagan)
+                planillasParaNomina = planillasParaNomina.Where(p => p.EstadoRegistro == "Completada" || p.EstadoRegistro == "Procesado").ToList();
+
+                if (!planillasParaNomina.Any())
+                {
+                    response.Success = false;
+                    response.Message = "No hay jornadas aprobadas para incluir en la nómina en este periodo.";
                     return response;
                 }
 
@@ -766,6 +769,78 @@ namespace VentaFacil.web.Services.Planilla
             {
                 response.Success = false;
                 response.Message = "Error al obtener el historial: " + ex.Message;
+            }
+
+            return response;
+        }
+        // ===================================================================
+        // APROBACIÓN DE HORAS
+        // ===================================================================
+        public async Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasPendientesAsync()
+        {
+            var planillas = await _context.Planilla
+                .Include(p => p.Usuario)
+                .Where(p => p.EstadoRegistro == "Pendiente" || p.EstadoRegistro == "Incompleta")
+                .Select(p => new PlanillaListadoDto
+                {
+                    Id_Planilla = p.Id_Planilla,
+                    Id_Usr = p.Id_Usr,
+                    FechaInicio = p.FechaInicio,
+                    FechaFinal = p.FechaFinal,
+                    NombreUsuario = p.Usuario.Nombre, 
+                    EstadoRegistro = p.EstadoRegistro
+                })
+                .OrderByDescending(p => p.FechaInicio)
+                .ToListAsync();
+
+            return planillas;
+        }
+
+        public async Task<BaseResponse> AprobarRechazarPlanillaAsync(int idPlanilla, string estado, string observaciones)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                var planilla = await _context.Planilla.FindAsync(idPlanilla);
+                if (planilla == null)
+                {
+                    response.Success = false;
+                    response.Message = "Planilla no encontrada.";
+                    return response;
+                }
+
+                if (estado != "Completada" && estado != "Rechazada")
+                {
+                    response.Success = false;
+                    response.Message = "Estado no válido.";
+                    return response;
+                }
+
+                planilla.EstadoRegistro = estado;
+                
+                // Si hay una observación nueva, podemos concatenar o sobrescribir. Por ahora sobrescribimos si no es vacía
+                if (!string.IsNullOrWhiteSpace(observaciones))
+                {
+                    // Si ya tenía observaciones, las agregamos con un separador
+                    if (!string.IsNullOrWhiteSpace(planilla.Observaciones))
+                    {
+                        planilla.Observaciones += " | Resolución Admin: " + observaciones;
+                    }
+                    else
+                    {
+                        planilla.Observaciones = observaciones;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = $"Planilla marcada como {estado}.";
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = "Error al actualizar estado: " + ex.Message;
             }
 
             return response;

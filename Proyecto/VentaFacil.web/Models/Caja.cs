@@ -24,6 +24,13 @@ namespace VentaFacil.web.Models
         public decimal? Monto { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Monto_Inicial_USD { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? Monto_USD { get; set; }
+
+        [Required]
         [MaxLength(50)]
         public string Estado { get; set; } = string.Empty;
     }

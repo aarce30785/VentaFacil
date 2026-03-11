@@ -1,0 +1,168 @@
+@model IEnumerable<VentaFacil.web.Models.Dto.PlanillaListadoDto>
+
+@{
+    ViewData["Title"] = "Aprobación de Horas";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-checkmark-circle me-2"></i>Aprobación de Horas</h1>
+            <p class="mb-0 text-white-50 fs-5">Revisión de jornadas pendientes e incompletas.</p>
+        </div>
+        <div class="position-relative z-1 d-none d-md-block">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a asp-controller="Planilla" asp-action="Index" class="text-white-50">Planilla</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Aprobación</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible bg-danger text-white border-0 fade show" role="alert">
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            <strong>Error:</strong> @TempData["Error"]
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible bg-success text-white border-0 fade show" role="alert">
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            <strong>Éxito:</strong> @TempData["Success"]
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Colaborador</th>
+                            <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="fas fa-check-circle fs-1 mb-3 text-success opacity-50"></i>
+                                    <p class="mb-0">No hay registros pendientes de aprobación.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-medium">@item.NombreUsuario</td>
+                                    <td>@item.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @(item.FechaFinal.HasValue ? item.FechaFinal.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                                    </td>
+                                    <td>
+                                        @if (item.EstadoRegistro == "Pendiente")
+                                        {
+                                            <span class="badge bg-warning text-dark">Pendiente</span>
+                                        }
+                                        else if (item.EstadoRegistro == "Incompleta")
+                                        {
+                                            <span class="badge bg-danger">Incompleta</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@item.EstadoRegistro</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="abrirModalAprobacion(@item.Id_Planilla, 'Completada', '@item.NombreUsuario', '@item.FechaInicio.ToString("dd/MM/yyyy")')">
+                                            <i class="fas fa-check me-1"></i> Aprobar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 ms-1" onclick="abrirModalAprobacion(@item.Id_Planilla, 'Rechazada', '@item.NombreUsuario', '@item.FechaInicio.ToString("dd/MM/yyyy")')">
+                                            <i class="fas fa-times me-1"></i> Rechazar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de AprobaciÃ³n/Rechazo -->
+<div class="modal fade" id="modalAprobacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <form asp-action="ProcesarAprobacion" method="post">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Procesar Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalMensaje" class="text-muted"></p>
+                    
+                    <input type="hidden" name="idPlanilla" id="modalIdPlanilla" />
+                    <input type="hidden" name="estado" id="modalEstado" />
+                    
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label fw-medium">Observaciones (Opcional)</label>
+                        <textarea class="form-control rounded-3" name="observaciones" id="observaciones" rows="3" placeholder="Ej. Aprobado con ajuste de tiempo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4" id="btnConfirmar">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function abrirModalAprobacion(id, estado, nombre, fecha) {
+            document.getElementById('modalIdPlanilla').value = id;
+            document.getElementById('modalEstado').value = estado;
+            // Limpiar textarea
+            document.getElementById('observaciones').value = '';
+
+            const titulo = document.getElementById('modalTitle');
+            const mensaje = document.getElementById('modalMensaje');
+            const btn = document.getElementById('btnConfirmar');
+
+            if(estado === 'Completada') {
+                titulo.textContent = 'Aprobar Horas';
+                titulo.classList.remove('text-danger');
+                titulo.classList.add('text-success');
+                mensaje.innerHTML = `¿Está seguro que desea <strong>aprobar</strong> las horas de ${nombre} del dÃ­a ${fecha}?`;
+                btn.className = 'btn btn-success rounded-pill px-4';
+                btn.textContent = 'Aprobar';
+            } else {
+                titulo.textContent = 'Rechazar Horas';
+                titulo.classList.remove('text-success');
+                titulo.classList.add('text-danger');
+                mensaje.innerHTML = `¿Está seguro que desea <strong>rechazar</strong> las horas de ${nombre} del dÃ­a ${fecha}?`;
+                btn.className = 'btn btn-danger rounded-pill px-4';
+                btn.textContent = 'Rechazar';
+            }
+
+            var modal = new bootstrap.Modal(document.getElementById('modalAprobacion'));
+            modal.show();
+        }
+    </script>
+}

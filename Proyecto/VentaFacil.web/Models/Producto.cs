@@ -24,11 +24,7 @@ namespace VentaFacil.web.Models
         [MaxLength(2048)]
         public string? Imagen { get; set; }
 
-        [Required]
-        public int StockMinimo { get; set; }
 
-        [Required]
-        public int StockActual { get; set; }
 
         [Required]
         public bool Estado { get; set; } = true;

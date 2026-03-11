@@ -1,44 +1,31 @@
-﻿@model VentaFacil.web.Models.Dto.InventarioDto
+@model VentaFacil.web.Models.Dto.InventarioDto
 
 @{
     ViewData["Title"] = "Registrar";
 }
 
 <!-- ========== table components start ========== -->
-<div class="form-wrapper">
-    <!-- ========== title-wrapper start ========== -->
-    <div class="title-wrapper pt-30">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="title">
-                        <h2>Registrar Nuevo Insumo</h2>
-                    </div>
-                </div>
-                <!-- end col -->
-                <div class="col-md-6">
-                    <div class="breadcrumb-wrapper">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
-                                    <a href="#0">Dashboard</a>
-                                </li>
-                                <li class="breadcrumb-item">
-                                    <a href="@Url.Action("Listar")">Inventario</a>
-                                </li>
-                                <li class="breadcrumb-item active" aria-current="page">
-                                    Registrar
-                                </li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
-                <!-- end col -->
-            </div>
-            <!-- end row -->
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-plus me-2"></i>Registrar Nuevo Insumo</h1>
+            <p class="mb-0 text-white-50 fs-5">Agrega un nuevo insumo al inventario.</p>
         </div>
-        <!-- ========== title-wrapper end ========== -->
+        <div class="position-relative z-1 d-none d-md-block">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Listar")" class="text-white-50">Inventario</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Registrar</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
 
-        <div class="tables-wrapper">
+    <div class="tables-wrapper">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card-style mb-30">

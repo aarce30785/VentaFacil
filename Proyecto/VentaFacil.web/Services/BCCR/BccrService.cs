@@ -1,67 +1,25 @@
 using System;
-using System.Data;
+using System.Net.Http;
+using System.Xml;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace VentaFacil.web.Services.BCCR
 {
     public class BccrService : IBccrService
     {
-        private readonly BccrSettings _settings;
+        private readonly IOptionsMonitor<BccrSettings> _settingsMonitor;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<BccrService> _logger;
 
-        public BccrService(IOptions<BccrSettings> settings)
+        public BccrService(IOptionsMonitor<BccrSettings> settingsMonitor, ILogger<BccrService> logger)
         {
-            _settings = settings.Value;
+            _settingsMonitor = settingsMonitor;
+            _httpClient = new HttpClient();
+            _logger = logger;
         }
 
-        public async Task<DataSet> ObtenerIndicadoresEconomicosAsync(string codigoIndicador, string fechaInicio, string fechaFinal)
-        {
-            // Configure the proxy client
-            var client = new wsindicadoreseconomicosSoapClient(
-                wsindicadoreseconomicosSoapClient.EndpointConfiguration.wsindicadoreseconomicosSoap);
-            
-            // Should properly set endpoint address if needed, but default constructor usually takes from generated config or defaults
-            // If the URL in settings is different, we can set it:
-            if (!string.IsNullOrEmpty(_settings.Url))
-            {
-               client.Endpoint.Address = new System.ServiceModel.EndpointAddress(_settings.Url);
-            }
-
-            try
-            {
-                var xmlResult = await client.ObtenerIndicadoresEconomicosXMLAsync(
-                    Indicador: codigoIndicador, 
-                    FechaInicio: fechaInicio, 
-                    FechaFinal: fechaFinal, 
-                    Nombre: _settings.Nombre, 
-                    SubNiveles: "N", 
-                    CorreoElectronico: _settings.Email, 
-                    Token: _settings.Token
-                );
-
-                var dataSet = new DataSet();
-                if (!string.IsNullOrEmpty(xmlResult))
-                {
-                    using (var reader = new System.IO.StringReader(xmlResult))
-                    {
-                        dataSet.ReadXml(reader);
-                    }
-                }
-                
-                return dataSet;
-            }
-            finally
-            {
-                if (client.State == System.ServiceModel.CommunicationState.Opened)
-                {
-                    await client.CloseAsync();
-                }
-                else
-                {
-                    client.Abort(); // Ensure resources are released if in faulted state
-                }
-            }
-        }
         public async Task<(decimal Compra, decimal Venta)> ObtenerTipoDeCambioDelDiaAsync()
         {
             string today = DateTime.Now.ToString("dd/MM/yyyy");
@@ -79,30 +37,63 @@ namespace VentaFacil.web.Services.BCCR
         {
             try
             {
-                var data = await ObtenerIndicadoresEconomicosAsync(code, date, date);
-                if (data != null && data.Tables.Count > 0 && data.Tables[0].Rows.Count > 0)
+                var settings = _settingsMonitor.CurrentValue;
+
+                // Validate if token is default so we avoid calling BCCR and timing out/erring out
+                if (string.IsNullOrEmpty(settings.Token) || settings.Token.Contains("TU_TOKEN_AQUI"))
                 {
-                    // Asumiendo que la columna de valor se llama "valor" o es la segunda columna
-                    // BCCR devuelve: COD_INDICADOR, DES_FECHA, NUM_VALOR
-                    // Pero el DataSet puede variar. Usualmente NUM_VALOR es el dato.
-                    // Si el usuario dijo row["valor"], revisamos si existe.
-                    var row = data.Tables[0].Rows[0];
-                    if (data.Tables[0].Columns.Contains("NUM_VALOR"))
+                    _logger.LogWarning("⚠️ Token de BCCR inválido o no configurado. Debes agregarlo en appsettings.json. Retornando 0.");
+                    return 0m;
+                }
+
+                // Base URL para obtener XML
+                string urlBase = settings.Url.Replace(".asmx", ".asmx/ObtenerIndicadoresEconomicosXML");
+                if (!settings.Url.Contains(".asmx")) urlBase = settings.Url; // Fallback 
+                
+                string url = $"{urlBase}?Indicador={code}&FechaInicio={date}&FechaFinal={date}&Nombre={Uri.EscapeDataString(settings.Nombre)}&SubNiveles=N&CorreoElectronico={Uri.EscapeDataString(settings.Email)}&Token={settings.Token}";
+
+                HttpResponseMessage response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                string xmlResponse = await response.Content.ReadAsStringAsync();
+
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(xmlResponse);
+
+                // La respuesta de ObtenerIndicadoresEconomicosXML del BCCR viene como un "<string xmlns=...> XML_ADENTRO </string>"
+                if (doc.DocumentElement != null && doc.DocumentElement.Name == "string")
+                {
+                    XmlDocument innerDoc = new XmlDocument();
+                    innerDoc.LoadXml(doc.DocumentElement.InnerText);
+                    
+                    // Extraer usando GetElementsByTagName para evadir problemas de Null Namespaces de BCCR
+                    XmlNodeList nodosValor = innerDoc.GetElementsByTagName("NUM_VALOR");
+                    if (nodosValor != null && nodosValor.Count > 0)
                     {
-                        return Convert.ToDecimal(row["NUM_VALOR"]);
-                    }
-                    else if (data.Tables[0].Columns.Count >= 3) 
-                    {
-                         // Fallback index
-                         return Convert.ToDecimal(row[2]);
+                        if (decimal.TryParse(nodosValor[0].InnerText, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal valor))
+                        {
+                            return valor;
+                        }
                     }
                 }
+                
+                // Intento directo en caso de que devuelva el DataSet raíz 
+                XmlNodeList nodosDirectos = doc.GetElementsByTagName("NUM_VALOR");
+                if (nodosDirectos != null && nodosDirectos.Count > 0)
+                {
+                    if (decimal.TryParse(nodosDirectos[0].InnerText, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal pd))
+                    {
+                        return pd;
+                    }
+                }
+
+                _logger.LogWarning("No se encontró NUM_VALOR en la respuesta XML del BCCR para el indicador {Indicador}. Retornando 0.", code);
                 return 0m;
             }
-            catch
+            catch (Exception ex)
             {
-                // Manejo silencioso o log de errores
-                return 0m;
+                _logger.LogError(ex, "Error crítico al conectar con el API del BCCR para el indicador {Indicador}", code);
+                return 0m; 
             }
         }
     }
