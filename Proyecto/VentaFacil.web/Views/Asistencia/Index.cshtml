@@ -1,0 +1,201 @@
+@{
+    ViewData["Title"] = "Mi Asistencia";
+    var jornada = ViewBag.JornadaActiva as VentaFacil.web.Models.Planilla;
+    var recibos = ViewBag.Recibos as List<VentaFacil.web.Models.Planilla>;
+
+    var cultureCR = new System.Globalization.CultureInfo("es-CR");
+    var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
+}
+
+<style>
+    :root {
+        --card-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    .clock-btn {
+        width: 100%;
+        padding: 1.5rem;
+        border-radius: 16px;
+        font-size: 1.25rem;
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .clock-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .clock-btn i {
+        font-size: 2.5rem;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-timer me-2"></i>Mi Asistencia y Nóminas</h1>
+            <p class="mb-0 text-white-50 fs-5">Registra tu entrada, salida y consulta tus recibos de pago.</p>
+        </div>
+        <div class="position-relative z-1 d-none d-md-block">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-white-50">Inicio</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Asistencia</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+<div class="row">
+    <div class="col-12">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row mb-4">
+            <div class="col-md-5">
+                <div class="premium-card text-center h-100">
+                    <h4 class="fw-bold mb-4 text-dark"><i class="fas fa-clock text-primary me-2"></i> Reloj Checador</h4>
+                    
+                    @if (jornada == null)
+                    {
+                        <div class="alert alert-info">No tienes una jornada activa en este momento.</div>
+                        <form asp-action="MarcarEntrada" asp-controller="Asistencia" method="post">
+                            <button type="submit" class="btn btn-success clock-btn text-white">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Marcar Entrada
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-4">
+                            <strong>Jornada Activa:</strong> Iniciada a las @jornada.FechaInicio.ToString("HH:mm")
+                        </div>
+
+                        <div class="row g-3">
+                            @if (jornada.HoraInicioPausa == null)
+                            {
+                                <div class="col-6">
+                                    <form asp-action="MarcarPausaInicio" asp-controller="Asistencia" method="post">
+                                        <button type="submit" class="btn btn-warning clock-btn text-dark">
+                                            <i class="fas fa-coffee"></i>
+                                            Iniciar Pausa
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                            else if (jornada.HoraInicioPausa != null && jornada.HoraFinPausa == null)
+                            {
+                                <div class="col-6">
+                                    <form asp-action="MarcarPausaFin" asp-controller="Asistencia" method="post">
+                                        <button type="submit" class="btn btn-info clock-btn text-white">
+                                            <i class="fas fa-play-circle"></i>
+                                            Terminar Pausa
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+
+                            <div class="col-6">
+                                <form asp-action="MarcarSalida" asp-controller="Asistencia" method="post">
+                                    <button type="submit" class="btn btn-danger clock-btn text-white">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        Marcar Salida
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mt-4 text-muted">
+                        <small><i class="fas fa-info-circle"></i> La hora se registrará automáticamente usando el reloj del sistema.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="premium-card h-100">
+                    <h4 class="fw-bold mb-4 text-dark"><i class="fas fa-file-invoice-dollar text-success me-2"></i> Mis Recibos de Pago (Últimos Generados)</h4>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Periodo</th>
+                                    <th>Fecha Pago</th>
+                                    <th class="text-end">Salario Bruto</th>
+                                    <th class="text-end">Deducciones</th>
+                                    <th class="text-end">Neto Recibido</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (recibos != null && recibos.Any())
+                                {
+                                    @foreach (var recibo in recibos)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <small class="d-block fw-bold">@recibo.Nomina?.FechaInicio.ToString("dd/MMM") - @recibo.Nomina?.FechaFinal.ToString("dd/MMM/yyyy")</small>
+                                            </td>
+                                            <td>@recibo.Nomina?.FechaGeneracion.ToString("dd/MM/yyyy")</td>
+                                            <td class="text-end text-dark">@recibo.SalarioBruto.ToString("C", numberFormat)</td>
+                                            <td class="text-end text-danger">@recibo.Deducciones.ToString("C", numberFormat)</td>
+                                            <td class="text-end fw-bold text-success fs-6">@recibo.SalarioNeto.ToString("C", numberFormat)</td>
+                                            <td class="text-end">
+                                                <a href="@Url.Action("ExportarNomina", "Planilla", new { idNomina = recibo.Id_Nomina })" class="btn btn-sm btn-outline-primary" target="_blank" title="Descargar Recibo de Pago">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="fas fa-folder-open mb-2 fs-3"></i>
+                                            <p class="mb-0">Aún no tiene nóminas generadas asociadas a su cuenta.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div><!-- table-responsive -->
+                    <div class="text-center mt-3 border-top pt-3">
+                        <a href="@Url.Action("HistorialLaboral","Planilla")" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-history me-1"></i> Ver historial completo (5 años)
+                        </a>
+                    </div>
+                </div><!-- premium-card -->
+            </div><!-- col-md-7 -->
+        </div>
+    </div>
+</div>

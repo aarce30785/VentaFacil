@@ -22,6 +22,7 @@ namespace VentaFacil.web.Models.Dto
 
         public DateTime? FechaCreacion { get; set; }
 
+
         [Required(ErrorMessage = "El rol es requerido")]
         [Range(1, 4, ErrorMessage = "El rol no es válido")]
         public int Rol { get; set; }

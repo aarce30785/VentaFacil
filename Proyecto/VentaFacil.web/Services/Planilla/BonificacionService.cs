@@ -141,8 +141,19 @@ namespace VentaFacil.web.Services.Planilla
                     planilla.SalarioBruto -= bonificacion.Monto;
                 }
 
-                // Auditoría de eliminación (opcional, o soft delete)
-                // Por ahora hard delete
+                // Auditoría de eliminación
+                var auditoria = new BonificacionAuditoria
+                {
+                    Id_Bonificacion = bonificacion.Id,
+                    MontoAnterior = bonificacion.Monto,
+                    MontoNuevo = 0,
+                    MotivoCambio = "Eliminación de bonificación",
+                    Id_UsuarioResponsable = idUsuarioResponsable,
+                    FechaCambio = DateTime.Now
+                };
+                _context.BonificacionAuditoria.Add(auditoria);
+                await _context.SaveChangesAsync();
+
                 _context.Bonificacion.Remove(bonificacion);
                 await _context.SaveChangesAsync();
 
@@ -162,6 +173,15 @@ namespace VentaFacil.web.Services.Planilla
             return await _context.Bonificacion
                 .Where(b => b.Id_Planilla == idPlanilla)
                 .OrderByDescending(b => b.Fecha)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<BonificacionAuditoria>> ObtenerAuditoriaBonificacionAsync(int idBonificacion)
+        {
+            return await _context.BonificacionAuditoria
+                .Include(a => a.UsuarioResponsable)
+                .Where(a => a.Id_Bonificacion == idBonificacion)
+                .OrderByDescending(a => a.FechaCambio)
                 .ToListAsync();
         }
     }

@@ -79,8 +79,11 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs me-2"></i> Configuración
+                                <a asp-controller="Asistencia" asp-action="Index">
+                                    <span class="icon">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    <span class="text">Mis Horas</span>
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
@@ -166,23 +169,32 @@
 </script>
 <script>
     async function checkStockMinimo() {
-        const response = await fetch('/Inventario/NotificacionesStockMinimo');
-        if (response.ok) {
-            const inventarios = await response.json();
-            const alertDiv = document.getElementById('stock-alert');
-            if (inventarios.length > 0) {
-                let nombres = inventarios.map(i => i.Nombre || i.nombre).join(', ');
-                alertDiv.innerText = '¡Atención! El stock está bajo el mínimo para: ' + nombres;
-                alertDiv.style.display = 'block';
-                alertDiv.classList.add('show');
-                setTimeout(() => {
-                    alertDiv.classList.remove('show');
-                    alertDiv.style.display = 'none';
-                }, 5000);
-            } else {
-                alertDiv.classList.remove('show');
-                alertDiv.style.display = 'none';
+        try {
+            const response = await fetch('@Url.Action("NotificacionesStockMinimoJson", "Inventario")');
+            if (response.ok) {
+                const text = await response.text();
+                if (!text) return; // Empty response
+
+                const inventarios = JSON.parse(text);
+                const alertDiv = document.getElementById('stock-alert');
+                if (inventarios && inventarios.length > 0) {
+                    let nombres = inventarios.map(i => i.Nombre || i.nombre).join(', ');
+                    alertDiv.innerText = '¡Atención! El stock está bajo el mínimo para: ' + nombres;
+                    alertDiv.style.display = 'block';
+                    alertDiv.classList.add('show');
+                    setTimeout(() => {
+                        alertDiv.classList.remove('show');
+                        alertDiv.style.display = 'none';
+                    }, 5000);
+                } else {
+                    if (alertDiv) {
+                        alertDiv.classList.remove('show');
+                        alertDiv.style.display = 'none';
+                    }
+                }
             }
+        } catch (error) {
+            console.error("Error en checkStockMinimo:", error);
         }
     }
     // Llama a la función al cargar la página y cada vez que se actualice el stock

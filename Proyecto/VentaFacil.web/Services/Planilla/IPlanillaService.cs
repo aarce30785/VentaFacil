@@ -15,7 +15,10 @@ namespace VentaFacil.web.Services.Planilla
         Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasParaExtrasAsync();
         Task<IEnumerable<NominaListadoDto>> ObtenerNominasGeneradasAsync();
         Task<IEnumerable<VentaFacil.web.Models.Usuario>> ObtenerUsuariosAsync();
-        Task<BaseResponse> RevertirNominaAsync(int idNomina);
+        Task<BaseResponse> RevertirNominaAsync(int idNomina, string justificacion);
         Task<NominaDetalleDto> ObtenerDetalleNominaParaExportarAsync(int idNomina);
+        Task<HistorialLaboralResponse> ObtenerHistorialUsuarioAsync(int idUsuario, int pagina, int porPagina = 20);
+        Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasPendientesAsync();
+        Task<BaseResponse> AprobarRechazarPlanillaAsync(int idPlanilla, string estado, string observaciones);
     }
 }

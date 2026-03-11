@@ -140,7 +140,8 @@ namespace VentaFacil.web.Controllers
                     new Claim(ClaimTypes.Name, result.Nombre),
                     new Claim(ClaimTypes.Email, loginDto.Correo),
                     new Claim(ClaimTypes.Role, result.Rol),
-                    new Claim("UsuarioId", result.UsuarioId.ToString())
+                    new Claim("UsuarioId", result.UsuarioId.ToString()),
+                    new Claim("SessionToken", result.SessionToken ?? string.Empty)
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -171,6 +172,12 @@ namespace VentaFacil.web.Controllers
                 }
                 return RedirectToAction("Index", "Home"); // Esta línea está bien
             }
+            else if (result.RequiereConfirmacion)
+            {
+                SetAlert(result.Message, "warning", "Sesión Activa Detectada");
+                ViewBag.RequiereConfirmacion = true;
+                return View(loginDto);
+            }
             else
             {
                 SetAlert(result.Message, "danger", "Error de Acceso");
@@ -184,6 +191,11 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            var userIdString = User.FindFirstValue("UsuarioId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdString, out int userId))
+            {
+                await _authService.LogoutAsync(userId);
+            }
             
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         

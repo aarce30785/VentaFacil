@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
@@ -101,6 +101,22 @@ namespace VentaFacil.web.Services.Pedido
             }
 
             RecalcularTotal(pedido);
+            return pedido;
+        }
+
+        public async Task<PedidoDto> ActualizarNotaProductoAsync(int idPedido, int idDetalle, string notas)
+        {
+            var pedido = await ObtenerPedidoAsync(idPedido);
+            ValidarEstadoEditable(pedido.Estado);
+
+            var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == idDetalle);
+            if (item == null)
+                throw new ArgumentException($"Item con ID {idDetalle} no encontrado en el pedido");
+
+            item.Notas = notas?.Trim() ?? string.Empty;
+            _logger.LogInformation("📝 Nota del producto {ProductoId} actualizada en pedido #{PedidoId}",
+                item.Id_Producto, idPedido);
+
             return pedido;
         }
 
@@ -338,6 +354,16 @@ namespace VentaFacil.web.Services.Pedido
                  return ServiceResult.Error("El pedido ya no está en estado borrador");
             }
 
+            if (!pedido.Items.Any())
+            {
+                 return ServiceResult.Error("Debe agregar al menos un producto para crear el pedido");
+            }
+
+            if (pedido.Modalidad == ModalidadPedido.EnMesa && (!pedido.NumeroMesa.HasValue || pedido.NumeroMesa <= 0))
+            {
+                 return ServiceResult.Error("Por favor seleccione un número de mesa para continuar");
+            }
+
             _logger.LogInformation("💾 Pedido #{PedidoId} guardado como borrador", idPedido);
             
             return ServiceResult.SuccessResult("Borrador guardado correctamente");
@@ -385,7 +411,7 @@ namespace VentaFacil.web.Services.Pedido
 
         private void RecalcularTotal(PedidoDto pedido)
         {
-            pedido.Total = pedido.Items.Sum(item => item.Subtotal);
+            pedido.Total = pedido.Subtotal + pedido.Impuestos - pedido.Descuento;
         }
 
         private async Task CambiarEstadoPedidoAsync(PedidoDto pedido, PedidoEstado nuevoEstado, string observacion)

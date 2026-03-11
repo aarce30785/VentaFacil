@@ -1,4 +1,4 @@
-﻿@model VentaFacil.web.Models.Dto.PedidoDto
+@model VentaFacil.web.Models.Dto.PedidoDto
 @using VentaFacil.web.Models.Enum
 
 @{
@@ -16,22 +16,19 @@
 <div class="edit-wrapper">
     <div class="pt-30">
         <!-- Header -->
-        <div class="title-wrapper pt-30 mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="title">
-                        <h2 class="fw-bold text-dark">Editar Pedido <span class="text-primary">#@Model.Id_Venta</span></h2>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="breadcrumb-wrapper">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a asp-action="Index">Pedidos</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Editar #@Model.Id_Venta</li>
-                            </ol>
-                        </nav>
-                    </div>
+        <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+            <div class="position-relative z-1">
+                <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-pencil-alt me-2"></i>Editar Pedido <span class="text-warning">#@Model.Id_Venta</span></h1>
+                <p class="mb-0 text-white-50 fs-5">Modifica los detalles del pedido seleccionado.</p>
+            </div>
+            <div class="position-relative z-1 d-none d-md-block">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a asp-action="Index" class="text-white-50">Pedidos</a></li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">Editar #@Model.Id_Venta</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -125,8 +122,13 @@
                                 <label class="form-label fw-bold text-muted text-sm text-uppercase">Número de Mesa</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0"><i class="lni lni-grid-alt"></i></span>
-                                    <input type="number" name="numeroMesa" value="@Model.NumeroMesa" min="1" class="form-control border-start-0 ps-0" @(!editable ? "disabled" : "") />
-                                    @if (editable) { <button class="btn btn-outline-primary" type="submit">Ok</button> }
+                                    <select name="numeroMesa" class="form-select border-start-0 ps-0" @(!editable ? "disabled" : "") onchange="this.form.submit()">
+                                        <option value="">Seleccione una mesa...</option>
+                                        @for (int i = 1; i <= 20; i++)
+                                        {
+                                            <option value="@i" selected="@(Model.NumeroMesa == i)">Mesa @i</option>
+                                        }
+                                    </select>
                                 </div>
                             }
                         </form>
@@ -229,13 +231,18 @@
                                                 @if (editable)
                                                 {
                                                     <td class="text-center py-3">
-                                                        <form method="post" asp-action="EliminarProducto">
-                                                            <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
-                                                            <input type="hidden" name="itemId" value="@item.Id_Detalle" />
-                                                            <button type="submit" class="btn btn-light btn-sm rounded-circle text-danger" onclick="return confirm('¿Eliminar?')">
-                                                                <i class="lni lni-trash-can"></i>
+                                                        <div class="d-flex justify-content-center gap-1">
+                                                            <button type="button" class="btn btn-light btn-sm rounded-circle text-primary" data-bs-toggle="modal" data-bs-target="#modalEditarNota" onclick="prepararEdicionNota(@item.Id_Detalle, '@Html.Raw(item.Notas?.Replace("'", "\\'"))')">
+                                                                <i class="lni lni-pencil"></i>
                                                             </button>
-                                                        </form>
+                                                            <form method="post" asp-action="EliminarProducto" class="m-0">
+                                                                <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
+                                                                <input type="hidden" name="itemId" value="@item.Id_Detalle" />
+                                                                <button type="submit" class="btn btn-light btn-sm rounded-circle text-danger" onclick="return confirm('¿Eliminar?')">
+                                                                    <i class="lni lni-trash-can"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
                                                     </td>
                                                 }
                                             </tr>
@@ -256,10 +263,18 @@
                         }
                     </div>
                     <div class="card-footer bg-white border-top p-4">
-                        <div class="d-flex justify-content-end align-items-center">
-                            <div class="text-end">
-                                <p class="text-muted mb-1 text-sm text-uppercase fw-bold">Total a Pagar</p>
-                                <h2 class="fw-bold text-primary mb-0">@Model.Total.ToString("C", numberFormat)</h2>
+                        <div class="d-flex flex-column align-items-end">
+                            <div class="d-flex justify-content-between w-100" style="max-width: 250px;">
+                                <span class="text-muted">Subtotal:</span>
+                                <span class="fw-bold">@Model.Subtotal.ToString("C", numberFormat)</span>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 mb-2" style="max-width: 250px;">
+                                <span class="text-muted">I.V.A (13%):</span>
+                                <span class="fw-bold">@Model.Impuestos.ToString("C", numberFormat)</span>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 pt-2 border-top" style="max-width: 250px;">
+                                <span class="text-muted text-uppercase fw-bold">Total a Pagar:</span>
+                                <h4 class="fw-bold text-primary mb-0">@Model.Total.ToString("C", numberFormat)</h4>
                             </div>
                         </div>
                     </div>
@@ -345,6 +360,30 @@
                         <div class="d-flex gap-2 justify-content-center">
                             <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Volver</button>
                             <button type="submit" class="btn btn-danger rounded-pill px-4">Confirmar Cancelación</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Nota -->
+    <div class="modal fade" id="modalEditarNota" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Nota de Preparación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="post" asp-action="ActualizarNotaProducto">
+                        <input type="hidden" name="pedidoId" value="@Model.Id_Venta" />
+                        <input type="hidden" name="itemId" id="inputNotaItemId" value="" />
+                        <textarea class="form-control mb-4" name="notas" id="inputNotaText" rows="3" placeholder="Ej. Sin cebolla, extra salsa..."></textarea>
+                        
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Guardar Nota</button>
                         </div>
                     </form>
                 </div>
@@ -501,6 +540,11 @@
                     }
                 }
             );
+        }
+
+        function prepararEdicionNota(itemId, currentNota) {
+            document.getElementById('inputNotaItemId').value = itemId;
+            document.getElementById('inputNotaText').value = currentNota;
         }
     </script>
 }

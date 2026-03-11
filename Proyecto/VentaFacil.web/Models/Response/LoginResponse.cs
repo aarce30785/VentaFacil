@@ -7,5 +7,7 @@
         public string Nombre { get; set; }
         public string Rol { get; set; }
         public int UsuarioId { get; set; }
+        public string? SessionToken { get; set; }
+        public bool RequiereConfirmacion { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VentaFacil.web.Models.Dto;
@@ -121,6 +121,14 @@ namespace VentaFacil.web.Controllers
                     return RedirectToAction("Editar", new { id = pedidoId });
                 }
 
+                // FA-1002: Validate if any product has zero or negative price
+                var productoSinPrecio = resultadoValidacion.Pedido.Items.FirstOrDefault(i => i.PrecioUnitario <= 0);
+                if (productoSinPrecio != null)
+                {
+                    TempData["Error"] = $"Error: El producto '{productoSinPrecio.NombreProducto}' no tiene precio asignado.";
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+
                 // Si está en borrador, guardarlo antes de proceder al pago
                 if (resultadoValidacion.Pedido.Estado == PedidoEstado.Borrador)
                 {
@@ -168,6 +176,17 @@ namespace VentaFacil.web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActualizarNotaProducto(int pedidoId, int itemId, string notas)
+        {
+            return await EjecutarOperacionPedidoAsync(
+                () => _pedidoService.ActualizarNotaProductoAsync(pedidoId, itemId, notas),
+                pedidoId,
+                "Nota de producto actualizada correctamente"
+            );
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarProducto(int pedidoId, int itemId)
         {
             return await EjecutarOperacionPedidoAsync(
@@ -177,7 +196,6 @@ namespace VentaFacil.web.Controllers
             );
         }
 
-        // MÉTODOS DE ACTUALIZACIÓN DE DATOS
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActualizarModalidad(int pedidoId, ModalidadPedido modalidad, int? numeroMesa)

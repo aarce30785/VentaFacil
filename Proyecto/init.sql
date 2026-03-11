@@ -124,6 +124,20 @@ BEGIN
     );
 END
 
+-- Tabla ProductoInsumo
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ProductoInsumo]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE ProductoInsumo (
+        Id_ProductoInsumo INT IDENTITY (1,1),
+        Id_Producto INT NOT NULL,
+        Id_Inventario INT NOT NULL,
+        Cantidad INT NOT NULL,
+        CONSTRAINT PI_Pk PRIMARY KEY (Id_ProductoInsumo),
+        CONSTRAINT PI_Prod_Fk FOREIGN KEY (Id_Producto) REFERENCES Producto(Id_Producto),
+        CONSTRAINT PI_Inv_Fk FOREIGN KEY (Id_Inventario) REFERENCES Inventario(Id_Inventario)
+    );
+END
+
 -- Tabla Venta
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Venta]') AND type in (N'U'))
 BEGIN
@@ -248,6 +262,8 @@ BEGIN
         Fecha_Cierre DATETIME NULL,
         Monto_Inicial DECIMAL(10,2) NOT NULL,
         Monto DECIMAL(10,2) NULL,
+        Monto_Inicial_USD DECIMAL(10,2) NOT NULL DEFAULT 0,
+        Monto_USD DECIMAL(10,2) NULL,
         Estado VARCHAR(20) NOT NULL,
         CONSTRAINT FK_Caja_Usuario FOREIGN KEY (Id_Usuario) REFERENCES Usuario(Id_Usr)
     );
@@ -350,6 +366,17 @@ END
 IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'HoraSalida' AND Object_ID = Object_ID(N'Usuario'))
 BEGIN
     ALTER TABLE Usuario ADD HoraSalida TIME NULL
+END
+
+-- Alterar Tabla Caja para control de USD
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Monto_Inicial_USD' AND Object_ID = Object_ID(N'Caja'))
+BEGIN
+    ALTER TABLE Caja ADD Monto_Inicial_USD DECIMAL(10,2) NOT NULL DEFAULT(0);
+END
+
+IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Monto_USD' AND Object_ID = Object_ID(N'Caja'))
+BEGIN
+    ALTER TABLE Caja ADD Monto_USD DECIMAL(10,2) NULL;
 END
 
 -- Roles base

@@ -75,8 +75,7 @@ namespace VentaFacil.web.Services.Usuario
                 Nombre = usuario.Nombre,
                 Correo = usuario.Correo,
                 Rol = usuario.Rol,
-                Estado = usuario.Estado,
-                
+                Estado = usuario.Estado
             };
         }
 

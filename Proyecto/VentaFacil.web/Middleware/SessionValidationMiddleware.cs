@@ -12,11 +12,31 @@ namespace VentaFacil.web.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, VentaFacil.web.Data.ApplicationDbContext dbContext)
         {
             // Validar solo si el usuario está autenticado
             if (context.User.Identity != null && context.User.Identity.IsAuthenticated)
             {
+                var usuarioIdClaim = context.User.FindFirst("UsuarioId")?.Value 
+                                     ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (int.TryParse(usuarioIdClaim, out int loggedUserId))
+                {
+                    var sessionTokenClaim = context.User.FindFirst("SessionToken")?.Value;
+                    var usuario = await dbContext.Usuario.FindAsync(loggedUserId);
+                    
+                    if (usuario != null && !string.IsNullOrEmpty(usuario.SessionToken))
+                    {
+                        if (usuario.SessionToken != sessionTokenClaim)
+                        {
+                            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            context.Session.Clear();
+                            context.Response.Redirect("/Login/InicioSesion");
+                            return;
+                        }
+                    }
+                }
+
                 // Intentar obtener el ID de usuario de la sesión
                 var usuarioId = context.Session.GetInt32("UsuarioId");
                 

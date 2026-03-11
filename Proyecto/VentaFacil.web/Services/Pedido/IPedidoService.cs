@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
@@ -10,6 +10,7 @@ namespace VentaFacil.web.Services.Pedido
         Task<PedidoDto> CrearPedidoAsync(int idUsuario, string? cliente = null);
         Task<PedidoDto> ObtenerPedidoAsync(int idPedido);
         Task<PedidoDto> AgregarProductoAsync(int idPedido, int idProducto, int cantidad);
+        Task<PedidoDto> ActualizarNotaProductoAsync(int idPedido, int idDetalle, string notas);
         Task<PedidoDto> ActualizarCantidadProductoAsync(int idPedido, int idDetalle, int cantidad);
         Task<PedidoDto> EliminarProductoAsync(int idPedido, int idDetalle);
         Task<PedidoDto> ActualizarModalidadAsync(int idPedido, ModalidadPedido modalidad, int? numeroMesa = null);

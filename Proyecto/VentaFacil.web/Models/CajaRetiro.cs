@@ -21,6 +21,10 @@ namespace VentaFacil.web.Models
         public decimal Monto { get; set; }
 
         [Required]
+        [MaxLength(3)]
+        public string Moneda { get; set; } = "CRC";
+
+        [Required]
         [MaxLength(255)]
         public string Motivo { get; set; } = string.Empty;
 

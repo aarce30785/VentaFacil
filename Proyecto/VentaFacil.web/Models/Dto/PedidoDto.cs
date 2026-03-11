@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,6 +10,8 @@ namespace VentaFacil.web.Models.Dto
         public int Id_Venta { get; set; }
         public DateTime Fecha { get; set; } = DateTime.Now;
         public decimal Total { get; set; }
+        public decimal Subtotal => Items?.Sum(i => i.Subtotal) ?? 0m;
+        public decimal Impuestos => Subtotal * 0.13m; // 13% IVA
         public PedidoEstado Estado { get; set; } = PedidoEstado.Borrador;
         public int Id_Usuario { get; set; }
         public string? Cliente { get; set; }

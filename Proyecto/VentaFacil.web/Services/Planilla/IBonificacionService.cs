@@ -12,5 +12,6 @@ namespace VentaFacil.web.Services.Planilla
         Task<BaseResponse> EditarBonificacionAsync(int idBonificacion, BonificacionDto dto, int idUsuarioResponsable);
         Task<BaseResponse> EliminarBonificacionAsync(int idBonificacion, int idUsuarioResponsable);
         Task<IEnumerable<Bonificacion>> ObtenerBonificacionesPorPlanillaAsync(int idPlanilla);
+        Task<IEnumerable<BonificacionAuditoria>> ObtenerAuditoriaBonificacionAsync(int idBonificacion);
     }
 }

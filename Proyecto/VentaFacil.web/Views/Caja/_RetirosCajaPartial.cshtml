@@ -1,23 +1,91 @@
-﻿@model IEnumerable<VentaFacil.web.Models.CajaRetiro>
+@model IEnumerable<VentaFacil.web.Models.CajaRetiro>
+
+<div class="filter-container mb-4" style="background:#f8fafc; border-radius:12px; padding:1rem; border:1px solid #e2e8f0;">
+    <form id="filtroRetirosForm" class="row g-3 align-items-end">
+        <input type="hidden" name="id" value="@ViewBag.IdCaja" />
+        
+        <div class="col-md-3">
+            <label class="form-label text-muted fw-bold text-sm mb-1">Tipo de Movimiento</label>
+            <select name="tipoMovimiento" class="form-select border-0 shadow-sm">
+                <option value="Todos" selected="@(ViewBag.TipoMovimiento == "Todos" ? "selected" : null)">Todos</option>
+                <option value="Salida" selected="@(ViewBag.TipoMovimiento == "Salida" ? "selected" : null)">Gasto/Salida</option>
+                <option value="Ingreso" selected="@(ViewBag.TipoMovimiento == "Ingreso" ? "selected" : null)">Ingreso</option>
+            </select>
+        </div>
+        
+        <div class="col-md-3">
+            <label class="form-label text-muted fw-bold text-sm mb-1">Fecha Inicio</label>
+            <input type="date" name="fechaInicio" class="form-control border-0 shadow-sm" value="@ViewBag.FechaInicio" />
+        </div>
+        
+        <div class="col-md-3">
+            <label class="form-label text-muted fw-bold text-sm mb-1">Fecha Fin</label>
+            <input type="date" name="fechaFin" class="form-control border-0 shadow-sm" value="@ViewBag.FechaFin" />
+        </div>
+        
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary shadow-sm flex-grow-1"><i class="lni lni-search"></i> Buscar</button>
+        </div>
+    </form>
+</div>
 
 <div class="retiros-table-container" style="background:#fff; border-radius:16px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05); padding:1.5rem; margin-bottom:1rem;">
     <table class="table premium-table-retiros">
         <thead>
             <tr>
-                <th style="color:#222;">Monto</th>
-                <th style="color:#222;">Motivo</th>
-                <th style="color:#222;">Fecha</th>
+                <th style="color:#222; font-weight: 600;">Fecha</th>
+                <th style="color:#222; font-weight: 600;">Tipo</th>
+                <th style="color:#222; font-weight: 600;">Motivo</th>
+                <th style="color:#222; font-weight: 600; text-align: right;">Monto</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var retiro in Model)
+            @foreach (var retiro in Model.OrderByDescending(x => x.FechaHora))
             {
                 <tr>
-                    <td>@retiro.Monto</td>
+                    <td>@retiro.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @if (retiro.Monto < 0)
+                        {
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill">Salida</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill">Ingreso</span>
+                        }
+                    </td>
                     <td>@retiro.Motivo</td>
-                    <td>@retiro.FechaHora</td>
+                    <td style="text-align:right" class="fw-bold @(retiro.Monto < 0 ? "text-danger" : "text-success")">
+                        @retiro.Monto.ToString("C")
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No se encontraron movimientos para los filtros seleccionados.</td>
                 </tr>
             }
         </tbody>
+        @if (Model.Any())
+        {
+            <tfoot>
+                <tr style="background-color: #f8fafc;">
+                    <td colspan="3" class="text-end fw-bold">Total Filtrado:</td>
+                    <td class="text-end fw-bold fs-5">@(((decimal)(ViewBag.TotalFiltrado ?? 0)).ToString("C"))</td>
+                </tr>
+            </tfoot>
+        }
     </table>
 </div>
+
+<script>
+    $('#filtroRetirosForm').submit(function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+        $('#retirosModalBody').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>');
+        $.get('@Url.Action("Retiros", "Caja")', formData, function(data) {
+            $('#retirosModalBody').html(data);
+        });
+    });
+</script>

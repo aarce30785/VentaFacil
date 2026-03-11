@@ -1,4 +1,4 @@
-﻿@model List<VentaFacil.web.Models.Dto.PedidoDto>
+@model List<VentaFacil.web.Models.Dto.PedidoDto>
 @using VentaFacil.web.Models.Enum
 
 @{
@@ -553,7 +553,7 @@
                 const res = await fetch('/Pedidos/AgregarNotaCocina', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: parseInt(id), nota: nota })
+                    body: JSON.stringify({ pedidoId: parseInt(id), nota: nota })
                 });
                 if(res.ok) {
                     location.reload();

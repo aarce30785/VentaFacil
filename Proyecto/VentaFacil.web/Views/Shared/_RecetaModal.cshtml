@@ -1,0 +1,82 @@
+@model VentaFacil.web.Models.ViewModel.RecetaViewModel
+
+<div class="modal fade" id="recetaModal" tabindex="-1" aria-labelledby="recetaModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0 py-3">
+                <h5 class="modal-title fw-bold" id="recetaModalLabel">
+                    <i class="lni lni-restaurant me-2"></i> Receta: @Model.ProductoNombre
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4 bg-light">
+                <form id="recetaForm">
+                    <input type="hidden" id="recetaProductoId" value="@Model.ProductoId" />
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold text-muted">Añadir Insumo a la Receta</label>
+                            <select id="selectInsumoToAdd" class="form-select">
+                                <option value="">-- Seleccionar Insumo --</option>
+                                @foreach (var item in Model.InventarioDisponible)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold text-muted">Cantidad</label>
+                            <input type="number" id="cantidadInsumoToAdd" class="form-control" min="1" value="1" />
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100" onclick="agregarInsumoTabla()">
+                                <i class="lni lni-plus"></i> Añadir
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive bg-white rounded shadow-sm">
+                        <table class="table table-hover mb-0" id="tablaReceta">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Insumo</th>
+                                    <th style="width: 150px;">Cantidad</th>
+                                    <th style="width: 80px;" class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var insumo in Model.Insumos)
+                                {
+                                    <tr data-inventario-id="@insumo.Id_Inventario">
+                                        <td class="align-middle">@insumo.NombreInsumo</td>
+                                        <td class="align-middle">
+                                            <input type="number" class="form-control form-control-sm cantidad-insumo" value="@insumo.Cantidad" min="1" />
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarFilaInsumo(this)">
+                                                <i class="lni lni-trash-can"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div id="emptyRecetaMsg" class="text-center p-4 text-muted" style="@(Model.Insumos.Any() ? "display: none;" : "")">
+                            <i class="lni lni-empty-file fs-2 mb-2"></i>
+                            <p class="mb-0">No hay insumos asignados a esta receta.</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer bg-white border-top py-3">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-hover rounded-pill px-4" onclick="guardarReceta()">
+                    <i class="lni lni-save me-2"></i> Guardar Receta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+

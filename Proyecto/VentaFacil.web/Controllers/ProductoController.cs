@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Producto;
 using VentaFacil.web.Services.Producto;
+using VentaFacil.web.Models.ViewModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace VentaFacil.web.Controllers
 {
@@ -13,16 +15,28 @@ namespace VentaFacil.web.Controllers
     {
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
+
         private readonly IWebHostEnvironment _environment;
+
+        private readonly VentaFacil.web.Data.ApplicationDbContext _context;
+
 
         public ProductoController(
             IProductoService registerProductoService,
             ICategoriaService categoriaService,
+
             IWebHostEnvironment environment)
         {
             _productoService = registerProductoService;
             _categoriaService = categoriaService;
             _environment = environment;
+
+            VentaFacil.web.Data.ApplicationDbContext context)
+        {
+            _productoService = registerProductoService;
+            _categoriaService = categoriaService;
+            _context = context;
+
         }
 
         [HttpGet]
@@ -31,7 +45,7 @@ namespace VentaFacil.web.Controllers
         {
              try
             {
-                // Cargar productos con filtros
+                
                 ViewBag.MostrarInactivos = mostrarInactivos;
                 var productosResponse = await GetProductosResponse(pagina, cantidadPorPagina, busqueda, categoriaFiltro, mostrarInactivos);
                 return View(productosResponse);
@@ -346,35 +360,7 @@ namespace VentaFacil.web.Controllers
             return RedirectToAction("Listar", new { busqueda, categoriaFiltro, pagina, mostrarInactivos });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ActualizarStock([FromBody] Dictionary<string, int> data)
-        {
-            try
-            {
-                if (!data.ContainsKey("idProducto") || !data.ContainsKey("cantidad"))
-                {
-                    return BadRequest(new { success = false, message = "Datos inválidos." });
-                }
 
-                int idProducto = data["idProducto"];
-                int cantidad = data["cantidad"];
-
-                var resultado = await _productoService.ActualizarStockAsync(idProducto, cantidad);
-
-                if (resultado.Success)
-                {
-                    return Ok(new { success = true, message = resultado.Message });
-                }
-                else
-                {
-                    return BadRequest(new { success = false, message = resultado.Message });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = $"Error interno: {ex.Message}" });
-            }
-        }
 
         private async Task<List<SelectListItem>> GetCategoriasSelectList()
         {
@@ -384,6 +370,75 @@ namespace VentaFacil.web.Controllers
                 Value = c.Id_Categoria.ToString(),
                 Text = c.Nombre
             }).ToList() ?? new List<SelectListItem>();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerRecetaModal(int productoId)
+        {
+            var producto = await _context.Producto
+                .Include(p => p.Insumos)
+                    .ThenInclude(i => i.Inventario)
+                .FirstOrDefaultAsync(p => p.Id_Producto == productoId);
+
+            if (producto == null) return NotFound();
+
+            var inventario = await _context.Inventario.Where(i => i.Estado).ToListAsync();
+
+            var model = new RecetaViewModel
+            {
+                ProductoId = producto.Id_Producto,
+                ProductoNombre = producto.Nombre,
+                Insumos = producto.Insumos.Select(i => new ProductoInsumoViewModel
+                {
+                    Id_ProductoInsumo = i.Id_ProductoInsumo,
+                    Id_Inventario = i.Id_Inventario,
+                    NombreInsumo = i.Inventario?.Nombre ?? "Desconocido",
+                    Cantidad = i.Cantidad
+                }).ToList(),
+                InventarioDisponible = inventario.Select(i => new SelectListItem
+                {
+                    Value = i.Id_Inventario.ToString(),
+                    Text = i.Nombre
+                }).ToList()
+            };
+
+            return PartialView("~/Views/Shared/_RecetaModal.cshtml", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarReceta([FromBody] RecetaViewModel model)
+        {
+            try
+            {
+                var producto = await _context.Producto
+                    .Include(p => p.Insumos)
+                    .FirstOrDefaultAsync(p => p.Id_Producto == model.ProductoId);
+                    
+                if (producto == null)
+                    return BadRequest(new { success = false, message = "Producto no encontrado." });
+
+                _context.ProductoInsumo.RemoveRange(producto.Insumos);
+
+                foreach (var insumo in model.Insumos)
+                {
+                    if (insumo.Id_Inventario > 0 && insumo.Cantidad > 0)
+                    {
+                        _context.ProductoInsumo.Add(new Models.ProductoInsumo
+                        {
+                            Id_Producto = model.ProductoId,
+                            Id_Inventario = insumo.Id_Inventario,
+                            Cantidad = insumo.Cantidad
+                        });
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok(new { success = true, message = "Receta guardada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Error al guardar receta: {ex.Message}" });
+            }
         }
     }
 }

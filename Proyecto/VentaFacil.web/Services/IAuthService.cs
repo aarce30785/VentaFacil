@@ -6,5 +6,6 @@ namespace VentaFacil.web.Services
     public interface IAuthService
     {
         Task<LoginResponse> LoginAsync(LoginDto loginDto);
+        Task LogoutAsync(int usuarioId);
     }
 }

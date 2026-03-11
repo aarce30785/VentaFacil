@@ -24,11 +24,7 @@ namespace VentaFacil.web.Models
         [MaxLength(2048)]
         public string? Imagen { get; set; }
 
-        [Required]
-        public int StockMinimo { get; set; }
 
-        [Required]
-        public int StockActual { get; set; }
 
         [Required]
         public bool Estado { get; set; } = true;
@@ -36,5 +32,7 @@ namespace VentaFacil.web.Models
         
         [Column("Id_Categoria")]
         public int Id_Categoria { get; set; }
+
+        public virtual ICollection<ProductoInsumo> Insumos { get; set; } = new List<ProductoInsumo>();
     }
 }
