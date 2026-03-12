@@ -50,5 +50,43 @@ namespace VentaFacil.web.Services.Email
                 throw;
             }
         }
+        public async Task SendEmailWithAttachmentAsync(string to, string subject, string body, byte[] attachment, string fileName)
+        {
+            var emailSettings = _configuration.GetSection("EmailSettings");
+            var host = emailSettings["Host"] ?? "localhost";
+            var port = int.Parse(emailSettings["Port"] ?? "25");
+            var from = emailSettings["From"] ?? "no-reply@ventafacil-web.com";
+
+            _logger.LogInformation($"Intentando enviar correo con adjunto a: {to} via SMTP: {host}:{port}");
+
+            try
+            {
+                using (var client = new SmtpClient(host, port))
+                {
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(from),
+                        Subject = subject,
+                        Body = body,
+                        IsBodyHtml = true
+                    };
+                    mailMessage.To.Add(to);
+
+                    using (var ms = new MemoryStream(attachment))
+                    {
+                        var mailAttachment = new Attachment(ms, fileName, "application/pdf");
+                        mailMessage.Attachments.Add(mailAttachment);
+
+                        await client.SendMailAsync(mailMessage);
+                    }
+                    _logger.LogInformation($"Correo con adjunto '{fileName}' enviado exitosamente a {to}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error enviando correo con adjunto a {to}");
+                throw;
+            }
+        }
     }
 }

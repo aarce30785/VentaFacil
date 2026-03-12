@@ -89,6 +89,8 @@ services:
     init: true
     networks:
       - ventafacil-network
+    ports:
+      - "25:25"
     restart: always
 
   # NGINX como reverse proxy (opcional para producción)

@@ -407,23 +407,13 @@ namespace VentaFacil.web.Controllers
                     </div>
                 """;
 
-                // Enviar usando el servicio de email
-                // Como IEmailService.SendEmailAsync solo soporta body HTML (sin adjuntos),
-                // incluimos un enlace embebido y el PDF codificado en base64 en el cuerpo.
-                var pdfBase64 = Convert.ToBase64String(pdfBytes);
-                var cuerpoConPdf = cuerpo + $"""
-                    <div style="margin-top:16px;text-align:center;">
-                        <a href="data:application/pdf;base64,{pdfBase64}" download="Factura-{facturaId}.pdf"
-                           style="background:#4f46e5;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">
-                            ⬇ Descargar Factura PDF
-                        </a>
-                    </div>
-                """;
+                // Enviar usando el servicio de email con adjunto real
+                var fileName = $"Factura-{facturaDto.NumeroFactura}.pdf";
+                await _emailService.SendEmailWithAttachmentAsync(emailDestino, asunto, cuerpo, pdfBytes, fileName);
 
-                await _emailService.SendEmailAsync(emailDestino, asunto, cuerpoConPdf);
-
-                _logger.LogInformation("Factura {FacturaId} enviada por email a {Email}", facturaId, emailDestino);
+                _logger.LogInformation("Factura {FacturaId} enviada por email a {Email} con adjunto {FileName}", facturaId, emailDestino, fileName);
                 return Json(new { success = true, message = $"Factura enviada exitosamente a {emailDestino}" });
+
             }
             catch (Exception ex)
             {
