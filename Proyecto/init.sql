@@ -279,6 +279,7 @@ BEGIN
         Id_Caja INT NOT NULL,
         Id_Usuario INT NOT NULL,
         Monto DECIMAL(10,2) NOT NULL,
+        Moneda VARCHAR(3) DEFAULT 'CRC' NOT NULL,
         Motivo VARCHAR(255) NOT NULL,
         FechaHora DATETIME NOT NULL DEFAULT GETDATE(),
         CONSTRAINT FK_CajaRetiro_Caja FOREIGN KEY (Id_Caja) REFERENCES Caja(Id_Caja),
