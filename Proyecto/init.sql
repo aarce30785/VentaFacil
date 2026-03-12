@@ -359,21 +359,6 @@ BEGIN
     );
 END
 
--- Alterar Tabla Usuario para Horario
--- Se eliminan HoraEntrada y HoraSalida porque no existen en el modelo C#
--- y se movieron a otros controles o fueron descartadas.
-
--- Alterar Tabla Caja para control de USD
-IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Monto_Inicial_USD' AND Object_ID = Object_ID(N'Caja'))
-BEGIN
-    ALTER TABLE Caja ADD Monto_Inicial_USD DECIMAL(10,2) NOT NULL DEFAULT(0);
-END
-
-IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Monto_USD' AND Object_ID = Object_ID(N'Caja'))
-BEGIN
-    ALTER TABLE Caja ADD Monto_USD DECIMAL(10,2) NULL;
-END
-
 -- Roles base
 IF NOT EXISTS (SELECT * FROM Rol WHERE Nombre_Rol = 'Administrador')
     INSERT INTO Rol (Nombre_Rol, Descripcion) VALUES ('Administrador', 'Acceso completo al sistema');
@@ -413,4 +398,16 @@ BEGIN
         CONSTRAINT Tok_Pk PRIMARY KEY (Id),
         CONSTRAINT TokUsr_Fk FOREIGN KEY (UsuarioId) REFERENCES Usuario(Id_Usr)
     )
+END;
+
+-- Tabla ConfiguracionPlanilla
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ConfiguracionPlanilla]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE ConfiguracionPlanilla (
+        Id_Configuracion INT IDENTITY(1,1) PRIMARY KEY,
+        Id_Usr INT NOT NULL,
+        TarifaPorHora DECIMAL(10,2) NOT NULL,
+        FechaActualizacion DATETIME NOT NULL DEFAULT GETDATE(),
+        CONSTRAINT FK_ConfiguracionPlanilla_Usuario FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr)
+    );
 END;
