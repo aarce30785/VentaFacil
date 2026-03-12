@@ -4,13 +4,14 @@ services:
   fix-permissions:
     image: alpine:latest
     user: root
-    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && chmod -R 775 /var/opt/mssql/data && mkdir -p /datakeys && chown -R 1000:1000 /datakeys && echo '✅ Permissions fixed'"
+    command: sh -c "chown -R 10001:0 /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets && chmod -R 775 /var/opt/mssql/data && mkdir -p /datakeys && chown -R 1000:1000 /datakeys /uploads_perms && echo '✅ Permissions fixed'"
     init: true
     volumes:
       - sqlserver_data:/var/opt/mssql/data
       - sqlserver_log:/var/opt/mssql/log
       - sqlserver_secrets:/var/opt/mssql/secrets
       - dataprotection_keys:/datakeys
+      - uploads:/uploads_perms
 
   sqlserver:
     container_name: ventafacil-db
@@ -61,7 +62,7 @@ services:
       - "8080:8080"
     volumes:
       - dataprotection_keys:/app/keys
-      - uploads:/wwwroot/uploads
+      - uploads:/app/wwwroot/images/productos
       - ./init.sql:/app/init/init.sql:ro
       - ./logs:/app/logs # Para logs de la aplicación
     networks:
@@ -102,7 +103,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - uploads:/usr/share/nginx/html/uploads:ro
+      - uploads:/usr/share/nginx/html/images/productos:ro
     depends_on:
       - ventafacil.web
     networks:
