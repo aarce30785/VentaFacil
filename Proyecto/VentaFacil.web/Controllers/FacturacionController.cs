@@ -10,6 +10,7 @@ using VentaFacil.web.Services.Email;
 using VentaFacil.web.Services.Facturacion;
 using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
+using VentaFacil.web.Services.Caja;
 
 namespace VentaFacil.web.Controllers
 {
@@ -21,6 +22,7 @@ namespace VentaFacil.web.Controllers
         private readonly IPdfService _pdfService;
         private readonly Services.BCCR.IBccrService _bccrService;
         private readonly IEmailService _emailService;
+        private readonly ICajaService _cajaService;
         private readonly ILogger<FacturacionController> _logger;
         private readonly Data.ApplicationDbContext _context;
 
@@ -30,6 +32,7 @@ namespace VentaFacil.web.Controllers
             IPdfService pdfService,
             Services.BCCR.IBccrService bccrService,
             IEmailService emailService,
+            ICajaService cajaService,
             ILogger<FacturacionController> logger,
             Data.ApplicationDbContext context)
         {
@@ -38,6 +41,7 @@ namespace VentaFacil.web.Controllers
             _pdfService = pdfService;
             _bccrService = bccrService;
             _emailService = emailService;
+            _cajaService = cajaService;
             _logger = logger;
             _context = context;
         }
@@ -78,6 +82,13 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
+                // Requisito: No permitir venta si no existe una caja abierta
+                if (!await _cajaService.ExisteCajaAbiertaAsync())
+                {
+                    TempData["Info"] = "No se puede procesar la venta porque no hay una caja abierta. Por favor, abra una caja primero.";
+                    return RedirectToAction("Index", "Pedidos");
+                }
+
                 var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
 
                 if (pedido == null)

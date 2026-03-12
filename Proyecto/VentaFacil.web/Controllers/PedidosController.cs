@@ -5,6 +5,7 @@ using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Enum;
 using VentaFacil.web.Services.Pedido;
 using VentaFacil.web.Services.Producto;
+using VentaFacil.web.Services.Caja;
 
 namespace VentaFacil.web.Controllers
 {
@@ -13,12 +14,14 @@ namespace VentaFacil.web.Controllers
     {
         private readonly IPedidoService _pedidoService;
         private readonly IProductoService _productoService;
+        private readonly ICajaService _cajaService;
         private readonly ILogger<PedidosController> _logger;
 
-        public PedidosController(IPedidoService pedidoService, IProductoService productoService, ILogger<PedidosController> logger)
+        public PedidosController(IPedidoService pedidoService, IProductoService productoService, ICajaService cajaService, ILogger<PedidosController> logger)
         {
             _pedidoService = pedidoService;
             _productoService = productoService;
+            _cajaService = cajaService;
             _logger = logger;
         }
 
@@ -114,6 +117,13 @@ namespace VentaFacil.web.Controllers
         {
             try
             {
+                // Requisito: No permitir venta si no existe una caja abierta
+                if (!await _cajaService.ExisteCajaAbiertaAsync())
+                {
+                    TempData["Info"] = "No se puede proceder al pago porque no hay una caja abierta. Por favor, abra una caja primero.";
+                    return RedirectToAction("Editar", new { id = pedidoId });
+                }
+
                 var resultadoValidacion = await ValidarPedidoParaPago(pedidoId);
                 if (!resultadoValidacion.EsValido)
                 {

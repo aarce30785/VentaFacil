@@ -166,5 +166,17 @@ namespace VentaFacil.web.Services.Caja
                 .Where(r => r.FechaHora >= desde && r.Monto < 0)
                 .SumAsync(r => r.Monto);
         }
+
+        public async Task<bool> ExisteCajaAbiertaAsync(int? idUsuario = null)
+        {
+            var query = _context.Caja.Where(c => c.Estado == "Abierta");
+            
+            if (idUsuario.HasValue && idUsuario.Value > 0)
+            {
+                query = query.Where(c => c.Id_Usuario == idUsuario.Value);
+            }
+
+            return await query.AnyAsync();
+        }
     }
 }

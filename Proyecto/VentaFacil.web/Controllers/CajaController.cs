@@ -190,5 +190,11 @@ namespace VentaFacil.web.Controllers
 
             return File(pdfBytes, "application/pdf", $"ArqueoCaja_{caja.Fecha_Apertura:yyyyMMdd_HHmm}.pdf");
         }
+        [HttpGet]
+        public async Task<IActionResult> EstadoCaja()
+        {
+            var existe = await _cajaService.ExisteCajaAbiertaAsync();
+            return Json(new { existe });
+        }
     }
 }
