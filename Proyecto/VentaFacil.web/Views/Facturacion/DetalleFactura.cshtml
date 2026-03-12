@@ -339,6 +339,12 @@
             const facturaId = @Model.FacturaId;
 
             if (btnEnviarEmail) {
+                inputEmail.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        btnEnviarEmail.click();
+                    }
+                });
+                
                 btnEnviarEmail.addEventListener('click', async function () {
                     const email = inputEmail.value.trim();
                     const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
@@ -368,9 +374,16 @@
 
                         const res = await fetch('/Facturacion/EnviarPorEmail', {
                             method: 'POST',
-                            headers: { 'RequestVerificationToken': token },
+                            headers: { 
+                                'X-CSRF-TOKEN': token 
+                            },
                             body: formData
                         });
+
+                        if (!res.ok) {
+                            const errorText = await res.text();
+                            throw new Error(errorText || `Error ${res.status}: ${res.statusText}`);
+                        }
 
                         const data = await res.json();
 
@@ -385,7 +398,8 @@
 
                     } catch (err) {
                         emailToast.className = 'alert alert-danger';
-                        emailToast.innerHTML = '<i class="lni lni-warning me-2"></i>Error de conexión al enviar el correo.';
+                        emailToast.innerHTML = '<i class="lni lni-warning me-2"></i>' + (err.message || 'Error de conexión al enviar el correo.');
+                        console.error('Error al enviar email:', err);
                     } finally {
                         btnEnviarEmail.disabled = false;
                         btnEnviarEmail.innerHTML = originalHtml;
@@ -416,8 +430,7 @@
                 });
             }
 
-            // Obtener el ID directamente del modelo
-            const facturaId = @Model.FacturaId;
+            // Usar el ID definido arriba
             const pdfUrl = `/Facturacion/DescargarFactura?facturaId=${facturaId}`;
 
             if (btnDescargarPdf) {

@@ -333,7 +333,7 @@ namespace VentaFacil.web.Controllers
                     return NotFound("Factura no encontrada");
                 }
 
-                var pdfBytes = _pdfService.GenerarFacturaPdf(facturaDto, esCopia);
+                var pdfBytes = _pdfService.GenerarFacturaPdf(facturaDto, null, esCopia);
 
                 if (pdfBytes == null || pdfBytes.Length == 0)
                 {
