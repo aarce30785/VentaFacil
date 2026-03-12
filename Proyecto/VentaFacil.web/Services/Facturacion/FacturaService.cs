@@ -99,7 +99,8 @@ namespace VentaFacil.web.Services.Facturacion
             catch (Exception ex)
             {
                 _logger.LogError(ex, "💥 Error al generar factura para pedido {PedidoId}", pedidoId);
-                return ResultadoFacturacion.Error($"Error al generar factura: {ex.Message}");
+                var message = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                return ResultadoFacturacion.Error($"Error al generar factura: {message}");
             }
         }
 
@@ -149,7 +150,8 @@ namespace VentaFacil.web.Services.Facturacion
             catch (Exception ex)
             {
                 _logger.LogError(ex, "💥 Error al generar factura en dólares para pedido {PedidoId}", pedidoId);
-                return ResultadoFacturacion.Error($"Error al generar factura: {ex.Message}");
+                var message = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                return ResultadoFacturacion.Error($"Error al generar factura: {message}");
             }
         }
 
@@ -200,7 +202,7 @@ namespace VentaFacil.web.Services.Facturacion
                     Id_Venta = ventaId,
                     FechaEmision = DateTime.Now,
                     Total = pedido.Total,
-                    Cliente = pedido.Cliente,
+                    Cliente = pedido.Cliente ?? "Cliente General",
                     Estado = (esPagoParcial && totalPagado < pedido.Total - 0.01m) ? EstadoFactura.Pendiente : EstadoFactura.Activa,
                     MontoPagado = totalPagado,
                     Moneda = "CRC",
@@ -280,7 +282,8 @@ namespace VentaFacil.web.Services.Facturacion
             catch (Exception ex)
             {
                 _logger.LogError(ex, "💥 Error al generar factura mixta para pedido {PedidoId}", pedidoId);
-                return ResultadoFacturacion.Error($"Error al generar factura: {ex.Message}");
+                var message = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                return ResultadoFacturacion.Error($"Error al generar factura: {message}");
             }
         }
 
@@ -752,7 +755,7 @@ namespace VentaFacil.web.Services.Facturacion
                 Id_Venta = ventaId,
                 FechaEmision = DateTime.Now,
                 Total = pedido.Total,
-                Cliente = pedido.Cliente,
+                Cliente = pedido.Cliente ?? "Cliente General",
                 Estado = estado,
                 MontoPagado = montoPagado,
                 Moneda = moneda,
