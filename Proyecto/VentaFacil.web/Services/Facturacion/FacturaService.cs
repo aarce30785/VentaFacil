@@ -431,7 +431,10 @@ namespace VentaFacil.web.Services.Facturacion
 
                 if (!detallesOriginales.Any()) throw new Exception("No se encontraron productos para devolver");
 
-                decimal totalDevolucion = detallesOriginales.Sum(d => d.Cantidad * d.PrecioUnitario - (d.Descuento ?? 0));
+                // SE CORRIGE: Calcular total incluyendo el 13% de IVA
+                decimal subtotalDevolucion = detallesOriginales.Sum(d => d.Cantidad * d.PrecioUnitario - (d.Descuento ?? 0));
+                decimal impuestosDevolucion = Math.Round(subtotalDevolucion * 0.13m, 2);
+                decimal totalDevolucion = subtotalDevolucion + impuestosDevolucion;
 
                 // FA-3003: Create a negative Sale to adjust daily/weekly totals
                 var usuarioId = await ObtenerUsuarioIdAutenticado();
@@ -464,6 +467,42 @@ namespace VentaFacil.web.Services.Facturacion
 
                 _context.Factura.Add(notaCredito);
                 await _context.SaveChangesAsync();
+
+                // --- REESTABLECIMIENTO DE INVENTARIO ---
+                // Identificar insumos a reestablecer según la receta (ProductoInsumo)
+                var requerimientosInsumos = new Dictionary<int, int>();
+                foreach (var item in detallesOriginales)
+                {
+                    var insumos = await _context.ProductoInsumo.Where(pi => pi.Id_Producto == item.Id_Producto).ToListAsync();
+                    foreach (var insumo in insumos)
+                    {
+                        if (requerimientosInsumos.ContainsKey(insumo.Id_Inventario))
+                            requerimientosInsumos[insumo.Id_Inventario] += insumo.Cantidad * item.Cantidad;
+                        else
+                            requerimientosInsumos[insumo.Id_Inventario] = insumo.Cantidad * item.Cantidad;
+                    }
+                }
+
+                foreach (var req in requerimientosInsumos)
+                {
+                    var inventario = await _context.Inventario.FindAsync(req.Key);
+                    if (inventario != null)
+                    {
+                        inventario.StockActual += req.Value;
+                        
+                        var movimiento = new InventarioMovimiento
+                        {
+                            Id_Inventario = inventario.Id_Inventario,
+                            Tipo_Movimiento = $"Entrada por Devolución #F-{notaCredito.Id_Factura:0000}",
+                            Cantidad = req.Value,
+                            Fecha = DateTime.Now,
+                            Id_Usuario = usuarioId,
+                            Observaciones = $"Reestablecimiento automático por devolución de productos (Factura #{facturaId})"
+                        };
+                        _context.InventarioMovimiento.Add(movimiento);
+                    }
+                }
+                // --- FIN REESTABLECIMIENTO DE INVENTARIO ---
 
                 // --- MOVIMIENTO DE CAJA POR DEVOLUCIÓN ---
                 // Solo afectamos la caja si el pago original fue en efectivo (no tarjeta/transferencia)
@@ -505,6 +544,7 @@ namespace VentaFacil.web.Services.Facturacion
                 }
                 // --- FIN MOVIMIENTO DE CAJA ---
 
+                await _context.SaveChangesAsync();
                 _ = Task.Run(() => GenerarYGuardarPdfAsync(notaCredito.Id_Factura));
 
                 _logger.LogInformation("Nota de Crédito {Id} generada para Factura {FacturaId}", notaCredito.Id_Factura, facturaId);

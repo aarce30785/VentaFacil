@@ -424,6 +424,71 @@
         });
     }
 
+    function enviarCorreoRestablecer(usuarioId) {
+        Swal.fire({
+            title: 'Restablecer Contraseña',
+            text: "¿Está seguro que desea enviar un correo para restablecer la contraseña de este usuario?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#365CF5',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, enviar correo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Enviando...',
+                    text: 'Por favor espere mientras se envía el correo.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Obtener el token antiforgery
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                fetch('@Url.Action("EnviarRestablecerContrasena", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `id=${usuarioId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: '¡Enviado!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#365CF5'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message || 'No se pudo enviar el correo.',
+                            icon: 'error',
+                            confirmButtonColor: '#365CF5'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Ocurrió un error al procesar la solicitud.',
+                        icon: 'error',
+                        confirmButtonColor: '#365CF5'
+                    });
+                });
+            }
+        });
+    }
+
     // Funciones globales (se pueden mover a Index o Layout si se reutilizan mucho)
     // Se mantienen aquí por ahora para asegurar funcionalidad dentro del Partial renderizado
 </script>
