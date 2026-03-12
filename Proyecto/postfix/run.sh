@@ -11,6 +11,11 @@ postconf -e "inet_protocols = ipv4"
 postconf -e "mynetworks = 127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
 # Log to stdout for Docker logs
 postconf -e "maillog_file = /dev/stdout"
+# Initialize aliases
+postconf -e "alias_maps = lmdb:/etc/postfix/aliases"
+postconf -e "alias_database = lmdb:/etc/postfix/aliases"
+touch /etc/postfix/aliases
+newaliases
 
 # Start Postfix in foreground
 echo "Starting Postfix ($HOSTNAME)..."
