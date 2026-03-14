@@ -58,7 +58,7 @@ namespace VentaFacil.web.Controllers
 
             // Alerta si hay cajas abiertas de días anteriores
             var cajas = await _cajaService.ListarCajasAsync();
-            dashboard.AlertaCajaAbierta = cajas.Any(c => c.Estado == "Abierta" && c.Fecha_Apertura.Date < DateTime.Today);
+            dashboard.MostrarAlertaCajaAbierta = cajas.Any(c => c.Estado == "Abierta" && c.Fecha_Apertura.Date < DateTime.Today);
 
             return View(dashboard);
         }

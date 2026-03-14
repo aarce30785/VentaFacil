@@ -11,8 +11,6 @@ using VentaFacil.web.Services.Caja;
 using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Facturacion;
 using VentaFacil.web.Services.Inventario;
-using VentaFacil.web.Services.Inventario;
-using VentaFacil.web.Services.Movimiento;
 using VentaFacil.web.Services.Movimiento;
 using VentaFacil.web.Services.PDF;
 using VentaFacil.web.Services.Pedido;
