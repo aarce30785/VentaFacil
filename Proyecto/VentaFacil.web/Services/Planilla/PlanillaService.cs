@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -129,9 +129,18 @@ namespace VentaFacil.web.Services.Planilla
                     double horasEfectivas = duracion.TotalHours - horasPausa;
                     if (horasEfectivas < 0) horasEfectivas = 0;
 
-                    planilla.HorasTrabajadas = (decimal)horasEfectivas;
+                    // Lógica de pago: Máximo 12 horas pagables (8 normales + 4 extras)
+                    double horasNormales = Math.Min(horasEfectivas, 8.0);
+                    double horasExtras = 0;
+                    if (horasEfectivas > 8.0)
+                    {
+                        horasExtras = Math.Min(horasEfectivas - 8.0, 4.0);
+                    }
+
+                    planilla.HorasTrabajadas = (decimal)horasNormales;
+                    planilla.HorasExtras = (decimal)horasExtras;
                     planilla.EstadoRegistro = "Pendiente";
-                    planilla.SalarioBruto = planilla.HorasTrabajadas * tarifaPorHora;
+                    planilla.SalarioBruto = (planilla.HorasTrabajadas * tarifaPorHora) + (planilla.HorasExtras * tarifaPorHora * 1.5m);
                 }
                 else
                 {
@@ -193,41 +202,15 @@ namespace VentaFacil.web.Services.Planilla
                     }
                 }
 
-                // Tarifa simulada para extras
-                decimal tarifaExtra = 3500m;
-
-                // Validar límite legal de horas extras: máximo 4 horas por jornada (Código de Trabajo CR)
-                decimal maxHorasExtras = 4;
-                if (dto.HorasExtras > maxHorasExtras)
-                {
-                    response.Success = false;
-                    response.Message = "Horas extras exceden límite legal";
-                    return response;
-                }
-
-                // =====================================================================
-                // VALIDACIÓN: Turno del empleado (Modificado)
-                // Verificar que las horas extras se registren en una jornada terminada.
-                // =====================================================================
-                if (dto.HorasExtras > 0)
-                {
-                    if (!planilla.FechaFinal.HasValue)
-                    {
-                        response.Success = false;
-                        response.Message = "No se pueden registrar horas extras en una jornada sin hora de salida registrada. " +
-                                           "Complete primero el registro de la jornada.";
-                        return response;
-                    }
-                }
+                var configuracion = await _context.ConfiguracionPlanilla.FirstOrDefaultAsync(c => c.Id_Usr == planilla.Id_Usr);
+                decimal tarifaPorHora = configuracion?.TarifaPorHora ?? 2500m;
 
                 planilla.HorasExtras = dto.HorasExtras;
                 planilla.Bonificaciones = dto.MontoBonificaciones;
 
-                // Recalcular Bruto: revertir extras/bonos previos y aplicar los nuevos
-                decimal salarioBaseEstimado = planilla.SalarioBruto - (planilla.HorasExtras * tarifaExtra) - planilla.Bonificaciones;
-                if (salarioBaseEstimado < 0) salarioBaseEstimado = planilla.HorasTrabajadas * 2500m;
-
-                planilla.SalarioBruto = salarioBaseEstimado + (planilla.HorasExtras * tarifaExtra) + planilla.Bonificaciones;
+                // Recalcular Bruto: Usar tarifa base * 1.5 para extras
+                decimal salarioBaseEfectivo = planilla.HorasTrabajadas * tarifaPorHora;
+                planilla.SalarioBruto = salarioBaseEfectivo + (planilla.HorasExtras * tarifaPorHora * 1.5m) + planilla.Bonificaciones;
 
                 await _context.SaveChangesAsync();
 

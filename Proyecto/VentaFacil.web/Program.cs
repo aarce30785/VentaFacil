@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -182,6 +182,7 @@ namespace VentaFacil.web
             builder.Services.AddScoped<IBonificacionService, BonificacionService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+            builder.Services.AddHostedService<CajaAutoCloseService>();
             
             // BCCR Service Configuration
             builder.Services.Configure<BccrSettings>(builder.Configuration.GetSection("BccrSettings"));

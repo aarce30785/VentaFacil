@@ -56,6 +56,10 @@ namespace VentaFacil.web.Controllers
             dashboard.IngresosRecientes = await _cajaService.GetIngresosRecientesAsync();
             dashboard.GastosRecientes = await _cajaService.GetGastosRecientesAsync();
 
+            // Alerta si hay cajas abiertas de días anteriores
+            var cajas = await _cajaService.ListarCajasAsync();
+            dashboard.AlertaCajaAbierta = cajas.Any(c => c.Estado == "Abierta" && c.Fecha_Apertura.Date < DateTime.Today);
+
             return View(dashboard);
         }
 

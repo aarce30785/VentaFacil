@@ -169,16 +169,27 @@ namespace VentaFacil.web.Controllers
             double horasEfectivas = duracion.TotalHours - horasPausa;
             if (horasEfectivas < 0) horasEfectivas = 0;
 
-            jornada.HorasTrabajadas = (decimal)horasEfectivas;
+            // Lógica de pago: 
+            // Máximo 12 horas pagables: 8 normales, 4 extras (1.5x)
+            double horasNormales = Math.Min(horasEfectivas, 8.0);
+            double horasExtras = 0;
+            
+            if (horasEfectivas > 8.0)
+            {
+                horasExtras = Math.Min(horasEfectivas - 8.0, 4.0); // Máximo 4 extras (hasta llegar a 12 total)
+            }
+
+            jornada.HorasTrabajadas = (decimal)horasNormales;
+            jornada.HorasExtras = (decimal)horasExtras;
 
             var configuracion = await _context.ConfiguracionPlanilla.FirstOrDefaultAsync(c => c.Id_Usr == userId);
             decimal tarifaPorHora = configuracion?.TarifaPorHora ?? 2500m;
 
-            jornada.SalarioBruto = jornada.HorasTrabajadas * tarifaPorHora;
+            jornada.SalarioBruto = (jornada.HorasTrabajadas * tarifaPorHora) + (jornada.HorasExtras * tarifaPorHora * 1.5m);
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Salida registrada. Horas computadas: {horasEfectivas.ToString("0.##")}h";
+            TempData["Success"] = $"Salida registrada. Horas computadas: {horasNormales.ToString("0.##")}h normales y {horasExtras.ToString("0.##")}h extras.";
             return RedirectToAction("Index");
         }
     }

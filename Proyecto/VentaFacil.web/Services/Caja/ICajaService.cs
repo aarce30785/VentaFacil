@@ -15,5 +15,6 @@ namespace VentaFacil.web.Services.Caja
         Task<decimal> GetIngresosRecientesAsync();
         Task<decimal> GetGastosRecientesAsync();
         Task<bool> ExisteCajaAbiertaAsync(int? idUsuario = null);
+        Task CerrarCajasExcedidasAsync();
     }
 }

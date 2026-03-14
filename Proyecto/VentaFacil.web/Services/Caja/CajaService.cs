@@ -5,16 +5,19 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using VentaFacil.web.Services.Email;
 
 namespace VentaFacil.web.Services.Caja
 {
     public class CajaService : ICajaService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public CajaService(ApplicationDbContext context)
+        public CajaService(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         public async Task<VentaFacil.web.Models.Caja> AbrirCajaAsync(int idUsuario, decimal montoInicial, decimal montoInicialUSD)
@@ -177,6 +180,57 @@ namespace VentaFacil.web.Services.Caja
             }
 
             return await query.AnyAsync();
+        }
+
+        public async Task CerrarCajasExcedidasAsync()
+        {
+            var hoy = DateTime.Today;
+            var cajasAbiertas = await _context.Caja
+                .Where(c => c.Estado == "Abierta" && c.Fecha_Apertura < hoy)
+                .ToListAsync();
+
+            if (!cajasAbiertas.Any()) return;
+
+            // Necesitamos el servicio de email pero no podemos inyectarlo directamente en el constructor si queremos evitar ciclos o si se registra como Scoped
+            // En este caso, CajaService es Scoped, EmailService es Scoped. 
+            // Pero CerrarCajasExcedidasAsync será llamado desde un BackgroundService (Singleton) que crea un scope.
+            
+            foreach (var caja in cajasAbiertas)
+            {
+                try
+                {
+                    // Obtener usuario para el correo
+                    var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Id_Usr == caja.Id_Usuario);
+                    
+                    // Cerrar la caja usando el monto esperado como físico
+                    await CerrarCajaAsync(caja.Id_Caja, caja.Id_Usuario, caja.Monto ?? 0, caja.Monto_USD ?? 0, "CIERRE AUTOMÁTICO - Olvido de cierre de caja por el usuario.");
+
+                    if (usuario != null && !string.IsNullOrEmpty(usuario.Correo))
+                    {
+                        // Intentar enviar correo (usando IServiceProvider o inyectando IEmailService)
+                        // Para simplificar esta parte, asumiremos que IEmailService está disponible vía constructor si lo agregamos.
+                        // Sin embargo, para evitar romper el constructor actual, lo buscaré vía el contexto si fuera posible o lo inyectaré.
+                        // ACTUALIZACIÓN: Inyectaré IEmailService en el constructor de CajaService.
+                        
+                        var subject = "Notificación de Cierre Automático de Caja";
+                        var body = $@"
+                            <h2>Aviso de Cierre de Caja</h2>
+                            <p>Estimado/a {usuario.Nombre},</p>
+                            <p>Le informamos que su caja abierta el día <b>{caja.Fecha_Apertura:dd/MM/yyyy HH:mm}</b> ha sido cerrada automáticamente por el sistema al detectar que no fue cerrada al finalizar su jornada.</p>
+                            <p>El cierre se realizó utilizando los montos registrados en el sistema como saldos finales.</p>
+                            <p>Por favor, revise su estado de caja en el módulo administrativo.</p>
+                            <br/>
+                            <p>Atentamente,<br/>Sistema VentaFácil</p>";
+                        
+                        await _emailService.SendEmailAsync(usuario.Correo, subject, body);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but continue with other cajas
+                    Console.WriteLine($"Error cerrando caja automática {caja.Id_Caja}: {ex.Message}");
+                }
+            }
         }
     }
 }
