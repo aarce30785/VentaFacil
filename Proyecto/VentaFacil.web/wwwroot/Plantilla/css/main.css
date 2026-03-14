@@ -4164,7 +4164,7 @@ only screen and (min-width: 768px) and (max-width: 991px),
   padding: 20px 0px;
   height: 100vh;
   position: fixed;
-  overflow-y: scroll;
+  overflow-y: hidden;
   overflow-x: hidden;
   top: 0;
   left: 0;
