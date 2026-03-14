@@ -371,15 +371,23 @@ namespace VentaFacil.web.Services.Planilla
                     System.Globalization.DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
                 int anio = dto.FechaInicio.Year;
 
+                var idsUsuarios = planillasParaNomina.Select(p => p.Id_Usr).Distinct().ToList();
+                var configuraciones = await _context.ConfiguracionPlanilla
+                    .Where(c => idsUsuarios.Contains(c.Id_Usr))
+                    .ToListAsync();
+
                 foreach (var planilla in planillasParaNomina)
                 {
+                    var confUser = configuraciones.FirstOrDefault(c => c.Id_Usr == planilla.Id_Usr);
+                    decimal tarifaUser = confUser?.TarifaPorHora ?? 2500m;
+
                     // Recalcular Bruto: Solo pagar extras si están aprobadas
-                    decimal salarioBaseEfectivo = planilla.HorasTrabajadas * (configuracion?.TarifaPorHora ?? 2500m);
+                    decimal salarioBaseEfectivo = planilla.HorasTrabajadas * tarifaUser;
                     decimal montoExtras = 0;
 
                     if (planilla.ExtrasAprobadas)
                     {
-                        montoExtras = planilla.HorasExtras * (configuracion?.TarifaPorHora ?? 2500m) * 1.5m;
+                        montoExtras = planilla.HorasExtras * tarifaUser * 1.5m;
                     }
                     else if (planilla.HorasExtras > 0)
                     {
