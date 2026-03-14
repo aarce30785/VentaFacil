@@ -40,7 +40,7 @@ services:
           - ventafacil-db
     restart: unless-stopped
 
-  ventafacil.web:
+  ventafacil-web:
     container_name: ventafacil-web
     image: ventafacil.web:latest
     build:
@@ -107,7 +107,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - uploads:/usr/share/nginx/html/images/productos:ro
     depends_on:
-      - ventafacil.web
+      - ventafacil-web
     networks:
       - ventafacil-network
     restart: unless-stopped
