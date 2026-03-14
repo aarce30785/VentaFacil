@@ -119,6 +119,15 @@
                     <input type="hidden" name="idPlanilla" id="modalIdPlanilla" />
                     <input type="hidden" name="estado" id="modalEstado" />
                     
+                    <div class="mb-3" id="divExtras">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="aprobarExtras" id="aprobarExtras" value="true">
+                            <label class="form-check-label fw-medium" for="aprobarExtras">Aprobar horas extra</label>
+                            <input type="hidden" name="aprobarExtras" value="false" />
+                        </div>
+                        <small class="text-muted">Si se desactiva, las horas extra no se incluirán en el pago.</small>
+                    </div>
+
                     <div class="mb-3">
                         <label for="observaciones" class="form-label fw-medium">Observaciones (Opcional)</label>
                         <textarea class="form-control rounded-3" name="observaciones" id="observaciones" rows="3" placeholder="Ej. Aprobado con ajuste de tiempo..."></textarea>
@@ -144,6 +153,8 @@
             const titulo = document.getElementById('modalTitle');
             const mensaje = document.getElementById('modalMensaje');
             const btn = document.getElementById('btnConfirmar');
+            const divExtras = document.getElementById('divExtras');
+            const chkExtras = document.getElementById('aprobarExtras');
 
             if(estado === 'Completada') {
                 titulo.textContent = 'Aprobar Horas';
@@ -152,6 +163,8 @@
                 mensaje.innerHTML = `¿Está seguro que desea <strong>aprobar</strong> las horas de ${nombre} del dÃ­a ${fecha}?`;
                 btn.className = 'btn btn-success rounded-pill px-4';
                 btn.textContent = 'Aprobar';
+                divExtras.style.display = 'block';
+                chkExtras.checked = true; // Por defecto aprobamos extras si aprueba la jornada
             } else {
                 titulo.textContent = 'Rechazar Horas';
                 titulo.classList.remove('text-success');
@@ -159,6 +172,8 @@
                 mensaje.innerHTML = `¿Está seguro que desea <strong>rechazar</strong> las horas de ${nombre} del dÃ­a ${fecha}?`;
                 btn.className = 'btn btn-danger rounded-pill px-4';
                 btn.textContent = 'Rechazar';
+                divExtras.style.display = 'none';
+                chkExtras.checked = false;
             }
 
             var modal = new bootstrap.Modal(document.getElementById('modalAprobacion'));

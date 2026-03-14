@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
@@ -399,9 +399,9 @@ namespace VentaFacil.web.Controllers
         [HttpPost("ProcesarAprobacion")]
         [Authorize(Roles = "Administrador")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcesarAprobacion(int idPlanilla, string estado, string observaciones)
+        public async Task<IActionResult> ProcesarAprobacion(int idPlanilla, string estado, string observaciones, bool aprobarExtras = false)
         {
-            var response = await _planillaService.AprobarRechazarPlanillaAsync(idPlanilla, estado, observaciones);
+            var response = await _planillaService.AprobarRechazarPlanillaAsync(idPlanilla, estado, observaciones, aprobarExtras);
             if (response.Success)
             {
                 TempData["Success"] = response.Message;

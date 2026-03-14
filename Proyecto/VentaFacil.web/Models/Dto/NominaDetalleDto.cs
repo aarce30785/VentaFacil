@@ -11,6 +11,8 @@ namespace VentaFacil.web.Models.Dto
         public DateTime FechaGeneracion { get; set; }
         public string Estado { get; set; } = string.Empty;
         public string? Observaciones { get; set; }
+        public int? Semana { get; set; }
+        public int? Anio { get; set; }
 
         public decimal TotalBruto { get; set; }
         public decimal TotalDeducciones { get; set; }

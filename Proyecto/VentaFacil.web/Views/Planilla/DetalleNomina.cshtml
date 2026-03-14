@@ -124,13 +124,20 @@
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="premium-card text-center h-100">
-                    <div class="text-muted mb-2 text-uppercase fw-bold" style="font-size: 0.8rem">Salario Bruto (Gasto)</div>
+                    <div class="text-muted mb-2 text-uppercase fw-bold" style="font-size: 0.8rem">Período</div>
+                    <h3 class="fw-bold mb-0 text-primary">Semana @(Model.Semana ?? 0)</h3>
+                    <div class="mt-1 text-muted small">@Model.Anio</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="premium-card text-center h-100">
+                    <div class="text-muted mb-2 text-uppercase fw-bold" style="font-size: 0.8rem">Salario Bruto</div>
                     <h3 class="fw-bold mb-0 text-dark">@Model.TotalBruto.ToString("C", numberFormat)</h3>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="premium-card text-center h-100">
-                    <div class="text-muted mb-2 text-uppercase fw-bold" style="font-size: 0.8rem">Deducciones (Retenido)</div>
+                    <div class="text-muted mb-2 text-uppercase fw-bold" style="font-size: 0.8rem">Deducciones</div>
                     <h3 class="fw-bold mb-0 text-danger">@Model.TotalDeducciones.ToString("C", numberFormat)</h3>
                 </div>
             </div>

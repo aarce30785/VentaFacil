@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using VentaFacil.web.Models;
 using VentaFacil.web.Models.Dto;
@@ -19,6 +19,6 @@ namespace VentaFacil.web.Services.Planilla
         Task<NominaDetalleDto> ObtenerDetalleNominaParaExportarAsync(int idNomina);
         Task<HistorialLaboralResponse> ObtenerHistorialUsuarioAsync(int idUsuario, int pagina, int porPagina = 20);
         Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasPendientesAsync();
-        Task<BaseResponse> AprobarRechazarPlanillaAsync(int idPlanilla, string estado, string observaciones);
+        Task<BaseResponse> AprobarRechazarPlanillaAsync(int idPlanilla, string estado, string observaciones, bool aprobarExtras = false);
     }
 }

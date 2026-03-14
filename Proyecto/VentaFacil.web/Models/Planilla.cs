@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -45,6 +45,10 @@ namespace VentaFacil.web.Models
         public decimal SalarioNeto { get; set; }
 
         public string EstadoRegistro { get; set; } = string.Empty;
+        
+        public bool ExtrasAprobadas { get; set; }
+
+        public bool EsCierreAutomatico { get; set; }
 
         /// <summary>Nota explicativa (ej: deducción omitida por salario ₡0).</summary>
         public string? Observaciones { get; set; }

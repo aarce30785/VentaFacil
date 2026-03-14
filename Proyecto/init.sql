@@ -38,6 +38,8 @@ BEGIN
         TotalBruto DECIMAL(10,2) NOT NULL,
         TotalDeducciones DECIMAL(10,2) NOT NULL,
         TotalNeto DECIMAL(10,2) NOT NULL,
+        Semana INT NULL,
+        Anio INT NULL,
         Observaciones VARCHAR(MAX) NULL
     );
 END
@@ -61,6 +63,8 @@ BEGIN
         Id_Nomina          INT           NULL,
         SalarioBruto       DECIMAL(10,2) NULL,
         SalarioNeto        DECIMAL(10,2) NULL,
+        ExtrasAprobadas    BIT DEFAULT 0,
+        EsCierreAutomatico BIT DEFAULT 0,
         Observaciones      VARCHAR(400)  NULL,
         CONSTRAINT Plan_Pk PRIMARY KEY (Id_Planilla),
         CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr),

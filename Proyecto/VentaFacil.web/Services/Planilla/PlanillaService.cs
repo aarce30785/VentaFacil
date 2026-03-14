@@ -98,6 +98,39 @@ namespace VentaFacil.web.Services.Planilla
                 }
                 else
                 {
+                    // =====================================================================
+                    // AUTO-CIERRE: Buscar si el usuario tiene una jornada abierta (sin FechaFinal)
+                    // =====================================================================
+                    var jornadaAbierta = await _context.Planilla
+                        .Where(p => p.Id_Usr == dto.Id_Usr && p.FechaFinal == null)
+                        .OrderByDescending(p => p.FechaInicio)
+                        .FirstOrDefaultAsync();
+
+                    if (jornadaAbierta != null)
+                    {
+                        var tiempoTranscurrido = DateTime.Now - jornadaAbierta.FechaInicio;
+                        if (tiempoTranscurrido.TotalHours >= 12)
+                        {
+                            // Cerrar automáticamente la jornada anterior (máximo legal 12 horas)
+                            jornadaAbierta.FechaFinal = jornadaAbierta.FechaInicio.AddHours(12);
+                            jornadaAbierta.EsCierreAutomatico = true;
+                            jornadaAbierta.EstadoRegistro = "Incompleta"; // Requiere revisión por ser auto-cierre
+                            jornadaAbierta.Observaciones = "Cierre automático: Superó 12 horas de jornada sin registro de salida.";
+                            
+                            // Calcular horas trabajadas (8 normales, 4 extras max en auto-cierre)
+                            jornadaAbierta.HorasTrabajadas = 8.0m;
+                            jornadaAbierta.HorasExtras = 4.0m;
+                            jornadaAbierta.SalarioBruto = (8.0m * tarifaPorHora) + (4.0m * tarifaPorHora * 1.5m);
+                        }
+                        else if (!dto.FechaFinal.HasValue)
+                        {
+                            // Si intenta abrir una nueva y ya tiene una abierta de menos de 12h
+                            response.Success = false;
+                            response.Message = "Ya existe una jornada abierta para este usuario hoy.";
+                            return response;
+                        }
+                    }
+
                     // Crear nueva planilla
                     planilla = new Models.Planilla
                     {
@@ -109,7 +142,9 @@ namespace VentaFacil.web.Services.Planilla
                         HorasExtras = 0,
                         Bonificaciones = 0,
                         Deducciones = 0,
-                        SalarioNeto = 0
+                        SalarioNeto = 0,
+                        ExtrasAprobadas = false, // Por defecto no aprobadas
+                        EsCierreAutomatico = false
                     };
                     _context.Planilla.Add(planilla);
                 }
@@ -319,8 +354,40 @@ namespace VentaFacil.web.Services.Planilla
                     return response;
                 }
 
+                // ===========================================
+                // VALIDACIÓN: Periodo Semanal
+                // ===========================================
+                TimeSpan diferencia = dto.FechaFinal - dto.FechaInicio;
+                if (diferencia.TotalDays > 7)
+                {
+                    response.Success = false;
+                    response.Message = "La nómina solo puede generarse para periodos de máximo una semana (7 días).";
+                    return response;
+                }
+
+                // Obtener Semana y Año (ISO 8601 o similar para control interno)
+                int semana = System.Globalization.CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
+                    dto.FechaInicio, System.Globalization.DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, 
+                    System.Globalization.DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+                int anio = dto.FechaInicio.Year;
+
                 foreach (var planilla in planillasParaNomina)
                 {
+                    // Recalcular Bruto: Solo pagar extras si están aprobadas
+                    decimal salarioBaseEfectivo = planilla.HorasTrabajadas * (configuracion?.TarifaPorHora ?? 2500m);
+                    decimal montoExtras = 0;
+
+                    if (planilla.ExtrasAprobadas)
+                    {
+                        montoExtras = planilla.HorasExtras * (configuracion?.TarifaPorHora ?? 2500m) * 1.5m;
+                    }
+                    else if (planilla.HorasExtras > 0)
+                    {
+                        planilla.Observaciones = (planilla.Observaciones ?? "") + " [Extras NO incluidas por falta de aprobación]";
+                    }
+
+                    planilla.SalarioBruto = salarioBaseEfectivo + montoExtras + planilla.Bonificaciones;
+                    
                     decimal salarioBruto = planilla.SalarioBruto;
                     decimal totalDeduccionesEmpleado = 0;
 
@@ -334,9 +401,6 @@ namespace VentaFacil.web.Services.Planilla
                         planilla.Observaciones = "Sin deducción aplicada: el salario bruto es ₡0.00 para este período (sin horas registradas o tarifa no configurada).";
                         continue;
                     }
-
-                    // Limpiar observaciones previas si el bruto es válido
-                    planilla.Observaciones = null;
 
                     // 2. Calcular Cargas Sociales (SEM, IVM, LPT, etc.)
                     foreach (var ded in deduccionesLey)
@@ -399,6 +463,8 @@ namespace VentaFacil.web.Services.Planilla
                     FechaFinal = dto.FechaFinal,
                     FechaGeneracion = DateTime.Now,
                     Estado = "Generada",
+                    Semana = semana,
+                    Anio = anio,
                     TotalBruto = planillasParaNomina.Sum(p => p.SalarioBruto),
                     TotalDeducciones = planillasParaNomina.Sum(p => p.Deducciones),
                     TotalNeto = planillasParaNomina.Sum(p => p.SalarioNeto)
@@ -644,6 +710,8 @@ namespace VentaFacil.web.Services.Planilla
                 TotalBruto   = nomina.TotalBruto,
                 TotalDeducciones = nomina.TotalDeducciones,
                 TotalNeto    = nomina.TotalNeto,
+                Semana       = nomina.Semana,
+                Anio         = nomina.Anio,
                 DeduccionesAplicadas = deduccionesLey.Select(d => new DeduccionResumenDto
                 {
                     Nombre = d.Nombre,
@@ -779,7 +847,7 @@ namespace VentaFacil.web.Services.Planilla
             return planillas;
         }
 
-        public async Task<BaseResponse> AprobarRechazarPlanillaAsync(int idPlanilla, string estado, string observaciones)
+        public async Task<BaseResponse> AprobarRechazarPlanillaAsync(int idPlanilla, string estado, string observaciones, bool aprobarExtras = false)
         {
             var response = new BaseResponse();
             try
@@ -800,6 +868,7 @@ namespace VentaFacil.web.Services.Planilla
                 }
 
                 planilla.EstadoRegistro = estado;
+                planilla.ExtrasAprobadas = aprobarExtras;
                 
                 // Si hay una observación nueva, podemos concatenar o sobrescribir. Por ahora sobrescribimos si no es vacía
                 if (!string.IsNullOrWhiteSpace(observaciones))
