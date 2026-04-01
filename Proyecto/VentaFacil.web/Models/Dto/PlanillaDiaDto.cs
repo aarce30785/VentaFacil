@@ -13,6 +13,7 @@ namespace VentaFacil.web.Models.Dto
         public decimal HorasTrabajadas { get; set; }
         public decimal HorasExtras { get; set; }
         public decimal SalarioBruto { get; set; }
+        public bool EsFeriado { get; set; }
         public string EstadoRegistro { get; set; } = string.Empty;
         public int? Id_Nomina { get; set; }
     }

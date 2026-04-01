@@ -18,9 +18,10 @@ namespace VentaFacil.web.Services.Pedido
         Task<ServiceResult> GuardarPedidoAsync(int idPedido);
         Task<ServiceResult> GuardarComoBorradorAsync(int idPedido);
         Task<bool> PuedeEditarseAsync(int idPedido);
-        Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario);
+        Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario, int pagina = 1, int cantidadPorPagina = 50);
         Task<bool> ValidarPedidoParaGuardarAsync(int pedidoId);
         Task<List<PedidoDto>> ObtenerPedidosParaCocinaAsync();
+        Task<List<int>> ObtenerMesasOcupadasAsync();
         Task<ServiceResult> MarcarComoListoAsync(int pedidoId);
         Task<ServiceResult> AgregarNotaCocinaAsync(int pedidoId, string nota);
         Task<ServiceResult> CancelarPedidoAsync(int pedidoId, string razon);

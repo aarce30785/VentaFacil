@@ -56,7 +56,7 @@
                     </td>
                     <td>@retiro.Motivo</td>
                     <td style="text-align:right" class="fw-bold @(retiro.Monto < 0 ? "text-danger" : "text-success")">
-                        @retiro.Monto.ToString("C")
+                        @retiro.Monto.ToString("C", new System.Globalization.CultureInfo("es-CR"))
                     </td>
                 </tr>
             }
@@ -72,7 +72,7 @@
             <tfoot>
                 <tr style="background-color: #f8fafc;">
                     <td colspan="3" class="text-end fw-bold">Total Filtrado:</td>
-                    <td class="text-end fw-bold fs-5">@(((decimal)(ViewBag.TotalFiltrado ?? 0)).ToString("C"))</td>
+                    <td class="text-end fw-bold fs-5">@(((decimal)(ViewBag.TotalFiltrado ?? 0)).ToString("C", new System.Globalization.CultureInfo("es-CR")))</td>
                 </tr>
             </tfoot>
         }

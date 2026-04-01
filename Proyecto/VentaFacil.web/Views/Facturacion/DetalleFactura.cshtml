@@ -193,10 +193,6 @@
                         <span>Subtotal</span>
                         <span>@((Model.Factura?.Subtotal ?? 0).ToString("C", numberFormat))</span>
                     </div>
-                    <div class="total-row">
-                        <span>Impuestos</span>
-                        <span>@((Model.Factura?.Impuestos ?? 0).ToString("C", numberFormat))</span>
-                    </div>
                     <div class="total-row final">
                         <span>Total</span>
                         <span>@((Model.Factura?.Total ?? 0).ToString("C", numberFormat))</span>

@@ -25,38 +25,34 @@
             
             </li>
             
-            <li class="nav-item nav-item-has-children">
-                <a href="#0"
-                   class="collapsed"
-                   data-bs-toggle="collapse"
-                   data-bs-target="#ddmenu_2"
-                   aria-controls="ddmenu_2"
-                   aria-expanded="false"
-                   aria-label="Toggle navigation">
+            <li class="nav-item">
+                <a asp-controller="Pedidos" asp-action="Mesas">
                     <span class="icon">
-                        <i class="fas fa-clipboard-list"></i>
+                        <i class="fas fa-th-large"></i>
                     </span>
-                    <span class="text">Ventas</span>
+                    <span class="text">Panel de Mesas</span>
                 </a>
-                <ul id="ddmenu_2" class="collapse dropdown-nav">
-                    
-                    <li>
-                        <a asp-controller="Pedidos" asp-action="Index">
-                            <i class="fas fa-utensils me-2"></i> Pedidos
-                        </a>
-                    </li>
-                    <li>
-                        <a asp-controller="Facturacion" asp-action="Index">
-                            <i class="fas fa-file-invoice-dollar me-2"></i> Facturación
-                        </a>
-                    </li>
-                    <li>
-                        <a asp-controller="Pedidos" asp-action="Cocina">
-                            <i class="fas fa-chef-hat me-2"></i> Cocina (KDS)
-                        </a>
-                    </li>
-                </ul>
             </li>
+
+            <li class="nav-item">
+                <a asp-controller="Pedidos" asp-action="Index">
+                    <span class="icon">
+                        <i class="fas fa-utensils"></i>
+                    </span>
+                    <span class="text">Pedidos</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a asp-controller="Pedidos" asp-action="Cocina">
+                    <span class="icon">
+                        <i class="fas fa-chef-hat"></i>
+                    </span>
+                    <span class="text">Cocina (KDS)</span>
+                </a>
+            </li>
+
+            
 
             <span class="divider"><hr /></span>
 
@@ -81,13 +77,15 @@
             </li>
 
             <li class="nav-item">
-                <a asp-controller="Asistencia" asp-action="Index">
+                <a asp-controller="Facturacion" asp-action="Index">
                     <span class="icon">
-                        <i class="fas fa-clock"></i>
+                        <i class="fas fa-file-invoice-dollar"></i>
                     </span>
-                    <span class="text">Mis Horas</span>
+                    <span class="text">Facturación</span>
                 </a>
             </li>
+
+            
 
             <span class="divider"><hr /></span>
             
@@ -131,19 +129,26 @@
                         </span>
                         <span class="text">Administración</span>
                     </a>
-
-                    <a asp-controller="Caja" asp-action="Listar">
-                        <span class="icon">
-                            <i class="fas fa-cash-register"></i>
-                        </span>
-                        <span class="text">Caja</span>
-                    </a>
-
+                </li>
+                
+                <li class="nav-item">
                     <a asp-controller="Reportes" asp-action="Index">
                         <span class="icon">
                             <i class="fas fa-chart-bar"></i>
                         </span>
                         <span class="text">Reportes</span>
+                    </a>
+                </li>
+            }
+
+            @if (User.IsInRole("Administrador") || User.IsInRole("Cajero"))
+            {
+                <li class="nav-item">
+                    <a asp-controller="Caja" asp-action="Listar">
+                        <span class="icon">
+                            <i class="fas fa-cash-register"></i>
+                        </span>
+                        <span class="text">Caja</span>
                     </a>
                 </li>
 

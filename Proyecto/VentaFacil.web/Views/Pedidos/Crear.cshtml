@@ -186,20 +186,37 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Seleccionar Producto</label>
-                            <select class="form-select" id="selectProducto" required>
-                                <option value="">-- Seleccione un producto --</option>
+                        <div class="mb-3 position-relative">
+                            <label class="form-label fw-bold">Buscar Producto 🔍</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="lni lni-search-alt"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="inputBuscarProducto" placeholder="Escriba el nombre del producto..." autocomplete="off">
+                            </div>
+                            <input type="hidden" id="selectProducto" required>
+                            
+                            <div class="list-group position-absolute w-100 shadow d-none" id="dropdownProductos" style="max-height: 250px; overflow-y: auto; z-index: 1050; top: 100%;">
                                 @foreach (var producto in ViewBag.Productos as List<VentaFacil.web.Models.Dto.ProductoDto> ?? new List<VentaFacil.web.Models.Dto.ProductoDto>())
                                 {
-                                    <option value="@producto.Id_Producto"
+                                    <button type="button" class="list-group-item list-group-item-action producto-item" 
+                                            data-id="@producto.Id_Producto" 
                                             data-precio="@producto.Precio"
                                             data-nombre="@producto.Nombre"
                                             data-descripcion="@producto.Descripcion">
-                                        @producto.Nombre - @producto.Precio.ToString("C", numberFormat)
-                                    </option>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="fw-bold text-dark">@producto.Nombre</span>
+                                                <br>
+                                                <small class="text-muted">@producto.Descripcion</small>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill">@producto.Precio.ToString("C", numberFormat)</span>
+                                        </div>
+                                    </button>
                                 }
-                            </select>
+                                <div id="noResultadosProducto" class="list-group-item text-center text-muted d-none py-3">
+                                    <i class="lni lni-warning mb-2 fs-4"></i><br>
+                                    No se encontraron productos
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -256,34 +273,92 @@
             });
 
             // Modal de productos
-            const selectProducto = document.getElementById('selectProducto');
+            const inputBuscarProducto = document.getElementById('inputBuscarProducto');
+            const dropdownProductos = document.getElementById('dropdownProductos');
+            const productoItems = document.querySelectorAll('.producto-item');
+            const noResultadosProducto = document.getElementById('noResultadosProducto');
+            const selectProductoHidden = document.getElementById('selectProducto');
+
             const inputCantidad = document.getElementById('inputCantidad');
             const btnAgregarProducto = document.getElementById('btnAgregarProducto');
             const infoProducto = document.getElementById('infoProducto');
 
-            selectProducto.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption.value) {
-                    document.getElementById('nombreProducto').textContent = selectedOption.getAttribute('data-nombre');
-                    document.getElementById('descripcionProducto').textContent = selectedOption.getAttribute('data-descripcion') || 'Sin descripción';
-                    document.getElementById('precioProducto').textContent = '¢' + parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
-                    infoProducto.classList.remove('d-none');
-                } else {
-                    infoProducto.classList.add('d-none');
+            // Mostrar el dropdown al enfocar
+            inputBuscarProducto.addEventListener('focus', function() {
+                if (productoItems.length > 0) {
+                    dropdownProductos.classList.remove('d-none');
+                    filtrarProductos();
                 }
             });
 
+            // Ocultar al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (!inputBuscarProducto.contains(e.target) && !dropdownProductos.contains(e.target)) {
+                    dropdownProductos.classList.add('d-none');
+                }
+            });
+
+            // Filtrar productos al escribir
+            inputBuscarProducto.addEventListener('input', filtrarProductos);
+
+            function filtrarProductos() {
+                const term = inputBuscarProducto.value.toLowerCase();
+                let hasVisible = false;
+
+                productoItems.forEach(item => {
+                    const nombre = item.getAttribute('data-nombre').toLowerCase();
+                    const desc = (item.getAttribute('data-descripcion') || '').toLowerCase();
+                    if (nombre.includes(term) || desc.includes(term)) {
+                        item.classList.remove('d-none');
+                        hasVisible = true;
+                    } else {
+                        item.classList.add('d-none');
+                    }
+                });
+
+                if (!hasVisible) {
+                    noResultadosProducto.classList.remove('d-none');
+                } else {
+                    noResultadosProducto.classList.add('d-none');
+                }
+
+                dropdownProductos.classList.remove('d-none');
+            }
+
+            // Seleccionar producto
+            productoItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const nombre = this.getAttribute('data-nombre');
+                    const descripcion = this.getAttribute('data-descripcion') || 'Sin descripción';
+                    const precio = parseFloat(this.getAttribute('data-precio'));
+
+                    inputBuscarProducto.value = nombre;
+                    selectProductoHidden.value = id;
+                    selectProductoHidden.setAttribute('data-nombre', nombre);
+                    selectProductoHidden.setAttribute('data-descripcion', descripcion);
+                    selectProductoHidden.setAttribute('data-precio', precio);
+
+                    document.getElementById('nombreProducto').textContent = nombre;
+                    document.getElementById('descripcionProducto').textContent = descripcion;
+                    document.getElementById('precioProducto').textContent = '¢' + precio.toFixed(2);
+                    
+                    infoProducto.classList.remove('d-none');
+                    dropdownProductos.classList.add('d-none');
+                });
+            });
+
             btnAgregarProducto.addEventListener('click', function() {
-                const selectedOption = selectProducto.options[selectProducto.selectedIndex];
-                if (!selectedOption.value) {
-                    alert('Por favor seleccione un producto');
+                const idValue = selectProductoHidden.value;
+                if (!idValue) {
+                    alert('Por favor busque y seleccione un producto');
                     return;
                 }
 
-                const productoId = parseInt(selectedOption.value);
+                const productoId = parseInt(idValue);
                 const cantidad = parseInt(inputCantidad.value);
-                const precio = parseFloat(selectedOption.getAttribute('data-precio'));
-                const nombre = selectedOption.getAttribute('data-nombre');
+                const precio = parseFloat(selectProductoHidden.getAttribute('data-precio'));
+                const nombre = selectProductoHidden.getAttribute('data-nombre');
 
                 // Verificar si el producto ya está agregado
                 const index = productosAgregados.findIndex(p => p.id === productoId);
@@ -308,9 +383,11 @@
 
             // Resetear modal cuando se cierre
             $('#modalAgregarProducto').on('hidden.bs.modal', function() {
-                selectProducto.value = '';
+                inputBuscarProducto.value = '';
+                selectProductoHidden.value = '';
                 inputCantidad.value = 1;
                 infoProducto.classList.add('d-none');
+                dropdownProductos.classList.add('d-none');
             });
 
             // Validar formulario antes de enviar

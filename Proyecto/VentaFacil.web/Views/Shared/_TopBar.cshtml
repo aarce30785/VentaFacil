@@ -1,4 +1,4 @@
-﻿@using VentaFacil.web.Models.Response
+@using VentaFacil.web.Models.Response
 @using Microsoft.AspNetCore.Authentication
 @using System.Security.Claims
 @{
@@ -20,21 +20,15 @@
                             <i class="lni lni-chevron-left me-2"></i> Menú
                         </button>
                     </div>
-                    <div class="header-search d-none d-md-flex">
-                        <form action="#">
-                            <input type="text" placeholder="Buscar..." />
-                            <button><i class="lni lni-search-alt"></i></button>
-                        </form>
-                    </div>
+                    
                 </div>
             </div>
             <div class="col-lg-7 col-md-7 col-6">
                 <div class="header-right">
                     <!-- notification start -->
                     <div class="notification-box ml-15 d-none d-md-flex" id="notificacionStock">
-                        <button class="dropdown-toggle" type="button" id="notification"
-                                onclick="window.location.href='@Url.Action("NotificacionesStockMinimo", "Inventario")'"
-                                aria-expanded="false">
+                        <button class="dropdown-toggle bg-transparent border-0" type="button" id="notification"
+                                data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="lni lni-alarm"></i>
                             <span class="badge bg-danger" id="badgeStock" style="display:none"></span>
                         </button>
@@ -50,9 +44,6 @@
                                 data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="profile-info">
                                 <div class="info">
-                                    <div class="image">
-                                        <img src="~/Plantilla/images/profile/profile-image.png" alt="Profile" />
-                                    </div>
                                     <div>
                                         <h6 class="fw-500">@nombre</h6>
                                         <p>@rol</p>
@@ -61,18 +52,8 @@
                             </div>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                            <li>
-                                <div class="author-info flex items-center p-3">
-                                    <div class="image me-3">
-                                        <img src="~/Plantilla/images/profile/profile-image.png" alt="image" class="rounded-circle" width="40">
-                                    </div>
-                                    <div class="content">
-                                        <h6 class="mb-0">@nombre</h6>
-                                        <small class="text-muted">@correo</small>
-                                    </div>
-                                </div>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
+                            
+                            
                             <li>
                                 <a class="dropdown-item" asp-controller="Usuario" asp-action="Perfil">
                                     <i class="lni lni-user me-2"></i> Perfil
@@ -123,7 +104,7 @@
     </div>
 </div>
 
-<div id="stock-alert" class="alert alert-warning fade" style="display:none; position:fixed; top:70px; right:30px; z-index:1050;">
+<div id="stock-alert" class="alert alert-warning fade shadow-lg" style="display:none; position:fixed; bottom:30px; right:30px; z-index:1050; max-width: 400px;">
     <!-- El mensaje se llenará dinámicamente -->
 </div>
 
@@ -140,7 +121,7 @@
             data.forEach(item => {
                 lista.innerHTML += `
                     <li>
-                        <a href="@Url.Action("NotificacionesStockMinimo", "Inventario")">
+                        <a href="@Url.Action("NotificacionesStockMinimo", "Inventario")" class="dropdown-item p-3 border-bottom text-wrap" style="width: 300px;">
                             <div class="d-flex align-items-center">
                                 <div class="icon">
                                     <i class="lni lni-alarm text-warning"></i>
@@ -153,6 +134,12 @@
                         </a>
                     </li>`;
             });
+            lista.innerHTML += `
+                <li>
+                    <a href="@Url.Action("NotificacionesStockMinimo", "Inventario")" class="dropdown-item text-center fw-bold text-primary p-2 border-top bg-light">
+                        Ver todas las notificaciones...
+                    </a>
+                </li>`;
         } else {
             badge.style.display = 'none';
             lista.innerHTML = `<li><span class="dropdown-item text-muted">Sin notificaciones</span></li>`;

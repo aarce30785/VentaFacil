@@ -4,7 +4,7 @@
 @{
     Layout = "_LayoutPlantilla";
     ViewData["Title"] = $"Editar Pedido #{Model.Id_Venta}";
-    bool editable = Model.Estado == PedidoEstado.Borrador;
+    bool editable = !Model.TieneFactura() && Model.Estado != PedidoEstado.Cancelado;
 
     var cultureCR = new System.Globalization.CultureInfo("es-CR");
     var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
@@ -104,7 +104,7 @@
                             <label class="form-label fw-bold text-muted text-sm text-uppercase">Nombre del Cliente</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="lni lni-user"></i></span>
-                                <input type="text" name="cliente" value="@Model.Cliente" class="form-control border-start-0 ps-0" placeholder="Ej. Juan Pérez" @(!editable ? "disabled" : "") />
+                                <input type="text" name="cliente" value="@Model.Cliente" class="form-control border-start-0 ps-0" placeholder="Ej. Juan Pérez" @(!editable ? "disabled" : "") required />
                                 @if (editable) { <button class="btn btn-outline-primary" type="submit">Ok</button> }
                             </div>
                         </form>
@@ -124,9 +124,16 @@
                                     <span class="input-group-text bg-light border-end-0"><i class="lni lni-grid-alt"></i></span>
                                     <select name="numeroMesa" class="form-select border-start-0 ps-0" @(!editable ? "disabled" : "") onchange="this.form.submit()">
                                         <option value="">Seleccione una mesa...</option>
-                                        @for (int i = 1; i <= 20; i++)
+                                        @{
+                                            int totalMesas = ViewBag.TotalMesas as int? ?? 20;
+                                            var mesasOcupadas = ViewBag.MesasOcupadas as List<int> ?? new List<int>();
+                                        }
+                                        @for (int i = 1; i <= totalMesas; i++)
                                         {
-                                            <option value="@i" selected="@(Model.NumeroMesa == i)">Mesa @i</option>
+                                            bool estaOcupada = mesasOcupadas.Contains(i) && Model.NumeroMesa != i;
+                                            <option value="@i" selected="@(Model.NumeroMesa == i)" disabled="@estaOcupada">
+                                                Mesa @i @(estaOcupada ? "(Ocupada)" : "")
+                                            </option>
                                         }
                                     </select>
                                 </div>
@@ -162,9 +169,19 @@
                                     </button>
                                 </form>
 
-                                <button type="button" class="btn btn-warning btn-premium w-100 mb-2 text-white" onclick="iniciarPreparacion(@Model.Id_Venta)">
-                                    <i class="lni lni-chef-hat me-2"></i> Enviar a Cocina
-                                </button>
+                                @if (Model.Items.Any(i => i.Estado == PedidoEstado.Borrador || i.Estado == PedidoEstado.Pendiente))
+                                {
+                                    <button type="button" class="btn btn-warning btn-premium w-100 mb-2 text-white" onclick="iniciarPreparacion(@Model.Id_Venta)">
+                                        <i class="lni lni-chef-hat me-2"></i> Enviar a Cocina
+                                    </button>
+                                }
+
+                                @if (Model.Items.Any(i => i.Estado == PedidoEstado.Listo))
+                                {
+                                    <button type="button" class="btn btn-info btn-premium w-100 mb-2 text-white" onclick="marcarEntregado(@Model.Id_Venta)">
+                                        <i class="lni lni-delivery me-2"></i> Marcar Entregado
+                                    </button>
+                                }
 
                                 <button type="button" class="btn btn-outline-danger btn-premium w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalCancelarPedido">
                                     <i class="lni lni-close me-2"></i> Cancelar Pedido
@@ -206,7 +223,10 @@
                                         {
                                             <tr class="product-list-item">
                                                 <td class="ps-4 py-3">
-                                                    <div class="fw-bold text-dark">@item.NombreProducto</div>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="fw-bold text-dark mb-0">@item.NombreProducto</div>
+                                                        <span class="badge @GetBadgeClass(item.Estado) rounded-pill" style="font-size: 0.65rem;">@GetEstadoText(item.Estado)</span>
+                                                    </div>
                                                     @if (!string.IsNullOrEmpty(item.Notas))
                                                     {
                                                         <small class="text-muted"><i class="lni lni-pencil-alt me-1"></i>@item.Notas</small>
@@ -268,10 +288,6 @@
                                 <span class="text-muted">Subtotal:</span>
                                 <span class="fw-bold">@Model.Subtotal.ToString("C", numberFormat)</span>
                             </div>
-                            <div class="d-flex justify-content-between w-100 mb-2" style="max-width: 250px;">
-                                <span class="text-muted">I.V.A (13%):</span>
-                                <span class="fw-bold">@Model.Impuestos.ToString("C", numberFormat)</span>
-                            </div>
                             <div class="d-flex justify-content-between w-100 pt-2 border-top" style="max-width: 250px;">
                                 <span class="text-muted text-uppercase fw-bold">Total a Pagar:</span>
                                 <h4 class="fw-bold text-primary mb-0">@Model.Total.ToString("C", numberFormat)</h4>
@@ -301,18 +317,37 @@
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label class="form-label fw-bold">Producto</label>
-                                <select name="productoId" class="form-select form-select-lg" required id="selectProducto">
-                                    <option value="">Buscar producto...</option>
-                                    @foreach (var producto in ViewBag.Productos as List<VentaFacil.web.Models.Dto.ProductoDto> ?? new List<VentaFacil.web.Models.Dto.ProductoDto>())
-                                    {
-                                        <option value="@producto.Id_Producto"
-                                                data-precio="@producto.Precio"
-                                                data-nombre="@producto.Nombre"
-                                                data-descripcion="@producto.Descripcion">
-                                            @producto.Nombre - @producto.Precio.ToString("C", numberFormat)
-                                        </option>
-                                    }
-                                </select>
+                                <div class="position-relative">
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text bg-light border-end-0"><i class="lni lni-search-alt"></i></span>
+                                        <input type="text" class="form-control border-start-0 ps-0" id="inputBuscarProducto" placeholder="Escriba el nombre del producto..." autocomplete="off">
+                                    </div>
+                                    <input type="hidden" name="productoId" id="selectProducto" required>
+                                    
+                                    <div class="list-group position-absolute w-100 shadow d-none" id="dropdownProductos" style="max-height: 250px; overflow-y: auto; z-index: 1050; top: 100%;">
+                                        @foreach (var producto in ViewBag.Productos as List<VentaFacil.web.Models.Dto.ProductoDto> ?? new List<VentaFacil.web.Models.Dto.ProductoDto>())
+                                        {
+                                            <button type="button" class="list-group-item list-group-item-action producto-item text-start" 
+                                                    data-id="@producto.Id_Producto" 
+                                                    data-precio="@producto.Precio"
+                                                    data-nombre="@producto.Nombre"
+                                                    data-descripcion="@producto.Descripcion">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <span class="fw-bold text-dark">@producto.Nombre</span>
+                                                        <br>
+                                                        <small class="text-muted">@producto.Descripcion</small>
+                                                    </div>
+                                                    <span class="badge bg-primary rounded-pill">@producto.Precio.ToString("C", numberFormat)</span>
+                                                </div>
+                                            </button>
+                                        }
+                                        <div id="noResultadosProducto" class="list-group-item text-center text-muted d-none py-3">
+                                            <i class="lni lni-warning mb-2 fs-4"></i><br>
+                                            No se encontraron productos
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Cantidad</label>
@@ -461,7 +496,7 @@
                     const data = await response.json();
                     if (!data.existe) {
                         Toastify({
-                            text: "<strong>Información:</strong> No hay una caja abierta. No podrá procesar pagos hasta que abra una.",
+                            text: "No hay una caja abierta. No podrá procesar pagos hasta que abra una.",
                             duration: 10000,
                             gravity: "bottom",
                             position: "right",
@@ -499,26 +534,90 @@
                 }
             });
 
-            const selectProducto = document.getElementById('selectProducto');
+            const selectProductoHidden = document.getElementById('selectProducto');
+            const inputBuscarProducto = document.getElementById('inputBuscarProducto');
+            const dropdownProductos = document.getElementById('dropdownProductos');
+            const productoItems = document.querySelectorAll('.producto-item');
+            const noResultadosProducto = document.getElementById('noResultadosProducto');
+
             const infoProducto = document.getElementById('infoProducto');
             const nombreProducto = document.getElementById('nombreProducto');
             const descripcionProducto = document.getElementById('descripcionProducto');
             const precioProducto = document.getElementById('precioProducto');
             const btnAgregar = document.getElementById('btnAgregar');
 
-            if (selectProducto) {
-                selectProducto.addEventListener('change', function() {
-                    const selectedOption = this.options[this.selectedIndex];
-                    if (selectedOption.value) {
-                        nombreProducto.textContent = selectedOption.getAttribute('data-nombre');
-                        descripcionProducto.textContent = selectedOption.getAttribute('data-descripcion') || 'Sin descripción';
-                        precioProducto.textContent = '¢' + parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
-                        infoProducto.classList.remove('d-none');
-                        btnAgregar.disabled = false;
-                    } else {
-                        infoProducto.classList.add('d-none');
-                        btnAgregar.disabled = true;
+            if (inputBuscarProducto) {
+                // Mostrar el dropdown al enfocar
+                inputBuscarProducto.addEventListener('focus', function() {
+                    if (productoItems.length > 0) {
+                        dropdownProductos.classList.remove('d-none');
+                        filtrarProductos();
                     }
+                });
+
+                // Ocultar al hacer clic fuera
+                document.addEventListener('click', function(e) {
+                    if (!inputBuscarProducto.contains(e.target) && !dropdownProductos.contains(e.target)) {
+                        dropdownProductos.classList.add('d-none');
+                    }
+                });
+
+                // Filtrar productos al escribir
+                inputBuscarProducto.addEventListener('input', filtrarProductos);
+
+                function filtrarProductos() {
+                    const term = inputBuscarProducto.value.toLowerCase();
+                    let hasVisible = false;
+
+                    productoItems.forEach(item => {
+                        const nombre = item.getAttribute('data-nombre').toLowerCase();
+                        const desc = (item.getAttribute('data-descripcion') || '').toLowerCase();
+                        if (nombre.includes(term) || desc.includes(term)) {
+                            item.classList.remove('d-none');
+                            hasVisible = true;
+                        } else {
+                            item.classList.add('d-none');
+                        }
+                    });
+
+                    if (!hasVisible) {
+                        noResultadosProducto.classList.remove('d-none');
+                    } else {
+                        noResultadosProducto.classList.add('d-none');
+                    }
+
+                    dropdownProductos.classList.remove('d-none');
+                }
+
+                // Seleccionar producto
+                productoItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        const nombre = this.getAttribute('data-nombre');
+                        const descripcion = this.getAttribute('data-descripcion') || 'Sin descripción';
+                        const precio = parseFloat(this.getAttribute('data-precio'));
+
+                        inputBuscarProducto.value = nombre;
+                        selectProductoHidden.value = id;
+                        
+                        nombreProducto.textContent = nombre;
+                        descripcionProducto.textContent = descripcion;
+                        precioProducto.textContent = '¢' + precio.toFixed(2);
+                        
+                        infoProducto.classList.remove('d-none');
+                        dropdownProductos.classList.add('d-none');
+                        btnAgregar.disabled = false;
+                    });
+                });
+
+                // Limpiar modal al cerrar
+                $('#modalAgregarProducto').on('hidden.bs.modal', function() {
+                    inputBuscarProducto.value = '';
+                    selectProductoHidden.value = '';
+                    document.querySelector('input[name="cantidad"]').value = 1;
+                    infoProducto.classList.add('d-none');
+                    dropdownProductos.classList.add('d-none');
+                    btnAgregar.disabled = true;
                 });
             }
         });
@@ -555,6 +654,33 @@
                             window.location.href = '@Url.Action("Index", "Pedidos")';
                         } else {
                             throw new Error(data.message || 'Error al enviar a cocina');
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        throw error;
+                    }
+                }
+            );
+        }
+
+        function marcarEntregado(id) {
+            showConfirm(
+                'Marcar como Entregado',
+                `¿Deseas registrar la entrega de los platillos listos a esta mesa?`,
+                async () => {
+                    try {
+                        const response = await fetch('@Url.Action("MarcarComoEntregado", "Pedidos")', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pedidoId: id })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if(data.success) {
+                            window.location.reload();
+                        } else {
+                            throw new Error(data.message || 'Error al marcar como entregado');
                         }
                     } catch (error) {
                         console.error(error);

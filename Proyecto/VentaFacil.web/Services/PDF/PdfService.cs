@@ -81,6 +81,13 @@ namespace VentaFacil.web.Services.PDF
                 NextCell().Value = item.Identificacion ?? string.Empty;
                 NextCell().Value = (double)item.HorasTrabajadas;
                 NextCell().Value = (double)item.HorasExtras;
+                
+                // Si hubo feriados en este periodo para este empleado, marcarlo en observaciones o similar
+                bool tieneFeriados = item.DiasLaborados.Any(d => d.EsFeriado);
+                if (tieneFeriados && string.IsNullOrEmpty(item.Observaciones)) 
+                    item.Observaciones = "[Contiene jornadas feriadas]";
+                else if (tieneFeriados && !item.Observaciones.Contains("feriadas"))
+                    item.Observaciones += " [Feriadas]";
                 var cBonos = NextCell(); cBonos.Value = item.Bonificaciones; cBonos.Style.NumberFormat.Format = "₡#,##0.00";
                 var cBruto = NextCell(); cBruto.Value = item.SalarioBruto;   cBruto.Style.NumberFormat.Format = "₡#,##0.00";
                 foreach (var dd in item.DeduccionesDetalle)
@@ -355,7 +362,10 @@ namespace VentaFacil.web.Services.PDF
 
                     foreach (var dia in item.DiasLaborados.OrderBy(d => d.FechaInicio))
                     {
-                        diaTable.AddCell(DC(dia.FechaInicio.ToString("ddd dd/MM/yy")));
+                        string fechaTexto = dia.FechaInicio.ToString("ddd dd/MM/yy");
+                        if (dia.EsFeriado) fechaTexto += " (F)";
+
+                        diaTable.AddCell(DC(fechaTexto));
                         diaTable.AddCell(DC(dia.FechaInicio.ToString("HH:mm")));
                         diaTable.AddCell(DC(dia.HoraInicioPausa?.ToString("HH:mm") ?? "—"));
                         diaTable.AddCell(DC(dia.HoraFinPausa?.ToString("HH:mm") ?? "—"));
@@ -367,6 +377,105 @@ namespace VentaFacil.web.Services.PDF
 
                     document.Add(diaTable);
                 }
+
+                document.Close();
+                return stream.ToArray();
+            }
+        }
+
+        public byte[] GenerarReciboPagoPdf(NominaDetalleDto data)
+        {
+            // Tomamos el primer (y único) empleado del detalle
+            var item = data.Detalles.FirstOrDefault();
+            if (item == null) return Array.Empty<byte>();
+
+            using (var stream = new MemoryStream())
+            {
+                var writer = new PdfWriter(stream);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf, PageSize.A4); // Vertical para recibos
+
+                var fontBold    = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+                var fontRegular = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+                var colorHeader = new iText.Kernel.Colors.DeviceRgb(54,  92, 245);
+                var colorDark   = new iText.Kernel.Colors.DeviceRgb(30,  30,  30);
+                var colorSuccess = new iText.Kernel.Colors.DeviceRgb(22, 163, 74);
+
+                // ─── Cabecera ────────────────────────────────────────────────
+                document.Add(new Paragraph("COMPROBANTE DE PAGO")
+                    .SetFont(fontBold).SetFontSize(18).SetFontColor(colorHeader).SetTextAlignment(TextAlignment.CENTER));
+                
+                document.Add(new Paragraph($"Nómina #{data.Id_Nomina} | Período: {data.FechaInicio:dd/MM/yyyy} - {data.FechaFinal:dd/MM/yyyy}")
+                    .SetFontSize(10).SetTextAlignment(TextAlignment.CENTER).SetMarginBottom(20));
+
+                // ─── Info Empleado ─────────────────────────────────────────────
+                var infoTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 2 })).SetWidth(UnitValue.CreatePercentValue(100));
+                
+                void AddInfo(string lbl, string val) {
+                    infoTable.AddCell(new Cell().Add(new Paragraph(lbl).SetFont(fontBold).SetFontSize(9)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                    infoTable.AddCell(new Cell().Add(new Paragraph(val).SetFontSize(9)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+                }
+
+                AddInfo("Colaborador:", item.NombreUsuario);
+                AddInfo("Identificación:", item.Identificacion);
+                AddInfo("Fecha Generación:", data.FechaGeneracion.ToString("dd/MM/yyyy HH:mm"));
+                
+                document.Add(infoTable);
+                document.Add(new Paragraph("\n"));
+
+                // ─── Resumen Financiero ────────────────────────────────────────
+                var resTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1, 1 })).SetWidth(UnitValue.CreatePercentValue(100));
+                
+                Cell ResCell(string lbl, string val, iText.Kernel.Colors.Color color = null) => new Cell()
+                    .Add(new Paragraph(lbl).SetFontSize(8).SetFontColor(iText.Kernel.Colors.ColorConstants.GRAY))
+                    .Add(new Paragraph(val).SetFont(fontBold).SetFontSize(12).SetFontColor(color ?? colorDark))
+                    .SetTextAlignment(TextAlignment.CENTER).SetPadding(10).SetBackgroundColor(new iText.Kernel.Colors.DeviceRgb(245, 245, 245));
+
+                resTable.AddCell(ResCell("SALARIO BRUTO", $"₡{item.SalarioBruto:N2}"));
+                resTable.AddCell(ResCell("DEDUCCIONES", $"-₡{item.Deducciones:N2}", iText.Kernel.Colors.ColorConstants.RED));
+                resTable.AddCell(ResCell("NETO A PAGAR", $"₡{item.SalarioNeto:N2}", colorSuccess));
+
+                document.Add(resTable);
+                document.Add(new Paragraph("\n"));
+
+                // ─── Desglose de Deducciones ───────────────────────────────────
+                document.Add(new Paragraph("Desglose de Deducciones").SetFont(fontBold).SetFontSize(10).SetMarginBottom(5));
+                var dedTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1, 1 })).SetWidth(UnitValue.CreatePercentValue(100));
+                
+                dedTable.AddHeaderCell(new Cell().Add(new Paragraph("Concepto").SetFont(fontBold).SetFontSize(8)));
+                dedTable.AddHeaderCell(new Cell().Add(new Paragraph("%").SetFont(fontBold).SetFontSize(8).SetTextAlignment(TextAlignment.CENTER)));
+                dedTable.AddHeaderCell(new Cell().Add(new Paragraph("Monto").SetFont(fontBold).SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT)));
+
+                foreach(var d in item.DeduccionesDetalle) {
+                    dedTable.AddCell(new Cell().Add(new Paragraph(d.Nombre).SetFontSize(8)));
+                    dedTable.AddCell(new Cell().Add(new Paragraph($"{d.Porcentaje:0.##}%").SetFontSize(8).SetTextAlignment(TextAlignment.CENTER)));
+                    dedTable.AddCell(new Cell().Add(new Paragraph($"₡{d.Monto:N2}").SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT)));
+                }
+                document.Add(dedTable);
+                document.Add(new Paragraph("\n"));
+
+                // ─── Desglose Diario ───────────────────────────────────────────
+                document.Add(new Paragraph("Detalle de Jornadas").SetFont(fontBold).SetFontSize(10).SetMarginBottom(5));
+                var dailyTable = new Table(UnitValue.CreatePercentArray(new float[] { 2, 1, 1, 1 })).SetWidth(UnitValue.CreatePercentValue(100));
+                
+                dailyTable.AddHeaderCell(new Cell().Add(new Paragraph("Fecha").SetFont(fontBold).SetFontSize(8)));
+                dailyTable.AddHeaderCell(new Cell().Add(new Paragraph("Horas Base").SetFont(fontBold).SetFontSize(8).SetTextAlignment(TextAlignment.CENTER)));
+                dailyTable.AddHeaderCell(new Cell().Add(new Paragraph("Horas Extra").SetFont(fontBold).SetFontSize(8).SetTextAlignment(TextAlignment.CENTER)));
+                dailyTable.AddHeaderCell(new Cell().Add(new Paragraph("Total Bruto").SetFont(fontBold).SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT)));
+
+                foreach (var dia in item.DiasLaborados.OrderBy(d => d.FechaInicio)) {
+                    string fecha = dia.FechaInicio.ToString("ddd dd/MM/yyyy") + (dia.EsFeriado ? " (F)" : "");
+                    dailyTable.AddCell(new Cell().Add(new Paragraph(fecha).SetFontSize(8)));
+                    dailyTable.AddCell(new Cell().Add(new Paragraph(dia.HorasTrabajadas.ToString("0.##")).SetFontSize(8).SetTextAlignment(TextAlignment.CENTER)));
+                    dailyTable.AddCell(new Cell().Add(new Paragraph(dia.HorasExtras.ToString("0.##")).SetFontSize(8).SetTextAlignment(TextAlignment.CENTER)));
+                    dailyTable.AddCell(new Cell().Add(new Paragraph($"₡{dia.SalarioBruto:N2}").SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT)));
+                }
+                document.Add(dailyTable);
+
+                document.Add(new Paragraph("\n\n"));
+                document.Add(new Paragraph("Este documento es un comprobante de pago generado por el sistema VentaFácil.")
+                    .SetFontSize(8).SetFontColor(iText.Kernel.Colors.ColorConstants.GRAY).SetTextAlignment(TextAlignment.CENTER));
 
                 document.Close();
                 return stream.ToArray();
@@ -444,8 +553,7 @@ namespace VentaFacil.web.Services.PDF
                 totalTable.AddCell(new Cell().Add(new Paragraph("Subtotal:").SetFont(fontBold).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
                 totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Subtotal.ToString("C2", numberFormat)).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
                 
-                totalTable.AddCell(new Cell().Add(new Paragraph("Impuestos:").SetFont(fontBold).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
-                totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Impuestos.ToString("C2", numberFormat)).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
+
 
                 totalTable.AddCell(new Cell().Add(new Paragraph("TOTAL:").SetFont(fontBold).SetFontSize(14).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
                 totalTable.AddCell(new Cell().Add(new Paragraph(facturaDto.Total.ToString("C2", numberFormat)).SetFont(fontBold).SetFontSize(14).SetTextAlignment(TextAlignment.RIGHT)).SetBorder(iText.Layout.Borders.Border.NO_BORDER));
@@ -684,7 +792,7 @@ namespace VentaFacil.web.Services.PDF
             ws.Range(2, 1, 2, 7).Merge();
             ws.Cell(2, 1).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
-            var headers = new[] { "ID", "Fecha", "Cliente", "Cajero", "Estado", "Subtotal", "Impuestos", "Total" };
+            var headers = new[] { "ID", "Fecha", "Cliente", "Cajero", "Estado", "Subtotal", "Total" };
             for (int i = 0; i < headers.Length; i++)
             {
                 var cell = ws.Cell(4, i + 1);
@@ -701,20 +809,18 @@ namespace VentaFacil.web.Services.PDF
                 ws.Cell(row, 4).Value = f.Venta?.Usuario?.Nombre ?? "Sistema";
                 ws.Cell(row, 5).Value = f.Estado.ToString();
                 ws.Cell(row, 6).Value = f.Total;
-                ws.Cell(row, 7).Value = 0m;
-                ws.Cell(row, 8).Value = f.Total;
+                ws.Cell(row, 7).Value = f.Total;
                 
                 ws.Cell(row, 6).Style.NumberFormat.Format = "₡#,##0.00";
                 ws.Cell(row, 7).Style.NumberFormat.Format = "₡#,##0.00";
-                ws.Cell(row, 8).Style.NumberFormat.Format = "₡#,##0.00";
                 row++;
             }
 
-            ws.Cell(row, 7).Value = "TOTAL FINAL:";
-            ws.Cell(row, 7).Style.Font.SetBold(true).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right);
+            ws.Cell(row, 6).Value = "TOTAL FINAL:";
+            ws.Cell(row, 6).Style.Font.SetBold(true).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right);
             
-            ws.Cell(row, 8).Value = facturas.Sum(f => f.Total);
-            ws.Cell(row, 8).Style.Font.SetBold(true).NumberFormat.Format = "₡#,##0.00";
+            ws.Cell(row, 7).Value = facturas.Sum(f => f.Total);
+            ws.Cell(row, 7).Style.Font.SetBold(true).NumberFormat.Format = "₡#,##0.00";
 
             ws.Columns().AdjustToContents();
 

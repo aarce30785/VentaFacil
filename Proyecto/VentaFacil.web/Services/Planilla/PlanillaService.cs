@@ -65,6 +65,22 @@ namespace VentaFacil.web.Services.Planilla
                     }
                 }
 
+                // =====================================================================
+                // VALIDACIÓN: Evitar días repetidos para el mismo colaborador
+                // =====================================================================
+                var dateOnly = dto.FechaInicio.Date;
+                var existeRegistro = await _context.Planilla
+                    .AnyAsync(p => p.Id_Usr == dto.Id_Usr 
+                                   && p.FechaInicio.Date == dateOnly 
+                                   && p.Id_Planilla != (dto.Id_Planilla ?? 0));
+
+                if (existeRegistro)
+                {
+                    response.Success = false;
+                    response.Message = "Ya existe un registro de jornada para este colaborador en la fecha seleccionada.";
+                    return response;
+                }
+
                 Models.Planilla planilla;
                 // Obtener usuario para sacar tarifa
                 var usuario = await _context.Usuario.FindAsync(dto.Id_Usr);
@@ -76,9 +92,13 @@ namespace VentaFacil.web.Services.Planilla
                 }
 
                 var configuracion = await _context.ConfiguracionPlanilla.FirstOrDefaultAsync(c => c.Id_Usr == dto.Id_Usr);
-
-                // Tarifa base (fallback a 2500m si es nula o no hay configuración)
-                decimal tarifaPorHora = configuracion?.TarifaPorHora ?? 2500m;
+                if (configuracion == null || configuracion.TarifaPorHora <= 0)
+                {
+                    response.Success = false;
+                    response.Message = "El colaborador no tiene una tarifa por hora asignada. Debe configurarse en el panel administrativo.";
+                    return response;
+                }
+                decimal tarifaPorHora = configuracion.TarifaPorHora;
 
                 if (dto.Id_Planilla.HasValue && dto.Id_Planilla.Value > 0)
                 {
@@ -144,7 +164,8 @@ namespace VentaFacil.web.Services.Planilla
                         Deducciones = 0,
                         SalarioNeto = 0,
                         ExtrasAprobadas = false, // Por defecto no aprobadas
-                        EsCierreAutomatico = false
+                        EsCierreAutomatico = false,
+                        EsFeriado = dto.EsFeriado
                     };
                     _context.Planilla.Add(planilla);
                 }
@@ -175,7 +196,9 @@ namespace VentaFacil.web.Services.Planilla
                     planilla.HorasTrabajadas = (decimal)horasNormales;
                     planilla.HorasExtras = (decimal)horasExtras;
                     planilla.EstadoRegistro = "Pendiente";
-                    planilla.SalarioBruto = (planilla.HorasTrabajadas * tarifaPorHora) + (planilla.HorasExtras * tarifaPorHora * 1.5m);
+                    
+                    decimal multiplicador = planilla.EsFeriado ? 2.0m : 1.0m;
+                    planilla.SalarioBruto = ((planilla.HorasTrabajadas * tarifaPorHora) + (planilla.HorasExtras * tarifaPorHora * 1.5m)) * multiplicador;
                 }
                 else
                 {
@@ -238,14 +261,21 @@ namespace VentaFacil.web.Services.Planilla
                 }
 
                 var configuracion = await _context.ConfiguracionPlanilla.FirstOrDefaultAsync(c => c.Id_Usr == planilla.Id_Usr);
-                decimal tarifaPorHora = configuracion?.TarifaPorHora ?? 2500m;
+                if (configuracion == null || configuracion.TarifaPorHora <= 0)
+                {
+                    response.Success = false;
+                    response.Message = "El colaborador no tiene una tarifa por hora asignada.";
+                    return response;
+                }
+                decimal tarifaPorHora = configuracion.TarifaPorHora;
 
                 planilla.HorasExtras = dto.HorasExtras;
                 planilla.Bonificaciones = dto.MontoBonificaciones;
 
                 // Recalcular Bruto: Usar tarifa base * 1.5 para extras
                 decimal salarioBaseEfectivo = planilla.HorasTrabajadas * tarifaPorHora;
-                planilla.SalarioBruto = salarioBaseEfectivo + (planilla.HorasExtras * tarifaPorHora * 1.5m) + planilla.Bonificaciones;
+                decimal multiplicador = planilla.EsFeriado ? 2.0m : 1.0m;
+                planilla.SalarioBruto = (salarioBaseEfectivo + (planilla.HorasExtras * tarifaPorHora * 1.5m) + planilla.Bonificaciones) * multiplicador;
 
                 await _context.SaveChangesAsync();
 
@@ -274,6 +304,11 @@ namespace VentaFacil.web.Services.Planilla
                 var query = _context.Planilla.Include(p => p.Usuario).AsQueryable();
 
                 query = query.Where(p => p.FechaInicio >= dto.FechaInicio && p.FechaFinal <= dto.FechaFinal && p.Id_Nomina == null);
+
+                if (dto.Id_Usr.HasValue && dto.Id_Usr > 0)
+                {
+                    query = query.Where(p => p.Id_Usr == dto.Id_Usr.Value);
+                }
 
                 if (dto.IncluirSoloUsuariosActivos)
                 {
@@ -379,7 +414,13 @@ namespace VentaFacil.web.Services.Planilla
                 foreach (var planilla in planillasParaNomina)
                 {
                     var confUser = configuraciones.FirstOrDefault(c => c.Id_Usr == planilla.Id_Usr);
-                    decimal tarifaUser = confUser?.TarifaPorHora ?? 2500m;
+                    if (confUser == null || confUser.TarifaPorHora <= 0)
+                    {
+                        response.Success = false;
+                        response.Message = $"El colaborador {planilla.Usuario?.Nombre} no tiene una tarifa por hora asignada.";
+                        return response;
+                    }
+                    decimal tarifaUser = confUser.TarifaPorHora;
 
                     // Recalcular Bruto: Solo pagar extras si están aprobadas
                     decimal salarioBaseEfectivo = planilla.HorasTrabajadas * tarifaUser;
@@ -394,7 +435,8 @@ namespace VentaFacil.web.Services.Planilla
                         planilla.Observaciones = (planilla.Observaciones ?? "") + " [Extras NO incluidas por falta de aprobación]";
                     }
 
-                    planilla.SalarioBruto = salarioBaseEfectivo + montoExtras + planilla.Bonificaciones;
+                    decimal multiplicador = planilla.EsFeriado ? 2.0m : 1.0m;
+                    planilla.SalarioBruto = (salarioBaseEfectivo + montoExtras + planilla.Bonificaciones) * multiplicador;
                     
                     decimal salarioBruto = planilla.SalarioBruto;
                     decimal totalDeduccionesEmpleado = 0;
@@ -460,42 +502,57 @@ namespace VentaFacil.web.Services.Planilla
                     planilla.SalarioNeto = salarioBruto - totalDeduccionesEmpleado;
                 }
 
-                // =================================================================================
-                // CREACIÓN DE NÓMINA
-                // =================================================================================
+                // ===========================================
+                // CREACIÓN DE NÓMINA (Individual por Colaborador)
+                // ===========================================
+                var planillasPorUsuario = planillasParaNomina.GroupBy(p => p.Id_Usr).ToList();
+                int nominAsGeneradas = 0;
+                int primerIdNomina = 0;
 
-                // Crear Encabezado de Nómina
-                var nomina = new Nomina
+                foreach (var grupo in planillasPorUsuario)
                 {
-                    FechaInicio = dto.FechaInicio,
-                    FechaFinal = dto.FechaFinal,
-                    FechaGeneracion = DateTime.Now,
-                    Estado = "Generada",
-                    Semana = semana,
-                    Anio = anio,
-                    TotalBruto = planillasParaNomina.Sum(p => p.SalarioBruto),
-                    TotalDeducciones = planillasParaNomina.Sum(p => p.Deducciones),
-                    TotalNeto = planillasParaNomina.Sum(p => p.SalarioNeto)
-                };
+                    var planillasUsuario = grupo.ToList();
+                    var user = planillasUsuario.First().Usuario;
 
-                _context.Nomina.Add(nomina);
-                await _context.SaveChangesAsync(); // Para obtener el Id_Nomina
+                    // Crear Encabezado de Nómina Individual
+                    var nomina = new Nomina
+                    {
+                        FechaInicio = dto.FechaInicio,
+                        FechaFinal = dto.FechaFinal,
+                        FechaGeneracion = DateTime.Now,
+                        Estado = "Generada",
+                        Semana = semana,
+                        Anio = anio,
+                        TotalBruto = planillasUsuario.Sum(p => p.SalarioBruto),
+                        TotalDeducciones = planillasUsuario.Sum(p => p.Deducciones),
+                        TotalNeto = planillasUsuario.Sum(p => p.SalarioNeto),
+                        Observaciones = dto.Comentarios
+                    };
 
-                // Asignar Id_Nomina a las planillas
-                foreach (var item in planillasParaNomina)
-                {
-                    item.Id_Nomina = nomina.Id_Nomina;
-                    item.EstadoRegistro = "Procesado";
+                    _context.Nomina.Add(nomina);
+                    await _context.SaveChangesAsync(); // Guardar para obtener el Id_Nomina
+
+                    if (primerIdNomina == 0) primerIdNomina = nomina.Id_Nomina;
+
+                    // Asignar Id_Nomina a las planillas del usuario
+                    foreach (var item in planillasUsuario)
+                    {
+                        item.Id_Nomina = nomina.Id_Nomina;
+                        item.EstadoRegistro = "Procesado";
+                    }
+                    nominAsGeneradas++;
                 }
 
                 await _context.SaveChangesAsync();
 
                 response.Success = true;
-                response.Message = "Nómina generada exitosamente (Deducciones aplicadas automáticamente).";
-                response.Id_Nomina = nomina.Id_Nomina;
-                response.TotalBruto = nomina.TotalBruto;
-                response.TotalDeducciones = nomina.TotalDeducciones;
-                response.TotalNeto = nomina.TotalNeto;
+                response.Message = nominAsGeneradas > 1 
+                    ? $"{nominAsGeneradas} nóminas individuales generadas exitosamente." 
+                    : "Nómina generada exitosamente.";
+                response.Id_Nomina = primerIdNomina;
+                response.TotalBruto = planillasParaNomina.Sum(p => p.SalarioBruto);
+                response.TotalDeducciones = planillasParaNomina.Sum(p => p.Deducciones);
+                response.TotalNeto = planillasParaNomina.Sum(p => p.SalarioNeto);
             }
             catch (Exception ex)
             {
@@ -728,47 +785,56 @@ namespace VentaFacil.web.Services.Planilla
                 Detalles = new List<PlanillaDetalleItemDto>()
             };
 
-            foreach (var p in nomina.Planillas)
+            var planillasPorUsuario = nomina.Planillas.GroupBy(p => p.Id_Usr).ToList();
+
+            foreach (var grupo in planillasPorUsuario)
             {
+                var planillasUsuario = grupo.ToList();
+                var p = planillasUsuario.First();
+
                 var item = new PlanillaDetalleItemDto
                 {
                     NombreUsuario  = p.Usuario?.Nombre ?? $"ID {p.Id_Usr}",
                     Identificacion = p.Usuario?.Correo ?? "-",
-                    HorasTrabajadas = p.HorasTrabajadas,
-                    HorasExtras    = p.HorasExtras,
-                    Bonificaciones = p.Bonificaciones,
-                    SalarioBruto   = p.SalarioBruto,
-                    Deducciones    = p.Deducciones,
-                    SalarioNeto    = p.SalarioNeto,
-                    Observaciones  = p.Observaciones,  // Nota explicativa (ej: bruto ₡0)
+                    HorasTrabajadas = planillasUsuario.Sum(x => x.HorasTrabajadas),
+                    HorasExtras    = planillasUsuario.Sum(x => x.HorasExtras),
+                    Bonificaciones = planillasUsuario.Sum(x => x.Bonificaciones),
+                    SalarioBruto   = planillasUsuario.Sum(x => x.SalarioBruto),
+                    Deducciones    = planillasUsuario.Sum(x => x.Deducciones),
+                    SalarioNeto    = planillasUsuario.Sum(x => x.SalarioNeto),
+                    Observaciones  = string.Join(" | ", planillasUsuario.Where(x => !string.IsNullOrEmpty(x.Observaciones)).Select(x => x.Observaciones).Distinct()),
                     DeduccionesDetalle = new List<DeduccionDetalleItemDto>()
                 };
 
-                // Calcular desglose por deducción (₡0 si bruto es 0)
+                // Calcular desglose por deducción (₡0 si bruto es 0) sobre el total bruto del usuario
                 foreach (var ded in deduccionesLey)
                 {
                     item.DeduccionesDetalle.Add(new DeduccionDetalleItemDto
                     {
                         Nombre = ded.Nombre,
                         Porcentaje = ded.Porcentaje,
-                        Monto = p.SalarioBruto * (ded.Porcentaje / 100m)
+                        Monto = item.SalarioBruto * (ded.Porcentaje / 100m)
                     });
                 }
 
-                // Detalle diario: un Planilla = una jornada
-                item.DiasLaborados.Add(new PlanillaDiaDto
+                // Detalle diario: todas las jornadas del usuario
+                foreach (var planilla in planillasUsuario)
                 {
-                    Id_Planilla      = p.Id_Planilla,
-                    FechaInicio      = p.FechaInicio,
-                    FechaFinal       = p.FechaFinal,
-                    HoraInicioPausa  = p.HoraInicioPausa,
-                    HoraFinPausa     = p.HoraFinPausa,
-                    HorasTrabajadas  = p.HorasTrabajadas,
-                    HorasExtras      = p.HorasExtras,
-                    SalarioBruto     = p.SalarioBruto,
-                    EstadoRegistro   = p.EstadoRegistro,
-                    Id_Nomina        = p.Id_Nomina
-                });
+                    item.DiasLaborados.Add(new PlanillaDiaDto
+                    {
+                        Id_Planilla      = planilla.Id_Planilla,
+                        FechaInicio      = planilla.FechaInicio,
+                        FechaFinal       = planilla.FechaFinal,
+                        HoraInicioPausa  = planilla.HoraInicioPausa,
+                        HoraFinPausa     = planilla.HoraFinPausa,
+                        HorasTrabajadas  = planilla.HorasTrabajadas,
+                        HorasExtras      = planilla.HorasExtras,
+                        SalarioBruto     = planilla.SalarioBruto,
+                        EsFeriado        = planilla.EsFeriado,
+                        EstadoRegistro   = planilla.EstadoRegistro,
+                        Id_Nomina        = planilla.Id_Nomina
+                    });
+                }
 
                 dto.Detalles.Add(item);
             }
@@ -820,6 +886,7 @@ namespace VentaFacil.web.Services.Planilla
                     HorasTrabajadas = p.HorasTrabajadas,
                     HorasExtras     = p.HorasExtras,
                     SalarioBruto    = p.SalarioBruto,
+                    EsFeriado       = p.EsFeriado,
                     EstadoRegistro  = p.EstadoRegistro,
                     Id_Nomina       = p.Id_Nomina
                 }).ToList();
@@ -835,6 +902,35 @@ namespace VentaFacil.web.Services.Planilla
         // ===================================================================
         // APROBACIÓN DE HORAS
         // ===================================================================
+        public async Task<IEnumerable<PlanillaDiaDto>> ObtenerJornadasSemanaActualAsync(int idUsuario)
+        {
+            var hoy = DateTime.Today;
+            int diasDesdeElLunes = ((int)hoy.DayOfWeek + 6) % 7;
+            var lunes = hoy.AddDays(-diasDesdeElLunes);
+            var domingo = lunes.AddDays(6).AddDays(1).AddTicks(-1);
+
+            var jornadas = await _context.Planilla
+                .Where(p => p.Id_Usr == idUsuario && p.FechaInicio >= lunes && p.FechaInicio <= domingo)
+                .OrderByDescending(p => p.FechaInicio)
+                .Select(p => new PlanillaDiaDto
+                {
+                    Id_Planilla = p.Id_Planilla,
+                    FechaInicio = p.FechaInicio,
+                    FechaFinal = p.FechaFinal,
+                    HoraInicioPausa = p.HoraInicioPausa,
+                    HoraFinPausa = p.HoraFinPausa,
+                    HorasTrabajadas = p.HorasTrabajadas,
+                    HorasExtras = p.HorasExtras,
+                    SalarioBruto = p.SalarioBruto,
+                    EsFeriado = p.EsFeriado,
+                    EstadoRegistro = p.EstadoRegistro,
+                    Id_Nomina = p.Id_Nomina
+                })
+                .ToListAsync();
+
+            return jornadas;
+        }
+
         public async Task<IEnumerable<PlanillaListadoDto>> ObtenerPlanillasPendientesAsync()
         {
             var planillas = await _context.Planilla

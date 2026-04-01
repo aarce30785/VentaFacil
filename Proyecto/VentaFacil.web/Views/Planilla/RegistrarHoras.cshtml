@@ -1,4 +1,4 @@
-﻿@model VentaFacil.web.Models.Dto.RegistrarHorasDto
+@model VentaFacil.web.Models.Dto.RegistrarHorasDto
 
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clockpicker/0.0.7/jquery-clockpicker.min.css" />
@@ -37,10 +37,19 @@
 }
 
 <div class="form-wrapper">
-    <h2 class="fw-bold text-dark mb-4">Registrar Horas de Trabajo</h2>
-    <div class="row justify-content-center">
-        <div class="col-12 col-xl-6">
-            <div class="premium-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">Registrar Horas de Trabajo</h2>
+        @if (User.IsInRole("Administrador"))
+        {
+            <a href="/Planilla/AprobacionHoras" class="btn btn-warning btn-premium">
+                <i class="fas fa-check-double me-2"></i>Aprobación de Horas
+            </a>
+        }
+    </div>
+    <div class="row g-4 justify-content-center">
+        <!-- Formulario -->
+        <div class="col-12 col-xl-5">
+            <div class="premium-card h-100">
                 <div class="mb-4">
                     <h5 class="card-title mb-0">Formulario de Registro</h5>
                 </div>
@@ -138,6 +147,21 @@
                         <span asp-validation-for="HoraFinPausa" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
+                        <div class="form-check form-switch px-0">
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+                                <div>
+                                    <label class="form-check-label fw-bold text-primary mb-0" for="EsFeriado">
+                                        <i class="fas fa-umbrella-beach me-2"></i>¿Es Día Feriado?
+                                    </label>
+                                    <div class="small text-muted">Pago doble por jornada</div>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" asp-for="EsFeriado" style="width: 3em; height: 1.5em; cursor: pointer;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
                         <label asp-for="Observaciones" class="form-label">Observaciones</label>
                         <textarea asp-for="Observaciones" class="form-control" rows="2" style="border-radius: 16px;"></textarea>
                     </div>
@@ -148,11 +172,65 @@
                 </form>
             </div>
         </div>
+        
+        <!-- Panel Lateral: Jornadas de la Semana -->
+        <div class="col-12 col-xl-7">
+            <div class="premium-card h-100">
+                <h5 class="card-title mb-4">Jornadas Registradas (Semana Actual)</h5>
+                <div id="weeklyShiftsContainer">
+                    <div class="text-center text-muted p-4 mt-4">
+                        <i class="fas fa-calendar-alt fa-3x mb-3" style="color: #dee2e6;"></i>
+                        <p>Seleccione un colaborador para ver sus jornadas de esta semana.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de AprobaciÃ³n/Rechazo -->
+<div class="modal fade" id="modalAprobacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <form asp-action="ProcesarAprobacion" method="post">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Procesar Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalMensaje" class="text-muted"></p>
+                    
+                    <input type="hidden" name="idPlanilla" id="modalIdPlanilla" />
+                    <input type="hidden" name="estado" id="modalEstado" />
+                    <input type="hidden" name="returnUrl" value="@Url.Action("RegistrarHoras", "Planilla")" />
+                    
+                    <div class="mb-3" id="divExtras">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="aprobarExtras" id="aprobarExtras" value="true">
+                            <label class="form-check-label fw-medium" for="aprobarExtras">Aprobar horas extra</label>
+                        </div>
+                        <small class="text-muted">Si se desactiva, las horas extra no se incluirán en el pago.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label fw-medium">Observaciones (Opcional)</label>
+                        <textarea class="form-control rounded-3" name="observaciones" id="observaciones" rows="3" placeholder="Ej. Aprobado con ajuste de tiempo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4" id="btnConfirmar">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clockpicker/0.0.7/jquery-clockpicker.min.js"></script>
     <script>
+        const esAdmin = @(User.IsInRole("Administrador").ToString().ToLower());
+
         document.addEventListener("DOMContentLoaded", function() {
             // Inicializar ClockPicker
             $('.clockpicker').clockpicker({
@@ -259,8 +337,14 @@
             }
 
             // Listeners para actualizar hidden inputs
-            [dateInicio, timeInicio].forEach(el => {
-                el.addEventListener('change', () => updateHiddenInput(dateInicio, timeInicio, hiddenInicio));
+            dateInicio.addEventListener('change', () => {
+                dateFinal.value = dateInicio.value;
+                updateHiddenInput(dateInicio, timeInicio, hiddenInicio);
+                updateHiddenInput(dateFinal, timeFinal, hiddenFinal);
+            });
+
+            timeInicio.addEventListener('change', () => {
+                updateHiddenInput(dateInicio, timeInicio, hiddenInicio);
                 // Para clockpicker, el evento change se dispara al cerrar
             });
 
@@ -317,6 +401,172 @@
                     hiddenFinal.value = ""; // Asegurar null
                 }
             });
+
+            // Lógica para cargar jornadas de la semana actual
+            const selectColaborador = document.getElementById('Id_Usr');
+            const weeklyShiftsContainer = document.getElementById('weeklyShiftsContainer');
+
+            selectColaborador.addEventListener('change', function() {
+                const userId = this.value;
+                if (!userId) {
+                    weeklyShiftsContainer.innerHTML = `
+                        <div class="text-center text-muted p-4 mt-4">
+                            <i class="fas fa-calendar-alt fa-3x mb-3" style="color: #dee2e6;"></i>
+                            <p>Seleccione un colaborador para ver sus jornadas de esta semana.</p>
+                        </div>`;
+                    return;
+                }
+
+                // Show loading state
+                weeklyShiftsContainer.innerHTML = '<div class="text-center p-4 mt-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Cargando jornadas...</p></div>';
+
+                fetch(`/Planilla/ObtenerJornadasSemanaActual?idUsuario=${userId}`)
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            renderWeeklyShifts(res.data);
+                        } else {
+                            weeklyShiftsContainer.innerHTML = `<div class="alert alert-danger m-3 border-0 shadow-sm">${res.message}</div>`;
+                        }
+                    })
+                    .catch(err => {
+                        weeklyShiftsContainer.innerHTML = `<div class="alert alert-danger m-3 border-0 shadow-sm">Error de conexión al cargar las jornadas.</div>`;
+                    });
+            });
+
+            function renderWeeklyShifts(jornadas) {
+                if (!jornadas || jornadas.length === 0) {
+                    weeklyShiftsContainer.innerHTML = `
+                        <div class="alert alert-info border-0 bg-info bg-opacity-10 text-info m-3">
+                            <i class="fas fa-info-circle me-2"></i> No se encontraron jornadas registradas para esta semana.
+                        </div>`;
+                    return;
+                }
+
+                let html = '<div class="table-responsive"><table class="table table-hover align-middle mb-0">';
+                html += `
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0">Fecha</th>
+                            <th class="border-0">Entrada / Salida</th>
+                            <th class="border-0 text-center">Horas</th>
+                            <th class="border-0 text-center">Estado</th>
+                            ${esAdmin ? '<th class="border-0 text-end">Acciones</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">`;
+                
+                let totalHoras = 0;
+                let totalExtras = 0;
+
+                jornadas.forEach(j => {
+                    const dtInicio = new Date(j.FechaInicio);
+                    const fechaStr = dtInicio.toLocaleDateString('es-CR', { weekday: 'short', day: '2-digit', month: 'short' });
+                    const entradaStr = dtInicio.toLocaleTimeString('es-CR', { hour: '2-digit', minute:'2-digit' });
+                    
+                    let salidaStr = '<i>En curso</i>';
+                    if (j.FechaFinal) {
+                        salidaStr = new Date(j.FechaFinal).toLocaleTimeString('es-CR', { hour: '2-digit', minute:'2-digit' });
+                    }
+                    
+                    let bgEstado = 'bg-secondary';
+                    if (j.EstadoRegistro === 'Completada' || j.EstadoRegistro === 'Procesado') bgEstado = 'bg-success';
+                    if (j.EstadoRegistro === 'Incompleta') bgEstado = 'bg-warning text-dark';
+                    if (j.EstadoRegistro === 'Pendiente') bgEstado = 'bg-info text-dark';
+
+                    let accionesHtml = '';
+                    if (esAdmin && (j.EstadoRegistro === 'Pendiente' || j.EstadoRegistro === 'Incompleta')) {
+                        // Pasar nombre colaborador por ui manual (es util capturar el d text si esta visible, o hardcodear nombre generico)
+                        const nombreCollab = "Colaborador"; 
+                        accionesHtml = `
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-success rounded-pill px-2" onclick="abrirModalAprobacion(${j.Id_Planilla}, 'Completada', '${fechaStr}')" title="Aprobar">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger rounded-pill px-2 ms-1" onclick="abrirModalAprobacion(${j.Id_Planilla}, 'Rechazada', '${fechaStr}')" title="Rechazar">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>`;
+                    } else if (esAdmin) {
+                        accionesHtml = '<td class="text-end"></td>';
+                    }
+
+                    html += `
+                        <tr>
+                            <td><strong class="text-dark text-capitalize">${fechaStr}</strong></td>
+                            <td>
+                                <div class="d-flex flex-column" style="font-size: 0.9rem;">
+                                    <span class="text-success"><i class="fas fa-arrow-right me-1" style="font-size: 0.8em;"></i>${entradaStr}</span>
+                                    <span class="text-danger"><i class="fas fa-arrow-left me-1" style="font-size: 0.8em;"></i>${salidaStr}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold">${j.HorasTrabajadas.toFixed(1)}h</span>
+                                ${(j.HorasExtras > 0) ? `<br/><small class="text-muted">+${j.HorasExtras.toFixed(1)}h extra</small>` : ''}
+                                ${j.EsFeriado ? '<br/><span class="badge bg-primary mt-1"><i class="fas fa-umbrella-beach me-1"></i>Feriado</span>' : ''}
+                            </td>
+                            <td class="text-center"><span class="badge ${bgEstado}">${j.EstadoRegistro}</span></td>
+                            ${accionesHtml}
+                        </tr>
+                    `;
+                    totalHoras += j.HorasTrabajadas;
+                    totalExtras += j.HorasExtras;
+                });
+
+                html += '</tbody></table></div>';
+                
+                html += `
+                    <div class="mt-4 p-3 rounded" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted fw-semibold">Total Semana:</span>
+                            <div class="text-end">
+                                <span class="text-dark fw-bold" style="font-size: 1.2rem;">${totalHoras.toFixed(1)} <small class="text-muted fw-normal" style="font-size: 0.9rem;">h regulares</small></span>
+                                ${(totalExtras > 0) ? `<br/><span class="text-success fw-bold">${totalExtras.toFixed(1)} <small class="text-muted fw-normal">h extras</small></span>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+                
+                weeklyShiftsContainer.innerHTML = html;
+            }
+
+            // Exponer al scope global
+            window.abrirModalAprobacion = function(id, estado, fecha) {
+                document.getElementById('modalIdPlanilla').value = id;
+                document.getElementById('modalEstado').value = estado;
+                document.getElementById('observaciones').value = '';
+
+                const titulo = document.getElementById('modalTitle');
+                const mensaje = document.getElementById('modalMensaje');
+                const btn = document.getElementById('btnConfirmar');
+                const divExtras = document.getElementById('divExtras');
+                const chkExtras = document.getElementById('aprobarExtras');
+
+                // Obtain the name from the dropdown selection for a nicer message
+                const currentName = selectColaborador.options[selectColaborador.selectedIndex].text;
+
+                if(estado === 'Completada') {
+                    titulo.textContent = 'Aprobar Horas';
+                    titulo.classList.remove('text-danger');
+                    titulo.classList.add('text-success');
+                    mensaje.innerHTML = `¿Está seguro que desea <strong>aprobar</strong> las horas de ${currentName} del dÃ­a ${fecha}?`;
+                    btn.className = 'btn btn-success rounded-pill px-4';
+                    btn.textContent = 'Aprobar';
+                    divExtras.style.display = 'block';
+                    chkExtras.checked = true;
+                } else {
+                    titulo.textContent = 'Rechazar Horas';
+                    titulo.classList.remove('text-success');
+                    titulo.classList.add('text-danger');
+                    mensaje.innerHTML = `¿Está seguro que desea <strong>rechazar</strong> las horas de ${currentName} del dÃ­a ${fecha}?`;
+                    btn.className = 'btn btn-danger rounded-pill px-4';
+                    btn.textContent = 'Rechazar';
+                    divExtras.style.display = 'none';
+                    chkExtras.checked = false;
+                }
+
+                var modal = new bootstrap.Modal(document.getElementById('modalAprobacion'));
+                modal.show();
+            };
         });
     </script>
 }

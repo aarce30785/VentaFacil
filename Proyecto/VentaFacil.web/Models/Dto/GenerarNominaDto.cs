@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace VentaFacil.web.Models.Dto
 {
@@ -10,5 +10,6 @@ namespace VentaFacil.web.Models.Dto
         public string? Comentarios { get; set; }
         /// <summary>Semanal | Trimestral | Personalizado</summary>
         public string TipoPeriodo { get; set; } = "Semanal";
+        public int? Id_Usr { get; set; }
     }
 }

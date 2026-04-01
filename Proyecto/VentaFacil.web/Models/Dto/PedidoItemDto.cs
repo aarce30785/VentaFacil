@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VentaFacil.web.Models.Enum;
 
 namespace VentaFacil.web.Models.Dto
 {
@@ -15,5 +16,7 @@ namespace VentaFacil.web.Models.Dto
 
         public string Notas { get; set; } = string.Empty;
         public decimal Subtotal => (PrecioUnitario * Cantidad) - Descuento;
+
+        public PedidoEstado Estado { get; set; } = PedidoEstado.Borrador;
     }
 }

@@ -50,6 +50,8 @@ namespace VentaFacil.web.Models
 
         public bool EsCierreAutomatico { get; set; }
 
+        public bool EsFeriado { get; set; }
+
         /// <summary>Nota explicativa (ej: deducción omitida por salario ₡0).</summary>
         public string? Observaciones { get; set; }
     }

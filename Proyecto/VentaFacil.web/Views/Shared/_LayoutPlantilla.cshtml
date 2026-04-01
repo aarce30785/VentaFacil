@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -39,7 +39,7 @@
     <div class="overlay"></div>
 
     <!-- ======== main-wrapper start =========== -->
-    <main class="main-wrapper">
+    <main class="main-wrapper" style="@(!User.Identity.IsAuthenticated ? "padding-left: 0 !important; margin-left: 0 !important; width: 100%;" : "")">
         <!-- Header -->
         @if (User.Identity.IsAuthenticated)
         {

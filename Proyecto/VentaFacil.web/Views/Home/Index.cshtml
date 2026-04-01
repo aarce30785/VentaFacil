@@ -139,10 +139,10 @@
         </div>
         <div class="position-relative z-1 d-none d-md-block">
             <div class="d-flex gap-2">
-                <a asp-controller="Pedidos" asp-action="Cocina" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #1e293b; border: 2px solid #FFD700;">
+                <a asp-controller="Pedidos" asp-action="Cocina" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #1e293b; border: 2px solid #ffffff;">
                     <i class="lni lni-chef-hat me-2"></i> Cocina
                 </a>
-                <a asp-controller="Pedidos" asp-action="Crear" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #6366f1; border: 2px solid #FFD700;">
+                <a asp-controller="Pedidos" asp-action="Crear" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #6366f1; border: 2px solid #ffffff;">
                     <i class="lni lni-plus me-2"></i> Crear Pedido
                 </a>
             </div>
@@ -159,7 +159,7 @@
                 </div>
                 <div class="stat-content">
                     <h6>Ventas Hoy</h6>
-                    <h3>@Model.VentasDia.ToString("C")</h3>
+                    <h3>@Model.VentasDia.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
                 </div>
             </div>
         </div>
@@ -172,7 +172,7 @@
                 </div>
                 <div class="stat-content">
                     <h6>Ventas Semana</h6>
-                    <h3>@Model.VentasSemana.ToString("C")</h3>
+                    <h3>@Model.VentasSemana.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
                 </div>
             </div>
         </div>
@@ -185,7 +185,7 @@
                 </div>
                 <div class="stat-content">
                     <h6>Ventas Mes</h6>
-                    <h3>@Model.VentasMes.ToString("C")</h3>
+                    <h3>@Model.VentasMes.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
                 </div>
             </div>
         </div>
@@ -200,7 +200,7 @@
                 <div class="stat-content">
                     <h6>Balance Caja</h6>
                     <!-- Calculamos simple para mostrar algo relevante -->
-                    <h3>@((Model.IngresosRecientes - Model.GastosRecientes).ToString("C"))</h3>
+                    <h3>@((Model.IngresosRecientes - Model.GastosRecientes).ToString("C", new System.Globalization.CultureInfo("es-CR")))</h3>
                 </div>
             </div>
         </div>

@@ -72,33 +72,34 @@ namespace VentaFacil.web.Services.Pedido
                 throw new ArgumentException("La cantidad debe ser mayor a 0");
 
             var pedido = await ObtenerPedidoAsync(idPedido);
-            ValidarEstadoEditable(pedido.Estado);
+            ValidarEditable(pedido);
 
             var producto = await _productoService.ObtenerPorIdAsync(idProducto);
             if (producto == null)
                 throw new ArgumentException($"Producto con ID {idProducto} no encontrado");
 
-            var itemExistente = pedido.Items.FirstOrDefault(i => i.Id_Producto == idProducto);
-
-            if (itemExistente != null)
-            {
-                itemExistente.Cantidad += cantidad;
-                _logger.LogInformation("➕ Producto {ProductoId} actualizado a cantidad {Cantidad} en pedido #{PedidoId}",
-                    idProducto, itemExistente.Cantidad, idPedido);
-            }
-            else
+            // Agregar de manera individual para evitar agrupamiento e incrementar trazabilidad
+            for (int i = 0; i < cantidad; i++)
             {
                 var nuevoItem = new PedidoItemDto
                 {
-                    Id_Detalle = pedido.Items.Count > 0 ? pedido.Items.Max(i => i.Id_Detalle) + 1 : 1,
+                    Id_Detalle = pedido.Items.Count > 0 ? pedido.Items.Max(x => x.Id_Detalle) + 1 : 1,
                     Id_Producto = producto.Id_Producto,
                     NombreProducto = producto.Nombre ?? "Producto sin nombre",
                     PrecioUnitario = producto.Precio,
-                    Cantidad = cantidad
+                    Cantidad = 1
                 };
                 pedido.Items.Add(nuevoItem);
-                _logger.LogInformation("🆕 Producto {ProductoId} agregado al pedido #{PedidoId}", idProducto, idPedido);
             }
+
+            // Si el pedido ya estaba en listos o entregados, debemos despertarlo
+            // para que la cocina note los nuevos platos.
+            if (pedido.Estado == PedidoEstado.Listo || pedido.Estado == PedidoEstado.Entregado)
+            {
+                await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Pendiente, "Nuevos productos agregados (Despertando cuenta)");
+            }
+
+            _logger.LogInformation("🆕 {Cantidad}x Producto {ProductoId} agregados al pedido #{PedidoId} de forma individual", cantidad, idProducto, idPedido);
 
             RecalcularTotal(pedido);
             return pedido;
@@ -107,7 +108,7 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<PedidoDto> ActualizarNotaProductoAsync(int idPedido, int idDetalle, string notas)
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
-            ValidarEstadoEditable(pedido.Estado);
+            ValidarEditable(pedido);
 
             var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == idDetalle);
             if (item == null)
@@ -123,7 +124,7 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<PedidoDto> ActualizarCantidadProductoAsync(int idPedido, int idDetalle, int cantidad)
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
-            ValidarEstadoEditable(pedido.Estado);
+            ValidarEditable(pedido);
 
             var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == idDetalle);
             if (item == null)
@@ -148,7 +149,7 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<PedidoDto> EliminarProductoAsync(int idPedido, int idDetalle)
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
-            ValidarEstadoEditable(pedido.Estado);
+            ValidarEditable(pedido);
 
             var item = pedido.Items.FirstOrDefault(i => i.Id_Detalle == idDetalle);
             if (item != null)
@@ -156,6 +157,17 @@ namespace VentaFacil.web.Services.Pedido
                 pedido.Items.Remove(item);
                 RecalcularTotal(pedido);
                 _logger.LogInformation("🗑️ Producto {ProductoId} eliminado del pedido #{PedidoId}", item.Id_Producto, idPedido);
+                
+                // Actualizar el estado del pedido al remover un ítem para no quedarse pegado
+                if (pedido.Items.Any() && pedido.Items.All(i => i.Estado == PedidoEstado.Entregado))
+                {
+                    await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Entregado, "Actualización: Todos los productos restantes están entregados");
+                }
+                else if (pedido.Items.Any() && pedido.Items.All(i => i.Estado == PedidoEstado.Listo || i.Estado == PedidoEstado.Entregado))
+                {
+                    if (pedido.Estado != PedidoEstado.Listo && pedido.Estado != PedidoEstado.Entregado)
+                        await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Listo, "Actualización: Estado recalculado a Listo");
+                }
             }
 
             return pedido;
@@ -164,7 +176,16 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<PedidoDto> ActualizarModalidadAsync(int pedidoId, ModalidadPedido modalidad, int? numeroMesa)
         {
             var pedido = await ObtenerPedidoAsync(pedidoId);
-            ValidarEstadoEditable(pedido.Estado);
+            ValidarEditable(pedido);
+
+            if (modalidad == ModalidadPedido.EnMesa && numeroMesa.HasValue)
+            {
+                var mesasOcupadas = await ObtenerMesasOcupadasAsync();
+                if (mesasOcupadas.Contains(numeroMesa.Value) && pedido.NumeroMesa != numeroMesa.Value)
+                {
+                    throw new InvalidOperationException($"La Mesa {numeroMesa.Value} ya está ocupada por otra orden.");
+                }
+            }
 
             pedido.Modalidad = modalidad;
             pedido.NumeroMesa = modalidad == ModalidadPedido.ParaLlevar ? null : numeroMesa;
@@ -176,9 +197,12 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<PedidoDto> ActualizarClienteAsync(int pedidoId, string cliente)
         {
             var pedido = await ObtenerPedidoAsync(pedidoId);
-            ValidarEstadoEditable(pedido.Estado);
+            ValidarEditable(pedido);
 
-            pedido.Cliente = cliente?.Trim();
+            if (string.IsNullOrWhiteSpace(cliente))
+                throw new InvalidOperationException("El nombre del cliente no puede estar vacío. Por favor ingrese un nombre y presione Ok.");
+
+            pedido.Cliente = cliente.Trim();
             _logger.LogInformation("👤 Cliente del pedido #{PedidoId} actualizado a {Cliente}", pedidoId, cliente);
 
             return pedido;
@@ -233,16 +257,22 @@ namespace VentaFacil.web.Services.Pedido
 
             _logger.LogInformation("👨‍🍳 Iniciando preparación del pedido #{PedidoId}", pedidoId);
 
-            if (pedido.Estado != PedidoEstado.Pendiente && pedido.Estado != PedidoEstado.Borrador)
+            var itemsPendientes = pedido.Items.Where(i => i.Estado == PedidoEstado.Borrador || i.Estado == PedidoEstado.Pendiente).ToList();
+
+            if (!itemsPendientes.Any())
             {
-                return ServiceResult.Error("Solo se pueden iniciar preparación de pedidos pendientes o en borrador");
+                return ServiceResult.Error("No hay productos pendientes para iniciar preparación.");
             }
 
-            // Transición de estado: Pendiente/Borrador → EnPreparacion
-            await CambiarEstadoPedidoAsync(pedido, PedidoEstado.EnPreparacion, "Preparación iniciada en cocina");
+            foreach (var item in itemsPendientes)
+            {
+                item.Estado = PedidoEstado.EnPreparacion;
+            }
+
+            await CambiarEstadoPedidoAsync(pedido, PedidoEstado.EnPreparacion, "Preparación iniciada en cocina para nuevos productos");
 
             _logger.LogInformation("✅ Preparación del pedido #{PedidoId} iniciada", pedidoId);
-            return ServiceResult.SuccessResult("Preparación del pedido iniciada");
+            return ServiceResult.SuccessResult("Preparación de productos iniciada");
         }
 
         public async Task<ServiceResult> MarcarComoListoAsync(int pedidoId)
@@ -251,62 +281,103 @@ namespace VentaFacil.web.Services.Pedido
 
             _logger.LogInformation("🔔 Marcando pedido #{PedidoId} como listo", pedidoId);
 
-            if (pedido.Estado != PedidoEstado.EnPreparacion)
+            var itemsEnPrep = pedido.Items.Where(i => i.Estado == PedidoEstado.EnPreparacion).ToList();
+
+            if (!itemsEnPrep.Any())
             {
-                return ServiceResult.Error("Solo se pueden marcar como listo pedidos en preparación");
+                return ServiceResult.Error("No hay productos en preparación para marcar como listos");
             }
 
-            // Transición de estado: EnPreparacion → Listo
-            await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Listo, "Pedido listo para entregar");
+            foreach (var item in itemsEnPrep)
+            {
+                item.Estado = PedidoEstado.Listo;
+            }
+
+            if (pedido.Items.All(i => i.Estado == PedidoEstado.Listo || i.Estado == PedidoEstado.Entregado))
+            {
+                await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Listo, "Todos los productos pendientes ahora están listos");
+            }
 
             _logger.LogInformation("✅ Pedido #{PedidoId} marcado como listo", pedidoId);
-            return ServiceResult.SuccessResult("Pedido marcado como listo para entregar");
+            return ServiceResult.SuccessResult("Productos marcados como listos para entregar");
         }
 
         public async Task<ServiceResult> MarcarComoEntregadoAsync(int pedidoId)
         {
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            if (pedido.Estado != PedidoEstado.Listo)
-                return ServiceResult.Error("Solo se pueden marcar como entregado pedidos listos");
+            var itemsListos = pedido.Items.Where(i => i.Estado == PedidoEstado.Listo).ToList();
 
-            // Transición de estado: Listo → Entregado
-            await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Entregado, "Pedido entregado al cliente");
+            if (!itemsListos.Any())
+                return ServiceResult.Error("No hay productos listos para entregar");
 
-            _logger.LogInformation("📦 Pedido #{PedidoId} marcado como entregado", pedidoId);
-            return ServiceResult.SuccessResult("Pedido marcado como entregado correctamente");
+            foreach (var item in itemsListos)
+            {
+                item.Estado = PedidoEstado.Entregado;
+            }
+
+            if (pedido.Items.All(i => i.Estado == PedidoEstado.Entregado))
+            {
+                await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Entregado, "Todos los productos entregados al cliente");
+            }
+
+            _logger.LogInformation("📦 Productos del pedido #{PedidoId} marcados como entregados", pedidoId);
+            return ServiceResult.SuccessResult("Productos marcados como entregados correctamente");
         }
 
         public async Task<ServiceResult> CancelarPedidoAsync(int pedidoId, string razon)
         {
             var pedido = await ObtenerPedidoAsync(pedidoId);
 
-            _logger.LogInformation("🚫 Cancelando pedido #{PedidoId}", pedidoId);
-
-            if (pedido.Estado == PedidoEstado.Entregado)
-            {
-                return ServiceResult.Error("No se puede cancelar un pedido ya entregado");
-            }
+            _logger.LogInformation("🚫 Intentando cancelar pedido #{PedidoId}", pedidoId);
 
             if (pedido.Estado == PedidoEstado.Cancelado)
             {
                 return ServiceResult.Error("El pedido ya está cancelado");
             }
 
-            // Transición a estado cancelado
-            await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Cancelado, $"Pedido cancelado: {razon}");
-            pedido.MotivoCancelacion = razon;
+            var itemsEntregados = pedido.Items.Where(i => i.Estado == PedidoEstado.Entregado).ToList();
+            var itemsPendientes = pedido.Items.Where(i => i.Estado != PedidoEstado.Entregado).ToList();
 
-            _logger.LogInformation("✅ Pedido #{PedidoId} cancelado: {Razon}", pedidoId, razon);
-            return ServiceResult.SuccessResult("Pedido cancelado correctamente");
+            if (itemsEntregados.Any())
+            {
+                // Si hay elementos entregados, hacemos una cancelación parcial para permitir facturarlos.
+                if (!itemsPendientes.Any())
+                {
+                    return ServiceResult.Error("No se puede cancelar un pedido donde todos los productos ya fueron entregados.");
+                }
+
+                foreach (var item in itemsPendientes)
+                {
+                    pedido.Items.Remove(item);
+                }
+                RecalcularTotal(pedido);
+
+                // Como removimos todos los que no estaban entregados, ahora el pedido pasa a Entregado.
+                await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Entregado, $"Cancelación parcial (Cliente ya no requería los pendientes): {razon}");
+                
+                _logger.LogInformation("✅ Pedido #{PedidoId} cancelado parcialmente. Listos para facturar entregados.", pedidoId);
+                return ServiceResult.SuccessResult("Productos pendientes cancelados. Puede proceder a facturar los productos entregados.");
+            }
+            else
+            {
+                // Cancelación total ya que no hay nada entregado
+                await CambiarEstadoPedidoAsync(pedido, PedidoEstado.Cancelado, $"Pedido cancelado: {razon}");
+                pedido.MotivoCancelacion = razon;
+
+                _logger.LogInformation("✅ Pedido #{PedidoId} cancelado totalmente: {Razon}", pedidoId, razon);
+                return ServiceResult.SuccessResult("Pedido cancelado correctamente");
+            }
         }
 
         // MÉTODOS DE CONSULTA
-        public Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario)
+        public Task<List<PedidoDto>> ObtenerTodosLosPedidosAsync(int idUsuario, int pagina = 1, int cantidadPorPagina = 50)
         {
             var pedidos = _pedidosTemporales.Values
                 .Where(p => p.Id_Usuario == idUsuario)
                 .OrderByDescending(p => p.Fecha)
+                .Skip((pagina - 1) * cantidadPorPagina)
+                .Take(cantidadPorPagina)
                 .ToList();
 
             return Task.FromResult(pedidos);
@@ -315,7 +386,7 @@ namespace VentaFacil.web.Services.Pedido
         public async Task<bool> PuedeEditarseAsync(int idPedido)
         {
             var pedido = await ObtenerPedidoAsync(idPedido);
-            return pedido.Estado == PedidoEstado.Borrador;
+            return !pedido.TieneFactura() && pedido.Estado != PedidoEstado.Cancelado;
         }
 
         public async Task ActualizarPedidoConFactura(int pedidoId, int facturaId, string numeroFactura)
@@ -337,12 +408,26 @@ namespace VentaFacil.web.Services.Pedido
 
         public Task<List<PedidoDto>> ObtenerPedidosParaCocinaAsync()
         {
-            var pedidosCocina = _pedidosTemporales.Values
-                .Where(p => p.Estado == PedidoEstado.Pendiente || p.Estado == PedidoEstado.EnPreparacion)
-                .OrderBy(p => p.Fecha)
+            var pedidosActivos = _pedidosTemporales.Values
+                .Where(p => (p.Estado == PedidoEstado.Pendiente || p.Estado == PedidoEstado.EnPreparacion || p.Estado == PedidoEstado.Listo) 
+                            && !p.Items.All(i => i.Estado == PedidoEstado.Entregado))
                 .ToList();
 
-            return Task.FromResult(pedidosCocina);
+            return Task.FromResult(pedidosActivos);
+        }
+
+        public Task<List<int>> ObtenerMesasOcupadasAsync()
+        {
+            var ocupadas = _pedidosTemporales.Values
+                .Where(p => p.Modalidad == ModalidadPedido.EnMesa 
+                            && p.NumeroMesa.HasValue 
+                            && !p.TieneFactura() 
+                            && p.Estado != PedidoEstado.Cancelado)
+                .Select(p => p.NumeroMesa.Value)
+                .Distinct()
+                .ToList();
+
+            return Task.FromResult(ocupadas);
         }
 
         public async Task<ServiceResult> GuardarComoBorradorAsync(int idPedido)
@@ -403,10 +488,10 @@ namespace VentaFacil.web.Services.Pedido
 
 
         // MÉTODOS PRIVADOS AUXILIARES
-        private void ValidarEstadoEditable(PedidoEstado estado)
+        private void ValidarEditable(PedidoDto pedido)
         {
-            if (estado != PedidoEstado.Borrador)
-                throw new InvalidOperationException("No se puede modificar un pedido que no está en estado borrador");
+            if (pedido.TieneFactura())
+                throw new InvalidOperationException("No se puede modificar un pedido que ya ha sido facturado.");
         }
 
         private void RecalcularTotal(PedidoDto pedido)

@@ -127,12 +127,19 @@ namespace VentaFacil.web.Controllers
             if (!response.Success)
             {
                 TempData["Error"] = response.Message;
+
+                // Redirigir a configuración si falta la tarifa y el usuario es admin
+                if (response.Message.Contains("tarifa por hora") && User.IsInRole("Administrador"))
+                {
+                    return RedirectToAction("Index", "ConfiguracionPlanilla");
+                }
+
                 await CargarUsuariosViewBag(dto.Id_Usr);
                 return View("~/Views/Planilla/RegistrarHoras.cshtml", dto);
             }
 
             TempData["Success"] = response.Message;
-            return RedirectToAction("Consultar");
+            return RedirectToAction("RegistrarHoras");
         }
 
         // ============================
@@ -191,7 +198,7 @@ namespace VentaFacil.web.Controllers
         // ============================
         [HttpGet("GenerarNomina")]
         [Authorize(Roles = "Administrador")]
-        public IActionResult GenerarNomina()
+        public async Task<IActionResult> GenerarNomina()
         {
             // Por defecto: semana actual (Lunes - Domingo)
             var hoy = System.DateTime.Today;
@@ -206,7 +213,7 @@ namespace VentaFacil.web.Controllers
                 FechaFinal                = domingo,
                 IncluirSoloUsuariosActivos = true
             };
-
+            await CargarUsuariosViewBag();
             return View("~/Views/Planilla/GenerarNomina.cshtml", modelo);
         }
 
@@ -217,6 +224,7 @@ namespace VentaFacil.web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                await CargarUsuariosViewBag(dto.Id_Usr);
                 return View("~/Views/Planilla/GenerarNomina.cshtml", dto);
             }
 
@@ -229,11 +237,19 @@ namespace VentaFacil.web.Controllers
                 {
                     ViewBag.ErroresValidacion = response.ErroresValidacion;
                 }
+                await CargarUsuariosViewBag(dto.Id_Usr);
                 return View("~/Views/Planilla/GenerarNomina.cshtml", dto);
             }
 
             TempData["Success"] = response.Message;
-            return RedirectToAction("DetalleNomina", new { idNomina = response.Id_Nomina });
+
+            // Si se generaron varias (ej: Todos), ir al listado. Si es una sola, ir al detalle.
+            if (dto.Id_Usr.HasValue && dto.Id_Usr > 0)
+            {
+                return RedirectToAction("DetalleNomina", new { idNomina = response.Id_Nomina });
+            }
+            
+            return RedirectToAction("Consultar");
         }
 
         // ============================
@@ -367,6 +383,23 @@ namespace VentaFacil.web.Controllers
             return Json(new { success = true, data });
         }
 
+        [HttpGet("ObtenerJornadasSemanaActual")]
+        public async Task<IActionResult> ObtenerJornadasSemanaActual(int idUsuario)
+        {
+            if (idUsuario <= 0) return Json(new { success = false, message = "Usuario inválido" });
+            try
+            {
+                var data = await _planillaService.ObtenerJornadasSemanaActualAsync(idUsuario);
+                return Json(new { success = true, data });
+            }
+            catch (Exception ex)
+            {
+                // Returns the inner exception message to understand if it's a DB issue
+                var errMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = "Error interno: " + errMsg });
+            }
+        }
+
         // ============================
         // METODO AUXILIAR
         // ============================
@@ -399,7 +432,7 @@ namespace VentaFacil.web.Controllers
         [HttpPost("ProcesarAprobacion")]
         [Authorize(Roles = "Administrador")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcesarAprobacion(int idPlanilla, string estado, string observaciones, bool aprobarExtras = false)
+        public async Task<IActionResult> ProcesarAprobacion(int idPlanilla, string estado, string observaciones, bool aprobarExtras = false, string returnUrl = null)
         {
             var response = await _planillaService.AprobarRechazarPlanillaAsync(idPlanilla, estado, observaciones, aprobarExtras);
             if (response.Success)
@@ -409,6 +442,11 @@ namespace VentaFacil.web.Controllers
             else
             {
                 TempData["Error"] = response.Message;
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
             }
             return RedirectToAction("AprobacionHoras");
         }

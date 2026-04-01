@@ -16,23 +16,30 @@ namespace VentaFacil.web.Controllers
         private readonly IProductoService _productoService;
         private readonly ICajaService _cajaService;
         private readonly ILogger<PedidosController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public PedidosController(IPedidoService pedidoService, IProductoService productoService, ICajaService cajaService, ILogger<PedidosController> logger)
+        public PedidosController(IPedidoService pedidoService, IProductoService productoService, ICajaService cajaService, ILogger<PedidosController> logger, IConfiguration configuration)
         {
             _pedidoService = pedidoService;
             _productoService = productoService;
             _cajaService = cajaService;
             _logger = logger;
+            _configuration = configuration;
+        }
+
+        private int ObtenerTotalMesas()
+        {
+            return _configuration.GetValue<int>("Restaurante:CantidadMesas", 20);
         }
 
         // GET: /Pedidos/Index
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pagina = 1, int cantidadPorPagina = 10)
         {
             try
             {
                 var usuarioId = ObtenerUsuarioId();
-                var modelo = await CargarModeloVistaIndex(usuarioId);
+                var modelo = await CargarModeloVistaIndex(usuarioId, pagina, cantidadPorPagina);
                 return View(modelo);
             }
             catch (Exception ex)
@@ -40,6 +47,61 @@ namespace VentaFacil.web.Controllers
                 _logger.LogError(ex, "Error al cargar pedidos para usuario");
                 TempData["Error"] = "Error al cargar los pedidos";
                 return View(new PedidosIndexViewModel());
+            }
+        }
+
+        // GET: /Pedidos/Mesas
+        [HttpGet]
+        public async Task<IActionResult> Mesas()
+        {
+            try
+            {
+                var usuarioId = ObtenerUsuarioId();
+                var todos = await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId);
+                
+                var pedidosEnMesa = todos.Where(p => p.Modalidad == ModalidadPedido.EnMesa 
+                                                     && p.NumeroMesa.HasValue 
+                                                     && !p.TieneFactura() 
+                                                     && p.Estado != PedidoEstado.Cancelado)
+                                         .ToList();
+                
+                ViewBag.TotalMesas = ObtenerTotalMesas();
+                
+                return View(pedidosEnMesa);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cargar el panel de mesas.");
+                TempData["Error"] = "Error al cargar el panel de mesas";
+                return RedirectToAction("Index");
+            }
+        }
+
+        // GET: /Pedidos/NuevaMesa/{numeroMesa}
+        [HttpGet]
+        public async Task<IActionResult> NuevaMesa(int numeroMesa)
+        {
+            try
+            {
+                var ocupadas = await _pedidoService.ObtenerMesasOcupadasAsync();
+                if (ocupadas.Contains(numeroMesa))
+                {
+                    TempData["Error"] = $"La Mesa {numeroMesa} ya está ocupada.";
+                    return RedirectToAction("Mesas");
+                }
+
+                var usuarioId = ObtenerUsuarioId();
+                var pedido = await _pedidoService.CrearPedidoAsync(usuarioId, $"Mesa {numeroMesa}");
+                await _pedidoService.ActualizarModalidadAsync(pedido.Id_Venta, ModalidadPedido.EnMesa, numeroMesa);
+                
+                TempData["Success"] = $"Cuenta abierta para Mesa {numeroMesa}. Agregue los productos.";
+                return RedirectToAction("Editar", new { id = pedido.Id_Venta });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al abrir cuenta para mesa {Mesa}", numeroMesa);
+                TempData["Error"] = "Error al abrir cuenta para la mesa.";
+                return RedirectToAction("Mesas");
             }
         }
 
@@ -95,6 +157,9 @@ namespace VentaFacil.web.Controllers
                     return RedirectToAction("Index");
 
                 await CargarProductosEnViewBag();
+                ViewBag.TotalMesas = ObtenerTotalMesas();
+                ViewBag.MesasOcupadas = await _pedidoService.ObtenerMesasOcupadasAsync();
+
                 return View(pedido);
             }
             catch (KeyNotFoundException)
@@ -374,19 +439,25 @@ namespace VentaFacil.web.Controllers
         }
 
         // MÉTODOS AUXILIARES PRIVADOS
-        private async Task<PedidosIndexViewModel> CargarModeloVistaIndex(int usuarioId)
+        private async Task<PedidosIndexViewModel> CargarModeloVistaIndex(int usuarioId, int pagina = 1, int cantidadPorPagina = 10)
         {
             var pedidos = (await _pedidoService.ObtenerTodosLosPedidosAsync(usuarioId)).OrderByDescending(p => p.Id_Venta).ToList();
+
+            var historico = pedidos.Where(p => p.Estado == PedidoEstado.Entregado || p.Estado == PedidoEstado.Cancelado).ToList();
+            var totalHistorico = historico.Count;
 
             return new PedidosIndexViewModel
             {
                 PedidosBorrador = pedidos.Where(p => p.Estado == PedidoEstado.Borrador).ToList(),
                 PedidosPendientes = pedidos.Where(p => p.Estado == PedidoEstado.Pendiente || p.Estado == PedidoEstado.EnPreparacion).ToList(),
                 PedidosListos = pedidos.Where(p => p.Estado == PedidoEstado.Listo).ToList(),
-                PedidosEntregados = pedidos.Where(p => p.Estado == PedidoEstado.Entregado).ToList(),
-                PedidosCancelados = pedidos.Where(p => p.Estado == PedidoEstado.Cancelado).ToList(),
+                PedidosEntregados = historico.Skip((pagina - 1) * cantidadPorPagina).Take(cantidadPorPagina).ToList(),
+                PedidosCancelados = historico.Where(p => p.Estado == PedidoEstado.Cancelado).ToList(), // This might be redundant if we show them together
                 TodosLosPedidos = pedidos,
-                UsuarioId = usuarioId
+                UsuarioId = usuarioId,
+                PaginaActual = pagina,
+                CantidadPorPagina = cantidadPorPagina,
+                TotalRegistros = totalHistorico
             };
         }
 
@@ -417,8 +488,8 @@ namespace VentaFacil.web.Controllers
         {
             var pedido = await _pedidoService.ObtenerPedidoAsync(pedidoId);
 
-            if (pedido.Estado != PedidoEstado.Borrador && pedido.Estado != PedidoEstado.Pendiente)
-                return new ValidacionPagoResult { EsValido = false, Mensaje = $"El pedido no está listo para procesar pago. Estado actual: {pedido.Estado}" };
+            if (pedido.TieneFactura() || pedido.Estado == PedidoEstado.Cancelado)
+                return new ValidacionPagoResult { EsValido = false, Mensaje = $"El pedido ya ha sido pagado o está cancelado. Estado actual: {pedido.Estado}" };
 
             var esValido = await _pedidoService.ValidarPedidoParaGuardarAsync(pedidoId);
             if (!esValido)
@@ -510,5 +581,10 @@ namespace VentaFacil.web.Controllers
         public List<PedidoDto> PedidosCancelados { get; set; } = new();
         public List<PedidoDto> TodosLosPedidos { get; set; } = new();
         public int UsuarioId { get; set; }
+
+        public int PaginaActual { get; set; } = 1;
+        public int CantidadPorPagina { get; set; } = 10;
+        public int TotalRegistros { get; set; }
+        public int TotalPaginas => (int)Math.Ceiling((double)TotalRegistros / CantidadPorPagina);
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace VentaFacil.web.Models.Dto
 {
@@ -11,6 +11,7 @@ namespace VentaFacil.web.Models.Dto
         public DateTime? HoraInicioPausa { get; set; }
         public DateTime? HoraFinPausa { get; set; }
         public decimal HorasTrabajadas { get; set; }   // ← AQUÍ EL CAMBIO
+        public bool EsFeriado { get; set; }
         public string? Observaciones { get; set; }
     }
 }

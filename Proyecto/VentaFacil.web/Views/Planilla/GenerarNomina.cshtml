@@ -1,4 +1,4 @@
-﻿@using VentaFacil.web.Models.Dto
+@using VentaFacil.web.Models.Dto
 @model GenerarNominaDto
 
 <style>
@@ -92,6 +92,14 @@
                                 <input asp-for="FechaFinal" type="date" class="form-control" id="inputFin" />
                                 <span asp-validation-for="FechaFinal" class="text-danger"></span>
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Id_Usr" class="form-label">Colaborador</label>
+                            <select asp-for="Id_Usr" class="form-select" asp-items="ViewBag.Usuarios">
+                                <option value="">-- Todos los colaboradores --</option>
+                            </select>
+                            <span asp-validation-for="Id_Usr" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3" id="periodoInfo">

@@ -11,7 +11,7 @@ using VentaFacil.web.Services.PDF;
 
 namespace VentaFacil.web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrador,Cajero")]
     public class CajaController : Controller
     {
         private readonly ICajaService _cajaService;
@@ -24,24 +24,10 @@ namespace VentaFacil.web.Controllers
         }
 
         // Acción para listar todas las cajas
-        public async Task<IActionResult> Listar()
+        public async Task<IActionResult> Listar(int pagina = 1, int cantidadPorPagina = 10)
         {
-            var cajas = await _cajaService.ListarCajasAsync();
-            var cajasDto = cajas.Select(c => new CajaDto
-            {
-                Id_Caja = c.Id_Caja,
-                Id_Usuario = c.Id_Usuario,
-                Fecha_Apertura = c.Fecha_Apertura,
-                Fecha_Cierre = c.Fecha_Cierre,
-                Monto_Inicial = c.Monto_Inicial,
-                Monto = c.Monto,
-                Monto_Inicial_USD = c.Monto_Inicial_USD,
-                Monto_USD = c.Monto_USD,
-                Estado = c.Estado
-                
-            }).ToList();
-
-            return View(cajasDto); 
+            var response = await _cajaService.ListarCajasAsync(pagina, cantidadPorPagina);
+            return View(response); 
         }
 
         // GET: CajaController/Abrir
@@ -63,7 +49,7 @@ namespace VentaFacil.web.Controllers
 
             if (ModelState.IsValid)
             {
-                int idUsuario = 1; //Obtener el ID del usuario autenticado
+                int idUsuario = int.Parse(User.FindFirst("UsuarioId")?.Value ?? "0"); //Obtener el ID del usuario autenticado
                 await _cajaService.AbrirCajaAsync(idUsuario, montoInicial, montoInicialUSD);
                 TempData["Success"] = "Caja abierta correctamente.";
                 return RedirectToAction(nameof(Listar));
@@ -88,7 +74,7 @@ namespace VentaFacil.web.Controllers
             {
                 try
                 {
-                    int idUsuario = 1; // Obtener el ID del usuario autenticado
+                    int idUsuario = int.Parse(User.FindFirst("UsuarioId")?.Value ?? "0"); // Obtener el ID del usuario autenticado
                     await _cajaService.CerrarCajaAsync(id, idUsuario, montoFisico, montoFisicoUSD, justificacion);
                     TempData["Success"] = "Caja cerrada correctamente.";
                 }
@@ -127,7 +113,7 @@ namespace VentaFacil.web.Controllers
 
             if (ModelState.IsValid)
             {
-                int idUsuario = 1; //Obtener el ID del usuario autenticado
+                int idUsuario = int.Parse(User.FindFirst("UsuarioId")?.Value ?? "0"); //Obtener el ID del usuario autenticado
 
                 await _cajaService.RegistrarRetiroAsync(id, idUsuario, monto, motivo);
                 TempData["Success"] = "Retiro registrado correctamente.";
@@ -175,8 +161,7 @@ namespace VentaFacil.web.Controllers
         // GET: CajaController/GenerarArqueo
         public async Task<IActionResult> GenerarArqueo(int idCaja)
         {
-            var cajas = await _cajaService.ListarCajasAsync();
-            var caja = cajas.FirstOrDefault(c => c.Id_Caja == idCaja);
+            var caja = await _cajaService.ObtenerCajaPorIdAsync(idCaja);
             
             if (caja == null)
             {

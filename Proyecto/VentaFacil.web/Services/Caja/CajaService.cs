@@ -142,9 +142,39 @@ namespace VentaFacil.web.Services.Caja
             return retiro;
         }
 
-        public async Task<List<VentaFacil.web.Models.Caja>> ListarCajasAsync()
+        public async Task<VentaFacil.web.Models.Response.Caja.ListCajaResponse> ListarCajasAsync(int pagina = 1, int cantidadPorPagina = 10)
         {
-            return await _context.Caja.ToListAsync();
+            var query = _context.Caja.OrderByDescending(c => c.Fecha_Apertura);
+            var totalRegistros = await query.CountAsync();
+            var totalPaginas = (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
+
+            var cajas = await query
+                .Skip((pagina - 1) * cantidadPorPagina)
+                .Take(cantidadPorPagina)
+                .ToListAsync();
+
+            var cajasDto = cajas.Select(c => new VentaFacil.web.Models.Dto.CajaDto
+            {
+                Id_Caja = c.Id_Caja,
+                Id_Usuario = c.Id_Usuario,
+                Fecha_Apertura = c.Fecha_Apertura,
+                Fecha_Cierre = c.Fecha_Cierre,
+                Monto_Inicial = c.Monto_Inicial,
+                Monto = c.Monto,
+                Monto_Inicial_USD = c.Monto_Inicial_USD,
+                Monto_USD = c.Monto_USD,
+                Estado = c.Estado
+            }).ToList();
+
+            return new VentaFacil.web.Models.Response.Caja.ListCajaResponse
+            {
+                Success = true,
+                Cajas = cajasDto,
+                PaginaActual = pagina,
+                TotalPaginas = totalPaginas,
+                CantidadPorPagina = cantidadPorPagina,
+                TotalRegistros = totalRegistros
+            };
         }
 
         public async Task<List<CajaRetiro>> ObtenerRetirosPorCajaAsync(int idCaja)
@@ -169,7 +199,6 @@ namespace VentaFacil.web.Services.Caja
                 .Where(r => r.FechaHora >= desde && r.Monto < 0)
                 .SumAsync(r => r.Monto);
         }
-
         public async Task<bool> ExisteCajaAbiertaAsync(int? idUsuario = null)
         {
             var query = _context.Caja.Where(c => c.Estado == "Abierta");
@@ -180,6 +209,11 @@ namespace VentaFacil.web.Services.Caja
             }
 
             return await query.AnyAsync();
+        }
+
+        public async Task<VentaFacil.web.Models.Caja> ObtenerCajaPorIdAsync(int idCaja)
+        {
+            return await _context.Caja.FirstOrDefaultAsync(c => c.Id_Caja == idCaja);
         }
 
         public async Task CerrarCajasExcedidasAsync()

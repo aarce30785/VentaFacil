@@ -11,7 +11,7 @@ namespace VentaFacil.web.Models.Dto
         public DateTime Fecha { get; set; } = DateTime.Now;
         public decimal Total { get; set; }
         public decimal Subtotal => Items?.Sum(i => i.Subtotal) ?? 0m;
-        public decimal Impuestos => Subtotal * 0.13m; // 13% IVA
+        public decimal Impuestos => 0m; // Sin IVA
         public PedidoEstado Estado { get; set; } = PedidoEstado.Borrador;
         public int Id_Usuario { get; set; }
         public string? Cliente { get; set; }

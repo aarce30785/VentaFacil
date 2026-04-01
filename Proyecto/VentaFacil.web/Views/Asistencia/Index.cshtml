@@ -1,7 +1,7 @@
 @{
     ViewData["Title"] = "Mi Asistencia";
     var jornada = ViewBag.JornadaActiva as VentaFacil.web.Models.Planilla;
-    var recibos = ViewBag.Recibos as List<VentaFacil.web.Models.Planilla>;
+    var recibos = ViewBag.Recibos as List<VentaFacil.web.Models.Dto.NominaDetalleDto>;
 
     var cultureCR = new System.Globalization.CultureInfo("es-CR");
     var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
@@ -125,6 +125,12 @@
 
                             <div class="col-6">
                                 <form asp-action="MarcarSalida" asp-controller="Asistencia" method="post">
+                                    <div class="form-check mb-3 text-start">
+                                        <input class="form-check-input" type="checkbox" name="esFeriado" id="esFeriado" value="true">
+                                        <label class="form-check-label fw-bold text-primary" for="esFeriado">
+                                            <i class="fas fa-umbrella-beach me-1"></i> ¿Es feriado?
+                                        </label>
+                                    </div>
                                     <button type="submit" class="btn btn-danger clock-btn text-white">
                                         <i class="fas fa-sign-out-alt"></i>
                                         Marcar Salida
@@ -163,15 +169,15 @@
                                     {
                                         <tr>
                                             <td>
-                                                <small class="d-block fw-bold">@recibo.Nomina?.FechaInicio.ToString("dd/MMM") - @recibo.Nomina?.FechaFinal.ToString("dd/MMM/yyyy")</small>
+                                                <small class="d-block fw-bold">@recibo.FechaInicio.ToString("dd/MMM") - @recibo.FechaFinal.ToString("dd/MMM/yyyy")</small>
                                             </td>
-                                            <td>@recibo.Nomina?.FechaGeneracion.ToString("dd/MM/yyyy")</td>
-                                            <td class="text-end text-dark">@recibo.SalarioBruto.ToString("C", numberFormat)</td>
-                                            <td class="text-end text-danger">@recibo.Deducciones.ToString("C", numberFormat)</td>
-                                            <td class="text-end fw-bold text-success fs-6">@recibo.SalarioNeto.ToString("C", numberFormat)</td>
+                                            <td>@recibo.FechaGeneracion.ToString("dd/MM/yyyy")</td>
+                                            <td class="text-end text-dark">@recibo.TotalBruto.ToString("C", numberFormat)</td>
+                                            <td class="text-end text-danger">@recibo.TotalDeducciones.ToString("C", numberFormat)</td>
+                                            <td class="text-end fw-bold text-success fs-6">@recibo.TotalNeto.ToString("C", numberFormat)</td>
                                             <td class="text-end">
-                                                <a href="@Url.Action("ExportarNomina", "Planilla", new { idNomina = recibo.Id_Nomina })" class="btn btn-sm btn-outline-primary" target="_blank" title="Descargar Recibo de Pago">
-                                                    <i class="fas fa-download"></i>
+                                                <a href="@Url.Action("DetalleRecibo", "Asistencia", new { idNomina = recibo.Id_Nomina })" class="btn btn-sm btn-outline-primary" title="Ver Detalle Deduciones">
+                                                    <i class="fas fa-eye"></i> Detalle
                                                 </a>
                                             </td>
                                         </tr>

@@ -1,12 +1,12 @@
-@model List<VentaFacil.web.Models.Dto.FacturaDto>
+@model VentaFacil.web.Models.Response.Factura.ListFacturaResponse
 
 @{
     ViewData["Title"] = "Historial de Facturas";
     Layout = "_LayoutPlantilla";
 
-    var totalFacturas = Model?.Count() ?? 0;
-    var totalMonto = Model?.Sum(f => f.Total) ?? 0;
-    var anuladas = Model?.Count(f => f.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Anulada) ?? 0;
+    var totalFacturas = Model.TotalRegistros;
+    var totalMonto = Model.TotalMonto;
+    var anuladasCount = Model.TotalAnuladas;
 
     var cultureCR = System.Globalization.CultureInfo.GetCultureInfo("es-CR");
     var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
@@ -108,6 +108,28 @@
         transform: scale(1.1);
     }
 
+    /* Paginación Premium */
+    .pagination-premium {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .pagination-premium .page-link {
+        border: none;
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        color: #4f46e5;
+        font-weight: 600;
+        transition: all 0.2s;
+        background: #f8fafc;
+    }
+    .pagination-premium .page-item.active .page-link {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
     .animate-fade-in {
         animation: fadeIn 0.5s ease-out;
     }
@@ -119,216 +141,235 @@
 </style>
 
 <!-- ========== table components start ========== -->
-<!-- ========== table components start ========== -->
 <div class="table-wrapper">
-    <!-- ========== title-wrapper start ========== -->
     <div class="title-wrapper pt-30">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="title">
-                        <h2 class="fw-bold text-dark">Historial de Facturas</h2>
-                        <p class="text-muted text-sm">Gestiona y consulta todas las transacciones realizadas</p>
-                    </div>
+        <div class="row align-items-center mb-3 mb-md-0">
+            <div class="col-12 col-md-6">
+                <div class="title text-center text-md-start mb-3 mb-md-0">
+                    <h2 class="fw-bold text-dark">Historial de Facturas</h2>
+                    <p class="text-muted text-sm mb-0">Gestiona y consulta todas las transacciones realizadas</p>
                 </div>
-                <div class="col-md-6">
-                    <div class="breadcrumb-wrapper">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#0">Dashboard</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Facturas</li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
+            </div>
+            <div class="col-12 col-md-6 text-end">
+                 <!-- Stats Grid embedded in header row or separate -->
             </div>
         </div>
+    </div>
 
-        <!-- Filter Card -->
-        <div class="premium-card mb-4 p-4">
-             <div class="d-flex align-items-center mb-3">
-                <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                    <i class="lni lni-funnel fs-4"></i>
-                </div>
-                <h6 class="mb-0">Filtros de Búsqueda</h6>
+    <!-- Filter Card -->
+    <div class="premium-card mb-4 p-4">
+            <div class="d-flex align-items-center mb-3">
+            <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                <i class="lni lni-funnel fs-4"></i>
             </div>
-            <form method="get" action="@Url.Action("Index", "Facturacion")">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="fechaInicio" class="form-label text-sm fw-bold text-muted">Fecha Inicio</label>
-                        <input type="date" class="form-control rounded-pill bg-light border-0 px-3" id="fechaInicio" name="fechaInicio" value="@ViewBag.FechaInicio">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="fechaFin" class="form-label text-sm fw-bold text-muted">Fecha Fin</label>
-                        <input type="date" class="form-control rounded-pill bg-light border-0 px-3" id="fechaFin" name="fechaFin" value="@ViewBag.FechaFin">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="numeroFactura" class="form-label text-sm fw-bold text-muted">N° Factura</label>
-                        <input type="number" class="form-control rounded-pill bg-light border-0 px-3" id="numeroFactura" name="numeroFactura" value="@ViewBag.NumeroFactura" placeholder="Ej: 123">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="cliente" class="form-label text-sm fw-bold text-muted">Cliente</label>
-                        <input type="text" class="form-control rounded-pill bg-light border-0 px-3" id="cliente" name="cliente" value="@ViewBag.Cliente" placeholder="Nombre...">
-                    </div>
-                    <div class="col-12 text-end mt-4">
-                        <a href="@Url.Action("Index", "Facturacion")" class="btn btn-light rounded-pill px-4 me-2">
-                            <i class="lni lni-reload me-2"></i> Limpiar
-                        </a>
-                        <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-4">
-                            <i class="lni lni-search-alt me-2"></i> Buscar
-                        </button>
-                    </div>
-                </div>
-            </form>
+            <h6 class="mb-0">Filtros de Búsqueda</h6>
         </div>
+        <form method="get" action="@Url.Action("Index", "Facturacion")">
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label for="fechaInicio" class="form-label text-sm fw-bold text-muted">Fecha Inicio</label>
+                    <input type="date" class="form-control rounded-pill bg-light border-0 px-3" id="fechaInicio" name="fechaInicio" value="@Model.FechaInicio?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label for="fechaFin" class="form-label text-sm fw-bold text-muted">Fecha Fin</label>
+                    <input type="date" class="form-control rounded-pill bg-light border-0 px-3" id="fechaFin" name="fechaFin" value="@Model.FechaFin?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label for="numeroFactura" class="form-label text-sm fw-bold text-muted">N° Factura</label>
+                    <input type="number" class="form-control rounded-pill bg-light border-0 px-3" id="numeroFactura" name="numeroFactura" value="@Model.NumeroFactura" placeholder="Ej: 123">
+                </div>
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label for="cliente" class="form-label text-sm fw-bold text-muted">Cliente</label>
+                    <input type="text" class="form-control rounded-pill bg-light border-0 px-3" id="cliente" name="cliente" value="@Model.Cliente" placeholder="Nombre...">
+                </div>
+                <div class="col-12 d-flex flex-column flex-sm-row justify-content-sm-end mt-4 gap-2">
+                    <a href="@Url.Action("Index", "Facturacion")" class="btn btn-light rounded-pill px-4">
+                        <i class="lni lni-reload me-2"></i> Limpiar
+                    </a>
+                    <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-4">
+                        <i class="lni lni-search-alt me-2"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 
-        <!-- Stats Grid -->
-        <div class="row g-4 mb-4">
-            <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="premium-card stat-card">
-                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
-                        <i class="lni lni-files"></i>
-                    </div>
-                    <div>
-                        <h3 class="mb-0 fw-bold">@totalFacturas</h3>
-                        <span class="text-sm text-muted">Total Facturas</span>
-                    </div>
+    <!-- Stats Grid -->
+    <div class="row g-3 g-lg-4 mb-4">
+        <div class="col-6 col-md-4 col-xl-3">
+            <div class="premium-card stat-card p-3 p-md-4 flex-column flex-sm-row text-center text-sm-start">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary mb-2 mb-sm-0 mx-auto mx-sm-0 me-sm-3">
+                    <i class="lni lni-files"></i>
                 </div>
-            </div>
-            <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="premium-card stat-card">
-                    <div class="stat-icon bg-success bg-opacity-10 text-success">
-                        <i class="lni lni-dollar"></i>
-                    </div>
-                    <div>
-<h3 class="mb-0 fw-bold">@totalMonto.ToString("C0", numberFormat)</h3>
-                        <span class="text-sm text-muted">Monto Total</span>
-                    </div>
-                </div>
-            </div>
-             <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="premium-card stat-card">
-                    <div class="stat-icon bg-danger bg-opacity-10 text-danger">
-                        <i class="lni lni-ban"></i>
-                    </div>
-                    <div>
-                        <h3 class="mb-0 fw-bold">@anuladas</h3>
-                        <span class="text-sm text-muted">Facturas Anuladas</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Invoices Table -->
-        <div class="table-container animate-fade-in">
-             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h5 class="fw-bold mb-1">📄 Resultados</h5>
-                    <p class="text-sm text-muted mb-0">Listado de facturas encontradas</p>
+                    <h3 class="mb-0 fw-bold">@totalFacturas</h3>
+                    <span class="text-sm text-muted">Total Coincidencias</span>
                 </div>
             </div>
+        </div>
+        <div class="col-12 col-md-4 col-xl-3">
+            <div class="premium-card stat-card p-3 p-md-4 flex-column flex-sm-row text-center text-sm-start">
+                <div class="stat-icon bg-success bg-opacity-10 text-success mb-2 mb-sm-0 mx-auto mx-sm-0 me-sm-3">
+                    <i class="lni lni-dollar"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0 fw-bold">@totalMonto.ToString("C0", numberFormat)</h3>
+                    <span class="text-sm text-muted">Monto Total</span>
+                </div>
+            </div>
+        </div>
+            <div class="col-6 col-md-4 col-xl-3">
+            <div class="premium-card stat-card p-3 p-md-4 flex-column flex-sm-row text-center text-sm-start">
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger mb-2 mb-sm-0 mx-auto mx-sm-0 me-sm-3">
+                    <i class="lni lni-ban"></i>
+                </div>
+                <div>
+                    <h3 class="mb-0 fw-bold">@anuladasCount</h3>
+                    <span class="text-sm text-muted">Facturas Anuladas</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            @if (Model != null && Model.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table premium-table">
-                        <thead>
+    <!-- Invoices Table -->
+    <div class="table-container animate-fade-in">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold mb-1">📄 Resultados</h5>
+                <p class="text-sm text-muted mb-0">Listado de facturas encontradas (Página @Model.PaginaActual de @Model.TotalPaginas)</p>
+            </div>
+        </div>
+
+        @if (Model.Facturas != null && Model.Facturas.Any())
+        {
+            <div class="table-responsive">
+                <table class="table premium-table">
+                    <thead>
+                        <tr>
+                            <th>N° Factura</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th class="text-end">Total</th>
+                            <th>Método Pago</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var factura in Model.Facturas)
+                        {
                             <tr>
-                                <th>N° Factura</th>
-                                <th>Fecha</th>
-                                <th>Cliente</th>
-                                <th class="text-end">Total</th>
-                                <th>Método Pago</th>
-                                <th class="text-center">Estado</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var factura in Model)
-                            {
-                                <tr>
-                                    <td><span class="fw-bold text-primary">#@factura.NumeroFactura</span></td>
-                                    <td><span class="text-muted text-sm">@factura.FechaEmision.ToString("dd/MM/yyyy HH:mm")</span></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                                <i class="lni lni-user text-muted"></i>
-                                            </div>
-                                            <span class="fw-medium">@factura.Cliente</span>
+                                <td><span class="fw-bold text-primary">#@factura.NumeroFactura</span></td>
+                                <td><span class="text-muted text-sm">@factura.FechaEmision.ToString("dd/MM/yyyy HH:mm")</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <i class="lni lni-user text-muted"></i>
                                         </div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="fw-bold text-dark">@factura.Total.ToString("C", numberFormat) @factura.Moneda</div>
-                                        @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
-                                        {
-                                            <small class="text-success fw-bold d-block">Pagado: @factura.MontoPagado.ToString("C", numberFormat)</small>
-                                            <small class="text-danger fw-bold d-block">Saldo: @((factura.Total - factura.MontoPagado).ToString("C", numberFormat))</small>
-                                        }
-                                    </td>
-                                    <td><span class="badge bg-light text-dark border">@factura.MetodoPago</span></td>
-                                    <td class="text-center">
+                                        <span class="fw-medium">@factura.Cliente</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="fw-bold text-dark">@factura.Total.ToString("C", numberFormat) @factura.Moneda</div>
+                                    @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
+                                    {
+                                        <small class="text-success fw-bold d-block">Pagado: @factura.MontoPagado.ToString("C", numberFormat)</small>
+                                        <small class="text-danger fw-bold d-block">Saldo: @((factura.Total - factura.MontoPagado).ToString("C", numberFormat))</small>
+                                    }
+                                </td>
+                                <td><span class="badge bg-light text-dark border">@factura.MetodoPago</span></td>
+                                <td class="text-center">
+                                    @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Activa)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill">Activa</span>
+                                    }
+                                    else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Anulada)
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill">Anulada</span>
+                                    }
+                                    else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.NotaCredito)
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill">Nota de Crédito</span>
+                                    }
+                                    else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
+                                    {
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill">Pendiente / Parcial</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                                        <a href="@Url.Action("DetalleFactura", "Facturacion", new { facturaId = factura.Id_Factura })" 
+                                            class="action-btn text-info" title="Ver Detalle">
+                                            <i class="lni lni-eye"></i>
+                                        </a>
+                                        <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = factura.Id_Factura, esCopia = true })" 
+                                            class="action-btn text-secondary" title="Imprimir PDF" target="_blank">
+                                            <i class="lni lni-printer"></i>
+                                        </a>
+                                        
                                         @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Activa)
                                         {
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill">Activa</span>
-                                        }
-                                        else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Anulada)
-                                        {
-                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill">Anulada</span>
-                                        }
-                                        else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.NotaCredito)
-                                        {
-                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill">Nota de Crédito</span>
+                                            <button type="button" class="action-btn text-danger" title="Anular Factura" onclick="abrirModalAnular(@factura.Id_Factura, '@factura.NumeroFactura')">
+                                                <i class="lni lni-ban"></i>
+                                            </button>
+                                            
+                                            <button type="button" class="action-btn text-warning" title="Devolución" onclick="abrirModalDevolucion(@factura.Id_Factura, '@factura.NumeroFactura')">
+                                                <i class="lni lni-reload"></i>
+                                            </button>
                                         }
                                         else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
                                         {
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill">Pendiente / Parcial</span>
+                                            <button type="button" class="action-btn text-success" title="Registrar Abono" onclick="abrirModalAbono(@factura.Id_Factura, '@factura.NumeroFactura', @Math.Max(0, factura.Total - factura.MontoPagado).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))">
+                                                <i class="lni lni-coin"></i>
+                                            </button>
                                         }
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <a href="@Url.Action("DetalleFactura", "Facturacion", new { facturaId = factura.Id_Factura })" 
-                                               class="action-btn text-info" title="Ver Detalle">
-                                                <i class="lni lni-eye"></i>
-                                            </a>
-                                            <a href="@Url.Action("DescargarFactura", "Facturacion", new { facturaId = factura.Id_Factura, esCopia = true })" 
-                                               class="action-btn text-secondary" title="Imprimir PDF" target="_blank">
-                                                <i class="lni lni-printer"></i>
-                                            </a>
-                                            
-                                            @if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Activa)
-                                            {
-                                                <button type="button" class="action-btn text-danger" title="Anular Factura" onclick="abrirModalAnular(@factura.Id_Factura, '@factura.NumeroFactura')">
-                                                    <i class="lni lni-ban"></i>
-                                                </button>
-                                                
-                                                <button type="button" class="action-btn text-warning" title="Devolución" onclick="abrirModalDevolucion(@factura.Id_Factura, '@factura.NumeroFactura')">
-                                                    <i class="lni lni-reload"></i>
-                                                </button>
-                                            }
-                                            else if (factura.EstadoFactura == VentaFacil.web.Models.Enum.EstadoFactura.Pendiente)
-                                            {
-                                                <button type="button" class="action-btn text-success" title="Registrar Abono" onclick="abrirModalAbono(@factura.Id_Factura, '@factura.NumeroFactura', @Math.Max(0, factura.Total - factura.MontoPagado).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))">
-                                                    <i class="lni lni-coin"></i>
-                                                </button>
-                                            }
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 1)
             {
-                <div class="empty-state text-center py-5">
-                    <div class="mb-3">
-                        <i class="lni lni-search fs-1 text-muted"></i>
-                    </div>
-                    <h5 class="fw-bold text-muted">No se encontraron facturas</h5>
-                    <p class="text-muted text-sm">Intenta ajustar los filtros de búsqueda.</p>
-                </div>
+                <nav aria-label="Navegación de facturas" class="mt-4">
+                    <ul class="pagination pagination-premium justify-content-center">
+                        <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { pagina = Model.PaginaActual - 1, fechaInicio = Model.FechaInicio?.ToString("yyyy-MM-dd"), fechaFin = Model.FechaFin?.ToString("yyyy-MM-dd"), numeroFactura = Model.NumeroFactura, cliente = Model.Cliente })">
+                                <i class="lni lni-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPaginas; i++)
+                        {
+                            <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { pagina = i, fechaInicio = Model.FechaInicio?.ToString("yyyy-MM-dd"), fechaFin = Model.FechaFin?.ToString("yyyy-MM-dd"), numeroFactura = Model.NumeroFactura, cliente = Model.Cliente })">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { pagina = Model.PaginaActual + 1, fechaInicio = Model.FechaInicio?.ToString("yyyy-MM-dd"), fechaFin = Model.FechaFin?.ToString("yyyy-MM-dd"), numeroFactura = Model.NumeroFactura, cliente = Model.Cliente })">
+                                <i class="lni lni-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             }
-        </div>
+        }
+        else
+        {
+            <div class="empty-state text-center py-5">
+                <div class="mb-3">
+                    <i class="lni lni-search fs-1 text-muted"></i>
+                </div>
+                <h5 class="fw-bold text-muted">No se encontraron facturas</h5>
+                <p class="text-muted text-sm">Intenta ajustar los filtros de búsqueda.</p>
+            </div>
+        }
+    </div>
+</div>
 </div>
 
 <!-- Modal Anular Factura -->

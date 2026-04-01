@@ -292,7 +292,7 @@ namespace VentaFacil.web.Services.Facturacion
             return await ObtenerFacturaCompletaAsync(facturaId);
         }
 
-        public async Task<List<FacturaDto>> BuscarFacturasAsync(DateTime? fechaInicio, DateTime? fechaFin, int? numeroFactura, string? cliente)
+        public async Task<ListFacturaResponse> BuscarFacturasAsync(DateTime? fechaInicio, DateTime? fechaFin, int? numeroFactura, string? cliente, int pagina = 1, int cantidadPorPagina = 10)
         {
             try
             {
@@ -321,13 +321,20 @@ namespace VentaFacil.web.Services.Facturacion
                     }
                 }
 
-                var facturas = await query
+                var totalRegistros = await query.CountAsync();
+                var totalMonto = await query.SumAsync(f => f.Total);
+                var totalAnuladas = await query.CountAsync(f => f.Estado == EstadoFactura.Anulada);
+                var totalPaginas = (int)Math.Ceiling(totalRegistros / (double)cantidadPorPagina);
+
+                var facturasRaw = await query
                     .OrderByDescending(f => f.FechaEmision)
+                    .Skip((pagina - 1) * cantidadPorPagina)
+                    .Take(cantidadPorPagina)
                     .ToListAsync();
 
                 var facturasDto = new List<FacturaDto>();
 
-                foreach (var factura in facturas)
+                foreach (var factura in facturasRaw)
                 {
                     var detalles = await _context.DetalleVenta
                         .Where(d => d.Id_Venta == factura.Id_Venta)
@@ -336,7 +343,21 @@ namespace VentaFacil.web.Services.Facturacion
                     facturasDto.Add(MapearFacturaADto(factura, detalles));
                 }
 
-                return facturasDto;
+                return new ListFacturaResponse
+                {
+                    Success = true,
+                    Facturas = facturasDto,
+                    PaginaActual = pagina,
+                    TotalPaginas = totalPaginas,
+                    CantidadPorPagina = cantidadPorPagina,
+                    TotalRegistros = totalRegistros,
+                    TotalMonto = totalMonto,
+                    TotalAnuladas = totalAnuladas,
+                    FechaInicio = fechaInicio,
+                    FechaFin = fechaFin,
+                    NumeroFactura = numeroFactura,
+                    Cliente = cliente
+                };
             }
             catch (Exception ex)
             {
@@ -433,8 +454,8 @@ namespace VentaFacil.web.Services.Facturacion
 
                 // SE CORRIGE: Calcular total incluyendo el 13% de IVA
                 decimal subtotalDevolucion = detallesOriginales.Sum(d => d.Cantidad * d.PrecioUnitario - (d.Descuento ?? 0));
-                decimal impuestosDevolucion = Math.Round(subtotalDevolucion * 0.13m, 2);
-                decimal totalDevolucion = subtotalDevolucion + impuestosDevolucion;
+                decimal impuestosDevolucion = 0m;
+                decimal totalDevolucion = subtotalDevolucion;
 
                 // FA-3003: Create a negative Sale to adjust daily/weekly totals
                 var usuarioId = await ObtenerUsuarioIdAutenticado();
@@ -931,7 +952,7 @@ namespace VentaFacil.web.Services.Facturacion
         {
             var subtotal = detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
             var totalDescuentos = detalles.Sum(d => d.Descuento ?? 0);
-            var impuestos = factura.Total - subtotal + totalDescuentos;
+            var impuestos = 0m;
 
             return new FacturaDto
             {
@@ -941,7 +962,7 @@ namespace VentaFacil.web.Services.Facturacion
                 FechaEmision = factura.FechaEmision,
                 Cliente = factura.Cliente ?? "Cliente Genérico",
                 Subtotal = subtotal,
-                Impuestos = impuestos > 0 ? impuestos : 0,
+                Impuestos = 0m,
                 Total = factura.Total,
                 MontoPagado = factura.MontoPagado,
                 Cambio = factura.Cambio,

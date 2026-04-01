@@ -40,15 +40,29 @@ namespace VentaFacil.web.Controllers
 
             ViewBag.JornadaActiva = jornadaActiva;
 
-            // Listar planillas generadas recientes
-            var recibos = await _context.Planilla
+            // Listar nóminas generadas recientes (agrupadas por nómina)
+            var planillasRecibos = await _context.Planilla
                 .Include(p => p.Nomina)
                 .Where(p => p.Id_Usr == userId && p.Id_Nomina != null && p.Nomina.Estado != "Anulada")
-                .OrderByDescending(p => p.Nomina.FechaGeneracion)
-                .Take(5)
                 .ToListAsync();
 
-            ViewBag.Recibos = recibos;
+            var recibosSemanales = planillasRecibos
+                .GroupBy(p => p.Nomina)
+                .Select(g => new VentaFacil.web.Models.Dto.NominaDetalleDto
+                {
+                    Id_Nomina = g.Key.Id_Nomina,
+                    FechaInicio = g.Key.FechaInicio,
+                    FechaFinal = g.Key.FechaFinal,
+                    FechaGeneracion = g.Key.FechaGeneracion,
+                    TotalBruto = g.Sum(p => p.SalarioBruto),
+                    TotalDeducciones = g.Sum(p => p.Deducciones),
+                    TotalNeto = g.Sum(p => p.SalarioNeto)
+                })
+                .OrderByDescending(r => r.FechaGeneracion)
+                .Take(5)
+                .ToList();
+
+            ViewBag.Recibos = recibosSemanales;
 
             return View();
         }
@@ -58,6 +72,22 @@ namespace VentaFacil.web.Controllers
         public async Task<IActionResult> MarcarEntrada()
         {
             int userId = GetUserId();
+
+            // Verificar si el usuario tiene tarifa por hora asignada
+            var configuracion = await _context.ConfiguracionPlanilla.FirstOrDefaultAsync(c => c.Id_Usr == userId);
+            if (configuracion == null || configuracion.TarifaPorHora <= 0)
+            {
+                if (User.IsInRole("Administrador"))
+                {
+                    TempData["Error"] = "No tienes una tarifa por hora asignada. Redirigido a la configuración de planilla.";
+                    return RedirectToAction("Index", "ConfiguracionPlanilla");
+                }
+                else
+                {
+                    TempData["Error"] = "No se puede iniciar jornada: tarifa por hora no asignada. Por favor contacte a un administrador.";
+                    return RedirectToAction("Index");
+                }
+            }
 
             // Verificar si ya tiene una activa
             var jornadaActiva = await _context.Planilla
@@ -140,9 +170,86 @@ namespace VentaFacil.web.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet("Asistencia/DetalleRecibo/{idNomina}")]
+        public async Task<IActionResult> DetalleRecibo(int idNomina)
+        {
+            int userId = GetUserId();
+            var planillas = await _context.Planilla
+                .Include(p => p.Nomina)
+                .Where(p => p.Id_Usr == userId && p.Id_Nomina == idNomina && p.Nomina.Estado != "Anulada")
+                .ToListAsync();
+
+            if (!planillas.Any())
+            {
+                TempData["Error"] = "Recibo no encontrado.";
+                return RedirectToAction("Index");
+            }
+
+            var nomina = planillas.First().Nomina;
+
+            var deduccionesLey = await _context.DeduccionLey.Where(d => d.Activo).ToListAsync();
+
+            decimal totalBruto = planillas.Sum(p => p.SalarioBruto);
+            decimal totalDeducciones = planillas.Sum(p => p.Deducciones);
+            decimal totalNeto = planillas.Sum(p => p.SalarioNeto);
+
+            var detalleDto = new VentaFacil.web.Models.Dto.PlanillaDetalleItemDto
+            {
+                SalarioBruto = totalBruto,
+                Deducciones = totalDeducciones,
+                SalarioNeto = totalNeto,
+                DeduccionesDetalle = deduccionesLey.Select(d => new VentaFacil.web.Models.Dto.DeduccionDetalleItemDto
+                {
+                    Nombre = d.Nombre,
+                    Porcentaje = d.Porcentaje,
+                    Monto = totalBruto * (d.Porcentaje / 100m)
+                }).ToList(),
+                DiasLaborados = planillas.Select(p => new VentaFacil.web.Models.Dto.PlanillaDiaDto
+                {
+                    FechaInicio = p.FechaInicio,
+                    FechaFinal = p.FechaFinal,
+                    HorasTrabajadas = p.HorasTrabajadas,
+                    HorasExtras = p.HorasExtras,
+                    EsFeriado = p.EsFeriado,
+                    SalarioBruto = p.SalarioBruto
+                }).ToList()
+            };
+
+            ViewBag.Nomina = nomina;
+
+            return View(detalleDto);
+        }
+
+        [HttpGet("Asistencia/DescargarReciboPdf/{idNomina}")]
+        public async Task<IActionResult> DescargarReciboPdf(int idNomina)
+        {
+            var _planillaService = HttpContext.RequestServices.GetService(typeof(VentaFacil.web.Services.Planilla.IPlanillaService)) as VentaFacil.web.Services.Planilla.IPlanillaService;
+            var _pdfService = HttpContext.RequestServices.GetService(typeof(VentaFacil.web.Services.PDF.IPdfService)) as VentaFacil.web.Services.PDF.IPdfService;
+
+            var data = await _planillaService.ObtenerDetalleNominaParaExportarAsync(idNomina);
+            if (data == null) return NotFound();
+
+            // Validar que la nómina pertenezca al usuario (o sea admin)
+            int userId = GetUserId();
+            bool esAdmin = User.IsInRole("Administrador");
+            
+            // Como las nóminas ahora son individuales, revisamos si algún detalle pertenece al usuario
+            bool esPropia = data.Detalles.Any(d => d.Identificacion == User.Identity.Name || (User.FindFirstValue(ClaimTypes.Email) == d.Identificacion));
+            // También podemos validar por ID de usuario si tuviéramos esa info en el DTO, pero usemos identificación/correo
+            
+            if (!esAdmin && !esPropia)
+            {
+                return Forbid();
+            }
+
+            var pdfBytes = _pdfService.GenerarReciboPagoPdf(data);
+            string fileName = $"Recibo_Pago_#{idNomina}_{DateTime.Now:yyyyMMdd}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+
         [HttpPost("Asistencia/MarcarSalida")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarcarSalida()
+        public async Task<IActionResult> MarcarSalida(bool esFeriado = false)
         {
             int userId = GetUserId();
             var jornada = await _context.Planilla
@@ -181,11 +288,13 @@ namespace VentaFacil.web.Controllers
 
             jornada.HorasTrabajadas = (decimal)horasNormales;
             jornada.HorasExtras = (decimal)horasExtras;
+            jornada.EsFeriado = esFeriado;
 
             var configuracion = await _context.ConfiguracionPlanilla.FirstOrDefaultAsync(c => c.Id_Usr == userId);
             decimal tarifaPorHora = configuracion?.TarifaPorHora ?? 2500m;
 
-            jornada.SalarioBruto = (jornada.HorasTrabajadas * tarifaPorHora) + (jornada.HorasExtras * tarifaPorHora * 1.5m);
+            decimal multiplicador = esFeriado ? 2.0m : 1.0m;
+            jornada.SalarioBruto = ((jornada.HorasTrabajadas * tarifaPorHora) + (jornada.HorasExtras * tarifaPorHora * 1.5m)) * multiplicador;
 
             await _context.SaveChangesAsync();
 

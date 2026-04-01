@@ -4,8 +4,8 @@
 @{
     Layout = "_LayoutPlantilla";
     ViewData["Title"] = "KDS - Cocina";
-    var pedidosEnPreparacion = Model.Where(p => p.Estado == PedidoEstado.EnPreparacion).OrderBy(p => p.Fecha).ToList();
-    var pedidosListos = Model.Where(p => p.Estado == PedidoEstado.Listo).OrderByDescending(p => p.Fecha).ToList();
+    var pedidosEnPreparacion = Model.Where(p => p.Items.Any(i => i.Estado == PedidoEstado.EnPreparacion || i.Estado == PedidoEstado.Pendiente || i.Estado == PedidoEstado.Borrador)).OrderBy(p => p.Fecha).ToList();
+    var pedidosListos = Model.Where(p => p.Items.Any(i => i.Estado == PedidoEstado.Listo)).OrderByDescending(p => p.Fecha).ToList();
 }
 
 <style>
@@ -16,15 +16,13 @@
         --card-bg: #ffffff;
         --text-primary: #0f172a;
         --text-secondary: #64748b;
-        --accent-color: #4f46e5;
-        --success-start: #10b981;
-        --success-end: #059669;
-        --warning-start: #f59e0b;
-        --warning-end: #d97706;
-        --danger-start: #ef4444;
-        --danger-end: #dc2626;
-        --info-start: #3b82f6;
-        --info-end: #2563eb;
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
     body {
@@ -33,50 +31,49 @@
         color: var(--text-primary);
     }
 
-    .kds-header {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        padding: 1rem 2rem;
-        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-        margin-bottom: 2rem;
-        /* Fix overlapping: adjust top to match main navbar height approx 70px */
-        top: 70px; 
+    .premium-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
     }
 
-    .kds-stats-card {
-        background: #fff;
-        border-radius: 9999px; /* Pill shape */
-        padding: 0.5rem 1.25rem 0.5rem 0.5rem;
+    .premium-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .stat-card {
+        padding: 1.5rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s, box-shadow 0.2s;
+        justify-content: space-between;
     }
 
-    .kds-stats-card:hover {
-        transform: translateY(-1px);
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: white;
+        margin-right: 1.25rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .kds-card {
-        background: var(--card-bg);
-        border-radius: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        overflow: hidden;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .kds-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
+    .bg-gradient-primary { background: var(--primary-gradient); }
+    .bg-gradient-success { background: var(--success-gradient); }
+    .bg-gradient-warning { background: var(--warning-gradient); }
+    .bg-gradient-danger { background: var(--danger-gradient); }
+    .bg-gradient-info { background: var(--info-gradient); }
 
     .kds-card-header {
         padding: 1.25rem;
@@ -86,9 +83,6 @@
         align-items: flex-start;
         border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-
-    .header-prep { background: linear-gradient(135deg, var(--warning-start), var(--warning-end)); }
-    .header-ready { background: linear-gradient(135deg, var(--success-start), var(--success-end)); }
 
     .kds-card-body {
         padding: 1.25rem;
@@ -161,7 +155,7 @@
     }
 
     .timer-badge {
-        font-family: 'Courier New', monospace; /* Monospaced for stability */
+        font-family: 'Courier New', monospace;
         font-weight: 700;
         font-size: 0.95rem;
         padding: 0.35rem 0.75rem;
@@ -196,7 +190,7 @@
     }
 
     .btn-ready {
-        background: linear-gradient(135deg, var(--success-start), var(--success-end));
+        background: var(--success-gradient);
         color: white;
     }
     .btn-ready:hover { 
@@ -206,7 +200,7 @@
     }
 
     .btn-deliver {
-        background: linear-gradient(135deg, var(--info-start), var(--info-end));
+        background: var(--info-gradient);
         color: white;
     }
     .btn-deliver:hover { 
@@ -225,67 +219,52 @@
         margin: 2rem auto;
         max-width: 600px;
     }
-    
-    .search-pill {
-        border-radius: 9999px;
-        border: 1px solid #e2e8f0;
-        padding-left: 1rem;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        transition: all 0.2s;
-    }
-    .search-pill:focus-within {
-        border-color: var(--accent-color);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
-    .search-input {
-        border: none;
-        background: transparent;
-    }
-    .search-input:focus {
-        box-shadow: none;
-    }
 </style>
 
-<div class="cocina-wrapper">
-    <!-- Header -->
-    <div class="kds-header d-flex justify-content-between align-items-center sticky-top z-index-999">
-        <div class="d-flex align-items-center gap-4">
-            <h3 class="fw-bold mb-0 text-dark"><i class="lni lni-chef-hat me-2 text-primary"></i>Cocina</h3>
-            
-            <div class="d-flex gap-3">
-                <div class="kds-stats-card">
-                    <div class="rounded-circle bg-warning bg-opacity-10 p-2 text-warning">
-                        <i class="lni lni-timer fs-5"></i>
-                    </div>
-                    <div>
-                        <h5 class="mb-0 fw-bold">@pedidosEnPreparacion.Count</h5>
-                        <small class="text-muted">En Preparación</small>
-                    </div>
-                </div>
-                <div class="kds-stats-card">
-                    <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success">
-                        <i class="lni lni-checkmark-circle fs-5"></i>
-                    </div>
-                    <div>
-                        <h5 class="mb-0 fw-bold">@pedidosListos.Count</h5>
-                        <small class="text-muted">Listos</small>
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid py-4">
+    <!-- Hero Section -->
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-chef-hat me-2"></i>Cocina</h1>
+            <p class="mb-0 text-white-50 fs-5">Pantalla de Kitchen Display System</p>
         </div>
-
-        <div class="d-flex gap-3 align-items-center">
-            <div class="input-group search-pill bg-white" style="width: 320px;">
-                <span class="input-group-text bg-transparent border-0 text-muted ps-2"><i class="lni lni-search"></i></span>
-                <input type="text" id="filtroKds" class="form-control search-input border-0" placeholder="Filtrar por #, cliente..." onkeyup="filtrarPedidos()">
+        <div class="position-relative z-1">
+            <div class="d-flex gap-2">
+                <input type="text" id="filtroKds" class="form-control rounded-pill border-0 px-4" placeholder="Filtrar pedidos..." onkeyup="filtrarPedidos()" style="width: 250px;">
+                <button class="btn fw-bold rounded-pill px-3 shadow-sm" style="background-color: #FFF8DC; color: #1e293b; border: 2px solid #FFD700;" onclick="location.reload()" title="Actualizar">
+                    <i class="lni lni-reload"></i>
+                </button>
             </div>
-            <button class="btn btn-white shadow-sm border rounded-circle p-2 text-secondary" onclick="location.reload()" title="Actualizar" style="width: 42px; height: 42px;">
-                <i class="lni lni-reload"></i>
-            </button>
         </div>
     </div>
 
-    <div class="p-4">
+    <!-- Stats Grid -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="premium-card stat-card border-warning" style="border-left: 4px solid #f59e0b;">
+                <div class="stat-icon bg-gradient-warning">
+                    <i class="lni lni-timer"></i>
+                </div>
+                <div class="text-end">
+                    <h6 class="text-muted fw-bold text-uppercase mb-1">En Preparación</h6>
+                    <h3 class="mb-0 fw-bold">@pedidosEnPreparacion.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="premium-card stat-card border-success" style="border-left: 4px solid #10b981;">
+                <div class="stat-icon bg-gradient-success">
+                    <i class="lni lni-checkmark-circle"></i>
+                </div>
+                <div class="text-end">
+                    <h6 class="text-muted fw-bold text-uppercase mb-1">Listos</h6>
+                    <h3 class="mb-0 fw-bold">@pedidosListos.Count</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
         @if (!pedidosEnPreparacion.Any() && !pedidosListos.Any())
         {
             <div class="empty-kds">
@@ -301,15 +280,15 @@
                 @foreach (var pedido in pedidosEnPreparacion)
                 {
                     <div class="col-xl-3 col-lg-4 col-md-6 pedido-item" data-texto="@pedido.Id_Venta @pedido.Cliente @pedido.NumeroMesa">
-                        <div class="kds-card">
-                            <div class="kds-card-header header-prep">
+                        <div class="premium-card">
+                            <div class="kds-card-header bg-gradient-warning rounded-top-0 border-0">
                                 <div>
-                                    <h5 class="mb-0 fw-bold">#@pedido.Id_Venta</h5>
-                                    <small>@pedido.Cliente</small>
+                                    <h5 class="mb-0 fw-bold text-white">#@pedido.Id_Venta</h5>
+                                    <small class="text-white opacity-75">@pedido.Cliente</small>
                                 </div>
                                 <div class="text-end">
                                     <div class="timer-badge" data-start="@pedido.Fecha.ToString("yyyy-MM-ddTHH:mm:ss")">00:00</div>
-                                    <small>
+                                    <small class="text-white fw-bold d-block mt-1">
                                         @if(pedido.Modalidad == ModalidadPedido.EnMesa) { <i class="lni lni-restaurant"></i> @:Mesa @pedido.NumeroMesa
                                         } else { <i class="lni lni-takeaway"></i> @:Llevar
                                         }
@@ -324,7 +303,7 @@
                                     </div>
                                 }
 
-                                @foreach (var item in pedido.Items)
+                                @foreach (var item in pedido.Items.Where(i => i.Estado == PedidoEstado.EnPreparacion || i.Estado == PedidoEstado.Pendiente || i.Estado == PedidoEstado.Borrador))
                                 {
                                     <div class="kds-item">
                                         <div class="item-qty">@item.Cantidad</div>
@@ -338,12 +317,12 @@
                                     </div>
                                 }
                             </div>
-                            <div class="kds-card-footer">
+                            <div class="kds-card-footer border-top-0 px-3 pb-3 bg-white">
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-light border flex-grow-0" onclick="agregarNota(@pedido.Id_Venta)" title="Agregar Nota">
-                                        <i class="lni lni-pencil"></i>
+                                    <button class="btn btn-light border flex-grow-0 rounded-3 px-3 shadow-sm" onclick="agregarNota(@pedido.Id_Venta)" title="Agregar Nota">
+                                        <i class="lni lni-pencil text-muted"></i>
                                     </button>
-                                    <button class="btn-action btn-ready" onclick="marcarListo(@pedido.Id_Venta)">
+                                    <button class="btn-action btn-ready rounded-3" onclick="marcarListo(@pedido.Id_Venta)">
                                         <i class="lni lni-checkmark-circle me-2"></i> Listo
                                     </button>
                                 </div>
@@ -356,15 +335,15 @@
                 @foreach (var pedido in pedidosListos)
                 {
                     <div class="col-xl-3 col-lg-4 col-md-6 pedido-item" data-texto="@pedido.Id_Venta @pedido.Cliente @pedido.NumeroMesa">
-                        <div class="kds-card border-success">
-                            <div class="kds-card-header header-ready">
+                        <div class="premium-card">
+                            <div class="kds-card-header bg-gradient-success rounded-top-0 border-0">
                                 <div>
-                                    <h5 class="mb-0 fw-bold">#@pedido.Id_Venta</h5>
-                                    <small>@pedido.Cliente</small>
+                                    <h5 class="mb-0 fw-bold text-white">#@pedido.Id_Venta</h5>
+                                    <small class="text-white opacity-75">@pedido.Cliente</small>
                                 </div>
                                 <div class="text-end">
-                                    <div class="badge bg-white text-success fw-bold"><i class="lni lni-checkmark"></i> LISTO</div>
-                                    <div class="mt-1 small">
+                                    <div class="badge bg-white text-success fw-bold px-3 py-2 rounded-pill"><i class="lni lni-checkmark"></i> LISTO</div>
+                                    <div class="mt-2 small text-white fw-bold">
                                         @if(pedido.Modalidad == ModalidadPedido.EnMesa) { <i class="lni lni-restaurant"></i> @:Mesa @pedido.NumeroMesa
                                         } else { <i class="lni lni-takeaway"></i> @:Llevar
                                         }
@@ -372,7 +351,7 @@
                                 </div>
                             </div>
                             <div class="kds-card-body opacity-75">
-                                @foreach (var item in pedido.Items)
+                                @foreach (var item in pedido.Items.Where(i => i.Estado == PedidoEstado.Listo))
                                 {
                                     <div class="kds-item">
                                         <div class="item-qty bg-success bg-opacity-10 text-success">@item.Cantidad</div>
@@ -381,11 +360,6 @@
                                         </div>
                                     </div>
                                 }
-                            </div>
-                            <div class="kds-card-footer">
-                                <button class="btn-action btn-deliver" onclick="marcarEntregado(@pedido.Id_Venta)">
-                                    <i class="lni lni-delivery me-2"></i> Entregar
-                                </button>
                             </div>
                         </div>
                     </div>

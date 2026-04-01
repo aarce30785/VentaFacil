@@ -1,9 +1,9 @@
-@model IEnumerable<VentaFacil.web.Models.Dto.CajaDto>
+@model VentaFacil.web.Models.Response.Caja.ListCajaResponse
 
 @{
     ViewData["Title"] = "Caja";
     Layout = "_LayoutPlantilla";
-    var cajaAbierta = Model.FirstOrDefault(c => c.Estado == "Abierta" && c.Fecha_Apertura.Date == DateTime.Now.Date);
+    var cajaAbierta = Model.Cajas.FirstOrDefault(c => c.Estado == "Abierta" && c.Fecha_Apertura.Date == DateTime.Now.Date);
 }
 
 <style>
@@ -81,6 +81,32 @@
         font-weight: 600;
         padding: 0.5rem 1.5rem;
     }
+
+    /* Paginación Premium */
+    .pagination-premium {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .pagination-premium .page-link {
+        border: none;
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        color: #4f46e5;
+        font-weight: 600;
+        transition: all 0.2s;
+        background: #f8fafc;
+    }
+    .pagination-premium .page-item.active .page-link {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    .pagination-premium .page-link:hover:not(.active) {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -94,19 +120,19 @@
             <div class="d-flex gap-2">
                 @if (cajaAbierta == null)
                 {
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #1e293b; border: 2px solid #FFD700;" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
+                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #1e293b; border: 2px solid #ffffff;" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
                         <i class="lni lni-plus me-2"></i> Abrir caja
                     </button>
                 }
                 else
                 {
-                    <a href="@Url.Action("GenerarArqueo", "Caja", new { idCaja = cajaAbierta.Id_Caja })" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #1e293b; border: 2px solid #FFD700;" target="_blank">
+                    <a href="@Url.Action("GenerarArqueo", "Caja", new { idCaja = cajaAbierta.Id_Caja })" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #1e293b; border: 2px solid #ffffff;" target="_blank">
                         <i class="lni lni-printer me-2"></i> Arqueo / Corte
                     </a>
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #dc2626; border: 2px solid #FFD700;" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
+                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #dc2626; border: 2px solid #ffffff;" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
                         <i class="lni lni-lock me-2"></i> Cerrar Caja
                     </button>
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #FFF8DC; color: #d97706; border: 2px solid #FFD700;" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
+                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #d97706; border: 2px solid #ffffff;" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
                         <i class="lni lni-minus me-2"></i> Retiro
                     </button>
                 }
@@ -130,40 +156,69 @@
             </div>
         }
         <div class="table-container">
-        <table class="table premium-table">
-            <thead>
-                <tr>
-                    
-                    <th>@Html.DisplayNameFor(model => model.Fecha_Apertura)</th>
-                    <th>@Html.DisplayNameFor(model => model.Fecha_Cierre)</th>
-                    <th>@Html.DisplayNameFor(model => model.Monto_Inicial)</th>
-                    <th>@Html.DisplayNameFor(model => model.Monto)</th>
-                    <th>@Html.DisplayNameFor(model => model.Monto_Inicial_USD)</th>
-                    <th>@Html.DisplayNameFor(model => model.Monto_USD)</th>
-                    <th>@Html.DisplayNameFor(model => model.Estado)</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var item in Model) {
-                <tr>
-                    
-                    <td>@Html.DisplayFor(modelItem => item.Fecha_Apertura)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Fecha_Cierre)</td>
-                    <td class="text-success fw-bold">@((item.Monto_Inicial).ToString("C"))</td>
-                    <td class="text-success fw-bold">@(((decimal)(item.Monto ?? 0)).ToString("C"))</td>
-                    <td class="text-info fw-bold">$@((item.Monto_Inicial_USD).ToString("N2"))</td>
-                    <td class="text-info fw-bold">$@(((decimal)(item.Monto_USD ?? 0)).ToString("N2"))</td>
-                    <td>@Html.DisplayFor(modelItem => item.Estado)</td>
-                    <td class="caja-actions">
-                        <button type="button" class="btn btn-mustard btn-sm" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
-                            <i class="fas fa-eye"></i> Ver Retiros
-                        </button>
-                    </td>
-                </tr>
+            <table class="table premium-table">
+                <thead>
+                    <tr>
+                        <th>Fecha Apertura</th>
+                        <th>Fecha Cierre</th>
+                        <th>Monto Inicial</th>
+                        <th>Monto Actual</th>
+                        <th>Inicial USD</th>
+                        <th>Actual USD</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.Cajas) {
+                    <tr>
+                        <td>@item.Fecha_Apertura.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@(item.Fecha_Cierre?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                        <td class="text-success fw-bold">@item.Monto_Inicial.ToString("C", new System.Globalization.CultureInfo("es-CR"))</td>
+                        <td class="text-success fw-bold">@((item.Monto ?? 0).ToString("C", new System.Globalization.CultureInfo("es-CR")))</td>
+                        <td class="text-info fw-bold">$@item.Monto_Inicial_USD.ToString("N2")</td>
+                        <td class="text-info fw-bold">$@((item.Monto_USD ?? 0).ToString("N2"))</td>
+                        <td>
+                            <span class="badge @(item.Estado == "Abierta" ? "bg-success" : "bg-secondary") rounded-pill">
+                                @item.Estado
+                            </span>
+                        </td>
+                        <td class="caja-actions text-end">
+                            <button type="button" class="btn btn-mustard btn-sm" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
+                                <i class="fas fa-eye me-1"></i> Retiros
+                            </button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <nav aria-label="Navegación de cajas" class="mt-4">
+                    <ul class="pagination pagination-premium justify-content-center">
+                        <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Listar", new { pagina = Model.PaginaActual - 1 })">
+                                <i class="lni lni-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.TotalPaginas; i++)
+                        {
+                            <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Listar", new { pagina = i })">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Listar", new { pagina = Model.PaginaActual + 1 })">
+                                <i class="lni lni-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             }
-            </tbody>
-        </table>
         </div>
     </div>
 </div>
@@ -209,7 +264,7 @@
         <div class="alert alert-info py-2 mb-3 d-flex justify-content-between">
             <div>
                 <strong>Sistema (CRC): </strong>
-                <span class="fs-5 text-success fw-bold">@(((decimal)(cajaAbierta?.Monto ?? 0)).ToString("C"))</span>
+                <span class="fs-5 text-success fw-bold">@(((decimal)(cajaAbierta?.Monto ?? 0)).ToString("C", new System.Globalization.CultureInfo("es-CR")))</span>
             </div>
             <div>
                 <strong>Sistema (USD): </strong>

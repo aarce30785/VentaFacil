@@ -48,7 +48,7 @@ namespace VentaFacil.web.Controllers
 
         // GET: /Facturacion
         [HttpGet]
-        public async Task<IActionResult> Index(DateTime? fechaInicio, DateTime? fechaFin, int? numeroFactura, string? cliente)
+        public async Task<IActionResult> Index(DateTime? fechaInicio, DateTime? fechaFin, int? numeroFactura, string? cliente, int pagina = 1, int cantidadPorPagina = 10)
         {
             try
             {
@@ -59,20 +59,20 @@ namespace VentaFacil.web.Controllers
                     fechaFin = DateTime.Today;
                 }
 
-                var facturas = await _facturacionService.BuscarFacturasAsync(fechaInicio, fechaFin, numeroFactura, cliente);
+                var response = await _facturacionService.BuscarFacturasAsync(fechaInicio, fechaFin, numeroFactura, cliente, pagina, cantidadPorPagina);
 
                 ViewBag.FechaInicio = fechaInicio?.ToString("yyyy-MM-dd");
                 ViewBag.FechaFin = fechaFin?.ToString("yyyy-MM-dd");
                 ViewBag.NumeroFactura = numeroFactura;
                 ViewBag.Cliente = cliente;
 
-                return View(facturas);
+                return View(response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al buscar facturas");
                 TempData["Error"] = "Error al cargar el historial de facturas";
-                return View(new List<FacturaDto>());
+                return View(new ListFacturaResponse());
             }
         }
 
@@ -97,10 +97,9 @@ namespace VentaFacil.web.Controllers
                     return RedirectToAction("Index", "Pedidos");
                 }
 
-                
-                if (!EsEstadoValidoParaFacturacion(pedido.Estado))
+                if (!EsEstadoValidoParaFacturacion(pedido))
                 {
-                    TempData["Error"] = $"El pedido no está en estado válido para pago. Estado actual: {pedido.Estado}";
+                    TempData["Error"] = $"El pedido ya ha sido facturado o está cancelado. Estado actual: {pedido.Estado}";
                     return RedirectToAction("Editar", "Pedidos", new { id = pedidoId });
                 }
 
@@ -175,9 +174,9 @@ namespace VentaFacil.web.Controllers
 
                 // Validar estado del pedido antes de procesar
                 var pedido = await _pedidoService.ObtenerPedidoAsync(model.PedidoId);
-                if (!EsEstadoValidoParaFacturacion(pedido.Estado))
+                if (!EsEstadoValidoParaFacturacion(pedido))
                 {
-                    TempData["Warning"] = $"Este pedido ya fue procesado. Estado actual: {pedido.Estado}";
+                    TempData["Warning"] = $"Este pedido ya fue facturado o cancelado. Estado actual: {pedido.Estado}";
                     return RedirectToAction("Index", "Pedidos");
                 }
 
@@ -477,9 +476,9 @@ namespace VentaFacil.web.Controllers
 
         #region Métodos Privados
 
-        private bool EsEstadoValidoParaFacturacion(PedidoEstado estado)
+        private bool EsEstadoValidoParaFacturacion(PedidoDto pedido)
         {
-            return estado == PedidoEstado.Pendiente || estado == PedidoEstado.Borrador;
+            return !pedido.TieneFactura() && pedido.Estado != PedidoEstado.Cancelado;
         }
 
 

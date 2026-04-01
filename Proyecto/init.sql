@@ -65,6 +65,7 @@ BEGIN
         SalarioNeto        DECIMAL(10,2) NULL,
         ExtrasAprobadas    BIT DEFAULT 0,
         EsCierreAutomatico BIT DEFAULT 0,
+        EsFeriado          BIT DEFAULT 0,
         Observaciones      VARCHAR(400)  NULL,
         CONSTRAINT Plan_Pk PRIMARY KEY (Id_Planilla),
         CONSTRAINT PlUsr_fk FOREIGN KEY (Id_Usr) REFERENCES Usuario(Id_Usr),

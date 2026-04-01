@@ -11,7 +11,7 @@ namespace VentaFacil.web.Services.Facturacion
         Task<ResultadoFacturacion> GenerarFacturaMixtaAsync(int pedidoId, List<PagoFacturaDto> pagos, bool esPagoParcial = false);
         Task<ResultadoFacturacion> GenerarFacturaDolaresAsync(int pedidoId, decimal montoPagado, decimal tasaCambio, bool esPagoParcial = false);
         Task<FacturaDto> ObtenerFacturaAsync(int facturaId);
-        Task<List<FacturaDto>> BuscarFacturasAsync(DateTime? fechaInicio, DateTime? fechaFin, int? numeroFactura, string? cliente);
+        Task<VentaFacil.web.Models.Response.Factura.ListFacturaResponse> BuscarFacturasAsync(DateTime? fechaInicio, DateTime? fechaFin, int? numeroFactura, string? cliente, int pagina = 1, int cantidadPorPagina = 10);
         Task<bool> AnularFacturaAsync(int facturaId, string justificacion);
         Task<int> GenerarNotaCreditoAsync(int facturaId, List<int> productosIds);
         Task<bool> RegistrarAbonoAsync(int facturaId, decimal monto, string metodoPago);

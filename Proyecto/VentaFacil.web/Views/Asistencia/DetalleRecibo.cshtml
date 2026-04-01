@@ -1,0 +1,141 @@
+@model VentaFacil.web.Models.Dto.PlanillaDetalleItemDto
+@{
+    var nomina = ViewBag.Nomina as VentaFacil.web.Models.Nomina;
+    ViewData["Title"] = "Detalle de Recibo de Pago";
+
+    var cultureCR = new System.Globalization.CultureInfo("es-CR");
+    var numberFormat = (System.Globalization.NumberFormatInfo)cultureCR.NumberFormat.Clone();
+    numberFormat.CurrencySymbol = "¢";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+                <div class="card-header bg-primary text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Recibo de Pago Semanal</h4>
+                        <div>
+                            <span class="badge bg-light text-primary me-2">Nómina #@nomina.Id_Nomina</span>
+                            <a href="@Url.Action("DescargarReciboPdf", "Asistencia", new { idNomina = nomina.Id_Nomina })" class="btn btn-sm btn-light text-primary fw-bold">
+                                <i class="fas fa-download me-1"></i> PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-sm-6">
+                            <h6 class="text-muted text-uppercase fw-bold mb-1">Período</h6>
+                            <p class="fs-5 mb-0">@nomina.FechaInicio.ToString("dd MMM yyyy") - @nomina.FechaFinal.ToString("dd MMM yyyy")</p>
+                        </div>
+                        <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                            <h6 class="text-muted text-uppercase fw-bold mb-1">Generado</h6>
+                            <p class="fs-5 mb-0">@nomina.FechaGeneracion.ToString("dd MMM yyyy")</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded text-center h-100 border">
+                                <span class="d-block text-muted mb-2">Ingreso Bruto</span>
+                                <h4 class="text-dark mb-0">@Model.SalarioBruto.ToString("C", numberFormat)</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-danger bg-opacity-10 rounded text-center h-100 border border-danger border-opacity-25">
+                                <span class="d-block text-danger opacity-75 mb-2">Deducciones</span>
+                                <h4 class="text-danger mb-0">-@Model.Deducciones.ToString("C", numberFormat)</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-success bg-opacity-10 rounded text-center h-100 border border-success border-opacity-25">
+                                <span class="d-block text-success opacity-75 mb-2">Neto a Recibir</span>
+                                <h4 class="text-success fw-bold mb-0">@Model.SalarioNeto.ToString("C", numberFormat)</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">Desglose de Deducciones</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-striped align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th class="text-center">Porcentaje</th>
+                                    <th class="text-end">Monto Deducido</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ded in Model.DeduccionesDetalle)
+                                {
+                                    <tr>
+                                        <td>@ded.Nombre</td>
+                                        <td class="text-center">@ded.Porcentaje.ToString("0.##")%</td>
+                                        <td class="text-end text-danger">-@ded.Monto.ToString("C", numberFormat)</td>
+                                    </tr>
+                                }
+                                @if(Model.Deducciones > Model.DeduccionesDetalle.Sum(d => d.Monto))
+                                {
+                                    <tr>
+                                        <td>Impuesto a la Renta / Otras Retenciones</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-end text-danger">-@((Model.Deducciones - Model.DeduccionesDetalle.Sum(d => d.Monto)).ToString("C", numberFormat))</td>
+                                    </tr>
+                                }
+                                <tr class="fw-bold table-group-divider">
+                                    <td colspan="2" class="text-end">Total Deducciones:</td>
+                                    <td class="text-end text-danger">-@Model.Deducciones.ToString("C", numberFormat)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 mt-4">Días Laborados en este Período</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th class="text-center">Horas Regulares</th>
+                                    <th class="text-center">Horas Extras</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var dia in Model.DiasLaborados.OrderBy(d => d.FechaInicio))
+                                {
+                                    <tr>
+                                        <td>
+                                            @dia.FechaInicio.ToString("dd MMM yyyy")
+                                            @if (dia.EsFeriado)
+                                            {
+                                                <span class="badge bg-primary ms-1" style="font-size: 0.65rem;">FERIADO</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">@dia.HorasTrabajadas.ToString("0.##")h</td>
+                                        <td class="text-center">
+                                            @if (dia.HorasExtras > 0)
+                                            {
+                                                <span class="text-success fw-bold">+@dia.HorasExtras.ToString("0.##")h</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">0h</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="card-footer bg-light p-3 text-end">
+                    <a href="@Url.Action("Index", "Asistencia")" class="btn btn-secondary" style="border-radius: 30px;">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Asistencia
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
