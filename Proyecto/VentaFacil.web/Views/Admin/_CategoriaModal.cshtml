@@ -1,0 +1,47 @@
+@model VentaFacil.web.Models.Dto.CategoriaDto
+@{
+    var accion = ViewBag.AccionModal as string;
+    var esSoloLectura = accion == "ver";
+    var titulo = accion == "crear" ? "Nueva Categoría" : (accion == "editar" ? "Editar Categoría" : "Detalles de Categoría");
+}
+
+<div class="modal fade" id="categoriaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-warning text-dark border-0 py-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="lni lni-tag me-2"></i> @titulo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="categoriaForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id_Categoria" />
+                
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label asp-for="Nombre" class="form-label fw-bold">Nombre</label>
+                        <input asp-for="Nombre" class="form-control" placeholder="Ej: Bebidas, Postres..." required readonly="@(esSoloLectura ? "readonly" : null)" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Descripcion" class="form-label fw-bold">Descripción</label>
+                        <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Opcional..." readonly="@(esSoloLectura ? "readonly" : null)"></textarea>
+                        <span asp-validation-for="Descripcion" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                    @if (!esSoloLectura)
+                    {
+                        <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold">
+                            <i class="lni lni-save me-2"></i> Guardar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -7,199 +7,168 @@
 }
 
 <style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        --mustard: #f59e0b;
-        --mustard-hover: #d97706;
-        --card-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-        --hover-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-    }
-    .premium-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-        margin-bottom: 2rem;
-        padding: 2rem 1.5rem 1.5rem 1.5rem;
-    }
-    .premium-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--hover-shadow);
-    }
-    .table-container {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    .premium-table thead th {
-        background-color: #f8fafc;
-        color: #222 !important;
+    .caja-badge {
+        font-size: 0.75rem;
+        padding: 5px 12px;
+        border-radius: 50px;
         font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 1rem;
-    }
-    .premium-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155;
-    }
-    .premium-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    .premium-table tbody tr:hover {
-        background-color: #f8fafc;
-    }
-    .caja-actions button {
-        margin-right: 0.5rem;
-        margin-bottom: 0.25rem;
-    }
-    .btn-mustard {
-        background-color: var(--mustard) !important;
-        color: #fff !important;
-        border: none;
-        border-radius: 30px !important;
-        font-weight: 600;
-        padding: 0.5rem 1.2rem;
-    }
-    .btn-mustard:hover, .btn-mustard:focus {
-        background-color: var(--mustard-hover) !important;
-        color: #fff !important;
-    }
-    .btn-premium {
-        border-radius: 30px !important;
-        font-weight: 600;
-        padding: 0.5rem 1.5rem;
-    }
-
-    /* Paginación Premium */
-    .pagination-premium {
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 2rem;
-    }
-    .pagination-premium .page-link {
-        border: none;
-        padding: 0.6rem 1rem;
-        border-radius: 10px;
-        color: #4f46e5;
-        font-weight: 600;
-        transition: all 0.2s;
-        background: #f8fafc;
-    }
-    .pagination-premium .page-item.active .page-link {
-        background: var(--primary-gradient);
-        color: white;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-    .pagination-premium .page-link:hover:not(.active) {
-        background: #e2e8f0;
-        transform: translateY(-2px);
     }
 </style>
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
-        <div class="position-relative z-1">
+<div class="caja-wrapper">
+    <!-- Hero Section -->
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
             <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-wallet me-2"></i>Administrar Caja</h1>
-            <p class="mb-0 text-white-50 fs-5">Control de apertura, cierre y movimientos de caja.</p>
+            <p class="mb-0 text-white-50 fs-5">Resumen de movimientos y control de efectivo.</p>
         </div>
         <div class="position-relative z-1 d-none d-md-block">
-            <div class="d-flex gap-2">
-                @if (cajaAbierta == null)
-                {
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #1e293b; border: 2px solid #ffffff;" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
-                        <i class="lni lni-plus me-2"></i> Abrir caja
-                    </button>
-                }
-                else
-                {
-                    <a href="@Url.Action("GenerarArqueo", "Caja", new { idCaja = cajaAbierta.Id_Caja })" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #1e293b; border: 2px solid #ffffff;" target="_blank">
-                        <i class="lni lni-printer me-2"></i> Arqueo / Corte
-                    </a>
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #dc2626; border: 2px solid #ffffff;" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
-                        <i class="lni lni-lock me-2"></i> Cerrar Caja
-                    </button>
-                    <button type="button" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #d97706; border: 2px solid #ffffff;" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
-                        <i class="lni lni-minus me-2"></i> Retiro
-                    </button>
-                }
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">App</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Caja</li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
 
-    <div class="premium-card">
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="lni lni-warning me-2"></i> @TempData["Error"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        <div class="table-container">
-            <table class="table premium-table">
-                <thead>
-                    <tr>
-                        <th>Fecha Apertura</th>
-                        <th>Fecha Cierre</th>
-                        <th>Monto Inicial</th>
-                        <th>Monto Actual</th>
-                        <th>Inicial USD</th>
-                        <th>Actual USD</th>
-                        <th>Estado</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                @foreach (var item in Model.Cajas) {
-                    <tr>
-                        <td>@item.Fecha_Apertura.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@(item.Fecha_Cierre?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
-                        <td class="text-success fw-bold">@item.Monto_Inicial.ToString("C", new System.Globalization.CultureInfo("es-CR"))</td>
-                        <td class="text-success fw-bold">@((item.Monto ?? 0).ToString("C", new System.Globalization.CultureInfo("es-CR")))</td>
-                        <td class="text-info fw-bold">$@item.Monto_Inicial_USD.ToString("N2")</td>
-                        <td class="text-info fw-bold">$@((item.Monto_USD ?? 0).ToString("N2"))</td>
-                        <td>
-                            <span class="badge @(item.Estado == "Abierta" ? "bg-success" : "bg-secondary") rounded-pill">
-                                @item.Estado
-                            </span>
-                        </td>
-                        <td class="caja-actions text-end">
-                            <button type="button" class="btn btn-mustard btn-sm" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
-                                <i class="fas fa-eye me-1"></i> Retiros
+    <!-- Header Actions -->
+    <div class="mb-4">
+        <div class="premium-card p-4">
+            <div class="row align-items-center g-3">
+                <div class="col-12 col-lg-4">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                            <i class="lni lni-wallet fs-4"></i>
+                        </div>
+                        <div class="text-start">
+                            <h6 class="mb-0 fw-bold">Estado de Caja</h6>
+                            <p class="text-sm text-muted mb-0">@(cajaAbierta != null ? "Sesión Activa" : "Cerrada")</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-8 text-center text-lg-end">
+                    <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2">
+                        @if (cajaAbierta == null)
+                        {
+                            <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#abrirCajaModal">
+                                <i class="lni lni-plus me-2"></i> Abrir Caja
                             </button>
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("GenerarArqueo", "Caja", new { idCaja = cajaAbierta.Id_Caja })" class="main-btn dark-btn-outline btn-hover rounded-pill px-4" target="_blank">
+                                <i class="lni lni-printer me-2"></i> Arqueo
+                            </a>
+                            <button type="button" class="main-btn warning-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#retiroCajaModal">
+                                <i class="lni lni-minus me-2"></i> Retiro
+                            </button>
+                            <button type="button" class="main-btn danger-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#cerrarCajaModal">
+                                <i class="lni lni-lock me-2"></i> Cerrar Caja
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    @if (cajaAbierta != null)
+    {
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="premium-card p-4 h-100 border-0 shadow-sm">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                            <i class="lni lni-money-location"></i>
+                        </div>
+                        <span class="text-xs fw-bold text-uppercase text-muted">Efectivo CRC</span>
+                    </div>
+                    <h4 class="mb-0 fw-bold">@((cajaAbierta.Monto ?? 0).ToString("C0", new System.Globalization.CultureInfo("es-CR")))</h4>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="premium-card p-4 h-100 border-0 shadow-sm">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-box bg-info bg-opacity-10 text-info rounded-3 me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                            <i class="lni lni-dollar"></i>
+                        </div>
+                        <span class="text-xs fw-bold text-uppercase text-muted">Efectivo USD</span>
+                    </div>
+                    <h4 class="mb-0 fw-bold">$@((cajaAbierta.Monto_USD ?? 0).ToString("N2"))</h4>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="mb-5 animate-fade-in">
+        <div class="premium-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="lni lni-timer me-2 text-primary"></i> Historial de Cajas</h5>
+                    <p class="text-sm text-muted mb-0">Registro histórico de aperturas y cierres.</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table premium-table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Apertura / Cierre</th>
+                            <th>Monto Inicial</th>
+                            <th>Monto Actual</th>
+                            <th>Dólares (Ini/Act)</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Cajas) {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold text-dark">@item.Fecha_Apertura.ToString("dd/MM/yyyy HH:mm")</span>
+                                    <small class="text-muted">@(item.Fecha_Cierre?.ToString("dd/MM/yyyy HH:mm") ?? "Sesion Activa")</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success">@item.Monto_Inicial.ToString("C0", new System.Globalization.CultureInfo("es-CR"))</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success">@((item.Monto ?? 0).ToString("C0", new System.Globalization.CultureInfo("es-CR")))</span>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="text-info fw-bold">$@item.Monto_Inicial_USD.ToString("N2")</span>
+                                    <small class="text-muted">$@((item.Monto_USD ?? 0).ToString("N2"))</small>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @(item.Estado == "Abierta" ? "bg-success" : "bg-dark") bg-opacity-10 @(item.Estado == "Abierta" ? "text-success" : "text-dark") rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                    @item.Estado
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button type="button" class="main-btn dark-btn-outline btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#retirosModal" data-caja-id="@item.Id_Caja">
+                                    <i class="lni lni-eye me-1"></i> Retiros
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Paginación -->
             @if (Model.TotalPaginas > 1)
             {
                 <nav aria-label="Navegación de cajas" class="mt-4">
-                    <ul class="pagination pagination-premium justify-content-center">
+                    <ul class="pagination justify-content-center gap-2">
                         <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Listar", new { pagina = Model.PaginaActual - 1 })">
+                            <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("Listar", new { pagina = Model.PaginaActual - 1 })">
                                 <i class="lni lni-chevron-left"></i>
                             </a>
                         </li>
@@ -207,12 +176,12 @@
                         @for (int i = 1; i <= Model.TotalPaginas; i++)
                         {
                             <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("Listar", new { pagina = i })">@i</a>
+                                <a class="page-link border-0 rounded-3 @(i == Model.PaginaActual ? "bg-primary text-white shadow-sm" : "bg-light text-dark")" href="@Url.Action("Listar", new { pagina = i })">@i</a>
                             </li>
                         }
 
                         <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Listar", new { pagina = Model.PaginaActual + 1 })">
+                            <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("Listar", new { pagina = Model.PaginaActual + 1 })">
                                 <i class="lni lni-chevron-right"></i>
                             </a>
                         </li>

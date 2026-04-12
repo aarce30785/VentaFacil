@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
@@ -8,6 +8,7 @@ using VentaFacil.web.Models.Response.Producto;
 using VentaFacil.web.Models.Response.Usuario;
 using VentaFacil.web.Services.Admin;
 using VentaFacil.web.Services.Producto;
+using VentaFacil.web.Services.Categoria;
 using VentaFacil.web.Services.Usuario;
 using VentaFacil.web.Services.Auth;
 
@@ -119,14 +120,14 @@ namespace VentaFacil.web.Controllers
 
                 ViewBag.PaginaActual = pagina;
 
-                // Cargar también los productos para la pestaña de productos
-                var productosResponse = await GetProductosResponse();
-                ViewData["Productos"] = productosResponse;
-
+                // Cargar datos complementarios para las otras pestañas
+                await CargarDatosComplementarios();
+                
                 return View("Index", usuarios);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error en IndexUsuarios: {ex.Message}");
                 var emptyResponse = new UsuarioListResponse
                 {
                     Usuarios = new List<UsuarioResponse>(),
@@ -137,14 +138,27 @@ namespace VentaFacil.web.Controllers
                     RolFiltro = rolFiltro
                 };
 
-                ViewBag.Roles = new List<SelectListItem>();
-
-                // Cargar productos incluso en caso de error
-                var productosResponse = await GetProductosResponse();
-                ViewData["Productos"] = productosResponse;
+                await CargarDatosComplementarios();
 
                 return View("Index", emptyResponse);
             }
+        }
+
+        // Método auxiliar para cargar datos de todas las pestañas y evitar estados vacíos
+        private async Task CargarDatosComplementarios(int paginaProd = 1, string? busqProd = null, int? catFiltro = null, 
+                                                   int paginaCat = 1, string? busqCat = null)
+        {
+            // Cargar productos (siempre necesarios para la pestaña de productos)
+            var productosResponse = await GetProductosResponse(paginaProd, 10, busqProd, catFiltro);
+            ViewData["Productos"] = productosResponse;
+
+            // Cargar categorías (siempre necesarias para la pestaña de categorías)
+            var categoriasResponse = await GetCategoriasResponse(paginaCat, 10, busqCat);
+            ViewData["Categorias"] = categoriasResponse;
+
+            // Cargar roles (siempre necesarios para los filtros de usuarios)
+            var roles = await _usuarioService.GetRolesAsync();
+            ViewBag.Roles = roles ?? new List<SelectListItem>();
         }
 
         // ========== MÉTODOS PARA PRODUCTOS ==========
@@ -167,20 +181,55 @@ namespace VentaFacil.web.Controllers
                     };
                 }
 
-                // Cargar productos con filtros
-                var productosResponse = await GetProductosResponse(pagina, cantidadPorPagina, busqueda, categoriaFiltro);
-                ViewData["Productos"] = productosResponse;
-
-                // Cargar roles para la pestaña de usuarios
-                var roles = await _usuarioService.GetRolesAsync();
-                ViewBag.Roles = roles ?? new List<SelectListItem>();
+                // Cargar datos de todas las pestañas manteniendo los filtros actuales
+                await CargarDatosComplementarios(pagina, busqueda, categoriaFiltro);
 
                 return View("Index", usuariosResponse);
             }
             catch (Exception ex)
             {
-                // Log the exception
                 Console.WriteLine($"Error en IndexProductos: {ex.Message}");
+                var usuariosResponse = new UsuarioListResponse
+                {
+                    Usuarios = new List<UsuarioResponse>(),
+                    PaginaActual = 1,
+                    TotalPaginas = 1,
+                    TotalUsuarios = 0
+                };
+                
+                await CargarDatosComplementarios(pagina, busqueda, categoriaFiltro);
+                return View("Index", usuariosResponse);
+            }
+        }
+
+        // ========== MÉTODOS PARA CATEGORÍAS ==========
+        [HttpGet]
+        public async Task<IActionResult> IndexCategorias(int pagina = 1, int cantidadPorPagina = 10,
+                     string? busqueda = null, int? categoriaId = null, string? accion = null)
+        {
+            try
+            {
+                // Primero cargar los usuarios (modelo principal de la vista)
+                var usuariosResponse = await _adminService.GetUsuariosPaginadosAsync(1, 10, null, null);
+                if (usuariosResponse == null)
+                {
+                    usuariosResponse = new UsuarioListResponse
+                    {
+                        Usuarios = new List<UsuarioResponse>(),
+                        PaginaActual = 1,
+                        TotalPaginas = 1,
+                        TotalUsuarios = 0
+                    };
+                }
+
+                // Cargar datos de todas las pestañas manteniendo los filtros actuales de categoría
+                await CargarDatosComplementarios(1, null, null, pagina, busqueda);
+
+                return View("Index", usuariosResponse);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en IndexCategorias: {ex.Message}");
 
                 var usuariosResponse = new UsuarioListResponse
                 {
@@ -190,18 +239,60 @@ namespace VentaFacil.web.Controllers
                     TotalUsuarios = 0
                 };
 
-                var productosResponse = new ListProductoResponse
-                {
-                    Productos = new List<ProductoDto>(),
-                    PaginaActual = 1,
-                    TotalProductos = 0,
-                    Categorias = new List<SelectListItem>()
-                };
-
-                ViewData["Productos"] = productosResponse;
-                ViewBag.Roles = new List<SelectListItem>();
+                await CargarDatosComplementarios(1, null, null, pagina, busqueda);
 
                 return View("Index", usuariosResponse);
+            }
+        }
+
+        // Método auxiliar para obtener la respuesta de categorías
+        private async Task<ListCategoriaResponse> GetCategoriasResponse(int pagina = 1, int cantidadPorPagina = 10,
+                     string? busqueda = null)
+        {
+            try
+            {
+                var categorias = await _categoriaService.ListarTodasAsync();
+
+                // Aplicar filtros
+                var categoriasFiltradas = categorias?.AsQueryable() ?? new List<CategoriaDto>().AsQueryable();
+
+                if (!string.IsNullOrEmpty(busqueda))
+                {
+                    categoriasFiltradas = categoriasFiltradas.Where(c =>
+                        c.Nombre.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+                        (c.Descripcion != null && c.Descripcion.Contains(busqueda, StringComparison.OrdinalIgnoreCase))
+                    );
+                }
+
+                // Aplicar paginación
+                var totalCategorias = categoriasFiltradas.Count();
+                var categoriasPaginadas = categoriasFiltradas
+                    .Skip((pagina - 1) * cantidadPorPagina)
+                    .Take(cantidadPorPagina)
+                    .ToList();
+
+                var response = new ListCategoriaResponse
+                {
+                    Categorias = categoriasPaginadas,
+                    PaginaActual = pagina,
+                    CantidadPorPagina = cantidadPorPagina,
+                    TotalCategorias = totalCategorias,
+                    Busqueda = busqueda
+                };
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en GetCategoriasResponse: {ex.Message}");
+                return new ListCategoriaResponse
+                {
+                    Categorias = new List<CategoriaDto>(),
+                    PaginaActual = pagina,
+                    CantidadPorPagina = cantidadPorPagina,
+                    TotalCategorias = 0,
+                    Busqueda = busqueda
+                };
             }
         }
 
@@ -379,6 +470,37 @@ namespace VentaFacil.web.Controllers
                 ViewBag.AccionModal = accion;
                 ViewBag.Categorias = new List<SelectListItem>();
                 return PartialView("_ProductoModal", new ProductoDto());
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerModalCategoria(string accion, int? categoriaId = null,
+            string? busqueda = null, int pagina = 1)
+        {
+            try
+            {
+                var model = new CategoriaDto();
+                ViewBag.AccionModal = accion;
+
+                ViewBag.BusquedaActual = busqueda;
+                ViewBag.PaginaActual = pagina;
+
+                if (categoriaId.HasValue && (accion == "editar" || accion == "ver"))
+                {
+                    var categoria = await _categoriaService.ObtenerPorIdAsync(categoriaId.Value);
+                    if (categoria != null)
+                    {
+                        model = categoria;
+                    }
+                }
+
+                return PartialView("_CategoriaModal", model);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerModalCategoria: {ex.Message}");
+                ViewBag.AccionModal = accion;
+                return PartialView("_CategoriaModal", new CategoriaDto());
             }
         }
 
@@ -571,6 +693,48 @@ namespace VentaFacil.web.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuardarCategoria([FromForm] CategoriaDto categoriaDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                    return BadRequest(new { success = false, message = "Errores de validación", errors = errors });
+                }
+
+                bool result;
+                if (categoriaDto.Id_Categoria > 0)
+                {
+                    result = await _categoriaService.EditarAsync(categoriaDto);
+                }
+                else
+                {
+                    result = await _categoriaService.CrearAsync(categoriaDto);
+                }
+
+                if (result)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = categoriaDto.Id_Categoria > 0 ? "Categoría actualizada correctamente" : "Categoría creada correctamente"
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Error al guardar la categoría" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción en GuardarCategoria: {ex}");
+                return StatusCode(500, new { success = false, message = "Error interno del servidor", errors = new List<string> { ex.Message } });
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> EliminarUsuario(int id, string? busqueda, int? rolFiltro, int pagina = 1)
         {
@@ -649,6 +813,26 @@ namespace VentaFacil.web.Controllers
             }
 
             return RedirectToAction("IndexProductos", new { busqueda, categoriaFiltro, pagina });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EliminarCategoria(int id, string? busqueda, int pagina = 1)
+        {
+            try
+            {
+                bool resultado = await _categoriaService.EliminarAsync(id);
+
+                if (resultado)
+                    TempData["MensajeExito"] = "Categoría eliminada correctamente.";
+                else
+                    TempData["MensajeError"] = "No se pudo eliminar la categoría.";
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = $"Error al eliminar la categoría: {ex.Message}";
+            }
+
+            return RedirectToAction("IndexCategorias", new { busqueda, pagina });
         }
 
         [HttpGet]

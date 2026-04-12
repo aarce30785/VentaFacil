@@ -2,56 +2,32 @@
 
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clockpicker/0.0.7/jquery-clockpicker.min.css" />
-    <style>
-        .clockpicker-popover { z-index: 999999; }
-        .premium-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
-            overflow: hidden;
-            margin-bottom: 2rem;
-            padding: 2rem 1.5rem 1.5rem 1.5rem;
-        }
-        .form-label {
-            font-weight: 600;
-            color: #374151;
-        }
-        .form-select, .form-control {
-            border-radius: 30px;
-            font-size: 1rem;
-        }
-        .input-group-text {
-            border-radius: 30px;
-        }
-        .btn-premium {
-            border-radius: 30px !important;
-            font-weight: 600;
-            padding: 0.5rem 1.5rem;
-        }
-        .card-title {
-            font-weight: 700;
-            color: #6d4c41;
-        }
-    </style>
 }
 
 <div class="form-wrapper">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark mb-0">Registrar Horas de Trabajo</h2>
-        @if (User.IsInRole("Administrador"))
-        {
-            <a href="/Planilla/AprobacionHoras" class="btn btn-warning btn-premium">
-                <i class="fas fa-check-double me-2"></i>Aprobación de Horas
-            </a>
-        }
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4 mb-4" style="margin-top: -1.5rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-timer me-2"></i>Registrar Horas</h1>
+            <p class="mb-0 text-white-50 fs-5">Control de asistencia y jornada laboral.</p>
+        </div>
+        <div class="position-relative z-1">
+            @if (User.IsInRole("Administrador"))
+            {
+                <a href="/Planilla/AprobacionHoras" class="main-btn warning-btn btn-hover rounded-pill px-4">
+                    <i class="lni lni-checkmark-circle me-2"></i> Aprobación de Horas
+                </a>
+            }
+        </div>
     </div>
-    <div class="row g-4 justify-content-center">
+    <div class="row g-4">
         <!-- Formulario -->
         <div class="col-12 col-xl-5">
-            <div class="premium-card h-100">
-                <div class="mb-4">
-                    <h5 class="card-title mb-0">Formulario de Registro</h5>
+            <div class="premium-card p-4">
+                <div class="mb-4 d-flex align-items-center">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-pencil-alt"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Formulario de Registro</h5>
                 </div>
                 @if (TempData["Error"] != null)
                 {
@@ -165,9 +141,13 @@
                         <label asp-for="Observaciones" class="form-label">Observaciones</label>
                         <textarea asp-for="Observaciones" class="form-control" rows="2" style="border-radius: 16px;"></textarea>
                     </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-premium">Registrar Jornada</button>
-                        <a asp-action="Consultar" class="btn btn-secondary btn-premium">Cancelar</a>
+                    <div class="d-grid gap-3 mt-4">
+                        <button type="submit" class="main-btn primary-btn btn-hover rounded-pill py-3">
+                            <i class="lni lni-save me-2"></i> Registrar Jornada
+                        </button>
+                        <a asp-action="Consultar" class="main-btn dark-btn-outline btn-hover rounded-pill py-3">
+                            <i class="lni lni-close me-2"></i> Cancelar
+                        </a>
                     </div>
                 </form>
             </div>
@@ -175,11 +155,16 @@
         
         <!-- Panel Lateral: Jornadas de la Semana -->
         <div class="col-12 col-xl-7">
-            <div class="premium-card h-100">
-                <h5 class="card-title mb-4">Jornadas Registradas (Semana Actual)</h5>
+            <div class="premium-card p-4 h-100">
+                <div class="mb-4 d-flex align-items-center">
+                    <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-calendar"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Jornadas Registradas (Semana Actual)</h5>
+                </div>
                 <div id="weeklyShiftsContainer">
-                    <div class="text-center text-muted p-4 mt-4">
-                        <i class="fas fa-calendar-alt fa-3x mb-3" style="color: #dee2e6;"></i>
+                    <div class="text-center text-muted p-5 mt-4">
+                        <i class="lni lni-calendar fs-1 mb-3 opacity-25"></i>
                         <p>Seleccione un colaborador para ver sus jornadas de esta semana.</p>
                     </div>
                 </div>
@@ -437,24 +422,25 @@
             function renderWeeklyShifts(jornadas) {
                 if (!jornadas || jornadas.length === 0) {
                     weeklyShiftsContainer.innerHTML = `
-                        <div class="alert alert-info border-0 bg-info bg-opacity-10 text-info m-3">
-                            <i class="fas fa-info-circle me-2"></i> No se encontraron jornadas registradas para esta semana.
+                        <div class="text-center p-5">
+                            <i class="lni lni-information fs-1 text-info opacity-25 mb-3"></i>
+                            <p class="text-muted">No se encontraron jornadas registradas para esta semana.</p>
                         </div>`;
                     return;
                 }
 
-                let html = '<div class="table-responsive"><table class="table table-hover align-middle mb-0">';
+                let html = '<div class="table-responsive"><table class="table premium-table align-middle mb-0">';
                 html += `
-                    <thead class="table-light">
+                    <thead>
                         <tr>
-                            <th class="border-0">Fecha</th>
-                            <th class="border-0">Entrada / Salida</th>
-                            <th class="border-0 text-center">Horas</th>
-                            <th class="border-0 text-center">Estado</th>
-                            ${esAdmin ? '<th class="border-0 text-end">Acciones</th>' : ''}
+                            <th class="ps-4">Fecha</th>
+                            <th>Entrada / Salida</th>
+                            <th class="text-center">Horas</th>
+                            <th class="text-center">Estado</th>
+                            ${esAdmin ? '<th class="text-end pe-4">Acciones</th>' : ''}
                         </tr>
                     </thead>
-                    <tbody class="border-top-0">`;
+                    <tbody>`;
                 
                 let totalHoras = 0;
                 let totalExtras = 0;
@@ -476,36 +462,36 @@
 
                     let accionesHtml = '';
                     if (esAdmin && (j.EstadoRegistro === 'Pendiente' || j.EstadoRegistro === 'Incompleta')) {
-                        // Pasar nombre colaborador por ui manual (es util capturar el d text si esta visible, o hardcodear nombre generico)
-                        const nombreCollab = "Colaborador"; 
                         accionesHtml = `
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-success rounded-pill px-2" onclick="abrirModalAprobacion(${j.Id_Planilla}, 'Completada', '${fechaStr}')" title="Aprobar">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger rounded-pill px-2 ms-1" onclick="abrirModalAprobacion(${j.Id_Planilla}, 'Rechazada', '${fechaStr}')" title="Rechazar">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button class="btn btn-sm btn-white text-success rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalAprobacion(${j.Id_Planilla}, 'Completada', '${fechaStr}')" title="Aprobar">
+                                        <i class="lni lni-checkmark"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalAprobacion(${j.Id_Planilla}, 'Rechazada', '${fechaStr}')" title="Rechazar">
+                                        <i class="lni lni-close"></i>
+                                    </button>
+                                </div>
                             </td>`;
                     } else if (esAdmin) {
-                        accionesHtml = '<td class="text-end"></td>';
+                        accionesHtml = '<td class="text-end pe-4"></td>';
                     }
 
                     html += `
                         <tr>
-                            <td><strong class="text-dark text-capitalize">${fechaStr}</strong></td>
+                            <td class="ps-4"><strong class="text-dark text-capitalize">${fechaStr}</strong></td>
                             <td>
                                 <div class="d-flex flex-column" style="font-size: 0.9rem;">
-                                    <span class="text-success"><i class="fas fa-arrow-right me-1" style="font-size: 0.8em;"></i>${entradaStr}</span>
-                                    <span class="text-danger"><i class="fas fa-arrow-left me-1" style="font-size: 0.8em;"></i>${salidaStr}</span>
+                                    <span class="text-success"><i class="lni lni-arrow-right me-1" style="font-size: 0.8em;"></i>${entradaStr}</span>
+                                    <span class="text-danger"><i class="lni lni-arrow-left me-1" style="font-size: 0.8em;"></i>${salidaStr}</span>
                                 </div>
                             </td>
                             <td class="text-center">
                                 <span class="fw-bold">${j.HorasTrabajadas.toFixed(1)}h</span>
                                 ${(j.HorasExtras > 0) ? `<br/><small class="text-muted">+${j.HorasExtras.toFixed(1)}h extra</small>` : ''}
-                                ${j.EsFeriado ? '<br/><span class="badge bg-primary mt-1"><i class="fas fa-umbrella-beach me-1"></i>Feriado</span>' : ''}
+                                ${j.EsFeriado ? '<br/><span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 mt-1"><i class="lni lni-beach me-1"></i>Feriado</span>' : ''}
                             </td>
-                            <td class="text-center"><span class="badge ${bgEstado}">${j.EstadoRegistro}</span></td>
+                            <td class="text-center"><span class="badge ${bgEstado} rounded-pill px-3">${j.EstadoRegistro}</span></td>
                             ${accionesHtml}
                         </tr>
                     `;
@@ -516,11 +502,11 @@
                 html += '</tbody></table></div>';
                 
                 html += `
-                    <div class="mt-4 p-3 rounded" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                    <div class="mt-4 p-4 rounded-4" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted fw-semibold">Total Semana:</span>
+                            <span class="text-muted fw-bold text-uppercase text-xs">Total Semana:</span>
                             <div class="text-end">
-                                <span class="text-dark fw-bold" style="font-size: 1.2rem;">${totalHoras.toFixed(1)} <small class="text-muted fw-normal" style="font-size: 0.9rem;">h regulares</small></span>
+                                <span class="text-dark fw-bold" style="font-size: 1.25rem;">${totalHoras.toFixed(1)} <small class="text-muted fw-normal" style="font-size: 0.9rem;">h regulares</small></span>
                                 ${(totalExtras > 0) ? `<br/><span class="text-success fw-bold">${totalExtras.toFixed(1)} <small class="text-muted fw-normal">h extras</small></span>` : ''}
                             </div>
                         </div>

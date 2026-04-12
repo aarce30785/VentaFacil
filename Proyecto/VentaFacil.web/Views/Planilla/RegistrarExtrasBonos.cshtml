@@ -1,4 +1,4 @@
-﻿@using VentaFacil.web.Models.Dto
+@using VentaFacil.web.Models.Dto
 @model RegistrarExtrasBonosDto
 
 @{
@@ -6,79 +6,45 @@
     Layout = "~/Views/Shared/_LayoutPlantilla.cshtml";
 }
 
-<style>
-    .section-header {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        border-radius: 12px 12px 0 0;
-        padding: 1rem 1.5rem;
-        color: #fff;
-    }
-    .section-header.warning {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    }
-    .section-block {
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        overflow: hidden;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(0,0,0,0.06);
-    }
-    .section-body { padding: 1.5rem; background: #fff; }
-    .limit-badge {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
-        border-radius: 8px;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.82rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-    .table-bonos th { background: #f8fafc; font-size: 0.82rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
-    .badge-motivo { background: #ede9fe; color: #5b21b6; border-radius: 20px; padding: 2px 10px; font-size: 0.8rem; }
-    .audit-row-old { color: #dc2626; text-decoration: line-through; }
-    .audit-row-new { color: #16a34a; font-weight: 600; }
-</style>
-
-<div class="title-wrapper pt-30">
-    <div class="row align-items-center">
-        <div class="col-md-6">
-            <div class="title">
-                <h2>Extras y Bonificaciones</h2>
-                <p class="text-muted">Gestión de horas extras e incentivos por planilla</p>
-            </div>
+<div class="extras-bonos-wrapper">
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4 mb-4" style="margin-top: -1.5rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-star me-2"></i>Extras y Bonificaciones</h1>
+            <p class="mb-0 text-white-50 fs-5">Gestión de horas extras e incentivos por planilla.</p>
         </div>
-        <div class="col-md-6">
+        <div class="position-relative z-1 d-none d-md-block">
             <div class="breadcrumb-wrapper">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Inicio</a></li>
-                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Planilla")">Planilla</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Extras y Bonificaciones</li>
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-white-50">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Planilla")" class="text-white-50">Planilla</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Extras y Bonos</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
-</div>
 
 <div class="form-layout-wrapper">
 
     @* ============================================================
        SECCIÓN A – SELECTOR DE PLANILLA (compartido para ambas secciones)
        ============================================================ *@
-    <div class="section-block">
-        <div class="section-header">
-            <h5 class="mb-0"><i class="lni lni-layers me-2"></i>Seleccionar Planilla del Empleado</h5>
-        </div>
-        <div class="section-body">
-            <div class="row align-items-end">
-                <div class="col-md-8">
-                    <label class="form-label fw-semibold">Planilla</label>
-                    <select id="selectorPlanilla" class="form-control form-select">
-                        <option value="">-- Seleccione una planilla --</option>
+    <div class="mx-4">
+        @* Selección de Planilla *@
+        <div class="premium-card p-4 mb-4">
+            <div class="mb-4 d-flex align-items-center">
+                <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="lni lni-layers"></i>
+                </div>
+                <h5 class="fw-bold mb-0">Seleccionar Planilla del Empleado</h5>
+            </div>
+            
+            <div class="row align-items-end g-3">
+                <div class="col-md-9">
+                    <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Colaborador y Periodo</label>
+                    <select id="selectorPlanilla" class="form-select rounded-pill">
+                        <option value="">-- Seleccione una planilla activa --</option>
                         @if (ViewBag.Planillas != null)
                         {
                             foreach (SelectListItem item in ViewBag.Planillas)
@@ -88,85 +54,92 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <button type="button" id="btnCargarBonificaciones" class="btn btn-primary w-100" disabled>
-                        <i class="lni lni-refresh me-1"></i> Cargar Información
+                <div class="col-md-3 text-end">
+                    <button type="button" id="btnCargarBonificaciones" class="main-btn primary-btn btn-hover rounded-pill w-100 py-2" disabled>
+                        <i class="lni lni-reload me-1"></i> Cargar Información
                     </button>
                 </div>
             </div>
         </div>
-    </div>
 
     @* ============================================================
        SECCIÓN B – HORAS EXTRAS
        ============================================================ *@
-    <div class="section-block">
-        <div class="section-header warning">
-            <h5 class="mb-0"><i class="lni lni-timer me-2"></i>Registrar Horas Extras</h5>
-        </div>
-        <div class="section-body">
-            <div class="mb-3">
-                <span class="limit-badge"><i class="lni lni-warning me-1"></i> Límite legal: máximo 4 horas extras por jornada</span>
+        @* Registro de Horas Extras *@
+        <div class="premium-card p-4 mb-4">
+            <div class="mb-4 d-flex align-items-center">
+                <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="lni lni-timer"></i>
+                </div>
+                <h5 class="fw-bold mb-0">Registrar Horas Extras</h5>
             </div>
+
+            <div class="alert alert-warning bg-warning bg-opacity-10 border-0 rounded-3 mb-4 d-flex align-items-center">
+                <i class="lni lni-warning fs-4 me-2"></i>
+                <span class="small"><strong>Límite legal:</strong> Máximo 4 horas extras por jornada laboral.</span>
+            </div>
+
             <form id="formExtras">
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="extrasIdPlanilla" name="Id_Planilla" value="" />
                 <div class="row align-items-end g-3">
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Horas Extras</label>
-                        <input type="number" id="campoHorasExtras" name="HorasExtras" class="form-control"
-                               step="0.5" min="0" max="4" placeholder="0 – 4 horas" />
-                        <small class="text-muted">Máximo 4 horas por jornada</small>
+                        <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Cantidad de Horas</label>
+                        <input type="number" id="campoHorasExtras" name="HorasExtras" class="form-control rounded-pill"
+                               step="0.5" min="0" max="4" placeholder="Ej: 2.0" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Observaciones (opcional)</label>
-                        <input type="text" id="campoObservacionesExtras" name="Observaciones" class="form-control"
-                               placeholder="Comentarios adicionales..." />
+                        <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Observaciones</label>
+                        <input type="text" id="campoObservacionesExtras" name="Observaciones" class="form-control rounded-pill"
+                               placeholder="Motivo de las horas extra..." />
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" id="btnGuardarExtras" class="btn btn-warning w-100" disabled>
+                    <div class="col-md-2 text-end">
+                        <button type="submit" id="btnGuardarExtras" class="main-btn warning-btn btn-hover rounded-pill w-100 py-2" disabled>
                             <i class="lni lni-save me-1"></i> Guardar
                         </button>
                     </div>
                 </div>
             </form>
         </div>
-    </div>
 
     @* ============================================================
        SECCIÓN C – BONIFICACIONES INDIVIDUALES
        ============================================================ *@
-    <div class="section-block">
-        <div class="section-header" style="background:linear-gradient(135deg,#10b981,#059669)">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="lni lni-star me-2"></i>Bonificaciones</h5>
-                <button type="button" id="btnNuevaBonificacion" class="btn btn-light btn-sm" disabled>
-                    <i class="lni lni-plus me-1"></i> Agregar Bonificación
+        @* Bonificaciones *@
+        <div class="premium-card p-0 overflow-hidden mb-5">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-light bg-opacity-50">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-star"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Bonificaciones Individuales</h5>
+                </div>
+                <button type="button" id="btnNuevaBonificacion" class="main-btn success-btn btn-hover rounded-pill px-4 py-2" disabled>
+                    <i class="lni lni-plus me-1"></i> Agregar Bono
                 </button>
             </div>
-        </div>
-        <div class="section-body p-0">
-            <div id="tablaBonificacionesWrapper" class="p-3">
-                <div class="text-center text-muted py-4" id="msgSinPlanilla">
-                    <i class="lni lni-information" style="font-size:2rem;opacity:.4"></i>
-                    <p class="mt-2">Seleccione una planilla para ver sus bonificaciones.</p>
+            
+            <div id="tablaBonificacionesWrapper">
+                <div class="text-center text-muted py-5" id="msgSinPlanilla">
+                    <i class="lni lni-information fs-1 opacity-25 mb-3"></i>
+                    <p>Seleccione una planilla para ver sus bonificaciones cargadas.</p>
                 </div>
-                <div id="tablaBonificacionesContainer" style="display:none;">
-                    <table class="table table-bonos table-hover mb-0">
+                <div id="tablaBonificacionesContainer" class="table-responsive" style="display:none;">
+                    <table class="table premium-table align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Motivo</th>
+                                <th class="ps-4">Motivo</th>
                                 <th>Monto (₡)</th>
                                 <th>Fecha</th>
                                 <th>Registrado</th>
-                                <th class="text-center">Acciones</th>
+                                <th class="text-center pe-4">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaBonificacionesCuerpo"></tbody>
                     </table>
-                    <div id="noHayBonificaciones" class="text-center text-muted py-3" style="display:none;">
-                        <i class="lni lni-tag"></i> No hay bonificaciones registradas para esta planilla.
+                    <div id="noHayBonificaciones" class="text-center text-muted py-5" style="display:none;">
+                        <i class="lni lni-tag fs-1 opacity-25 mb-3"></i>
+                        <p>No hay bonificaciones registradas para esta planilla.</p>
                     </div>
                 </div>
             </div>
@@ -178,41 +151,44 @@
 @* ============================================================
    MODAL – Agregar / Editar Bonificación
    ============================================================ *@
-<div class="modal fade" id="modalBonificacion" tabindex="-1" aria-labelledby="modalBonificacionLabel" aria-hidden="true">
+<!-- Modal Agregar / Editar Bonificación -->
+<div class="modal fade" id="modalBonificacion" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff">
-                <h5 class="modal-title" id="modalBonificacionLabel"><i class="lni lni-star me-2"></i>Bonificación</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-success" id="modalBonificacionLabel">
+                    <i class="lni lni-star me-2"></i> Bonificación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="formBonificacion" novalidate>
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="bonId" value="" />
                 <input type="hidden" id="bonIdPlanilla" value="" />
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Motivo <span class="text-danger">*</span></label>
-                        <input type="text" id="bonMotivo" class="form-control" placeholder="Ej: Bono por ventas, incentivo cumpleaños..." maxlength="255" required />
-                        <div class="invalid-feedback">El motivo es obligatorio.</div>
+                        <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2">Motivo <span class="text-danger">*</span></label>
+                        <input type="text" id="bonMotivo" class="form-control rounded-pill" placeholder="Ej: Bono por ventas, incentivo cumpleaños..." maxlength="255" required />
+                        <div class="invalid-feedback text-xs">El motivo es obligatorio.</div>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Monto (₡) <span class="text-danger">*</span></label>
-                            <input type="number" id="bonMonto" class="form-control" step="0.01" min="1" placeholder="0.00" required />
-                            <div class="invalid-feedback">El monto debe ser mayor a 0.</div>
+                            <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2">Monto (₡) <span class="text-danger">*</span></label>
+                            <input type="number" id="bonMonto" class="form-control rounded-pill" step="0.01" min="1" placeholder="0.00" required />
+                            <div class="invalid-feedback text-xs">El monto debe ser mayor a 0.</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Fecha <span class="text-danger">*</span></label>
-                            <input type="date" id="bonFecha" class="form-control" required />
-                            <div class="invalid-feedback">La fecha es obligatoria.</div>
+                            <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2">Fecha <span class="text-danger">*</span></label>
+                            <input type="date" id="bonFecha" class="form-control rounded-pill" required />
+                            <div class="invalid-feedback text-xs">La fecha es obligatoria.</div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2" data-bs-dismiss="modal">
                         <i class="lni lni-close me-1"></i> Cancelar
                     </button>
-                    <button type="submit" class="btn btn-success" id="btnConfirmarBonificacion">
+                    <button type="submit" class="main-btn success-btn btn-hover rounded-pill px-4 py-2" id="btnConfirmarBonificacion">
                         <i class="lni lni-save me-1"></i> <span id="txtBtnConfirmar">Guardar</span>
                     </button>
                 </div>
@@ -224,38 +200,42 @@
 @* ============================================================
    MODAL – Historial de Auditoría
    ============================================================ *@
-<div class="modal fade" id="modalAuditoria" tabindex="-1" aria-labelledby="modalAuditoriaLabel" aria-hidden="true">
+<!-- Modal Historial de Auditoría -->
+<div class="modal fade" id="modalAuditoria" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff">
-                <h5 class="modal-title"><i class="lni lni-history me-2"></i>Historial de Cambios</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary">
+                    <i class="lni lni-history me-2"></i> Historial de Cambios
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-0">
-                <div id="loadingAuditoria" class="text-center py-4">
+            <div class="modal-body p-4">
+                <div id="loadingAuditoria" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status"></div>
                     <p class="mt-2 text-muted">Cargando historial...</p>
                 </div>
-                <div id="auditoriaCuerpoWrapper" style="display:none;">
-                    <table class="table table-sm table-bordered mb-0">
-                        <thead class="table-light">
+                <div id="auditoriaCuerpoWrapper" style="display:none;" class="table-responsive">
+                    <table class="table premium-table align-middle mb-0">
+                        <thead>
                             <tr>
                                 <th>Fecha</th>
-                                <th>Monto Anterior (₡)</th>
-                                <th>Monto Nuevo (₡)</th>
+                                <th>Anterior</th>
+                                <th>Nuevo</th>
                                 <th>Acción</th>
                                 <th>Responsable</th>
                             </tr>
                         </thead>
                         <tbody id="auditoriaCuerpo"></tbody>
                     </table>
-                    <div id="sinHistorial" class="text-center text-muted py-3" style="display:none;">
-                        <i class="lni lni-information"></i> No hay registros de cambios para esta bonificación.
+                    <div id="sinHistorial" class="text-center text-muted py-4" style="display:none;">
+                        <i class="lni lni-information fs-1 opacity-25 mb-2"></i>
+                        <p>No hay registros de cambios para esta bonificación.</p>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -328,21 +308,26 @@
         data.forEach((b, idx) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${idx + 1}</td>
-                <td><span class="badge-motivo">${escapeHtml(b.motivo)}</span></td>
+                <td class="ps-4">
+                    <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3">
+                        ${escapeHtml(b.motivo)}
+                    </span>
+                </td>
                 <td class="fw-bold text-success">${fmt(b.monto)}</td>
-                <td>${b.fecha}</td>
-                <td class="text-muted small">${b.fechaRegistro}</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirEditar(${b.id}, '${escapeHtml(b.motivo)}', ${b.monto}, '${b.fecha}')">
-                        <i class="lni lni-pencil"></i> Editar
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger me-1" onclick="confirmarEliminar(${b.id})">
-                        <i class="lni lni-trash"></i> Eliminar
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="verHistorial(${b.id})">
-                        <i class="lni lni-history"></i> Historial
-                    </button>
+                <td><span class="text-dark small">${b.fecha}</span></td>
+                <td><span class="text-muted small">${b.fechaRegistro}</span></td>
+                <td class="text-center pe-4">
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-sm btn-white text-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirEditar(${b.id}, '${escapeHtml(b.motivo)}', ${b.monto}, '${b.fecha}')" title="Editar">
+                            <i class="lni lni-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarEliminar(${b.id})" title="Eliminar">
+                            <i class="lni lni-trash-can"></i>
+                        </button>
+                        <button class="btn btn-sm btn-white text-secondary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="verHistorial(${b.id})" title="Auditoría">
+                            <i class="lni lni-history"></i>
+                        </button>
+                    </div>
                 </td>`;
             tbody.appendChild(tr);
         });
@@ -489,11 +474,11 @@
                 const esElim = a.montoNuevo === 0 && a.motivoCambio?.includes('Eliminaci');
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${a.fechaCambio}</td>
-                    <td class="audit-row-old">${fmt(a.montoAnterior)}</td>
-                    <td class="${esElim ? 'text-danger' : 'audit-row-new'}">${esElim ? '<em>Eliminada</em>' : fmt(a.montoNuevo)}</td>
-                    <td>${escapeHtml(a.motivoCambio ?? '-')}</td>
-                    <td><span class="badge bg-secondary">${escapeHtml(a.responsable)}</span></td>`;
+                    <td><span class="text-dark small">${a.fechaCambio}</span></td>
+                    <td><span class="text-danger text-decoration-line-through small">${fmt(a.montoAnterior)}</span></td>
+                    <td><span class="${esElim ? 'text-danger' : 'text-success fw-bold'} small">${esElim ? '<em>Eliminada</em>' : fmt(a.montoNuevo)}</span></td>
+                    <td><span class="text-muted small">${escapeHtml(a.motivoCambio ?? '-')}</span></td>
+                    <td><span class="badge rounded-pill bg-light text-dark border px-3">${escapeHtml(a.responsable)}</span></td>`;
                 tbody.appendChild(tr);
             });
         } catch (err) {

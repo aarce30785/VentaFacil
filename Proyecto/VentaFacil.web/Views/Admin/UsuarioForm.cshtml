@@ -7,25 +7,52 @@
     var roles = ViewBag.Roles as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
 }
 
-<div>
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card-style mb-30 premium-card">
-                <div class="title d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-10">@ViewData["Title"]</h6>
-                    <a href="@Url.Action("IndexUsuarios", "Admin")" class="btn btn-sm btn-light border btn-premium">
-                        <i class="lni lni-arrow-left"></i> Volver a la lista
+    <!-- Hero Section -->
+    <div class="hero-section d-flex justify-content-between align-items-center px-4 mb-4" style="text-align: left; margin-top: -1.5rem;">
+        <div class="position-relative z-1">
+            <h1 class="hero-title fw-bold mb-1 text-white">
+                <i class="lni lni-user me-2"></i> @ViewData["Title"]
+            </h1>
+            <p class="mb-0 text-white-50 fs-6">Gestión detallada de accesos y perfiles de usuario.</p>
+        </div>
+        <div class="position-relative z-1 d-none d-md-block text-end">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 justify-content-end">
+                        <li class="breadcrumb-item"><a href="@Url.Action("IndexUsuarios", "Admin")" class="text-white-50">Usuarios</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Formulario</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center pt-2">
+        <div class="col-lg-10">
+            <div class="premium-card p-4 shadow-sm border-0 mx-2">
+                <div class="p-4 border-bottom mb-4 bg-light bg-opacity-50 rounded-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            <i class="lni lni-vcard"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Información de Cuenta</h5>
+                            <p class="text-xs text-muted mb-0">Datos básicos y credenciales de acceso.</p>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("IndexUsuarios", "Admin")" class="main-btn dark-btn-outline btn-hover btn-sm rounded-pill px-3">
+                        <i class="lni lni-arrow-left me-1"></i> Lista
                     </a>
                 </div>
 
-                <form id="userForm" asp-action="GuardarUsuario" method="post" enctype="multipart/form-data">
+                <form id="userForm" asp-action="GuardarUsuario" method="post" enctype="multipart/form-data" class="px-2">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id_Usr" />
                     
                     @if (ViewData.ModelState.ErrorCount > 0)
                     {
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
+                        <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger rounded-3 p-3 mb-4">
+                            <ul class="mb-0 small">
                                 @foreach (var modelState in ViewData.ModelState.Values)
                                 {
                                     foreach (var error in modelState.Errors)
@@ -37,117 +64,110 @@
                         </div>
                     }
 
-                    <div class="row">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label asp-for="Nombre">Nombre Completo</label>
-                                <input asp-for="Nombre" placeholder="Ingrese el nombre completo" />
-                                <span asp-validation-for="Nombre" class="text-danger"></span>
-                            </div>
+                            <label asp-for="Nombre" class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Nombre Completo</label>
+                            <input asp-for="Nombre" class="form-control rounded-pill bg-light border-0 px-4 py-2" placeholder="Nombre completo" required />
+                            <span asp-validation-for="Nombre" class="text-xs text-danger mt-1 ms-2"></span>
                         </div>
                         <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label asp-for="Correo">Correo Electrónico</label>
-                                <input asp-for="Correo" type="email" placeholder="ejemplo@correo.com" />
-                                <span asp-validation-for="Correo" class="text-danger"></span>
-                            </div>
+                            <label asp-for="Correo" class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Correo Electrónico</label>
+                            <input asp-for="Correo" type="email" class="form-control rounded-pill bg-light border-0 px-4 py-2" placeholder="ejemplo@correo.com" required />
+                            <span asp-validation-for="Correo" class="text-xs text-danger mt-1 ms-2"></span>
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label asp-for="Contrasena">Contraseña</label>
-                                <input asp-for="Contrasena" type="password" 
-                                       placeholder="@(esEdicion ? "Dejar vacío para mantener actual" : "Mínimo 6 caracteres")" />
-                                <span asp-validation-for="Contrasena" class="text-danger"></span>
-                                @if (esEdicion)
-                                {
-                                    <small class="text-muted">Si no desea cambiar la contraseña, deje este campo vacío.</small>
-                                }
-                            </div>
+                            <label asp-for="Contrasena" class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Contraseña</label>
+                            <input asp-for="Contrasena" type="password" class="form-control rounded-pill bg-light border-0 px-4 py-2" 
+                                   placeholder="@(esEdicion ? "Dejar en blanco para no cambiar" : "Mínimo 6 caracteres")" />
+                            <span asp-validation-for="Contrasena" class="text-xs text-danger mt-1 ms-2"></span>
                         </div>
                         <div class="col-md-6">
-                            <div class="input-style-1">
-                                <label asp-for="ConfirmarContrasena">Confirmar Contraseña</label>
-                                <input asp-for="ConfirmarContrasena" type="password" placeholder="Confirmar contraseña" />
-                                <span asp-validation-for="ConfirmarContrasena" class="text-danger"></span>
-                            </div>
+                            <label asp-for="ConfirmarContrasena" class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Confirmar Contraseña</label>
+                            <input asp-for="ConfirmarContrasena" type="password" class="form-control rounded-pill bg-light border-0 px-4 py-2" placeholder="Repita la contraseña" />
+                            <span asp-validation-for="ConfirmarContrasena" class="text-xs text-danger mt-1 ms-2"></span>
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row g-4 mb-5">
                         <div class="col-md-6">
-                            <div class="select-style-1">
-                                <label asp-for="Rol">Rol de Usuario</label>
-                                <div class="select-position">
-                                    <select asp-for="Rol" asp-items="roles" id="Rol" data-initial-value="@Model.Rol">
-                                        <option value="">Seleccione un rol</option>
-                                    </select>
-                                </div>
-                                <span asp-validation-for="Rol" class="text-danger"></span>
-                            </div>
+                            <label asp-for="Rol" class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Rol Asignado</label>
+                            <select asp-for="Rol" asp-items="roles" class="form-select rounded-pill bg-light border-0 px-4 py-2" id="Rol" data-initial-value="@Model.Rol">
+                                <option value="">Seleccione un rol...</option>
+                            </select>
+                            <span asp-validation-for="Rol" class="text-xs text-danger mt-1 ms-2"></span>
                         </div>
-                        <div class="col-md-6">
-                             <div class="form-check form-switch mt-4 pt-2">
+                        <div class="col-md-6 d-flex align-items-center mt-auto pb-2">
+                             <div class="form-check form-switch ms-2">
                                 <input class="form-check-input" type="checkbox" asp-for="Estado" id="EstadoCheck" data-initial-value="@(Model.Estado.ToString().ToLower())">
-                                <label class="form-check-label" for="EstadoCheck">Usuario Activo</label>
+                                <label class="form-check-label fw-bold text-muted" for="EstadoCheck">Usuario Activo</label>
                             </div>
-                            <span asp-validation-for="Estado" class="text-danger"></span>
+                            <span asp-validation-for="Estado" class="text-xs text-danger ms-2"></span>
                         </div>
                     </div>
 
-                    <div class="d-flex gap-3 mt-4">
-                        <button type="submit" class="main-btn primary-btn btn-hover w-100 btn-premium">
-                            <i class="lni lni-save me-2"></i> @(esEdicion ? "Actualizar Usuario" : "Crear Usuario")
-                        </button>
-                        <a href="@Url.Action("IndexUsuarios", "Admin")" class="main-btn light-btn btn-hover btn-premium">
-                            Cancelar
+                    <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                        <a href="@Url.Action("IndexUsuarios", "Admin")" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2">
+                            <i class="lni lni-close me-2"></i> Cancelar
                         </a>
+                        <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-5 py-2 fw-bold">
+                            <i class="lni lni-checkmark-circle me-2"></i> @(esEdicion ? "Guardar Cambios" : "Crear Usuario")
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
 
 </div>
 
 <!-- Modal de Confirmación de Cambio de Estado -->
-<div class="modal fade" id="confirmStatusChangeModal" tabindex="-1" aria-labelledby="confirmStatusChangeModalLabel" aria-hidden="true">
+<div class="modal fade" id="confirmStatusChangeModal" tabindex="-1" aria-labelledby="confirmStatusChangeModalLabel" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmStatusChangeModalLabel">Confirmar Cambio de Estado</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-start">
+                <div class="icon-box bg-warning bg-opacity-10 text-warning-700 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                    <i class="lni lni-warning fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="modal-title fw-bold text-dark" id="confirmStatusChangeModalLabel">Confirmar Cambio de Estado</h5>
+                    <p class="text-xs text-muted mb-0">Esta acción afectará el acceso al sistema.</p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                ¿Está seguro de que desea cambiar el estado del usuario?
-                <br />
-                <small class="text-muted">Esto afectará el acceso del usuario al sistema.</small>
+            <div class="modal-body px-4 pt-3">
+                <p class="mb-0 text-muted">¿Está seguro de que desea cambiar el estado del usuario? Si lo desactiva, el usuario no podrá iniciar sesión hasta que sea reactivado.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="confirmStatusChangeBtn">Confirmar</button>
+            <div class="modal-footer border-0 pb-4 px-4 gap-2">
+                <button type="button" class="main-btn dark-btn-outline btn-hover btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="main-btn warning-btn btn-hover btn-sm rounded-pill px-4" id="confirmStatusChangeBtn">Confirmar Cambio</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal de Confirmación -->
-<div class="modal fade" id="confirmRoleChangeModal" tabindex="-1" aria-labelledby="confirmRoleChangeModalLabel" aria-hidden="true">
+<!-- Modal de Confirmación de Rol -->
+<div class="modal fade" id="confirmRoleChangeModal" tabindex="-1" aria-labelledby="confirmRoleChangeModalLabel" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmRoleChangeModalLabel">Confirmar Cambio de Rol</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex align-items-start">
+                <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                    <i class="lni lni-users fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="modal-title fw-bold text-dark" id="confirmRoleChangeModalLabel">Confirmar Cambio de Rol</h5>
+                    <p class="text-xs text-muted mb-0">Se modificarán los permisos del usuario.</p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                ¿Está seguro de que desea cambiar el rol del usuario?
+            <div class="modal-body px-4 pt-3">
+                <p class="mb-0 text-muted">¿Está seguro de que desea cambiar el rol asignado? Esto podría habilitar o restringir el acceso a ciertos módulos de la aplicación.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="confirmRoleChangeBtn">Confirmar</button>
+            <div class="modal-footer border-0 pb-4 px-4 gap-2">
+                <button type="button" class="main-btn dark-btn-outline btn-hover btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="main-btn primary-btn btn-hover btn-sm rounded-pill px-4" id="confirmRoleChangeBtn">Confirmar Cambio</button>
             </div>
         </div>
     </div>

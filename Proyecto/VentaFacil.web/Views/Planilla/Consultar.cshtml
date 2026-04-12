@@ -1,4 +1,4 @@
-﻿@using VentaFacil.web.Models
+@using VentaFacil.web.Models
 @using VentaFacil.web.Models.Response.Planilla
 @model NominaConsultaResponse
 @{
@@ -9,156 +9,151 @@
 
 
 
-<div class="title-wrapper pt-30">
-    <div class="row align-items-center">
-        <div class="col-md-6">
-            <div class="title">
-                <h2 class="fw-bold text-dark">Consultar Nóminas</h2>
-            </div>
+<div class="consultar-wrapper">
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4 mb-4" style="margin-top: -1.5rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
+            <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-agenda me-2"></i>Historial de Nóminas</h1>
+            <p class="mb-0 text-white-50 fs-5">Consulta y reportes de pagos anteriores.</p>
         </div>
-        <div class="col-md-6">
+        <div class="position-relative z-1 d-none d-md-block">
             <div class="breadcrumb-wrapper">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Inicio</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Planilla</li>
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-white-50">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Planilla")" class="text-white-50">Planilla</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Historial</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
-</div>
-
-<div class="consultar-wrapper">
-    <div>
-        <div class="row mb-4">
+    <div class="mb-4">
+        <div class="row g-4 mb-4">
             <div class="col-lg-3 col-6">
-                <div class="premium-card text-center">
-                    <div class="mb-2">
-                        <i class="fas fa-file-invoice-dollar text-info fs-2"></i>
+                <div class="premium-card p-4 text-center h-100">
+                    <div class="icon-box bg-info bg-opacity-10 text-info rounded-3 mx-auto mb-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-files fs-4"></i>
                     </div>
-                    <h3 class="fw-bold mb-0">@(Model?.Nominas?.Count ?? 0)</h3>
-                    <p class="text-muted mb-0">Nóminas Generadas</p>
+                    <h3 class="fw-bold mb-1">@(Model?.Nominas?.Count ?? 0)</h3>
+                    <p class="text-muted text-xs text-uppercase fw-bold mb-0">Nóminas Generadas</p>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
-                <div class="premium-card text-center">
-                    <div class="mb-2">
-                        <i class="fas fa-money-bill-wave text-success fs-2"></i>
+                <div class="premium-card p-4 text-center h-100">
+                    <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 mx-auto mb-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-wallet fs-4"></i>
                     </div>
-                    <h3 class="fw-bold mb-0">@((Model?.Nominas?.Sum(x => x.TotalNeto) ?? 0).ToString("C", numberFormat))</h3>
-                    <p class="text-muted mb-0">Total Pagado</p>
+                    <h3 class="fw-bold mb-1">@((Model?.Nominas?.Sum(x => x.TotalNeto) ?? 0).ToString("C", numberFormat))</h3>
+                    <p class="text-muted text-xs text-uppercase fw-bold mb-0">Total Pagado</p>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
-                <div class="premium-card text-center">
-                    <div class="mb-2">
-                        <i class="fas fa-chart-pie text-warning fs-2"></i>
+                <div class="premium-card p-4 text-center h-100">
+                    <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-3 mx-auto mb-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-graph fs-4"></i>
                     </div>
-                    <h3 class="fw-bold mb-0>@((Model?.Nominas?.Sum(x => x.TotalDeducciones) ?? 0).ToString("C", numberFormat))</h3>
-                    <p class="text-muted mb-0">Total Deducciones</p>
+                    <h3 class="fw-bold mb-1">@((Model?.Nominas?.Sum(x => x.TotalDeducciones) ?? 0).ToString("C", numberFormat))</h3>
+                    <p class="text-muted text-xs text-uppercase fw-bold mb-0">Total Deducciones</p>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
-                <div class="premium-card text-center">
-                    <div class="mb-2">
-                        <i class="fas fa-users-cog text-secondary fs-2"></i>
+                <div class="premium-card p-4 text-center h-100">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 mx-auto mb-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-users fs-4"></i>
                     </div>
-                    <h3 class="fw-bold mb-0">Planilla</h3>
-                    <p class="text-muted mb-0">Módulo General</p>
+                    <h3 class="fw-bold mb-1">Planilla</h3>
+                    <p class="text-muted text-xs text-uppercase fw-bold mb-0">Módulo General</p>
                 </div>
             </div>
         </div>
 
-        <div class="premium-card mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold mb-0">Acciones de Planilla</h4>
-            </div>
-            <div class="row">
-                <div class="col-md-12 mb-2">
-                    <a href="@Url.Action("GenerarNomina", "Planilla")" class="btn btn-success btn-premium me-2">
-                        <i class="fas fa-plus-circle"></i> Generar Nómina
+        <div class="premium-card p-4 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-funnel"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Filtros de Búsqueda</h5>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="@Url.Action("GenerarNomina", "Planilla")" class="main-btn success-btn btn-hover rounded-pill px-4 py-2">
+                        <i class="lni lni-plus me-1"></i> Generar Nómina
                     </a>
-                    <a href="@Url.Action("RegistrarHoras", "Planilla")" class="btn btn-primary btn-premium me-2">
-                        <i class="fas fa-clock"></i> Registrar Horas
+                    <a href="@Url.Action("RegistrarHoras", "Planilla")" class="main-btn primary-btn btn-hover rounded-pill px-4 py-2">
+                        <i class="lni lni-timer me-1"></i> Horas
                     </a>
-                    <a href="@Url.Action("RegistrarExtrasBonos", "Planilla")"
-                       class="btn btn-warning btn-premium me-2 text-white">
-                        <i class="fas fa-star"></i> Extras/Bonos
-                    </a>
-                    <a href="@Url.Action("AplicarDeducciones", "Planilla")" class="btn btn-danger btn-premium me-2">
-                        <i class="fas fa-cut"></i> Deducciones
+                    <a href="@Url.Action("RegistrarExtrasBonos", "Planilla")" class="main-btn warning-btn btn-hover rounded-pill px-4 py-2">
+                        <i class="lni lni-star me-1"></i> Extras
                     </a>
                 </div>
-                <div class="col-md-12 mt-2">
-                    <form method="get" action="@Url.Action("Consultar", "Planilla")" class="row g-2 align-items-center">
-                        <div class="col-md-3">
-                            <label class="form-label mb-0">Periodo:</label>
-                            <select name="TipoPeriodo" class="form-select form-select-sm rounded-pill">
-                                <option value="">-- Todos --</option>
-                                <option value="Mensual" selected="@(ViewBag.Filtros?.TipoPeriodo == "Mensual")">Mensual (Este Mes)</option>
-                                <option value="Trimestral" selected="@(ViewBag.Filtros?.TipoPeriodo == "Trimestral")">Trimestral (Últimos 3)</option>
-                                <option value="Anual" selected="@(ViewBag.Filtros?.TipoPeriodo == "Anual")">Anual (Este Año)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label mb-0">Usuario:</label>
-                            <select name="Id_Usr" class="form-select form-select-sm rounded-pill" asp-items="ViewBag.Usuarios">
-                                <option value="">-- Todos --</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label mb-0">Estado:</label>
-                            <select name="Estado" class="form-select form-select-sm rounded-pill">
-                                <option value="">-- Todos --</option>
-                                <option value="Generada" selected="@(ViewBag.Filtros?.Estado == "Generada")">Generada</option>
-                                <option value="Anulada" selected="@(ViewBag.Filtros?.Estado == "Anulada")">Anulada</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label mb-0">Desde:</label>
-                            <input type="date" name="FechaInicio" class="form-control form-control-sm rounded-pill"
-                                   value="@(ViewBag.Filtros?.FechaInicio?.ToString("yyyy-MM-dd"))" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label mb-0">Hasta:</label>
-                            <input type="date" name="FechaFinal" class="form-control form-control-sm rounded-pill"
-                                   value="@(ViewBag.Filtros?.FechaFinal?.ToString("yyyy-MM-dd"))" />
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-info btn-premium me-2">
-                                <i class="fas fa-search"></i> Filtrar
-                            </button>
-                            <a href="@Url.Action("Consultar", "Planilla")" class="btn btn-light btn-premium">Limpiar</a>
-                        </div>
-                    </form>
+            </div>
 
+            <form method="get" action="@Url.Action("Consultar", "Planilla")" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label text-xs fw-bold text-muted text-uppercase mb-1 ml-2">Periodo</label>
+                    <select name="TipoPeriodo" class="form-select rounded-pill">
+                        <option value="">-- Todos --</option>
+                        <option value="Mensual" selected="@(ViewBag.Filtros?.TipoPeriodo == "Mensual")">Mensual (Este Mes)</option>
+                        <option value="Trimestral" selected="@(ViewBag.Filtros?.TipoPeriodo == "Trimestral")">Trimestral (Últimos 3)</option>
+                        <option value="Anual" selected="@(ViewBag.Filtros?.TipoPeriodo == "Anual")">Anual (Este Año)</option>
+                    </select>
                 </div>
-            </div>
+                <div class="col-md-3">
+                    <label class="form-label text-xs fw-bold text-muted text-uppercase mb-1 ml-2">Usuario</label>
+                    <select name="Id_Usr" class="form-select rounded-pill" asp-items="ViewBag.Usuarios">
+                        <option value="">-- Todos --</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-xs fw-bold text-muted text-uppercase mb-1 ml-2">Estado</label>
+                    <select name="Estado" class="form-select rounded-pill">
+                        <option value="">-- Todos --</option>
+                        <option value="Generada" selected="@(ViewBag.Filtros?.Estado == "Generada")">Generada</option>
+                        <option value="Anulada" selected="@(ViewBag.Filtros?.Estado == "Anulada")">Anulada</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-xs fw-bold text-muted text-uppercase mb-1 ml-2">Desde</label>
+                    <input type="date" name="FechaInicio" class="form-control rounded-pill"
+                           value="@(ViewBag.Filtros?.FechaInicio?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-xs fw-bold text-muted text-uppercase mb-1 ml-2">Hasta</label>
+                    <input type="date" name="FechaFinal" class="form-control rounded-pill"
+                           value="@(ViewBag.Filtros?.FechaFinal?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-12 text-end mt-4">
+                    <a href="@Url.Action("Consultar", "Planilla")" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2 me-2">
+                        <i class="lni lni-eraser me-1"></i> Limpiar
+                    </a>
+                    <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-4 py-2">
+                        <i class="lni lni-search me-1"></i> Filtrar
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold mb-0">Listado de Nóminas</h4>
-                <div>
-                    <a href="#" class="btn btn-light btn-premium me-2"><i class="fas fa-download"></i></a>
-                    <a href="#" class="btn btn-light btn-premium"><i class="fas fa-bars"></i></a>
+        <div class="premium-card p-0 overflow-hidden mb-5">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-light bg-opacity-50">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-list"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Listado de Nóminas</h5>
                 </div>
             </div>
             <div class="table-responsive">
                 <table class="table premium-table">
                     <thead>
                         <tr>
-
-                            <th>Colaboradores</th>
-                            <th>Periodo Inicio</th>
-                            <th>Periodo Final</th>
-                            <th>Fecha Generación</th>
+                            <th class="ps-4">Colaboradores</th>
+                            <th>Periodo</th>
+                            <th>Generación</th>
                             <th>Estado</th>
-                            <th>Total Bruto</th>
+                            <th>T. Bruto</th>
                             <th>Deducciones</th>
-                            <th>Total Neto</th>
-                            <th class="text-center">Acciones</th>
+                            <th>T. Neto</th>
+                            <th class="text-center pe-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -167,66 +162,75 @@
                             foreach (var item in Model.Nominas)
                             {
                                 <tr>
-
-                                    <td>
-                                        @if(item.Planillas != null && item.Planillas.Any())
-                                        {
-                                            var nombres = item.Planillas
-                                                .Where(p => p.Usuario != null)
-                                                .GroupBy(p => p.Usuario.Id_Usr)
-                                                .Select(g => g.First().Usuario.Nombre.Trim())
-                                                .Take(3)
-                                                .ToList();
-                                            var total = item.Planillas.Select(p => p.Usuario?.Id_Usr).Distinct().Count();
-                                            
-                                            @string.Join(", ", nombres)
-                                            @(total > 3 ? $" y {total - 3} más..." : "")
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
+                                    <td class="ps-4">
+                                        <div class="d-flex flex-column">
+                                            @if(item.Planillas != null && item.Planillas.Any())
+                                            {
+                                                var nombres = item.Planillas
+                                                    .Where(p => p.Usuario != null)
+                                                    .GroupBy(p => p.Usuario.Id_Usr)
+                                                    .Select(g => g.First().Usuario.Nombre.Trim())
+                                                    .Take(2)
+                                                    .ToList();
+                                                var total = item.Planillas.Select(p => p.Usuario?.Id_Usr).Distinct().Count();
+                                                
+                                                <span class="fw-bold text-dark">@string.Join(", ", nombres)</span>
+                                                @if(total > 2) {
+                                                    <span class="text-xs text-muted">+@(total - 2) colaboradores más</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Sin colaboradores</span>
+                                            }
+                                        </div>
                                     </td>
-                                    <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
-                                    <td>@item.FechaFinal.ToString("dd/MM/yyyy")</td>
-                                    <td>@item.FechaGeneracion.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <div class="d-flex flex-column small">
+                                            <span class="text-dark">@item.FechaInicio.ToString("dd/MM/yyyy")</span>
+                                            <span class="text-muted">al @item.FechaFinal.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-dark small">@item.FechaGeneracion.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </td>
                                     <td>
                                         @if (item.Estado == "Generada")
                                         {
-                                            <span class="badge badge-premium bg-success bg-opacity-10 text-success border border-success border-opacity-25">Generada</span>
+                                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3">Generada</span>
                                         }
                                         else if (item.Estado == "Anulada")
                                         {
-                                            <span class="badge badge-premium bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Anulada</span>
+                                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3">Anulada</span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-premium bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">@item.Estado</span>
+                                            <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3">@item.Estado</span>
                                         }
                                     </td>
                                     <td class="text-secondary">@item.TotalBruto.ToString("C", numberFormat)</td>
                                     <td class="text-danger">@item.TotalDeducciones.ToString("C", numberFormat)</td>
                                     <td class="fw-bold text-success">@item.TotalNeto.ToString("C", numberFormat)</td>
-                                    <td class="text-center">
+                                    <td class="text-center pe-4">
                                         <div class="d-flex justify-content-center gap-2">
-                                            <a href="@Url.Action("DetalleNomina", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-info btn-premium btn-sm" title="Ver Detalle">
-                                                <i class="fas fa-eye"></i>
+                                            <a href="@Url.Action("DetalleNomina", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-sm btn-white text-info rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" title="Ver Detalle">
+                                                <i class="lni lni-eye"></i>
                                             </a>
-                                            <a href="@Url.Action("ExportarNomina", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-secondary btn-premium btn-sm" title="Descargar PDF" target="_blank">
-                                                <i class="fas fa-file-pdf"></i>
+                                            <a href="@Url.Action("ExportarNomina", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" title="Descargar PDF" target="_blank">
+                                                <i class="lni lni-empty-file"></i>
                                             </a>
-                                            <a href="@Url.Action("ExportarNominaExcel", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-success btn-premium btn-sm" title="Descargar Excel" target="_blank">
-                                                <i class="fas fa-file-excel"></i>
+                                            <a href="@Url.Action("ExportarNominaExcel", "Planilla", new { idNomina = item.Id_Nomina })" class="btn btn-sm btn-white text-success rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" title="Descargar Excel" target="_blank">
+                                                <i class="lni lni-graph"></i>
                                             </a>
                                             @if (item.Estado != "Anulada")
                                             {
                                                 <button type="button"
-                                                        class="btn btn-danger btn-premium btn-sm"
+                                                        class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;"
                                                         title="Anular"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#modalAnular"
                                                         data-nomina-id="@item.Id_Nomina">
-                                                    <i class="fas fa-trash-alt"></i>
+                                                    <i class="lni lni-trash-can"></i>
                                                 </button>
                                             }
                                         </div>
@@ -237,12 +241,9 @@
                         else
                         {
                             <tr>
-                                <td colspan="10" class="text-center text-muted py-4">
-                                    <div class="empty-state">
-                                        <i class="fas fa-calendar-times mb-3" style="font-size: 2.5em; opacity:.35"></i>
-                                        <p class="fw-semibold mb-1">No se encontraron nóminas para el periodo seleccionado</p>
-                                        <p class="small text-muted mb-0">Intente cambiar el periodo o criterio de búsqueda.</p>
-                                    </div>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="lni lni-warning fs-1 mb-2 opacity-25"></i>
+                                    <p class="mb-0">No se encontraron nóminas registradas.</p>
                                 </td>
                             </tr>
                         }
@@ -250,38 +251,44 @@
                 </table>
             </div>
 
-            <div class="mt-3">
-                @if (Model != null && Model.TotalPaginas > 1)
-                {
-                    <ul class="pagination pagination-premium justify-content-end">
-                        <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Consultar", new { pagina = Model.PaginaActual - 1 })">&laquo;</a>
-                        </li>
-                        @for (int i = 1; i <= Model.TotalPaginas; i++)
-                        {
-                            <li class="page-item @(Model.PaginaActual == i ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("Consultar", new { pagina = i })">@i</a>
+            @if (Model != null && Model.TotalPaginas > 1)
+            {
+                <div class="p-4 border-top">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-modern justify-content-end mb-0">
+                            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                                <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { pagina = Model.PaginaActual - 1 })">
+                                    <i class="lni lni-chevron-left"></i>
+                                </a>
                             </li>
-                        }
-                        <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Consultar", new { pagina = Model.PaginaActual + 1 })">&raquo;</a>
-                        </li>
-                    </ul>
-                }
-            </div>
+                            @for (int i = 1; i <= Model.TotalPaginas; i++)
+                            {
+                                <li class="page-item @(Model.PaginaActual == i ? "active" : "")">
+                                    <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { pagina = i })">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                                <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { pagina = Model.PaginaActual + 1 })">
+                                    <i class="lni lni-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
         </div>
     </div>
 </div>
 
-<!-- ── Modal Anular Nómina (Consultar) ───────────────────────────────── -->
-<div class="modal fade" id="modalAnular" tabindex="-1" aria-labelledby="modalAnularLabel" aria-hidden="true">
+<!-- Modal Anular Nómina -->
+<div class="modal fade" id="modalAnular" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg" style="border-radius:16px;">
-            <div class="modal-header" style="background:linear-gradient(135deg,#dc3545,#c82333);border-radius:16px 16px 0 0;">
-                <h5 class="modal-title text-white fw-bold" id="modalAnularLabel">
-                    <i class="fas fa-exclamation-triangle me-2"></i> Anular Nómina
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="lni lni-warning me-2"></i> Anular Nómina
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <form asp-action="RevertirNomina" asp-controller="Planilla" method="post" id="formAnular">
@@ -289,18 +296,23 @@
                 <input type="hidden" name="idNomina" id="anularNominaId" value="" />
 
                 <div class="modal-body p-4">
-                    <p class="text-muted">Esta acción anulará la nómina seleccionada y liberará sus jornadas. No puede deshacerse. Por favor ingrese una justificación:</p>
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border-0 rounded-3 mb-4">
+                        <p class="text-danger small mb-0">
+                            <strong>Atención:</strong> Esta acción anulará la nómina seleccionada y liberará sus jornadas. No puede deshacerse.
+                        </p>
+                    </div>
+                    
                     <div class="mb-3">
-                        <label for="justificacionInput" class="form-label fw-semibold">Motivo / Justificación</label>
-                        <textarea name="justificacion" id="justificacionInput" class="form-control" rows="3" placeholder="Ej: Error en el cálculo de horas de X empleado..." required minlength="10"></textarea>
-                        <div class="form-text">Mínimo 10 caracteres.</div>
+                        <label for="justificacionInput" class="form-label fw-bold text-muted text-xs text-uppercase mb-2">Motivo / Justificación</label>
+                        <textarea name="justificacion" id="justificacionInput" class="form-control rounded-3" rows="3" placeholder="Ej: Error en el cálculo de horas de X empleado..." required minlength="10"></textarea>
+                        <div class="form-text small">Mínimo 10 caracteres requeridos.</div>
                     </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash-alt me-1"></i> Confirmar Anulación
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="main-btn danger-btn btn-hover rounded-pill px-4 py-2">
+                        <i class="lni lni-trash-can me-2"></i> Confirmar Anulación
                     </button>
                 </div>
             </form>

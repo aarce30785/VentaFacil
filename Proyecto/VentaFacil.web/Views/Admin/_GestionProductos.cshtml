@@ -1,63 +1,63 @@
 @model VentaFacil.web.Models.Response.Producto.ListProductoResponse
 
 <!-- Controles de Búsqueda y Filtros -->
-<div class="premium-card mb-4 p-4">
-    <form method="get" asp-action="IndexProductos" class="row g-3 align-items-center" id="filtrosProductosForm">
-        
-        <!-- Stats Summary -->
-        <div class="col-md-3">
-             <div class="d-flex align-items-center">
-                <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-                    <i class="lni lni-package fs-4"></i>
+<div class="mb-4">
+    <div class="premium-card p-4">
+        <form method="get" asp-action="IndexProductos" class="row g-3 align-items-center" id="filtrosProductosForm">
+            <!-- Stats Summary -->
+            <div class="col-md-3">
+                 <div class="d-flex align-items-center">
+                    <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-package fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Productos</h6>
+                        <p class="text-sm text-muted mb-0">@Model.TotalProductos totales</p>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0">Productos</h6>
-                    <p class="text-sm text-muted mb-0">@Model.TotalProductos totales</p>
+            </div>
+
+            <!-- Campo de búsqueda -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
+                    <input type="text" name="busqueda" class="form-control bg-light border-0 px-3" 
+                           placeholder="Buscar por nombre..." 
+                           value="@Model.Busqueda" />
                 </div>
             </div>
-        </div>
 
-        <!-- Campo de búsqueda -->
-        <div class="col-md-4">
-            <div class="input-group">
-                <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
-                <input type="text" name="busqueda" class="form-control bg-light border-0" 
-                       placeholder="Buscar por nombre o descripción..." 
-                       value="@Model.Busqueda" />
+            <!-- Filtro por categoría -->
+            <div class="col-md-3">
+                <select name="categoriaFiltro" class="form-select bg-light border-0 px-3" onchange="this.form.submit()">
+                    <option value="">Todas las categorías</option>
+                    @foreach (var categoria in Model.Categorias ?? new List<SelectListItem>())
+                    {
+                        <option value="@categoria.Value"
+                                selected="@(Model.CategoriaFiltro?.ToString() == categoria.Value ? "selected" : null)">
+                            @categoria.Text
+                        </option>
+                    }
+                </select>
             </div>
-        </div>
 
-        <!-- Filtro por categoría -->
-        <div class="col-md-3">
-            <select name="categoriaFiltro" class="form-select bg-light border-0" onchange="this.form.submit()">
-                <option value="">Todas las categorías</option>
-                @foreach (var categoria in Model.Categorias ?? new List<SelectListItem>())
-                {
-                    <option value="@categoria.Value"
-                            selected="@(Model.CategoriaFiltro?.ToString() == categoria.Value ? "selected" : null)">
-                        @categoria.Text
-                    </option>
-                }
-            </select>
-        </div>
-
-        <!-- Botones de acción -->
-        <div class="col-md-2 text-end">
-             <div class="d-flex justify-content-end align-items-center gap-2">
-                 <button type="submit" class="btn btn-primary d-none">Buscar</button>
-                 <a href="@Url.Action("LimpiarFiltrosProductos", "Admin")" class="btn btn-outline-secondary btn-hover rounded-pill" title="Limpiar Filtros">
-                    <i class="lni lni-reload"></i> 
-                </a>
-                <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalProducto('crear')">
-                    <i class="lni lni-plus me-2"></i> Nuevo
-                </button>
+            <!-- Botones de acción -->
+            <div class="col-md-2 text-end">
+                 <div class="d-flex justify-content-end align-items-center gap-2">
+                     <a href="@Url.Action("LimpiarFiltrosProductos", "Admin")" class="main-btn dark-btn-outline btn-hover rounded-pill" style="padding: 10px 15px;" title="Limpiar Filtros">
+                        <i class="lni lni-reload"></i> 
+                    </a>
+                    <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalProducto('crear')">
+                        <i class="lni lni-plus me-2"></i> Nuevo
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- Campos ocultos para mantener otros parámetros -->
-        <input type="hidden" name="pagina" value="1" />
-        <input type="hidden" name="cantidadPorPagina" value="10" />
-    </form>
+            <!-- Campos ocultos para mantener otros parámetros -->
+            <input type="hidden" name="pagina" value="1" />
+            <input type="hidden" name="cantidadPorPagina" value="10" />
+        </form>
+    </div>
 </div>
 
 <!-- Mensaje cuando no hay resultados CON FILTROS APLICADOS -->
@@ -82,74 +82,83 @@
 }
 
 <!-- Grilla de Productos -->
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
-    @if (Model.Productos != null && Model.Productos.Any())
-    {
-        foreach (var producto in Model.Productos)
-        {
-            <div class="col">
-                <div class="product-card">
-                    <div class="product-img-wrapper" style="height: 180px;">
-                        @if (!string.IsNullOrEmpty(producto.Imagen))
-                        {
-                            <img src="@producto.Imagen" class="product-img" alt="@producto.Nombre" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'product-placeholder\'><i class=\'lni lni-image mb-2\'></i><span class=\'text-sm\'>Sin imagen</span></div>';">
-                        }
-                        else
-                        {
-                            <div class="product-placeholder">
-                                <i class="lni lni-image mb-2"></i>
-                                <span class="text-sm">Sin imagen</span>
-                            </div>
-                        }
-                        
-                        <!-- Status Badges Float -->
-                        <div class="position-absolute top-0 end-0 p-2 d-flex flex-column gap-1 align-items-end" id="badge-disponibilidad-@producto.Id_Producto">
-                            @if (!producto.Estado)
-                            {
-                                <span class="badge bg-danger shadow-sm"><i class="lni lni-ban me-1"></i> Inactivo</span>
-                            }
-                            <span class="badge bg-warning text-dark shadow-sm opacity-90"><i class="lni lni-tag me-1"></i> @(Model.Categorias?.FirstOrDefault(c => c.Value == producto.Id_Categoria.ToString())?.Text ?? "N/A")</span>
-                        </div>
-                    </div>
-                    
-                    <div class="product-details">
-                        <h5 class="product-title" title="@producto.Nombre">@producto.Nombre</h5>
-                        <p class="product-desc" title="@producto.Descripcion">
-                            @(string.IsNullOrEmpty(producto.Descripcion) ? "Sin descripción disponible." : producto.Descripcion)
-                        </p>
-                        
-                        <!-- Actions Footer -->
-                        <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
-                            <span class="product-price fs-5">@producto.Precio.ToString("C")</span>
-                            <div class="action d-flex gap-2">
-                                <button type="button" class="btn btn-sm btn-light text-primary rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="abrirModalProducto('ver', @producto.Id_Producto)" title="Ver">
-                                    <i class="lni lni-eye"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-light text-warning rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="abrirModalProducto('editar', @producto.Id_Producto)" title="Editar">
-                                    <i class="lni lni-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-light text-danger rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="confirmarEliminacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Eliminar">
-                                    <i class="lni lni-trash-can"></i>
-                                </button>
-                                @if (producto.Estado)
+<div class="mb-5 animate-fade-in">
+    <div class="premium-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold mb-1"><i class="lni lni-package me-2 text-primary"></i> Listado de Productos</h5>
+                <p class="text-sm text-muted mb-0">Gestión de catálogo, precios y categorías.</p>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">@Model.TotalProductos registros</span>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            @if (Model.Productos != null && Model.Productos.Any())
+            {
+                foreach (var producto in Model.Productos)
+                {
+                    <div class="col">
+                        <div class="product-card h-100 d-flex flex-column border-0 shadow-sm rounded-4 overflow-hidden" style="background: #fff; transition: transform 0.2s;">
+                            <div class="product-img-wrapper position-relative" style="height: 160px; background: #f8f9fa;">
+                                @if (!string.IsNullOrEmpty(producto.Imagen))
                                 {
-                                    <button type="button" class="btn btn-sm btn-light text-secondary rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Deshabilitar">
-                                        <i class="lni lni-ban"></i>
-                                    </button>
+                                    <img src="@producto.Imagen" class="w-100 h-100 object-fit-cover" alt="@producto.Nombre" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'d-flex flex-column align-items-center justify-content-center h-100 text-muted\'><i class=\'lni lni-image fs-1 mb-2\'></i><span class=\'text-sm\'>Sin imagen</span></div>';">
                                 }
                                 else
                                 {
-                                    <button type="button" class="btn btn-sm btn-light text-success rounded-circle shadow-sm bg-white" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Habilitar">
-                                        <i class="lni lni-checkmark-circle"></i>
-                                    </button>
+                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+                                        <i class="lni lni-image fs-1 mb-2"></i>
+                                        <span class="text-sm">Sin imagen</span>
+                                    </div>
                                 }
+                                
+                                <!-- Status Badges -->
+                                <div class="position-absolute top-0 end-0 p-2 d-flex flex-column gap-1">
+                                    @if (!producto.Estado)
+                                    {
+                                        <span class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;"><i class="lni lni-ban me-1"></i>Inactivo</span>
+                                    }
+                                    <span class="badge bg-dark rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;"><i class="lni lni-tag me-1"></i>@(Model.Categorias?.FirstOrDefault(c => c.Value == producto.Id_Categoria.ToString())?.Text ?? "CAT")</span>
+                                </div>
+                            </div>
+                            
+                            <div class="product-details p-3 flex-grow-1 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0 text-truncate pr-2" style="max-width: 150px;" title="@producto.Nombre">@producto.Nombre</h6>
+                                    <span class="fw-bold text-primary">@producto.Precio.ToString("C0")</span>
+                                </div>
+                                <p class="text-sm text-muted mb-3 line-clamp-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 38px;">
+                                    @(string.IsNullOrEmpty(producto.Descripcion) ? "Sin descripción detallada." : producto.Descripcion)
+                                </p>
+                                
+                                <div class="mt-auto pt-3 border-top d-flex justify-content-center gap-2">
+                                    <button type="button" class="btn btn-sm btn-white text-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalProducto('ver', @producto.Id_Producto)" title="Ver">
+                                        <i class="lni lni-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-white text-warning rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalProducto('editar', @producto.Id_Producto)" title="Editar">
+                                        <i class="lni lni-pencil"></i>
+                                    </button>
+                                    
+                                    @if (producto.Estado)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarDeshabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Deshabilitar">
+                                            <i class="lni lni-ban"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-white text-success rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarHabilitacionProducto(@producto.Id_Producto, '@producto.Nombre.Replace("'", "\\'")')" title="Habilitar">
+                                            <i class="lni lni-checkmark-circle"></i>
+                                        </button>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        }
-    }
+                }
+            }
+        </div>
+    </div>
 </div>
 
 <div id="modalContainerProductos"></div>
@@ -157,63 +166,57 @@
 <!-- Menú de Paginación -->
 @if (Model.TotalPaginas > 1 && Model.Productos != null && Model.Productos.Any())
 {
-    <div class="pagination-wrapper mt-4">
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                <!-- Botón Anterior -->
-                <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                    <a class="page-link" 
+    <nav aria-label="Navegación de productos" class="mt-4">
+        <ul class="pagination justify-content-center gap-2">
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link border-0 rounded-3 bg-light text-dark" 
+                   href="@Url.Action("IndexProductos", "Admin", new { 
+                       pagina = Model.PaginaActual - 1, 
+                       cantidadPorPagina = 10,
+                       busqueda = Model.Busqueda,
+                       categoriaFiltro = Model.CategoriaFiltro
+                   })">
+                    <i class="lni lni-chevron-left"></i>
+                </a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPaginas; i++)
+            {
+                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                    <a class="page-link border-0 rounded-3 @(i == Model.PaginaActual ? "bg-primary text-white shadow-sm" : "bg-light text-dark")" 
                        href="@Url.Action("IndexProductos", "Admin", new { 
-                           pagina = Model.PaginaActual - 1, 
+                           pagina = i, 
                            cantidadPorPagina = 10,
                            busqueda = Model.Busqueda,
                            categoriaFiltro = Model.CategoriaFiltro
-                       })"
-                       tabindex="-1" aria-disabled="@(Model.PaginaActual == 1 ? "true" : "false")">
-                        <i class="lni lni-chevron-left"></i>
-                    </a>
+                       })">@i</a>
                 </li>
-
-                <!-- Números de página -->
-                @for (int i = 1; i <= Model.TotalPaginas; i++)
-                {
-                    <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                        <a class="page-link" 
-                           href="@Url.Action("IndexProductos", "Admin", new { 
-                               pagina = i, 
-                               cantidadPorPagina = 10,
-                               busqueda = Model.Busqueda,
-                               categoriaFiltro = Model.CategoriaFiltro
-                           })">@i</a>
-                    </li>
-                }
-
-                <!-- Botón Siguiente -->
-                <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                    <a class="page-link" 
-                       href="@Url.Action("IndexProductos", "Admin", new { 
-                           pagina = Model.PaginaActual + 1, 
-                           cantidadPorPagina = 10,
-                           busqueda = Model.Busqueda,
-                           categoriaFiltro = Model.CategoriaFiltro
-                           })">
-                        <i class="lni lni-chevron-right"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- Información de paginación -->
-        <div class="pagination-info text-center mt-2">
-            @{
-                var inicio = (Model.PaginaActual - 1) * 10 + 1;
-                var fin = Math.Min(Model.PaginaActual * 10, Model.TotalProductos);
             }
-            
-            <p class="text-sm text-muted">
-                Mostrando @inicio-@fin de @Model.TotalProductos registros
-            </p>
-        </div>
+
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link border-0 rounded-3 bg-light text-dark" 
+                   href="@Url.Action("IndexProductos", "Admin", new { 
+                       pagina = Model.PaginaActual + 1, 
+                       cantidadPorPagina = 10,
+                       busqueda = Model.Busqueda,
+                       categoriaFiltro = Model.CategoriaFiltro
+                   })">
+                    <i class="lni lni-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Información de paginación -->
+    <div class="pagination-info text-center mt-2">
+        @{
+            var inicio = (Model.PaginaActual - 1) * 10 + 1;
+            var fin = Math.Min(Model.PaginaActual * 10, Model.TotalProductos);
+        }
+        
+        <p class="text-sm text-muted">
+            Mostrando @inicio-@fin de @Model.TotalProductos registros
+        </p>
     </div>
 }
 

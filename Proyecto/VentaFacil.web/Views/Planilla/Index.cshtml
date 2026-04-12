@@ -3,82 +3,10 @@
     Layout = "_LayoutPlantilla";
 }
 
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    .premium-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-        height: 100%;
-    }
-
-    .premium-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--hover-shadow);
-    }
-
-    .menu-card-link {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-        height: 100%;
-    }
-
-    .menu-card-content {
-        padding: 2rem;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-
-    .menu-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .premium-card:hover .menu-icon {
-        transform: scale(1.1) rotate(5deg);
-    }
-
-    .menu-title {
-        font-weight: 700;
-        font-size: 1.25rem;
-        margin-bottom: 0.5rem;
-        color: #1e293b;
-    }
-
-    .menu-desc {
-        color: #64748b;
-        font-size: 0.9rem;
-    }
-</style>
-
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
-        <div class="position-relative z-1">
+<div class="planilla-wrapper">
+    <!-- Hero Section -->
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
             <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-agenda me-2"></i>Gestión de Planilla</h1>
             <p class="mb-0 text-white-50 fs-5">Control centralizado de nómina y personal.</p>
         </div>
@@ -86,7 +14,7 @@
             <div class="breadcrumb-wrapper">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">App</a></li>
                         <li class="breadcrumb-item active text-white" aria-current="page">Planilla</li>
                     </ol>
                 </nav>
@@ -97,94 +25,100 @@
     <!-- Menú Principal -->
     <div class="row g-4 mb-5">
         <div class="col-12">
-            <h5 class="fw-bold text-muted mb-3 ps-2 border-start border-4 border-primary">Gestión Diaria</h5>
-        </div>
-        
-        <!-- Registro Horas -->
-        <div class="col-md-6 col-xl-3">
-            <a asp-controller="Planilla" asp-action="RegistrarHoras" class="menu-card-link">
-                <div class="premium-card">
-                    <div class="menu-card-content">
-                        <div class="menu-icon bg-primary bg-opacity-10 text-primary">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="lni lni-sun"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Gestión Diaria</h5>
+                </div>
+            </div>
+            
+            <!-- Registro Horas -->
+            <div class="col-md-6 col-xl-3">
+                <a asp-controller="Planilla" asp-action="RegistrarHoras" class="text-decoration-none h-100 d-block">
+                    <div class="premium-card p-4 text-center h-100 transition-all">
+                        <div class="icon-lg bg-primary bg-opacity-10 text-primary rounded-4 mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2.5rem;">
                             <i class="lni lni-timer"></i>
                         </div>
-                        <h3 class="menu-title">Registro de Jornada</h3>
-                        <p class="menu-desc">Control de asistencia y horas trabajadas</p>
+                        <h5 class="fw-bold text-dark mb-2">Registro de Jornada</h5>
+                        <p class="text-muted text-sm mb-0">Control de asistencia y horas trabajadas</p>
                     </div>
-                </div>
-            </a>
-        </div>
+                </a>
+            </div>
 
-        <!-- Extras y Bonos -->
-        <div class="col-md-6 col-xl-3">
-            <a asp-controller="Planilla" asp-action="RegistrarExtrasBonos" class="menu-card-link">
-                <div class="premium-card">
-                    <div class="menu-card-content">
-                        <div class="menu-icon bg-warning bg-opacity-10 text-warning">
+            <!-- Extras y Bonos -->
+            <div class="col-md-6 col-xl-3">
+                <a asp-controller="Planilla" asp-action="RegistrarExtrasBonos" class="text-decoration-none h-100 d-block">
+                    <div class="premium-card p-4 text-center h-100 transition-all">
+                        <div class="icon-lg bg-warning bg-opacity-10 text-warning rounded-4 mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2.5rem;">
                             <i class="lni lni-star"></i>
                         </div>
-                        <h3 class="menu-title">Extras y Bonificaciones</h3>
-                        <p class="menu-desc">Gestión de horas extras e incentivos</p>
+                        <h5 class="fw-bold text-dark mb-2">Extras y Bonificaciones</h5>
+                        <p class="text-muted text-sm mb-0">Gestión de horas extras e incentivos</p>
                     </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="avatar-sm bg-success bg-opacity-10 text-success rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="lni lni-calendar"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Gestión Mensual</h5>
                 </div>
-            </a>
-        </div>
-    </div>
+            </div>
 
-    <div class="row g-4">
-        <div class="col-12">
-            <h5 class="fw-bold text-muted mb-3 ps-2 border-start border-4 border-success">Gestión Mensual</h5>
-        </div>
-
-        <!-- Generar Nómina -->
-        <div class="col-md-6 col-xl-3">
-            <a asp-controller="Planilla" asp-action="GenerarNomina" class="menu-card-link">
-                <div class="premium-card">
-                    <div class="menu-card-content">
-                        <div class="menu-icon bg-success bg-opacity-10 text-success">
+            <!-- Generar Nómina -->
+            <div class="col-md-6 col-xl-3">
+                <a asp-controller="Planilla" asp-action="GenerarNomina" class="text-decoration-none h-100 d-block">
+                    <div class="premium-card p-4 text-center h-100 transition-all">
+                        <div class="icon-lg bg-success bg-opacity-10 text-success rounded-4 mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2.5rem;">
                             <i class="lni lni-wallet"></i>
                         </div>
-                        <h3 class="menu-title">Generar Nómina</h3>
-                        <p class="menu-desc">Cálculo y procesamiento de pagos</p>
+                        <h5 class="fw-bold text-dark mb-2">Generar Nómina</h5>
+                        <p class="text-muted text-sm mb-0">Cálculo y procesamiento de pagos</p>
                     </div>
-                </div>
-            </a>
-        </div>
+                </a>
+            </div>
 
-        <!-- Historial -->
-        <div class="col-md-6 col-xl-3">
-            <a asp-controller="Planilla" asp-action="Consultar" class="menu-card-link">
-                <div class="premium-card">
-                    <div class="menu-card-content">
-                        <div class="menu-icon bg-info bg-opacity-10 text-info">
+            <!-- Historial -->
+            <div class="col-md-6 col-xl-3">
+                <a asp-controller="Planilla" asp-action="Consultar" class="text-decoration-none h-100 d-block">
+                    <div class="premium-card p-4 text-center h-100 transition-all">
+                        <div class="icon-lg bg-info bg-opacity-10 text-info rounded-4 mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2.5rem;">
                             <i class="lni lni-agenda"></i>
                         </div>
-                        <h3 class="menu-title">Historial de Nóminas</h3>
-                        <p class="menu-desc">Consulta y reportes de pagos anteriores</p>
+                        <h5 class="fw-bold text-dark mb-2">Historial de Nóminas</h5>
+                        <p class="text-muted text-sm mb-0">Consulta y reportes de pagos anteriores</p>
                     </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Configuración -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="avatar-sm bg-secondary bg-opacity-10 text-secondary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="lni lni-cog"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Configuración</h5>
                 </div>
-            </a>
-        </div>
-    </div>
+            </div>
 
-    <!-- Configuración -->
-    <div class="row g-4 mt-2">
-        <div class="col-12">
-            <h5 class="fw-bold text-muted mb-3 ps-2 border-start border-4 border-secondary">Configuración</h5>
-        </div>
-
-        <div class="col-md-6 col-xl-3">
-            <a asp-controller="ConfiguracionPlanilla" asp-action="Index" class="menu-card-link">
-                <div class="premium-card">
-                    <div class="menu-card-content">
-                        <div class="menu-icon bg-secondary bg-opacity-10 text-secondary">
+            <div class="col-md-6 col-xl-3">
+                <a asp-controller="ConfiguracionPlanilla" asp-action="Index" class="text-decoration-none h-100 d-block">
+                    <div class="premium-card p-4 text-center h-100 transition-all">
+                        <div class="icon-lg bg-secondary bg-opacity-10 text-secondary rounded-4 mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2.5rem;">
                             <i class="lni lni-cog"></i>
                         </div>
-                        <h3 class="menu-title">Configuración</h3>
-                        <p class="menu-desc">Tarifas por hora de empleados y deducciones</p>
+                        <h5 class="fw-bold text-dark mb-2">Configuración</h5>
+                        <p class="text-muted text-sm mb-0">Tarifas por hora y deducciones</p>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
     </div>
 </div>

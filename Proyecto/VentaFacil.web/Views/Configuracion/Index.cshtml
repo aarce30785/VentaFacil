@@ -14,79 +14,10 @@
     };
 }
 
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    .premium-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: var(--card-shadow);
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-        margin-bottom: 2rem;
-    }
-
-    .premium-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--hover-shadow);
-    }
-
-    .card-header-premium {
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .premium-table thead th {
-        background-color: #f8fafc;
-        color: #222 !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 1rem;
-    }
-
-    .premium-table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
-        color: #334155;
-    }
-
-    .form-control-premium {
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-        padding: 0.5rem 0.75rem;
-        transition: all 0.2s;
-    }
-
-    .form-control-premium:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-
-    .btn-action {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-    }
-</style>
-
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
-        <div class="position-relative z-1">
+<div class="settings-wrapper">
+    <!-- Hero Section -->
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
             <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-cog me-2"></i>Configuración General</h1>
             <p class="mb-0 text-white-50 fs-5">Administración de deducciones e impuestos de renta.</p>
         </div>
@@ -94,7 +25,7 @@
             <div class="breadcrumb-wrapper">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="@Url.Action("Consultar", "Planilla")" class="text-white-50">Planilla</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="Planilla" asp-action="Index" class="text-white-50">Planilla</a></li>
                         <li class="breadcrumb-item active text-white" aria-current="page">Configuración</li>
                     </ol>
                 </nav>
@@ -105,39 +36,37 @@
     <!-- Alertas -->
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show rounded-pill px-4 mb-4" role="alert">
-            <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-success alert-dismissible bg-success text-white border-0 fade show mx-4 mb-4" role="alert">
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            <strong>Éxito:</strong> @TempData["Success"]
         </div>
     }
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show rounded-pill px-4 mb-4" role="alert">
-            <i class="lni lni-warning me-2"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-danger alert-dismissible bg-danger text-white border-0 fade show mx-4 mb-4" role="alert">
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            <strong>Error:</strong> @TempData["Error"]
         </div>
     }
 
-    <div class="row">
-        <!-- DEDUCCIONES DE LEY (SUPERIOR) -->
-        <div class="col-12 mb-4">
+    <div class="row g-4 mx-2 pb-5">
+        <!-- DEDUCCIONES DE LEY -->
+        <div class="col-12">
             <div class="premium-card">
-                <div class="card-header-premium d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="fw-bold mb-1 text-primary"><i class="lni lni-invest-monitor me-2"></i>Deducciones de Ley</h5>
-                        <p class="text-xs text-muted mb-0">Cargas sociales CCSS y Banco Popular</p>
-                    </div>
+                <div class="p-4 border-bottom">
+                    <h5 class="fw-bold mb-1"><i class="lni lni-invest-monitor me-2 text-primary"></i>Deducciones de Ley</h5>
+                    <p class="text-sm text-muted mb-0">Cargas sociales CCSS y Banco Popular</p>
                 </div>
-                <div class="p-0">
+                <div class="p-4">
                     <div class="table-responsive">
-                        <table class="table premium-table mb-0">
-                            <thead>
+                        <table class="table align-middle">
+                            <thead class="text-secondary text-uppercase fs-7 bg-light">
                                 <tr>
-                                    <th>Concepto</th>
-                                    <th>Descripción</th>
-                                    <th class="text-center" width="15%">Porcentaje</th>
-                                    <th class="text-center" width="10%">Activo</th>
-                                    <th class="text-center" width="10%"></th>
+                                    <th class="border-0 rounded-start ps-3">Concepto</th>
+                                    <th class="border-0">Descripción</th>
+                                    <th class="border-0 text-center" width="15%">Porcentaje</th>
+                                    <th class="border-0 text-center" width="10%">Activo</th>
+                                    <th class="border-0 text-end rounded-end pe-3">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -147,38 +76,34 @@
                                     {
                                         var descripcion = definiciones.ContainsKey(item.Nombre) ? definiciones[item.Nombre] : "Deducción de Ley";
                                         <tr>
-                                            <form asp-action="GuardarDeduccion" method="post">
+                                            <form asp-action="GuardarDeduccion" method="post" style="display: contents;">
                                                 <input type="hidden" name="id" value="@item.Id" />
-                                                <td>
-                                                    <span class="badge bg-light text-dark border fw-bold">@item.Nombre</span>
+                                                <td class="ps-3 border-0 py-3">
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary border-0 fw-bold px-3 py-2 rounded-3">@item.Nombre</span>
                                                 </td>
-                                                <td>
+                                                <td class="border-0 py-3">
                                                     <span class="text-muted text-sm">@descripcion</span>
                                                 </td>
-                                                <td>
+                                                <td class="border-0 py-3">
                                                     <div class="input-group input-group-sm">
                                                         <input type="number" step="0.01" name="porcentaje" value="@item.Porcentaje" 
-                                                               class="form-control form-control-premium text-center fw-bold text-primary" />
-                                                        <span class="input-group-text bg-white border-start-0 text-muted">%</span>
+                                                               class="form-control rounded-start-pill bg-light border-0 text-center fw-bold text-primary" />
+                                                        <span class="input-group-text bg-light border-0 text-muted rounded-end-pill px-3">%</span>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">
+                                                <td class="text-center border-0 py-3">
                                                     <div class="form-check form-switch d-flex justify-content-center">
                                                         <input class="form-check-input" type="checkbox" name="activo" value="true" @(item.Activo ? "checked" : "")>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">
-                                                    <button type="submit" class="btn btn-action btn-success text-white shadow-sm" title="Guardar Cambios">
+                                                <td class="text-end pe-3 border-0 py-3">
+                                                    <button type="submit" class="main-btn success-btn btn-hover btn-sm rounded-circle p-2" title="Guardar">
                                                         <i class="lni lni-checkmark"></i>
                                                     </button>
                                                 </td>
                                             </form>
                                         </tr>
                                     }
-                                }
-                                else 
-                                {
-                                    <tr><td colspan="5" class="text-center text-muted py-4">No hay deducciones configuradas</td></tr>
                                 }
                             </tbody>
                         </table>
@@ -187,24 +112,22 @@
             </div>
         </div>
 
-        <!-- IMPUESTO DE RENTA (INFERIOR) -->
+        <!-- IMPUESTO DE RENTA -->
         <div class="col-12">
             <div class="premium-card">
-                <div class="card-header-premium d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="fw-bold mb-1 text-warning"><i class="lni lni-stats-up me-2"></i>Impuesto de Renta</h5>
-                        <p class="text-xs text-muted mb-0">Tramos vigentes (2025)</p>
-                    </div>
+                <div class="p-4 border-bottom">
+                    <h5 class="fw-bold mb-1"><i class="lni lni-stats-up me-2 text-warning"></i>Impuesto de Renta</h5>
+                    <p class="text-sm text-muted mb-0">Tramos vigentes (2025)</p>
                 </div>
-                <div class="p-0">
+                <div class="p-4">
                     <div class="table-responsive">
-                        <table class="table premium-table mb-0">
-                            <thead>
+                        <table class="table align-middle">
+                            <thead class="text-secondary text-uppercase fs-7 bg-light">
                                 <tr>
-                                    <th>Desde (₡)</th>
-                                    <th>Hasta (₡)</th>
-                                    <th class="text-center">%</th>
-                                    <th class="text-center"></th>
+                                    <th class="border-0 rounded-start ps-3">Desde (₡)</th>
+                                    <th class="border-0">Hasta (₡)</th>
+                                    <th class="border-0 text-center">Porcentaje (%)</th>
+                                    <th class="border-0 text-end rounded-end pe-3">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -213,26 +136,26 @@
                                     foreach (var item in impuestos)
                                     {
                                         <tr>
-                                            <form asp-action="GuardarImpuesto" method="post">
+                                            <form asp-action="GuardarImpuesto" method="post" style="display: contents;">
                                                 <input type="hidden" name="id" value="@item.Id" />
-                                                <td>
+                                                <td class="ps-3 border-0 py-3">
                                                     <input type="number" step="0.01" name="limiteInferior" value="@item.LimiteInferior" 
-                                                           class="form-control form-control-premium form-control-sm text-end" />
+                                                           class="form-control rounded-pill bg-light border-0 px-3 py-2 text-end fw-medium" />
                                                 </td>
-                                                <td>
+                                                <td class="border-0 py-3">
                                                     <input type="number" step="0.01" name="limiteSuperior" value="@item.LimiteSuperior" 
-                                                           class="form-control form-control-premium form-control-sm text-end" 
+                                                           class="form-control rounded-pill bg-light border-0 px-3 py-2 text-end fw-medium" 
                                                            placeholder="Exceso" />
                                                 </td>
-                                                <td width="15%">
-                                                    <div class="input-group input-group-sm">
+                                                <td width="15%" class="border-0 py-3 text-center">
+                                                    <div class="input-group input-group-sm justify-content-center">
                                                         <input type="number" step="0.01" name="porcentaje" value="@item.Porcentaje" 
-                                                               class="form-control form-control-premium text-center fw-bold" />
-                                                        <span class="input-group-text bg-white border-start-0">%</span>
+                                                               class="form-control rounded-start-pill bg-light border-0 text-center fw-bold" style="max-width: 80px;" />
+                                                        <span class="input-group-text bg-light border-0 text-muted rounded-end-pill px-3">%</span>
                                                     </div>
                                                 </td>
-                                                <td class="text-center" width="10%">
-                                                    <button type="submit" class="btn btn-action btn-success text-white shadow-sm" title="Actualizar Tramo">
+                                                <td class="text-end pe-3 border-0 py-3">
+                                                    <button type="submit" class="main-btn success-btn btn-hover btn-sm rounded-circle p-2" title="Guardar">
                                                         <i class="lni lni-checkmark"></i>
                                                     </button>
                                                 </td>
@@ -242,22 +165,22 @@
                                 }
                                 <!-- Fila para agregar nuevo -->
                                 <tr class="bg-light bg-opacity-50">
-                                    <form asp-action="GuardarImpuesto" method="post">
+                                    <form asp-action="GuardarImpuesto" method="post" style="display: contents;">
                                         <input type="hidden" name="id" value="0" />
-                                        <td>
+                                        <td class="ps-3 border-0 py-3">
                                             <input type="number" step="0.01" name="limiteInferior" 
-                                                   class="form-control form-control-premium form-control-sm" placeholder="Nuevo Desde" />
+                                                   class="form-control rounded-pill bg-white border-0 px-3 py-2" placeholder="Nuevo Desde" />
                                         </td>
-                                        <td>
+                                        <td class="border-0 py-3">
                                             <input type="number" step="0.01" name="limiteSuperior" 
-                                                   class="form-control form-control-premium form-control-sm" placeholder="Nuevo Hasta" />
+                                                   class="form-control rounded-pill bg-white border-0 px-3 py-2" placeholder="Nuevo Hasta" />
                                         </td>
-                                        <td>
+                                        <td class="border-0 py-3 text-center">
                                             <input type="number" step="0.01" name="porcentaje" 
-                                                   class="form-control form-control-premium form-control-sm text-center" placeholder="%" />
+                                                   class="form-control rounded-pill bg-white border-0 px-3 py-2 text-center mx-auto" style="max-width: 100px;" placeholder="%" />
                                         </td>
-                                        <td class="text-center">
-                                            <button type="submit" class="btn btn-action btn-primary text-white shadow-sm" title="Agregar Nuevo Tramo">
+                                        <td class="text-end pe-3 border-0 py-3">
+                                            <button type="submit" class="main-btn primary-btn btn-hover btn-sm rounded-circle p-2" title="Agregar">
                                                 <i class="lni lni-plus"></i>
                                             </button>
                                         </td>
@@ -266,9 +189,9 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="p-3 bg-light border-top">
-                        <small class="text-muted"><i class="lni lni-information me-1"></i> Si deja el campo "Hasta" vacío, se considerará como el tramo de "Exceso" (infinito).</small>
-                    </div>
+                </div>
+                <div class="p-3 bg-light border-top">
+                    <p class="text-muted text-sm mb-0 ms-2"><i class="lni lni-information me-2 text-primary"></i> Si deja el campo <strong>"Hasta"</strong> vacío, se considerará como el tramo de <strong>"Exceso"</strong> (infinito).</p>
                 </div>
             </div>
         </div>

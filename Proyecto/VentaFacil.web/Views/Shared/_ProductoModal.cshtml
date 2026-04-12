@@ -1,4 +1,4 @@
-﻿@model VentaFacil.web.Models.Dto.ProductoDto
+@model VentaFacil.web.Models.Dto.ProductoDto
 
 @{
     var accion = ViewBag.AccionModal as string ?? "crear";
@@ -70,6 +70,7 @@
                                 </select>
                                 <span asp-validation-for="Id_Categoria" class="text-danger"></span>
                             </div>
+                        </div>
                     </div>
 
                     <!-- Descripción -->

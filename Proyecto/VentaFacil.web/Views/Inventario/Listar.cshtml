@@ -9,10 +9,10 @@
     var stockBajo = Model.StockBajo;
 }
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
-        <div class="position-relative z-1">
+<div class="inventory-wrapper">
+    <!-- Hero Section -->
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
             <h1 class="hero-title fw-bold mb-2 text-white"><i class="lni lni-package me-2"></i>Gestión de Inventario</h1>
             <p class="mb-0 text-white-50 fs-5">Control de insumos y stock en tiempo real.</p>
         </div>
@@ -20,7 +20,7 @@
             <div class="breadcrumb-wrapper">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">App</a></li>
                         <li class="breadcrumb-item active text-white" aria-current="page">Inventario</li>
                     </ol>
                 </nav>
@@ -28,307 +28,282 @@
         </div>
     </div>
 
-    <!-- Filtros y Acciones -->
-    <div class="premium-card mb-4 p-4">
-        <form method="get" asp-action="Listar" class="row g-3 align-items-center" id="filtrosInventarioForm">
-             <!-- Stats Summary Mini -->
-            <div class="col-md-3">
-                 <div class="d-flex align-items-center">
-                    <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-                        <i class="lni lni-archive fs-4"></i>
+    <!-- Header Actions & Filtros -->
+    <div class="mb-4">
+        <div class="premium-card p-4">
+            <form method="get" asp-action="Listar" id="filtrosInventarioForm">
+                <div class="row align-items-center g-3">
+                    <div class="col-12 col-lg-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                <i class="lni lni-archive fs-4"></i>
+                            </div>
+                            <div class="text-start">
+                                <h6 class="mb-0 fw-bold">Inventario General</h6>
+                                <p class="text-sm text-muted mb-0">@Model.TotalRegistros insumos totales</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h6 class="mb-0">Inventario General</h6>
-                        <p class="text-sm text-muted mb-0">@Model.TotalRegistros insumos totales</p>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
+                            <input type="text" name="busqueda" class="form-control bg-light border-0 px-3" 
+                                   placeholder="Buscar insumo..." 
+                                   value="@Model.Busqueda" />
+                            <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-3 py-1 ms-2">Buscar</button>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-5 text-center text-lg-end">
+                        <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2 text-sm">
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-3"
+                                        onclick="abrirConfigAlertas()" title="Configurar alertas de stock">
+                                    <i class="lni lni-alarm me-1"></i> Alertas
+                                </button>
+                            }
+                            <button type="button" class="main-btn success-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#entradaModal">
+                                <i class="lni lni-download me-2"></i> Entrada
+                            </button>
+                            <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalInventario('crear')">
+                                <i class="lni lni-plus me-2"></i> Nuevo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="pagina" value="1" />
+                    <input type="hidden" name="cantidadPorPagina" value="10" />
+
+                    <div class="col-12">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" name="mostrarInactivos" value="true"
+                                   id="mostrarInactivosCheck"
+                                   @(Model.MostrarInactivos ? "checked" : "")
+                                   onchange="document.getElementById('filtrosInventarioForm').submit();">
+                            <label class="form-check-label text-sm text-muted" for="mostrarInactivosCheck">
+                                Mostrar insumos inhabilitados
+                            </label>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Campo de búsqueda -->
-            <div class="col-md-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
-                    <input type="text" name="busqueda" class="form-control bg-light border-0" 
-                           placeholder="Buscar insumo..." 
-                           value="@Model.Busqueda" />
-                     <button type="submit" class="btn btn-primary">Buscar</button>
-                </div>
-            </div>
-
-            <!-- Botones de Acción -->
-            <div class="col-md-5 text-end">
-                <div class="d-flex justify-content-end align-items-center gap-2">
-                    @if (User.IsInRole("Administrador"))
-                    {
-                        <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-3"
-                                onclick="abrirConfigAlertas()" title="Configurar alertas de stock">
-                            <i class="lni lni-alarm me-1"></i> Alertas
-                        </button>
-                    }
-                     <button type="button" class="main-btn success-btn btn-hover rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#entradaModal">
-                        <i class="lni lni-download me-2"></i> Entrada
-                    </button>
-                    <button type="button" class="main-btn primary-btn btn-hover rounded-pill px-4" onclick="abrirModalInventario('crear')">
-                        <i class="lni lni-plus me-2"></i> Nuevo Insumo
-                    </button>
-                </div>
-            </div>
-
-            <!-- Campos ocultos -->
-            <input type="hidden" name="pagina" value="1" />
-            <input type="hidden" name="cantidadPorPagina" value="10" />
-
-            <!-- Toggle: Mostrar inhabilitados -->
-            <div class="col-12 mt-2">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" name="mostrarInactivos" value="true"
-                           id="mostrarInactivosCheck"
-                           @(Model.MostrarInactivos ? "checked" : "")
-                           onchange="document.getElementById('filtrosInventarioForm').submit();">
-                    <label class="form-check-label text-sm text-muted" for="mostrarInactivosCheck">
-                        Mostrar insumos inhabilitados
-                    </label>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Stats Grid -->
     <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-lg-4 col-md-6">
-            <div class="premium-card stat-card">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-                        <i class="lni lni-package fs-4"></i>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="premium-card p-4 h-100 border-0 shadow-sm">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-package"></i>
                     </div>
-                    <div>
-                        <h3 class="mb-0 fw-bold">@totalInsumos</h3>
-                        <span class="text-sm text-muted">Total Insumos</span>
-                    </div>
+                    <span class="text-xs fw-bold text-uppercase text-muted">Total Insumos</span>
                 </div>
+                <h4 class="mb-0 fw-bold">@totalInsumos</h4>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-4 col-md-6">
-            <div class="premium-card stat-card">
-                <div class="d-flex align-items-center">
-                    <div class="stat-icon bg-warning bg-opacity-10 text-warning rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-                        <i class="lni lni-warning fs-4"></i>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="premium-card p-4 h-100 border-0 shadow-sm">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-3 me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-warning"></i>
                     </div>
-                    <div>
-                        <h3 class="mb-0 fw-bold">@stockBajo</h3>
-                        <span class="text-sm text-muted">Bajo Stock</span>
-                    </div>
+                    <span class="text-xs fw-bold text-uppercase text-muted">Bajo Stock</span>
                 </div>
+                <h4 class="mb-0 fw-bold">@stockBajo</h4>
             </div>
         </div>
     </div>
 
-    <!-- Alertas -->
-    @if (TempData["Success"] != null)
+    @if (TempData["Success"] != null || TempData["Error"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="mb-4 mx-4">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="border-left: 4px solid #10b981 !important;">
+                    <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="border-left: 4px solid #ef4444 !important;">
+                    <i class="lni lni-warning me-2"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
         </div>
     }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="lni lni-warning me-2"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <!-- Tabla de Inventario -->
-    <div class="table-container animate-fade-in">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h5 class="fw-bold mb-1">📦 Listado de Insumos</h5>
-                <p class="text-sm text-muted mb-0">Gestiona las existencias de tu inventario</p>
+    <div class="mb-5 animate-fade-in">
+        <div class="premium-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="lni lni-package me-2 text-primary"></i> Listado de Insumos</h5>
+                    <p class="text-sm text-muted mb-0">Gestiona las existencias de tu inventario</p>
+                </div>
             </div>
-        </div>
-        <div class="table-responsive">
-            <table class="table premium-table">
-                <thead>
-                    <tr>
-                         <th class="lead-name"><h6>Nombre</h6></th>
-                        <th><h6>Unidad</h6></th>
-                        <th><h6>Stock Actual</h6></th>
-                        <th><h6>Stock Mínimo</h6></th>
-                        <th class="text-center"><h6>Estado</h6></th>
-                        <th class="text-center"><h6>Acciones</h6></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Inventarios != null && Model.Inventarios.Any())
-                    {
-                        foreach (var item in Model.Inventarios)
+            
+            <div class="table-responsive">
+                <table class="table premium-table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Nombre / Insumo</th>
+                            <th>Unidad</th>
+                            <th>Stock Actual</th>
+                            <th>Stock Mínimo</th>
+                            <th class="text-center">Indicador</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Inventarios != null && Model.Inventarios.Any())
                         {
-                            var isLowStock = item.StockMinimo > 0 && item.StockActual <= item.StockMinimo;
-                            var sinStockMinimo = item.StockMinimo <= 0;
-                            <tr>
-                                <td class="min-width">
-                                    <div class="lead">
-                                        <div class="lead-image">
-                                             <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                                <i class="lni lni-tag text-muted"></i>
+                            foreach (var item in Model.Inventarios)
+                            {
+                                var isLowStock = item.StockMinimo > 0 && item.StockActual <= item.StockMinimo;
+                                var sinStockMinimo = item.StockMinimo <= 0;
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-pill me-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="lni lni-tag"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-bold">@item.Nombre</span>
+                                                @if (!item.Estado)
+                                                {
+                                                    <br/><span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-0" style="font-size:0.6rem;"><i class="lni lni-ban me-1"></i>Inhabilitado</span>
+                                                }
                                             </div>
                                         </div>
-                                        <div class="lead-text">
-                                            <p>@item.Nombre</p>
-                                            @if (!item.Estado)
-                                            {
-                                                <span class="badge bg-danger" style="font-size:0.7rem;"><i class="lni lni-ban me-1"></i>Inhabilitado</span>
-                                            }
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="min-width">
-                                    <span class="status-btn active-btn">@item.UnidadMedida</span>
-                                </td>
-                                <td class="min-width">
-                                    <span class="status-btn @(isLowStock ? "inactive-btn" : (sinStockMinimo ? "info-btn" : "success-btn"))">@item.StockActual</span>
-                                </td>
-                                <td class="min-width">
-                                    <span class="status-btn info-btn">@item.StockMinimo</span>
-                                </td>
-                                <td class="min-width text-center">
-                                    @if (sinStockMinimo)
-                                    {
-                                        <span class="status-btn warning-btn">
-                                            <i class="lni lni-warning me-1"></i> Sin mínimo config.
-                                        </span>
-                                    }
-                                    else if (isLowStock)
-                                    {
-                                        <span class="status-btn inactive-btn">
-                                            <i class="lni lni-warning me-1"></i> Bajo Stock
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="status-btn success-btn">
-                                            <i class="lni lni-checkmark-circle me-1"></i> Disponible
-                                        </span>
-                                    }
-                                </td>
-                                <td class="text-center">
-                                    <div class="action d-flex justify-content-center gap-2">
-                                        <!-- Edit Action using AJAX Modal -->
-                                        <button type="button" class="text-primary btn btn-link p-0" title="Editar"
-                                                onclick="abrirModalInventario('editar', @item.Id_Inventario)">
-                                            <i class="lni lni-pencil"></i>
-                                        </button>
-
-                                        @if (item.Estado)
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark rounded-pill px-3">@item.UnidadMedida</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold @(isLowStock ? "text-danger" : (sinStockMinimo ? "text-primary" : "text-success"))">@item.StockActual</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">@item.StockMinimo</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (sinStockMinimo)
                                         {
-                                            <!-- Entrada Rápida -->
-                                            <button type="button" class="text-success btn btn-link p-0" title="Registrar Entrada"
-                                                    data-bs-toggle="modal" data-bs-target="#entradaModal"
-                                                    data-id="@item.Id_Inventario">
-                                                <i class="lni lni-plus"></i>
-                                            </button>
-                                            <!-- Salida Rápida -->
-                                            <button type="button" class="text-danger btn btn-link p-0" title="Registrar Salida"
-                                                    data-bs-toggle="modal" data-bs-target="#salidaModal"
-                                                    data-id="@item.Id_Inventario">
-                                                <i class="lni lni-minus"></i>
-                                            </button>
-                                            <!-- Inhabilitar -->
-                                            <button type="button" class="text-danger btn btn-link p-0" title="Inhabilitar"
-                                                    onclick="confirmarEliminacionInventario(@item.Id_Inventario, '@Html.Raw(item.Nombre.Replace("'", "\\'"))')">
-                                                <i class="lni lni-trash-can"></i>
-                                            </button>
+                                            <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">
+                                                Sin mínimo
+                                            </span>
+                                        }
+                                        else if (isLowStock)
+                                        {
+                                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">
+                                                <i class="lni lni-warning me-1"></i> Stock Bajo
+                                            </span>
                                         }
                                         else
                                         {
-                                            <!-- Habilitar -->
-                                            <button type="button" class="text-success btn btn-link p-0" title="Habilitar"
-                                                    onclick="confirmarHabilitarInsumo(@item.Id_Inventario, '@Html.Raw(item.Nombre.Replace("'", "\\'"))')">
-                                                <i class="lni lni-checkmark-circle"></i>
-                                            </button>
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">
+                                                <i class="lni lni-checkmark-circle me-1"></i> OK
+                                            </span>
                                         }
-                                         <button type="button" class="text-info btn btn-link p-0" title="Historial"
-                                                 onclick="abrirModalHistorial(@item.Id_Inventario)">
-                                             <i class="lni lni-agenda"></i>
-                                         </button>
-
-
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="action d-flex justify-content-end gap-2">
+                                             <button type="button" class="btn btn-sm btn-white text-info rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalHistorial(@item.Id_Inventario)" title="Historial">
+                                                 <i class="lni lni-agenda"></i>
+                                             </button>
+                                             
+                                            <button type="button" class="btn btn-sm btn-white text-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalInventario('editar', @item.Id_Inventario)" title="Editar">
+                                                <i class="lni lni-pencil"></i>
+                                            </button>
+    
+                                            @if (item.Estado)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-white text-success rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" data-bs-toggle="modal" data-bs-target="#entradaModal" data-id="@item.Id_Inventario" title="Entrada">
+                                                    <i class="lni lni-plus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-white text-warning rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" data-bs-toggle="modal" data-bs-target="#salidaModal" data-id="@item.Id_Inventario" title="Salida">
+                                                    <i class="lni lni-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarEliminacionInventario(@item.Id_Inventario, '@Html.Raw(item.Nombre.Replace("'", "\\'"))')" title="Inhabilitar">
+                                                    <i class="lni lni-trash-can"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-sm btn-white text-success rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarHabilitarInsumo(@item.Id_Inventario, '@Html.Raw(item.Nombre.Replace("'", "\\'"))')" title="Habilitar">
+                                                    <i class="lni lni-checkmark-circle"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <div class="mb-3">
+                                            <div class="avatar-lg bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                                                <i class="lni lni-package fs-2 text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <h5 class="fw-bold text-muted">No se encontraron insumos</h5>
+                                        <p class="text-muted text-sm mb-0">Intenta cambiar los filtros o registra nuevos insumos.</p>
                                     </div>
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <div class="empty-state">
-                                    <div class="mb-3">
-                                        <div class="avatar-lg bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
-                                            <i class="lni lni-package fs-2 text-muted"></i>
-                                        </div>
-                                    </div>
-                                    <h5 class="fw-bold text-muted">No se encontraron insumos</h5>
-                                    <p class="text-muted text-sm mb-0">Intenta cambiar los filtros o registra nuevos insumos.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-    <!-- Paginación -->
-    @if (Model.TotalPaginas > 1 && Model.Inventarios != null && Model.Inventarios.Any())
-    {
-        <div class="pagination-wrapper mt-4">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                        <a class="page-link" 
-                           href="@Url.Action("Listar", new { 
-                               pagina = Model.PaginaActual - 1, 
-                               cantidadPorPagina = 10,
-                               busqueda = Model.Busqueda
-                           })">
-                            <i class="lni lni-chevron-left"></i>
-                        </a>
-                    </li>
+                    </tbody>
+                </table>
+            </div>
 
-                    @for (int i = 1; i <= Model.TotalPaginas; i++)
-                    {
-                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                            <a class="page-link" 
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 1 && Model.Inventarios != null && Model.Inventarios.Any())
+            {
+                <nav aria-label="Navegación de inventario" class="mt-4">
+                    <ul class="pagination justify-content-center gap-2">
+                        <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                            <a class="page-link border-0 rounded-3 bg-light text-dark" 
                                href="@Url.Action("Listar", new { 
-                                   pagina = i, 
+                                   pagina = Model.PaginaActual - 1, 
                                    cantidadPorPagina = 10,
                                    busqueda = Model.Busqueda
-                               })">@i</a>
+                               })">
+                                <i class="lni lni-chevron-left"></i>
+                            </a>
                         </li>
-                    }
-
-                    <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                        <a class="page-link" 
-                           href="@Url.Action("Listar", new { 
-                               pagina = Model.PaginaActual + 1, 
-                               cantidadPorPagina = 10,
-                               busqueda = Model.Busqueda
-                           })">
-                            <i class="lni lni-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <div class="pagination-info text-center mt-2">
-                <p class="text-sm text-muted">
-                    Mostrando @((Model.PaginaActual - 1) * 10 + 1)-@Math.Min(Model.PaginaActual * 10, Model.TotalRegistros) de @Model.TotalRegistros registros
-                </p>
-            </div>
+        
+                        @for (int i = 1; i <= Model.TotalPaginas; i++)
+                        {
+                            <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                <a class="page-link border-0 rounded-3 @(i == Model.PaginaActual ? "bg-primary text-white shadow-sm" : "bg-light text-dark")" 
+                                   href="@Url.Action("Listar", new { 
+                                       pagina = i, 
+                                       cantidadPorPagina = 10,
+                                       busqueda = Model.Busqueda
+                                   })">@i</a>
+                            </li>
+                        }
+        
+                        <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                            <a class="page-link border-0 rounded-3 bg-light text-dark" 
+                               href="@Url.Action("Listar", new { 
+                                   pagina = Model.PaginaActual + 1, 
+                                   cantidadPorPagina = 10,
+                                   busqueda = Model.Busqueda
+                               })">
+                                <i class="lni lni-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
         </div>
-    }
-</div>
+    </div>
 
 <!-- Container for AJAX Modals -->
 <div id="modalContainerInventario"></div>
@@ -460,6 +435,8 @@
             </div>
         </div>
     </div>
+</div>
+
 </div>
 
 @section Scripts {

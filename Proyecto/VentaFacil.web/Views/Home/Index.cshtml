@@ -1,4 +1,3 @@
-@model VentaFacil.web.Models.ViewModel.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "_LayoutPlantilla";
@@ -23,8 +22,6 @@
         transition: all 0.3s ease;
         border: 1px solid rgba(0,0,0,0.05);
         overflow: hidden;
-        height: 100%;
-        position: relative;
     }
 
     .premium-card:hover {
@@ -36,7 +33,6 @@
         padding: 1.5rem;
         display: flex;
         align-items: center;
-        justify-content: space-between;
     }
 
     .stat-icon {
@@ -47,57 +43,14 @@
         align-items: center;
         justify-content: center;
         font-size: 1.75rem;
-        color: white;
         margin-right: 1.25rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .bg-gradient-primary { background: var(--primary-gradient); }
-    .bg-gradient-success { background: var(--success-gradient); }
-    .bg-gradient-warning { background: var(--warning-gradient); }
-    .bg-gradient-danger { background: var(--danger-gradient); }
-    .bg-gradient-info { background: var(--info-gradient); }
-
-    .stat-content h6 {
-        font-size: 0.875rem;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-content h3 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0;
-    }
-
-
-
-    .list-group-item {
-        border: none;
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid #f1f5f9;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: background 0.2s;
-    }
-
-    .list-group-item:last-child {
-        border-bottom: none;
-    }
-
-    .list-group-item:hover {
-        background-color: #f8fafc;
-    }
-
-    .badge-pill {
-        border-radius: 9999px;
-        padding: 0.35em 0.8em;
-    }
+    .bg-gradient-primary { background: var(--primary-gradient); color: white; }
+    .bg-gradient-success { background: var(--success-gradient); color: white; }
+    .bg-gradient-warning { background: var(--warning-gradient); color: white; }
+    .bg-gradient-danger { background: var(--danger-gradient); color: white; }
+    .bg-gradient-info { background: var(--info-gradient); color: white; }
 
     .section-title {
         font-weight: 700;
@@ -114,102 +67,127 @@
     }
 </style>
 
-<div class="container-fluid py-4">
-    @if (Model.MostrarAlertaCajaAbierta)
-    {
-        <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 12px; background-color: #fffbeb; border-left: 5px solid #f59e0b !important;">
-            <div class="d-flex align-items-center">
-                <div class="stat-icon bg-gradient-warning me-3" style="width: 40px; height: 40px; font-size: 1.2rem;">
-                    <i class="lni lni-warning"></i>
-                </div>
-                <div>
-                    <h5 class="alert-heading fw-bold mb-1" style="color: #92400e;">Caja Abierta Olvidada</h5>
-                    <p class="mb-0" style="color: #b45309;">Se han detectado cajas que no fueron cerradas en días anteriores. El sistema las cerrará automáticamente, pero se recomienda revisar el arqueo.</p>
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    
-    <!-- Welcome Banner using User.Identity only -->
-    <div class="hero-section d-flex justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem;">
-        <div class="position-relative z-1">
+<div class="dashboard-wrapper">
+    <!-- Hero Section -->
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0">
             <h1 class="hero-title fw-bold mb-2 text-white">¡Hola, @User.Identity?.Name! 👋</h1>
-            <p class="mb-0 text-white-50 fs-5">Aquí tienes un resumen de la actividad de tu negocio.</p>
+            <p class="mb-0 text-white-50 fs-5">Resumen de actividad operativa</p>
         </div>
         <div class="position-relative z-1 d-none d-md-block">
-            <div class="d-flex gap-2">
-                <a asp-controller="Pedidos" asp-action="Cocina" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #1e293b; border: 2px solid #ffffff;">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">App</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Dashboard</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+@model VentaFacil.web.Models.ViewModel.DashboardViewModel
+
+@if (Model.MostrarAlertaCajaAbierta)
+{
+    <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 12px; background-color: #fffbeb; border-left: 5px solid #f59e0b !important;">
+        <div class="d-flex align-items-center">
+            <div class="stat-icon bg-gradient-warning me-3" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                <i class="lni lni-warning"></i>
+            </div>
+            <div>
+                <h5 class="alert-heading fw-bold mb-1" style="color: #92400e;">Caja Abierta Olvidada</h5>
+                <p class="mb-0" style="color: #b45309;">Se han detectado cajas que no fueron cerradas en días anteriores. El sistema las cerrará automáticamente.</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Header Actions -->
+<div class="premium-card mb-4 p-4">
+    <div class="row align-items-center g-3">
+        <div class="col-12 col-lg-6">
+            <div class="d-flex align-items-center justify-content-center justify-content-lg-start">
+                <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                    <i class="lni lni-home fs-4"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="mb-0">Resumen General</h6>
+                    <p class="text-sm text-muted mb-0">Estado del Negocio</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6 text-center text-lg-end">
+            <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2">
+                <a asp-controller="Pedidos" asp-action="Cocina" class="main-btn dark-btn-outline btn-hover rounded-pill px-4">
                     <i class="lni lni-chef-hat me-2"></i> Cocina
                 </a>
-                <a asp-controller="Pedidos" asp-action="Crear" class="btn fw-bold rounded-pill px-4 py-2 shadow-sm" style="background-color: #ffffff; color: #6366f1; border: 2px solid #ffffff;">
-                    <i class="lni lni-plus me-2"></i> Crear Pedido
+                <a asp-controller="Pedidos" asp-action="Crear" class="main-btn primary-btn btn-hover rounded-pill px-4">
+                    <i class="lni lni-plus me-2"></i> Nuevo Pedido
                 </a>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Sales Stats Grid -->
-    <div class="row g-4 mb-4">
-        <!-- Ventas Hoy -->
-        <div class="col-xl-3 col-md-6">
-            <div class="premium-card stat-card">
-                <div class="stat-icon bg-gradient-info">
-                    <i class="lni lni-stats-up"></i>
-                </div>
-                <div class="stat-content">
-                    <h6>Ventas Hoy</h6>
-                    <h3>@Model.VentasDia.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
-                </div>
+<!-- Sales Stats Grid -->
+<div class="row g-4 mb-4">
+    <!-- Ventas Hoy -->
+    <div class="col-xl-3 col-md-6">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-gradient-info">
+                <i class="lni lni-stats-up"></i>
             </div>
-        </div>
-
-        <!-- Ventas Semana -->
-        <div class="col-xl-3 col-md-6">
-            <div class="premium-card stat-card">
-                <div class="stat-icon bg-gradient-primary">
-                    <i class="lni lni-graph"></i>
-                </div>
-                <div class="stat-content">
-                    <h6>Ventas Semana</h6>
-                    <h3>@Model.VentasSemana.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ventas Mes -->
-        <div class="col-xl-3 col-md-6">
-            <div class="premium-card stat-card">
-                <div class="stat-icon bg-gradient-success">
-                    <i class="lni lni-pie-chart"></i>
-                </div>
-                <div class="stat-content">
-                    <h6>Ventas Mes</h6>
-                    <h3>@Model.VentasMes.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
-                </div>
-            </div>
-        </div>
-
-         <!-- Caja (Ingresos - Gastos) -->
-         <!-- Podemos mostrar el balance o un resumen rápido -->
-        <div class="col-xl-3 col-md-6">
-            <div class="premium-card stat-card">
-                <div class="stat-icon bg-gradient-warning">
-                    <i class="lni lni-wallet"></i>
-                </div>
-                <div class="stat-content">
-                    <h6>Balance Caja</h6>
-                    <!-- Calculamos simple para mostrar algo relevante -->
-                    <h3>@((Model.IngresosRecientes - Model.GastosRecientes).ToString("C", new System.Globalization.CultureInfo("es-CR")))</h3>
-                </div>
+            <div>
+                <h3 class="mb-0 fw-bold">@Model.VentasDia.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
+                <span class="text-sm text-muted">Ventas Hoy</span>
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <!-- Ventas Semana -->
+    <div class="col-xl-3 col-md-6">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-gradient-primary">
+                <i class="lni lni-graph"></i>
+            </div>
+            <div>
+                <h3 class="mb-0 fw-bold">@Model.VentasSemana.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
+                <span class="text-sm text-muted">Ventas Semana</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventas Mes -->
+    <div class="col-xl-3 col-md-6">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-gradient-success">
+                <i class="lni lni-pie-chart"></i>
+            </div>
+            <div>
+                <h3 class="mb-0 fw-bold">@Model.VentasMes.ToString("C", new System.Globalization.CultureInfo("es-CR"))</h3>
+                <span class="text-sm text-muted">Ventas Mes</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Caja -->
+    <div class="col-xl-3 col-md-6">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-gradient-warning">
+                <i class="lni lni-wallet"></i>
+            </div>
+            <div>
+                <h3 class="mb-0 fw-bold">@((Model.IngresosRecientes - Model.GastosRecientes).ToString("C", new System.Globalization.CultureInfo("es-CR")))</h3>
+                <span class="text-sm text-muted">Balance Caja</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 pb-5">
         <!-- Productos Más Vendidos -->
         <div class="col-lg-8">
-            <div class="premium-card p-4">
+            <div class="premium-card p-4 h-100">
                 <div class="section-title">
                     <i class="lni lni-star-filled"></i>
                     Productos Más Vendidos
@@ -223,31 +201,27 @@
                                 <tr>
                                     <th class="border-0 rounded-start ps-3">Producto</th>
                                     <th class="border-0 text-center">Unidades</th>
-                                    <th class="border-0 text-end rounded-end pe-3">Total</th>
+                                    <th class="border-0 text-end rounded-end pe-3">Popularidad</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var prod in Model.ProductosMasVendidos.Take(5))
                                 {
                                     <tr>
-                                        <td class="ps-3">
+                                        <td class="ps-3 border-0 py-3">
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar bg-light text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <div class="avatar bg-primary bg-opacity-7 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                                                     <i class="lni lni-tag"></i>
                                                 </div>
                                                 <span class="fw-bold text-dark">@prod.Nombre</span>
                                             </div>
                                         </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-info bg-opacity-10 text-info badge-pill">@prod.CantidadVendida</span>
+                                        <td class="text-center border-0 py-3">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">@prod.CantidadVendida</span>
                                         </td>
-                                        <td class="text-end pe-3">
-                                            <!-- Asumiendo que quisieramos mostrar monto, pero el modelo solo trae cantidad. 
-                                                 Ajustamos solo a mostrar nombre por ahora si no hay monto total. 
-                                                 Pero el diseño se ve mejor con columna extra vacia o algo visual -->
-                                            <div class="progress" style="height: 6px; width: 100px; display: inline-flex;">
-                                                <!-- Barra simulada de popularidad -->
-                                                <div class="progress-bar bg-primary" role="progressbar" style="width: @(prod.CantidadVendida * 2)%" aria-valuenow="@prod.CantidadVendida" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <td class="text-end pe-3 border-0 py-3">
+                                            <div class="progress" style="height: 6px; width: 100px; display: inline-flex; border-radius: 10px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: @Math.Min(100, prod.CantidadVendida * 5)%" aria-valuenow="@prod.CantidadVendida" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </td>
                                     </tr>
@@ -268,7 +242,7 @@
 
         <!-- Alertas de Stock -->
         <div class="col-lg-4">
-            <div class="premium-card p-4">
+            <div class="premium-card p-4 h-100">
                 <div class="section-title">
                     <i class="lni lni-warning text-danger"></i>
                     Alertas de Stock
@@ -279,17 +253,19 @@
                     <div class="list-group list-group-flush">
                         @foreach (var item in Model.StockMinimo.Take(5))
                         {
-                            <div class="list-group-item px-0">
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar bg-danger bg-opacity-10 text-danger rounded flex-shrink-0 d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                        <i class="lni lni-alert"></i>
+                            <div class="list-group-item px-0 border-0 mb-2">
+                                <div class="d-flex align-items-center justify-content-between w-100">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-danger bg-opacity-10 text-danger rounded flex-shrink-0 d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                            <i class="lni lni-alert"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">@item.Nombre</h6>
+                                            <small class="text-danger fw-semibold">@item.StockActual en stock</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold text-dark">@item.Nombre</h6>
-                                        <small class="text-danger fw-semibold">Quedan: @item.StockActual</small>
-                                    </div>
+                                    <span class="badge bg-light text-secondary border rounded-pill">Min: @item.StockMinimo</span>
                                 </div>
-                                <span class="badge bg-light text-secondary border">Min: @item.StockMinimo</span>
                             </div>
                         }
                     </div>

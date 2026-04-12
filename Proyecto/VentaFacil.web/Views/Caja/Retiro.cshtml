@@ -1,51 +1,81 @@
-﻿@model VentaFacil.web.Models.Dto.CajaRetiroDto
-
-@{
-    ViewData["Title"] = "Retiro";
-}
-
-<h1>Retiro</h1>
-
-<h4>CajaRetiroDto</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Retiro">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Id_Caja" class="control-label"></label>
-                <input asp-for="Id_Caja" class="form-control" />
-                <span asp-validation-for="Id_Caja" class="text-danger"></span>
+@model VentaFacil.web.Models.Dto.CajaRetiroDto
+<div class="caja-retiro-wrapper">
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4 mb-4" style="margin-top: -1.5rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0 d-flex align-items-center gap-3">
+            <div class="icon-box bg-white bg-opacity-20 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                <i class="lni lni-money-location fs-4"></i>
             </div>
-            <div class="form-group">
-                <label asp-for="Id_Usuario" class="control-label"></label>
-                <input asp-for="Id_Usuario" class="form-control" />
-                <span asp-validation-for="Id_Usuario" class="text-danger"></span>
+            <div>
+                <h1 class="hero-title fw-bold mb-1 text-white">Retiro de Efectivo</h1>
+                <p class="mb-0 text-white-50 fs-6">Registra salidas de dinero por gastos o depósitos.</p>
             </div>
-            <div class="form-group">
-                <label asp-for="Monto" class="control-label"></label>
-                <input asp-for="Monto" class="form-control" />
-                <span asp-validation-for="Monto" class="text-danger"></span>
+        </div>
+        <div class="position-relative z-1 d-none d-md-block text-end">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 justify-content-end">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-white-50">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Listar", "Caja")" class="text-white-50">Control de Caja</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Nuevo Retiro</li>
+                    </ol>
+                </nav>
             </div>
-            <div class="form-group">
-                <label asp-for="Motivo" class="control-label"></label>
-                <input asp-for="Motivo" class="form-control" />
-                <span asp-validation-for="Motivo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FechaHora" class="control-label"></label>
-                <input asp-for="FechaHora" class="form-control" />
-                <span asp-validation-for="FechaHora" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="premium-card p-4 shadow-sm border-0">
+                <div class="text-center mb-4 pt-2">
+                    <div class="avatar bg-warning bg-opacity-10 text-warning-700 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+                        <i class="lni lni-cart-full fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark">Detalles del Retiro</h4>
+                    <p class="text-muted small">Especifique el monto y la justificación de la salida de dinero.</p>
+                </div>
+
+                <form asp-action="Retiro">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger rounded-3 p-3 mb-4"></div>
+                    
+                    <input type="hidden" asp-for="Id_Caja" />
+                    <input type="hidden" asp-for="Id_Usuario" />
+                    <input type="hidden" asp-for="FechaHora" />
+
+                    <div class="mb-4">
+                        <label asp-for="Monto" class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Monto a Retirar (₡)</label>
+                        <div class="input-group shadow-sm rounded-pill overflow-hidden">
+                            <span class="input-group-text rounded-start-pill px-3 bg-warning bg-opacity-10 text-warning-700 border-0 border-end fw-bold">₡</span>
+                            <input asp-for="Monto" class="form-control px-4 border-0 fw-bold fs-5" placeholder="0.00" required />
+                        </div>
+                        <span asp-validation-for="Monto" class="text-xs text-danger mt-1 ms-2"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Motivo" class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Justificación / Motivo</label>
+                        <textarea asp-for="Motivo" class="form-control rounded-4 bg-light border-0 px-4 py-3" rows="3" placeholder="Ej: Pago a proveedor de verduras, Depósito bancario, etc." required></textarea>
+                        <span asp-validation-for="Motivo" class="text-xs text-danger mt-1 ms-2"></span>
+                    </div>
+
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10 text-info-700 rounded-4 p-3 mb-4 d-flex align-items-center gap-3">
+                        <i class="lni lni-customer fs-3"></i>
+                        <div>
+                            <p class="mb-0 small fw-bold">Registrado por: @User.Identity?.Name</p>
+                            <p class="mb-0 text-xs opacity-75">Este retiro afectará el balance final de la jornada actual.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="main-btn warning-btn btn-hover rounded-pill py-3 fw-bold shadow-sm">
+                            <i class="lni lni-save me-2"></i> Registrar Retiro de Efectivo
+                        </button>
+                        <a asp-action="Listar" class="main-btn dark-btn-outline btn-hover rounded-pill py-2 text-center mt-2">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

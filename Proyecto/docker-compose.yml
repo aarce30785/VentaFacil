@@ -52,7 +52,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
       - ASPNETCORE_URLS=http://+:8080 # Forzar HTTP
-      - TZ=America/Guatemala # Ajusta a tu zona horaria
+      - TZ=America/Costa_Rica # Ajusta a tu zona horaria
       # Configuración de Email para Postfix
       - EmailSettings__Host=postfix
       - EmailSettings__Port=25

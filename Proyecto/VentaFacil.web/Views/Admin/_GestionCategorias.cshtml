@@ -1,0 +1,214 @@
+@model VentaFacil.web.Models.Response.Admin.ListCategoriaResponse
+
+<!-- Controles de Búsqueda y Filtros -->
+<div class="mb-4">
+    <div class="premium-card p-4">
+        <form method="get" asp-action="IndexCategorias" class="row g-3 align-items-center" id="filtrosCategoriasForm">
+            <div class="col-md-4">
+                 <div class="d-flex align-items-center">
+                    <div class="avatar bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                        <i class="lni lni-tag fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Categorías</h6>
+                        <p class="text-sm text-muted mb-0">Gestión de Tipos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="lni lni-search-alt"></i></span>
+                    <input type="text" name="busqueda" class="form-control bg-light border-0 px-3" 
+                           placeholder="Buscar por nombre o descripción..." 
+                           value="@Model.Busqueda" />
+                </div>
+            </div>
+
+            <div class="col-md-3 text-end">
+                 <div class="d-flex justify-content-end align-items-center gap-2">
+                     <a href="@Url.Action("IndexCategorias", "Admin")" class="main-btn dark-btn-outline btn-hover rounded-pill" style="padding: 10px 15px;" title="Limpiar Filtros">
+                        <i class="lni lni-reload"></i> 
+                    </a>
+                    <button type="button" class="main-btn warning-btn btn-hover rounded-pill px-4" onclick="abrirModalCategoria('crear')">
+                        <i class="lni lni-plus me-2"></i> Nueva
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" name="pagina" value="1" />
+        </form>
+    </div>
+</div>
+
+@if (Model.Categorias != null && !Model.Categorias.Any())
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="lni lni-info-circle me-2"></i>
+        <strong>No se encontraron categorías.</strong>
+        @if (!string.IsNullOrEmpty(Model.Busqueda))
+        {
+            <a href="@Url.Action("IndexCategorias")" class="alert-link ms-2">Mostrar todas</a>
+        }
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="mb-5 animate-fade-in">
+    <div class="premium-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold mb-1"><i class="lni lni-list me-2 text-warning"></i> Listado de Categorías</h5>
+                <p class="text-sm text-muted mb-0">Gestión de tipos de productos y servicios ofrecidos.</p>
+            </div>
+            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3">@Model.TotalCategorias registros</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table premium-table align-middle">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Nombre</th>
+                        <th>Descripción</th>
+                        <th class="text-center pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Categorias != null)
+                    {
+                        foreach (var categoria in Model.Categorias)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-pill me-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="lni lni-tag"></i>
+                                        </div>
+                                        <span class="fw-bold">@categoria.Nombre</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted">@(string.IsNullOrEmpty(categoria.Descripcion) ? "Sin descripción" : categoria.Descripcion)</span>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="action d-flex justify-content-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-white text-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalCategoria('ver', @categoria.Id_Categoria)" title="Ver">
+                                            <i class="lni lni-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-white text-warning rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirModalCategoria('editar', @categoria.Id_Categoria)" title="Editar">
+                                            <i class="lni lni-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarEliminacionCategoria(@categoria.Id_Categoria, '@categoria.Nombre.Replace("'", "\\'")')" title="Eliminar">
+                                            <i class="lni lni-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Paginación -->
+@if (Model.TotalPaginas > 1)
+{
+    <nav aria-label="Navegación de categorías" class="mt-4 pb-4">
+        <ul class="pagination justify-content-center gap-2">
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("IndexCategorias", "Admin", new { pagina = Model.PaginaActual - 1, busqueda = Model.Busqueda })">
+                    <i class="lni lni-chevron-left"></i>
+                </a>
+            </li>
+            @for (int i = 1; i <= Model.TotalPaginas; i++)
+            {
+                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                    <a class="page-link border-0 rounded-3 @(i == Model.PaginaActual ? "bg-primary text-white shadow-sm" : "bg-light text-dark")" href="@Url.Action("IndexCategorias", "Admin", new { pagina = i, busqueda = Model.Busqueda })">@i</a>
+                </li>
+            }
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("IndexCategorias", "Admin", new { pagina = Model.PaginaActual + 1, busqueda = Model.Busqueda })">
+                    <i class="lni lni-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+
+<div id="modalContainerCategorias"></div>
+
+<script>
+    function abrirModalCategoria(accion, categoriaId = null) {
+        const params = new URLSearchParams({
+            accion: accion,
+            busqueda: '@Html.Raw(Model.Busqueda ?? "")',
+            pagina: '@Model.PaginaActual'
+        });
+        if (categoriaId) params.append('categoriaId', categoriaId);
+
+        const url = '@Url.Action("ObtenerModalCategoria", "Admin")' + '?' + params.toString();
+
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('modalContainerCategorias').innerHTML = data;
+                const modalElement = document.getElementById('categoriaModal');
+                const modal = new bootstrap.Modal(modalElement, { backdrop: 'static' });
+                
+                modalElement.addEventListener('shown.bs.modal', function () {
+                    configurarSubmitFormCategoria(accion);
+                });
+                
+                modal.show();
+            });
+    }
+
+    function configurarSubmitFormCategoria(accion) {
+        const form = document.getElementById('categoriaForm');
+        if (!form) return;
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+
+            fetch('@Url.Action("GuardarCategoria", "Admin")', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    Toastify({
+                        text: `<strong>Éxito:</strong> ${result.message}`,
+                        duration: 3000,
+                        gravity: "bottom",
+                        position: "right",
+                        style: { background: "linear-gradient(to right, #0f922b, #96c93d)" },
+                        escapeMarkup: false
+                    }).showToast();
+                    
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    mostrarErrorGeneral(result.message || 'Error al guardar');
+                }
+            });
+        });
+    }
+
+    function confirmarEliminacionCategoria(id, nombre) {
+        Swal.fire({
+            title: 'Eliminar Categoría',
+            html: `¿Está seguro que desea eliminar <strong>${nombre}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("EliminarCategoria", "Admin")' + `?id=${id}&busqueda=@Model.Busqueda&pagina=@Model.PaginaActual`;
+            }
+        });
+    }
+</script>

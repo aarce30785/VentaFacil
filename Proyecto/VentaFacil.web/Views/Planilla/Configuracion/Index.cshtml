@@ -7,123 +7,131 @@
     var deduccionesLey  = ViewBag.DeduccionesLey  as List<VentaFacil.web.Models.Configuracion.DeduccionLey>;
 }
 
-<div class="dashboard-wrapper">
-    <div class="title-wrapper pt-30 mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div class="title">
-                    <h2 class="fw-bold text-dark">Configuración de Planilla</h2>
-                    <p class="text-muted text-sm">Tarifas por hora y tasas de deducción</p>
-                </div>
+<div class="planilla-config-wrapper">
+    <div class="hero-section d-flex flex-column flex-md-row justify-content-between align-items-center px-4 mb-4" style="margin-top: -1.5rem;">
+        <div class="position-relative z-1 text-center text-md-start mb-3 mb-md-0 d-flex align-items-center gap-3">
+            <div class="icon-box bg-white bg-opacity-20 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                <i class="lni lni-cog fs-4"></i>
             </div>
-            <div class="col-md-6">
-                <div class="breadcrumb-wrapper">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a asp-controller="Planilla" asp-action="Index">Planilla</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Configuración</li>
-                        </ol>
-                    </nav>
-                </div>
+            <div>
+                <h1 class="hero-title fw-bold mb-1 text-white">Configuración de Planilla</h1>
+                <p class="mb-0 text-white-50 fs-6">Gestión de salarios base y deducciones legales.</p>
+            </div>
+        </div>
+        <div class="position-relative z-1 d-none d-md-block text-end">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 justify-content-end">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-white-50">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Planilla")" class="text-white-50">Planilla</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Configuración</li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+    <div class="mx-4">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible bg-success text-white border-0 fade show mb-4" role="alert">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                <i class="lni lni-checkmark-circle me-2"></i> @TempData["Success"]
+            </div>
+        }
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="lni lni-warning me-2"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible bg-danger text-white border-0 fade show mb-4" role="alert">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                <i class="lni lni-warning me-2"></i> @TempData["Error"]
+            </div>
+        }
 
     @* ═══════════════════════════════════════════════════════════════
        SECCIÓN 1: Tasas de Deducción de Ley
     ═══════════════════════════════════════════════════════════════ *@
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card-style mb-30 premium-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="premium-card p-0 overflow-hidden mb-5 shadow-sm border-0">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-light bg-opacity-50">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-danger bg-opacity-10 text-danger rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-target"></i>
+                    </div>
                     <div>
-                        <h6 class="mb-0"><i class="fas fa-percent text-primary me-2"></i>Tasas de Deducción de Ley</h6>
-                        <small class="text-muted">Estas tasas se aplican automáticamente al generar la nómina. Si una tasa es 0%, la nómina <strong>no podrá procesarse</strong>.</small>
+                        <h5 class="fw-bold mb-0">Tasas de Deducción de Ley</h5>
+                        <p class="text-xs text-muted mb-0">Configuración global para cálculos de planilla.</p>
                     </div>
                 </div>
+            </div>
 
-                @if (deduccionesLey != null && deduccionesLey.Any(d => d.Activo && d.Porcentaje == 0))
-                {
-                    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
-                        <i class="fas fa-exclamation-triangle fa-lg"></i>
-                        <div>
-                            <strong>Advertencia:</strong> Existe al menos una deducción activa con porcentaje 0%. El sistema no permitirá generar la nómina hasta que se configure una tasa válida.
-                        </div>
+            @if (deduccionesLey != null && deduccionesLey.Any(d => d.Activo && d.Porcentaje == 0))
+            {
+                <div class="alert alert-warning bg-warning bg-opacity-10 border-0 rounded-0 d-flex align-items-center gap-3 px-4 py-3 mb-0">
+                    <div class="icon-box bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;">
+                        <i class="lni lni-warning"></i>
                     </div>
-                }
+                    <p class="mb-0 small"><strong>Configuración incompleta:</strong> Una o más deducciones activas tienen tasa 0%. Esto impedirá el procesamiento de nóminas.</p>
+                </div>
+            }
 
-                <div class="table-wrapper table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th><h6>Deducción</h6></th>
-                                <th><h6>Tasa (%)</h6></th>
-                                <th><h6>Estado</h6></th>
-                                <th><h6>Acciones</h6></th>
-                            </tr>
-                        </thead>
+            <div class="table-responsive">
+                <table class="table premium-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Deducción</th>
+                            <th class="text-center">Porcentaje</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
                         <tbody>
                             @if (deduccionesLey != null)
                             {
                                 @foreach (var ded in deduccionesLey)
                                 {
                                     <tr>
-                                        <td><p class="fw-semibold">@ded.Nombre</p></td>
-                                        <td>
+                                        <td class="ps-4 fw-bold text-dark small">@ded.Nombre</td>
+                                        <td class="text-center">
                                             @if (ded.Activo && ded.Porcentaje == 0)
                                             {
-                                                <span class="badge bg-danger"><i class="fas fa-exclamation-circle me-1"></i>0 % — Sin tasa</span>
+                                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3">0.00 % — Pendiente</span>
                                             }
                                             else
                                             {
-                                                <p class="text-success fw-bold">@ded.Porcentaje.ToString("0.##") %</p>
+                                                <span class="fw-bold text-dark">@ded.Porcentaje.ToString("0.##") %</span>
                                             }
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             @if (ded.Activo)
                                             {
-                                                <span class="badge bg-success">Activa</span>
+                                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3">Activa</span>
                                             }
                                             else
                                             {
-                                                <span class="badge bg-secondary">Inactiva</span>
+                                                <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3">Inactiva</span>
                                             }
                                         </td>
-                                        <td class="d-flex gap-2">
-                                            <button type="button" class="main-btn primary-btn btn-sm rounded-md btn-hover"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#editDeduccionModal"
-                                                    data-id="@ded.Id"
-                                                    data-nombre="@ded.Nombre"
-                                                    data-porcentaje="@ded.Porcentaje.ToString("F2").Replace(",",".")"
-                                                    title="Editar porcentaje">
-                                                <i class="lni lni-pencil"></i> Editar tasa
-                                            </button>
-                                            <form asp-controller="ConfiguracionPlanilla" asp-action="ToggleDeduccion" method="post" style="display:inline;">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="idDeduccion" value="@ded.Id" />
-                                                <button type="submit" class="main-btn @(ded.Activo ? "warning-btn" : "success-btn") btn-sm rounded-md btn-hover"
-                                                        onclick="return confirm('@(ded.Activo ? "¿Desactivar" : "¿Activar") la deducción \'' + '@ded.Nombre' + '\'?')">
-                                                    <i class="lni @(ded.Activo ? "lni-eye-off" : "lni-eye")"></i>
-                                                    @(ded.Activo ? "Desactivar" : "Activar")
+                                        <td class="text-center pe-4">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <button type="button" class="main-btn primary-btn btn-hover btn-sm rounded-pill px-3 py-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editDeduccionModal"
+                                                        data-id="@ded.Id"
+                                                        data-nombre="@ded.Nombre"
+                                                        data-porcentaje="@ded.Porcentaje.ToString("F2").Replace(",",".")"
+                                                        title="Editar porcentaje">
+                                                    <i class="lni lni-pencil me-1"></i> Tasa
                                                 </button>
-                                            </form>
+                                                <form asp-controller="ConfiguracionPlanilla" asp-action="ToggleDeduccion" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="idDeduccion" value="@ded.Id" />
+                                                    <button type="submit" class="main-btn @(ded.Activo ? "warning-btn-outline" : "success-btn-outline") btn-hover btn-sm rounded-pill px-3 py-1"
+                                                            onclick="return confirm('@(ded.Activo ? "¿Desactivar" : "¿Activar") la deducción \'' + '@ded.Nombre' + '\'?')">
+                                                        <i class="lni @(ded.Activo ? "lni-eye-off" : "lni-eye") me-1"></i>
+                                                        @(ded.Activo ? "Desactivar" : "Activar")
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -133,28 +141,36 @@
                 </div>
             </div>
         </div>
-    </div>
 
     @* ═══════════════════════════════════════════════════════════════
        SECCIÓN 2: Tarifas por Hora de Empleados
     ═══════════════════════════════════════════════════════════════ *@
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card-style mb-30 premium-card">
-                <h6 class="mb-10"><i class="fas fa-users text-primary me-2"></i>Tarifa por Hora — Empleados</h6>
-                <div class="table-wrapper table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th><h6>Nombre Completo</h6></th>
-                                <th><h6>Correo Electrónico</h6></th>
-                                <th><h6>Tarifa por Hora Actual</h6></th>
-                                @if (User.IsInRole("Administrador"))
-                                {
-                                    <th><h6>Acciones</h6></th>
-                                }
-                            </tr>
-                        </thead>
+        <div class="premium-card p-0 overflow-hidden mb-5 shadow-sm border-0">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-light bg-opacity-50">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="lni lni-users"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Tarifas por Hora por Empleado</h5>
+                        <p class="text-xs text-muted mb-0">Salario base para el cálculo de jornadas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table premium-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Colaborador</th>
+                            <th>Contacto</th>
+                            <th class="text-center">Tarifa Actual</th>
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <th class="text-center pe-4">Acciones</th>
+                            }
+                        </tr>
+                    </thead>
                         <tbody>
                             @foreach (var usuario in Model)
                             {
@@ -162,28 +178,37 @@
                                 var configActual = tieneConfig ? configuraciones[usuario.Id_Usr] : null;
 
                                 <tr>
-                                    <td><p>@usuario.Nombre</p></td>
-                                    <td><p>@usuario.Correo</p></td>
-                                    <td>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px; font-weight: bold; font-size: 0.8rem;">
+                                                @usuario.Nombre.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div class="fw-bold text-dark small">@usuario.Nombre</div>
+                                        </div>
+                                    </td>
+                                    <td class="small text-muted">@usuario.Correo</td>
+                                    <td class="text-center">
                                         @if (tieneConfig && configActual != null)
                                         {
-                                            <p class="text-success fw-bold">₡@configActual.TarifaPorHora.ToString("N2")</p>
+                                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 fs-6">
+                                                ₡@configActual.TarifaPorHora.ToString("N2")
+                                            </span>
                                         }
                                         else
                                         {
-                                            <p class="text-danger">No asignada</p>
+                                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-1 small">No asignada</span>
                                         }
                                     </td>
                                     @if (User.IsInRole("Administrador"))
                                     {
-                                        <td>
-                                            <button type="button" class="main-btn primary-btn btn-sm rounded-md btn-hover"
+                                        <td class="text-center pe-4">
+                                            <button type="button" class="main-btn primary-btn btn-hover btn-sm rounded-pill px-3 py-1"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#editTarifaModal"
                                                     data-id="@usuario.Id_Usr"
                                                     data-nombre="@usuario.Nombre"
                                                     data-tarifa="@(tieneConfig && configActual != null ? configActual.TarifaPorHora.ToString("F2").Replace(",", ".") : "")">
-                                                <i class="lni lni-pencil"></i> Modificar Tarifa
+                                                <i class="lni lni-pencil me-1"></i> Modificar
                                             </button>
                                         </td>
                                     }
@@ -197,73 +222,80 @@
     </div>
 </div>
 
-@* ─── Modal: Editar Tasa de Deducción ─────────────────────────────────────── *@
-<div class="modal fade" id="editDeduccionModal" tabindex="-1" aria-labelledby="editDeduccionModalLabel" aria-hidden="true">
+<!-- Modal: Editar Tasa de Deducción -->
+<div class="modal fade" id="editDeduccionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header" style="background:linear-gradient(135deg,#e74c3c,#c0392b);">
-                <h5 class="modal-title text-white fw-bold" id="editDeduccionModalLabel">
-                    <i class="fas fa-percent me-2"></i>Editar Tasa de Deducción
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger" id="editDeduccionModalLabel">
+                    <i class="lni lni-target me-2"></i> Tasa de Deducción
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-controller="ConfiguracionPlanilla" asp-action="GuardarDeduccion" method="post">
                 @Html.AntiForgeryToken()
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" name="idDeduccion" id="modalDedId" />
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Deducción</label>
-                        <input type="text" id="modalDedNombre" class="form-control bg-light" readonly />
+                        <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Deducción Seleccionada</label>
+                        <input type="text" id="modalDedNombre" class="form-control rounded-pill bg-light border-0 px-4" readonly />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-danger fw-semibold">Porcentaje (%)</label>
+                    <div class="mb-0">
+                        <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Porcentaje (%) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" step="0.01" min="0" max="100" name="porcentaje"
-                                   id="modalDedPorcentaje" class="form-control" placeholder="Ej. 5.50" required />
-                            <span class="input-group-text">%</span>
+                                   id="modalDedPorcentaje" class="form-control rounded-start-pill px-4" placeholder="Ej. 5.50" required />
+                            <span class="input-group-text rounded-end-pill px-3 bg-light border-start-0 text-muted fw-bold">%</span>
                         </div>
-                        <small class="text-muted">Ingrese el porcentaje que se descontará del salario bruto.</small>
+                        <p class="text-xs text-muted mt-2 mb-0 ms-2">Este valor se aplicará directamente al salario bruto en la generación automática.</p>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger"><i class="fas fa-save me-1"></i>Guardar Tasa</button>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="main-btn danger-btn btn-hover rounded-pill px-4 py-2">
+                        <i class="lni lni-save me-1"></i> Guardar Tasa
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-@* ─── Modal: Editar Tarifa por Hora ───────────────────────────────────────── *@
-<div class="modal fade" id="editTarifaModal" tabindex="-1" aria-labelledby="editTarifaModalLabel" aria-hidden="true">
+<!-- Modal: Editar Tarifa por Hora -->
+<div class="modal fade" id="editTarifaModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title text-white" id="editTarifaModalLabel">Modificar Salario Base</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary" id="editTarifaModalLabel">
+                    <i class="lni lni-users me-2"></i> Tarifas de Salario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-controller="ConfiguracionPlanilla" asp-action="GuardarTarifa" method="post">
-                <div class="modal-body">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
                     <input type="hidden" name="idUsr" id="modalUserId" />
 
                     <div class="mb-3">
-                        <label class="form-label" style="font-weight:600;">Empleado</label>
-                        <input type="text" id="modalUserName" class="form-control bg-light" readonly />
+                        <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Colaborador</label>
+                        <input type="text" id="modalUserName" class="form-control rounded-pill bg-light border-0 px-4" readonly />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label text-primary" style="font-weight:600;">Tarifa por Hora (₡)</label>
+                    <div class="mb-0">
+                        <label class="form-label text-xs fw-bold text-muted text-uppercase mb-2 ms-2">Tarifa por Hora (₡) <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <span class="input-group-text">₡</span>
-                            <input type="number" step="0.01" min="0" name="tarifaPorHora" id="modalUserTarifa" class="form-control" placeholder="Ej. 2500" required />
+                            <span class="input-group-text rounded-start-pill px-3 bg-light border-end-0 text-muted fw-bold">₡</span>
+                            <input type="number" step="0.01" min="0" name="tarifaPorHora" id="modalUserTarifa" class="form-control rounded-end-pill px-4" placeholder="Ej. 2500" required />
                         </div>
-                        <small class="text-muted">Este valor se usará para calcular el salario en la nómina.</small>
+                        <p class="text-xs text-muted mt-2 mb-0 ms-2">Monto base para el cálculo de horas ordinarias y extras.</p>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-4 py-2">
+                        <i class="lni lni-save me-1"></i> Guardar Cambios
+                    </button>
                 </div>
             </form>
         </div>

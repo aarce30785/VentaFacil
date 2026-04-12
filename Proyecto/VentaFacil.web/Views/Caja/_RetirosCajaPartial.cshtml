@@ -1,12 +1,12 @@
 @model IEnumerable<VentaFacil.web.Models.CajaRetiro>
 
-<div class="filter-container mb-4" style="background:#f8fafc; border-radius:12px; padding:1rem; border:1px solid #e2e8f0;">
-    <form id="filtroRetirosForm" class="row g-3 align-items-end">
+<div class="premium-card p-4 mb-4 bg-light shadow-none border">
+    <form id="filtroRetirosForm" class="row g-3 align-items-center">
         <input type="hidden" name="id" value="@ViewBag.IdCaja" />
         
         <div class="col-md-3">
-            <label class="form-label text-muted fw-bold text-sm mb-1">Tipo de Movimiento</label>
-            <select name="tipoMovimiento" class="form-select border-0 shadow-sm">
+            <label class="form-label text-muted fw-bold text-xs text-uppercase mb-1">Movimiento</label>
+            <select name="tipoMovimiento" class="form-select border-0 shadow-sm px-3">
                 <option value="Todos" selected="@(ViewBag.TipoMovimiento == "Todos" ? "selected" : null)">Todos</option>
                 <option value="Salida" selected="@(ViewBag.TipoMovimiento == "Salida" ? "selected" : null)">Gasto/Salida</option>
                 <option value="Ingreso" selected="@(ViewBag.TipoMovimiento == "Ingreso" ? "selected" : null)">Ingreso</option>
@@ -14,69 +14,81 @@
         </div>
         
         <div class="col-md-3">
-            <label class="form-label text-muted fw-bold text-sm mb-1">Fecha Inicio</label>
-            <input type="date" name="fechaInicio" class="form-control border-0 shadow-sm" value="@ViewBag.FechaInicio" />
+            <label class="form-label text-muted fw-bold text-xs text-uppercase mb-1">Inicio</label>
+            <input type="date" name="fechaInicio" class="form-control border-0 shadow-sm px-3" value="@ViewBag.FechaInicio" />
         </div>
         
         <div class="col-md-3">
-            <label class="form-label text-muted fw-bold text-sm mb-1">Fecha Fin</label>
-            <input type="date" name="fechaFin" class="form-control border-0 shadow-sm" value="@ViewBag.FechaFin" />
+            <label class="form-label text-muted fw-bold text-xs text-uppercase mb-1">Fin</label>
+            <input type="date" name="fechaFin" class="form-control border-0 shadow-sm px-3" value="@ViewBag.FechaFin" />
         </div>
         
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary shadow-sm flex-grow-1"><i class="lni lni-search"></i> Buscar</button>
+        <div class="col-md-3 text-end pt-3">
+            <button type="submit" class="main-btn primary-btn btn-hover btn-sm rounded-pill w-100"><i class="lni lni-search-alt me-2"></i> Filtrar</button>
         </div>
     </form>
 </div>
 
-<div class="retiros-table-container" style="background:#fff; border-radius:16px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05); padding:1.5rem; margin-bottom:1rem;">
-    <table class="table premium-table-retiros">
-        <thead>
-            <tr>
-                <th style="color:#222; font-weight: 600;">Fecha</th>
-                <th style="color:#222; font-weight: 600;">Tipo</th>
-                <th style="color:#222; font-weight: 600;">Motivo</th>
-                <th style="color:#222; font-weight: 600; text-align: right;">Monto</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var retiro in Model.OrderByDescending(x => x.FechaHora))
-            {
+<div class="premium-card p-4 mb-0 shadow-none border">
+    <div class="table-responsive">
+        <table class="table premium-table align-middle">
+            <thead>
                 <tr>
-                    <td>@retiro.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        @if (retiro.Monto < 0)
-                        {
-                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill">Salida</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill">Ingreso</span>
-                        }
-                    </td>
-                    <td>@retiro.Motivo</td>
-                    <td style="text-align:right" class="fw-bold @(retiro.Monto < 0 ? "text-danger" : "text-success")">
-                        @retiro.Monto.ToString("C", new System.Globalization.CultureInfo("es-CR"))
-                    </td>
+                    <th class="ps-3">Fecha y Hora</th>
+                    <th>Tipo</th>
+                    <th>Motivo</th>
+                    <th class="text-end pe-3">Monto</th>
                 </tr>
-            }
-            @if (!Model.Any())
+            </thead>
+            <tbody>
+                @foreach (var retiro in Model.OrderByDescending(x => x.FechaHora))
+                {
+                    <tr>
+                        <td class="ps-3">
+                            <span class="fw-bold text-dark">@retiro.FechaHora.ToString("dd/MM/yyyy")</span>
+                            <br/><small class="text-muted">@retiro.FechaHora.ToString("HH:mm")</small>
+                        </td>
+                        <td>
+                            @if (retiro.Monto < 0)
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1" style="font-size: 0.7rem;">Gasto</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1" style="font-size: 0.7rem;">Ingreso</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="text-sm text-muted">@retiro.Motivo</span>
+                        </td>
+                        <td class="text-end pe-3">
+                            <span class="fw-bold @(retiro.Monto < 0 ? "text-danger" : "text-success")">
+                                @retiro.Monto.ToString("C0", new System.Globalization.CultureInfo("es-CR"))
+                            </span>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-5">
+                            <i class="lni lni-warning fs-3 mb-2 d-block"></i>
+                            No se encontraron movimientos para los filtros seleccionados.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            @if (Model.Any())
             {
-                <tr>
-                    <td colspan="4" class="text-center text-muted py-4">No se encontraron movimientos para los filtros seleccionados.</td>
-                </tr>
+                <tfoot class="bg-light bg-opacity-50">
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold ps-3">Total Filtrado:</td>
+                        <td class="text-end fw-bold pe-3 text-primary fs-5">@(((decimal)(ViewBag.TotalFiltrado ?? 0)).ToString("C0", new System.Globalization.CultureInfo("es-CR")))</td>
+                    </tr>
+                </tfoot>
             }
-        </tbody>
-        @if (Model.Any())
-        {
-            <tfoot>
-                <tr style="background-color: #f8fafc;">
-                    <td colspan="3" class="text-end fw-bold">Total Filtrado:</td>
-                    <td class="text-end fw-bold fs-5">@(((decimal)(ViewBag.TotalFiltrado ?? 0)).ToString("C", new System.Globalization.CultureInfo("es-CR")))</td>
-                </tr>
-            </tfoot>
-        }
-    </table>
+        </table>
+    </div>
 </div>
 
 <script>
