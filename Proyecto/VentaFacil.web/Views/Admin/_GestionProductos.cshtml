@@ -53,9 +53,20 @@
                 </div>
             </div>
 
-            <!-- Campos ocultos para mantener otros parámetros -->
+            <!-- Campos ocultos y Paginación -->
+            <div class="col-12 mt-3 d-flex justify-content-end">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="text-sm text-muted mb-0">Registros por página:</label>
+                    <select name="cantidadPorPagina" class="form-select form-select-sm rounded-pill bg-light border-0" style="width: 80px;" onchange="document.getElementById('filtrosProductosForm').submit();">
+                        <option value="10" selected="@(Model.CantidadPorPagina == 10)">10</option>
+                        <option value="20" selected="@(Model.CantidadPorPagina == 20)">20</option>
+                        <option value="50" selected="@(Model.CantidadPorPagina == 50)">50</option>
+                        <option value="100" selected="@(Model.CantidadPorPagina == 100)">100</option>
+                    </select>
+                </div>
+            </div>
+
             <input type="hidden" name="pagina" value="1" />
-            <input type="hidden" name="cantidadPorPagina" value="10" />
         </form>
     </div>
 </div>

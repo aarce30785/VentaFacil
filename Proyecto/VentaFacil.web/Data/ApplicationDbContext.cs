@@ -56,7 +56,7 @@ namespace VentaFacil.web.Data
             // CONFIGURACIÓN MÍNIMA PARA VENTA - SIN RELACIONES
             modelBuilder.Entity<Venta>(entity =>
             {
-                entity.ToTable("Venta");
+                entity.ToTable("Venta", tb => tb.HasTrigger("trg_Audit_Venta_Update"));
                 entity.HasKey(v => v.Id_Venta);
 
                 // Solo mapear las columnas que existen en la BD
@@ -78,7 +78,7 @@ namespace VentaFacil.web.Data
             // Configuración para Factura
             modelBuilder.Entity<Factura>(entity =>
             {
-                entity.ToTable("Factura");
+                entity.ToTable("Factura", tb => tb.HasTrigger("trg_Audit_Factura_Update"));
                 entity.HasKey(f => f.Id_Factura);
 
                 entity.Property(f => f.Id_Venta).IsRequired();
@@ -197,6 +197,18 @@ namespace VentaFacil.web.Data
             {
                 entity.Property(i => i.Estado).HasDefaultValue(true);
                 entity.ToTable(tb => tb.HasTrigger("trg_Audit_Inventario_Update"));
+            });
+
+            // Configurar Trigger para Caja
+            modelBuilder.Entity<Caja>(entity =>
+            {
+                entity.ToTable(tb => tb.HasTrigger("trg_Audit_Caja_Update"));
+            });
+
+            // Configurar Trigger para Inventario Movimiento
+            modelBuilder.Entity<InventarioMovimiento>(entity =>
+            {
+                entity.ToTable(tb => tb.HasTrigger("trg_Audit_InventarioMov_Update"));
             });
 
             // Configuración para ProductoInsumo

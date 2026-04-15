@@ -1,4 +1,4 @@
-﻿using VentaFacil.web.Models.Response.Usuario;
+using VentaFacil.web.Models.Response.Usuario;
 
 namespace VentaFacil.web.Models.Response.Admin
 {
@@ -12,5 +12,6 @@ namespace VentaFacil.web.Models.Response.Admin
         public string AccionModal { get; set; }
         public string? Busqueda { get; set; }
         public int? RolFiltro { get; set; }
+        public int CantidadPorPagina { get; set; }
     }
 }

@@ -443,6 +443,59 @@ namespace VentaFacil.web
                             Console.WriteLine($"⚠️ Error en seeder: {seederEx.Message}");
                         }
                 }
+
+                // ==========================================
+                // INSTALACIÓN/VERIFICACIÓN DE AUDITORÍAS
+                // (Se ejecuta de forma idempotente independientemente de si la BD es nueva o ya existía)
+                // ==========================================
+                Console.WriteLine("Verificando e instalando scripts de auditoría de seguridad...");
+                string[] auditScripts = { "Auditoria_Usuario.sql", "Auditoria_Operaciones.sql", "Auditoria_Inventario.sql" };
+                foreach (var auditFile in auditScripts)
+                {
+                    // Buscar en /app (Docker), o en el proyecto actual/padre
+                    string auditPath = Path.Combine("/app", auditFile);
+                    if (!File.Exists(auditPath))
+                    {
+                        string currentDir = Directory.GetCurrentDirectory();
+                        var parentDir = Directory.GetParent(currentDir)?.FullName;
+                        // Intentar en la ruta padre (Ej. \Proyecto\)
+                        auditPath = parentDir != null ? Path.Combine(parentDir, auditFile) : "";
+                        if (!File.Exists(auditPath))
+                        {
+                            // Intentar en la ruta actual (Ej. \Proyecto\VentaFacil.web\)
+                            auditPath = Path.Combine(currentDir, auditFile);
+                        }
+                    }
+
+                    if (File.Exists(auditPath))
+                    {
+                        Console.WriteLine($"Integrando script de auditoría: {auditPath}");
+                        string script = File.ReadAllText(auditPath);
+                        // Dividir por bloques GO que no son soportados directamente en un ExecuteNonQuery simple
+                        var commandTexts = System.Text.RegularExpressions.Regex.Split(script, @"^\s*GO\s*$", System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                        foreach (var commandText in commandTexts)
+                        {
+                            if (!string.IsNullOrWhiteSpace(commandText))
+                            {
+                                using var auditCmd = new SqlCommand(commandText, conn);
+                                try
+                                {
+                                    auditCmd.ExecuteNonQuery();
+                                }
+                                catch (Exception sqlEx)
+                                {
+                                    Console.WriteLine($"⚠️ Error ejecutando sector de auditoría en {auditFile}: {sqlEx.Message}");
+                                }
+                            }
+                        }
+                        Console.WriteLine($"✅ Scripts de auditoría {auditFile} validados e instalados.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"⚠️ No se pudo localizar el archivo de script de auditoría {auditFile}");
+                    }
+                }
             }
 
         private static void TestDatabaseConnection(IConfiguration configuration)

@@ -106,11 +106,20 @@
 
     <div class="mb-5 animate-fade-in">
         <div class="premium-card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                 <div>
                     <h5 class="fw-bold mb-1"><i class="lni lni-timer me-2 text-primary"></i> Historial de Cajas</h5>
                     <p class="text-sm text-muted mb-0">Registro histórico de aperturas y cierres.</p>
                 </div>
+                <form method="get" asp-action="Listar" id="cajaPaginationForm" class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+                    <label class="text-sm text-muted mb-0 text-nowrap">Registros por página:</label>
+                    <select name="cantidadPorPagina" class="form-select form-select-sm rounded-pill bg-light border-0" style="width: 80px;" onchange="this.form.submit();">
+                        <option value="10" selected="@(Model.CantidadPorPagina == 10)">10</option>
+                        <option value="20" selected="@(Model.CantidadPorPagina == 20)">20</option>
+                        <option value="50" selected="@(Model.CantidadPorPagina == 50)">50</option>
+                        <option value="100" selected="@(Model.CantidadPorPagina == 100)">100</option>
+                    </select>
+                </form>
             </div>
 
             <div class="table-responsive">
@@ -168,7 +177,7 @@
                 <nav aria-label="Navegación de cajas" class="mt-4">
                     <ul class="pagination justify-content-center gap-2">
                         <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                            <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("Listar", new { pagina = Model.PaginaActual - 1 })">
+                            <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("Listar", new { pagina = Model.PaginaActual - 1, cantidadPorPagina = Model.CantidadPorPagina })">
                                 <i class="lni lni-chevron-left"></i>
                             </a>
                         </li>
@@ -176,12 +185,12 @@
                         @for (int i = 1; i <= Model.TotalPaginas; i++)
                         {
                             <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                                <a class="page-link border-0 rounded-3 @(i == Model.PaginaActual ? "bg-primary text-white shadow-sm" : "bg-light text-dark")" href="@Url.Action("Listar", new { pagina = i })">@i</a>
+                                <a class="page-link border-0 rounded-3 @(i == Model.PaginaActual ? "bg-primary text-white shadow-sm" : "bg-light text-dark")" href="@Url.Action("Listar", new { pagina = i, cantidadPorPagina = Model.CantidadPorPagina })">@i</a>
                             </li>
                         }
 
                         <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                            <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("Listar", new { pagina = Model.PaginaActual + 1 })">
+                            <a class="page-link border-0 rounded-3 bg-light text-dark" href="@Url.Action("Listar", new { pagina = Model.PaginaActual + 1, cantidadPorPagina = Model.CantidadPorPagina })">
                                 <i class="lni lni-chevron-right"></i>
                             </a>
                         </li>

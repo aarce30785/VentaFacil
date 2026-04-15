@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using VentaFacil.web.Models;
 
 namespace VentaFacil.web.Models.Response.Planilla
@@ -10,5 +10,6 @@ namespace VentaFacil.web.Models.Response.Planilla
         public List<Nomina>? Nominas { get; set; }
         public int PaginaActual { get; set; }
         public int TotalPaginas { get; set; }
+        public int CantidadPorPagina { get; set; }
     }
 }

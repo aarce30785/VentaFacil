@@ -122,13 +122,24 @@
                     <input type="date" name="FechaFinal" class="form-control rounded-pill"
                            value="@(ViewBag.Filtros?.FechaFinal?.ToString("yyyy-MM-dd"))" />
                 </div>
-                <div class="col-12 text-end mt-4">
-                    <a href="@Url.Action("Consultar", "Planilla")" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2 me-2">
-                        <i class="lni lni-eraser me-1"></i> Limpiar
-                    </a>
-                    <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-4 py-2">
-                        <i class="lni lni-search me-1"></i> Filtrar
-                    </button>
+                <div class="col-12 mt-4 d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2 mb-2 mb-md-0">
+                        <label class="text-sm fw-bold text-muted text-uppercase mb-0">Registros por página:</label>
+                        <select name="CantidadPorPagina" class="form-select form-select-sm rounded-pill" style="width: 80px;" onchange="this.form.submit();">
+                            <option value="10" selected="@(ViewBag.Filtros?.CantidadPorPagina == 10)">10</option>
+                            <option value="20" selected="@(ViewBag.Filtros?.CantidadPorPagina == 20)">20</option>
+                            <option value="50" selected="@(ViewBag.Filtros?.CantidadPorPagina == 50)">50</option>
+                            <option value="100" selected="@(ViewBag.Filtros?.CantidadPorPagina == 100)">100</option>
+                        </select>
+                    </div>
+                    <div class="text-end">
+                        <a href="@Url.Action("Consultar", "Planilla")" class="main-btn dark-btn-outline btn-hover rounded-pill px-4 py-2 me-2">
+                            <i class="lni lni-eraser me-1"></i> Limpiar
+                        </a>
+                        <button type="submit" class="main-btn primary-btn btn-hover rounded-pill px-4 py-2">
+                            <i class="lni lni-search me-1"></i> Filtrar
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -257,18 +268,39 @@
                     <nav aria-label="Page navigation">
                         <ul class="pagination pagination-modern justify-content-end mb-0">
                             <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                                <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { pagina = Model.PaginaActual - 1 })">
+                                <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { 
+                                    pagina = Model.PaginaActual - 1, 
+                                    CantidadPorPagina = ViewBag.Filtros?.CantidadPorPagina,
+                                    Id_Usr = ViewBag.Filtros?.Id_Usr,
+                                    Estado = ViewBag.Filtros?.Estado,
+                                    FechaInicio = ViewBag.Filtros?.FechaInicio?.ToString("yyyy-MM-dd"),
+                                    FechaFinal = ViewBag.Filtros?.FechaFinal?.ToString("yyyy-MM-dd")
+                                })">
                                     <i class="lni lni-chevron-left"></i>
                                 </a>
                             </li>
                             @for (int i = 1; i <= Model.TotalPaginas; i++)
                             {
                                 <li class="page-item @(Model.PaginaActual == i ? "active" : "")">
-                                    <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { pagina = i })">@i</a>
+                                    <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { 
+                                        pagina = i,
+                                        CantidadPorPagina = ViewBag.Filtros?.CantidadPorPagina,
+                                        Id_Usr = ViewBag.Filtros?.Id_Usr,
+                                        Estado = ViewBag.Filtros?.Estado,
+                                        FechaInicio = ViewBag.Filtros?.FechaInicio?.ToString("yyyy-MM-dd"),
+                                        FechaFinal = ViewBag.Filtros?.FechaFinal?.ToString("yyyy-MM-dd")
+                                    })">@i</a>
                                 </li>
                             }
                             <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                                <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { pagina = Model.PaginaActual + 1 })">
+                                <a class="page-link shadow-sm" href="@Url.Action("Consultar", new { 
+                                    pagina = Model.PaginaActual + 1,
+                                    CantidadPorPagina = ViewBag.Filtros?.CantidadPorPagina,
+                                    Id_Usr = ViewBag.Filtros?.Id_Usr,
+                                    Estado = ViewBag.Filtros?.Estado,
+                                    FechaInicio = ViewBag.Filtros?.FechaInicio?.ToString("yyyy-MM-dd"),
+                                    FechaFinal = ViewBag.Filtros?.FechaFinal?.ToString("yyyy-MM-dd")
+                                })">
                                     <i class="lni lni-chevron-right"></i>
                                 </a>
                             </li>

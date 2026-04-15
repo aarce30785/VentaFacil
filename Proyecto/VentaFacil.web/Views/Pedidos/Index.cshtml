@@ -148,7 +148,7 @@
             <div class="breadcrumb-wrapper">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#0" class="text-white-50">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Dashboard</a></li>
                         <li class="breadcrumb-item active text-white" aria-current="page">Pedidos</li>
                     </ol>
                 </nav>
@@ -515,12 +515,23 @@
         @if (historicoPaginado.Any())
         {
             <div class="table-container animate-fade-in" id="seccionHistorico">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                     <div>
                         <h5 class="fw-bold mb-1">📜 Historial de Pedidos</h5>
                         <p class="text-sm text-muted mb-0">Pedidos completados o cancelados (Página @Model.PaginaActual de @Model.TotalPaginas)</p>
                     </div>
-                    <span class="badge bg-light text-dark border rounded-pill px-3">@Model.TotalRegistros registros en total</span>
+                    <div class="d-flex align-items-center gap-3 mt-2 mt-md-0">
+                        <span class="badge bg-light text-dark border rounded-pill px-3">@Model.TotalRegistros registros en total</span>
+                        <form method="get" asp-action="Index" id="pedidosPaginationForm" class="d-flex align-items-center gap-2">
+                            <label class="text-sm text-muted mb-0 text-nowrap">Registros por página:</label>
+                            <select name="cantidadPorPagina" class="form-select form-select-sm rounded-pill bg-light border-0" style="width: 80px;" onchange="this.form.submit();">
+                                <option value="10" selected="@(Model.CantidadPorPagina == 10)">10</option>
+                                <option value="20" selected="@(Model.CantidadPorPagina == 20)">20</option>
+                                <option value="50" selected="@(Model.CantidadPorPagina == 50)">50</option>
+                                <option value="100" selected="@(Model.CantidadPorPagina == 100)">100</option>
+                            </select>
+                        </form>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table premium-table">
@@ -595,7 +606,7 @@
                     <nav aria-label="Navegación de historial" class="mt-4">
                         <ul class="pagination pagination-premium justify-content-center">
                             <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { pagina = Model.PaginaActual - 1 })">
+                                <a class="page-link" href="@Url.Action("Index", new { pagina = Model.PaginaActual - 1, cantidadPorPagina = Model.CantidadPorPagina })">
                                     <i class="lni lni-chevron-left"></i>
                                 </a>
                             </li>
@@ -603,12 +614,12 @@
                             @for (int i = 1; i <= Model.TotalPaginas; i++)
                             {
                                 <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                                    <a class="page-link" href="@Url.Action("Index", new { pagina = i })">@i</a>
+                                    <a class="page-link" href="@Url.Action("Index", new { pagina = i, cantidadPorPagina = Model.CantidadPorPagina })">@i</a>
                                 </li>
                             }
 
                             <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new { pagina = Model.PaginaActual + 1 })">
+                                <a class="page-link" href="@Url.Action("Index", new { pagina = Model.PaginaActual + 1, cantidadPorPagina = Model.CantidadPorPagina })">
                                     <i class="lni lni-chevron-right"></i>
                                 </a>
                             </li>

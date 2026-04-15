@@ -73,7 +73,8 @@ namespace VentaFacil.web.Controllers
                         TotalPaginas = 1,
                         TotalUsuarios = 0,
                         Busqueda = busqueda,
-                        RolFiltro = rolFiltro
+                        RolFiltro = rolFiltro,
+                        CantidadPorPagina = cantidadPorPagina
                     };
                 }
                 else
@@ -81,6 +82,7 @@ namespace VentaFacil.web.Controllers
                     // Asegurar que los filtros se mantengan en la respuesta
                     usuarios.Busqueda = busqueda;
                     usuarios.RolFiltro = rolFiltro;
+                    usuarios.CantidadPorPagina = cantidadPorPagina;
                 }
 
                 // Manejar acciones del modal
@@ -135,7 +137,8 @@ namespace VentaFacil.web.Controllers
                     TotalPaginas = 1,
                     TotalUsuarios = 0,
                     Busqueda = busqueda,
-                    RolFiltro = rolFiltro
+                    RolFiltro = rolFiltro,
+                    CantidadPorPagina = cantidadPorPagina
                 };
 
                 await CargarDatosComplementarios();
