@@ -242,11 +242,8 @@
                                 <p class="product-desc" title="@producto.Descripcion">
                                     @(string.IsNullOrEmpty(producto.Descripcion) ? "Sin descripción disponible." : producto.Descripcion)
                                 </p>
-                                <div class="mt-auto d-flex justify-content-between align-items-center">
-                                    <span class="product-price">@producto.Precio.ToString("C")</span>
-                                    <button type="button" class="btn btn-outline-primary btn-sm btn-view-more" onclick="abrirDetalleModal(@producto.Id_Producto)">
-                                        Ver más
-                                    </button>
+                                <div class="mt-auto d-flex justify-content-start align-items-center">
+                                    <span class="product-price">₡@producto.Precio.ToString("N2")</span>
                                 </div>
                             </div>
                         </div>
