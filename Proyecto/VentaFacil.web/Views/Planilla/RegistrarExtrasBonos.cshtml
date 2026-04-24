@@ -310,21 +310,21 @@
             tr.innerHTML = `
                 <td class="ps-4">
                     <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3">
-                        ${escapeHtml(b.motivo)}
+                        ${escapeHtml(b.Motivo)}
                     </span>
                 </td>
-                <td class="fw-bold text-success">${fmt(b.monto)}</td>
-                <td><span class="text-dark small">${b.fecha}</span></td>
-                <td><span class="text-muted small">${b.fechaRegistro}</span></td>
+                <td class="fw-bold text-success">${fmt(b.Monto)}</td>
+                <td><span class="text-dark small">${b.Fecha}</span></td>
+                <td><span class="text-muted small">${b.FechaRegistro}</span></td>
                 <td class="text-center pe-4">
                     <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-sm btn-white text-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirEditar(${b.id}, '${escapeHtml(b.motivo)}', ${b.monto}, '${b.fecha}')" title="Editar">
+                        <button class="btn btn-sm btn-white text-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirEditar(${b.Id}, '${escapeHtml(b.Motivo)}', ${b.Monto}, '${b.Fecha}')" title="Editar">
                             <i class="lni lni-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarEliminar(${b.id})" title="Eliminar">
+                        <button class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarEliminar(${b.Id})" title="Eliminar">
                             <i class="lni lni-trash-can"></i>
                         </button>
-                        <button class="btn btn-sm btn-white text-secondary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="verHistorial(${b.id})" title="Auditoría">
+                        <button class="btn btn-sm btn-white text-secondary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="verHistorial(${b.Id})" title="Auditoría">
                             <i class="lni lni-history"></i>
                         </button>
                     </div>
@@ -387,7 +387,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': antiforgery()
+                    'X-CSRF-TOKEN': antiforgery()
                 },
                 body: JSON.stringify(payload)
             });
@@ -432,7 +432,7 @@
             try {
                 const res = await fetch(`/Planilla/EliminarBonificacion?id=${id}`, {
                     method: 'POST',
-                    headers: { 'RequestVerificationToken': antiforgery() },
+                    headers: { 'X-CSRF-TOKEN': antiforgery() },
                     body: form
                 });
                 const json = await res.json();
@@ -471,14 +471,14 @@
             }
 
             json.data.forEach(a => {
-                const esElim = a.montoNuevo === 0 && a.motivoCambio?.includes('Eliminaci');
+                const esElim = a.MontoNuevo === 0 && a.MotivoCambio?.includes('Eliminaci');
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><span class="text-dark small">${a.fechaCambio}</span></td>
-                    <td><span class="text-danger text-decoration-line-through small">${fmt(a.montoAnterior)}</span></td>
-                    <td><span class="${esElim ? 'text-danger' : 'text-success fw-bold'} small">${esElim ? '<em>Eliminada</em>' : fmt(a.montoNuevo)}</span></td>
-                    <td><span class="text-muted small">${escapeHtml(a.motivoCambio ?? '-')}</span></td>
-                    <td><span class="badge rounded-pill bg-light text-dark border px-3">${escapeHtml(a.responsable)}</span></td>`;
+                    <td><span class="text-dark small">${a.FechaCambio}</span></td>
+                    <td><span class="text-danger text-decoration-line-through small">${fmt(a.MontoAnterior)}</span></td>
+                    <td><span class="${esElim ? 'text-danger' : 'text-success fw-bold'} small">${esElim ? '<em>Eliminada</em>' : fmt(a.MontoNuevo)}</span></td>
+                    <td><span class="text-muted small">${escapeHtml(a.MotivoCambio ?? '-')}</span></td>
+                    <td><span class="badge rounded-pill bg-light text-dark border px-3">${escapeHtml(a.Responsable)}</span></td>`;
                 tbody.appendChild(tr);
             });
         } catch (err) {

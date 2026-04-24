@@ -56,7 +56,8 @@ namespace VentaFacil.web.Services.Planilla
             catch (Exception ex)
             {
                 response.Success = false;
-                response.Message = "Error al agregar bonificación: " + ex.Message;
+                var dbEx = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                response.Message = "Error al agregar bonificación: " + dbEx;
             }
             return response;
         }
