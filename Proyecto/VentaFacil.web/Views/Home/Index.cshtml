@@ -201,9 +201,16 @@
                                     <tr>
                                         <td class="ps-3 border-0 py-3">
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar bg-primary bg-opacity-7 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                                    <i class="lni lni-tag"></i>
-                                                </div>
+                                                @if (!string.IsNullOrEmpty(prod.Imagen))
+                                                {
+                                                    <div class="rounded-circle me-3 flex-shrink-0" style="width: 42px; height: 42px; background-image: url('@prod.Imagen'); background-size: cover; background-position: center; border: 2px solid rgba(99,102,241,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.12);"></div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="rounded-circle me-3 flex-shrink-0 d-flex align-items-center justify-content-center fw-bold text-white" style="width: 42px; height: 42px; background: linear-gradient(135deg, #6366f1, #4f46e5); font-size: 0.8rem; box-shadow: 0 2px 8px rgba(99,102,241,0.3);">
+                                                        @(prod.Nombre.Length >= 2 ? prod.Nombre.Substring(0, 2).ToUpper() : prod.Nombre.ToUpper())
+                                                    </div>
+                                                }
                                                 <span class="fw-bold text-dark">@prod.Nombre</span>
                                             </div>
                                         </td>

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using VentaFacil.web.Data;
 using VentaFacil.web.Models.Dto;
 using VentaFacil.web.Models.Response.Producto;
@@ -362,6 +362,7 @@ namespace VentaFacil.web.Services.Producto
                 {
                     Id_Producto = g.Key,
                     Nombre = g.First().Producto != null ? g.First().Producto.Nombre : "",
+                    Imagen = g.First().Producto != null ? g.First().Producto.Imagen : null,
                     CantidadVendida = g.Sum(x => x.Cantidad)
                 })
                 .OrderByDescending(p => p.CantidadVendida)

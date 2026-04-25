@@ -19,6 +19,7 @@ namespace VentaFacil.web.Models.ViewModel
     {
         public int Id_Producto { get; set; }
         public string Nombre { get; set; } = string.Empty;
+        public string? Imagen { get; set; }
         public int CantidadVendida { get; set; }
     }
 }
