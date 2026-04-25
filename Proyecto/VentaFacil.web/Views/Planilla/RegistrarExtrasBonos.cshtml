@@ -395,17 +395,17 @@
 
             bootstrap.Modal.getInstance(document.getElementById('modalBonificacion'))?.hide();
 
-            if (json.success) {
+            if (json.success ?? json.Success) {
                 Swal.fire({
                     icon: 'success',
                     title: esEdicion ? 'Bonificación actualizada' : 'Bonificación agregada',
-                    text: json.message,
+                    text: json.message ?? json.Message,
                     timer: 2000,
                     showConfirmButton: false
                 });
                 cargarBonificaciones(planillaActual);
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: json.message });
+                Swal.fire({ icon: 'error', title: 'Error', text: json.message ?? json.Message });
             }
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error de red', text: err.message });
@@ -436,11 +436,11 @@
                     body: form
                 });
                 const json = await res.json();
-                if (json.success) {
-                    Swal.fire({ icon: 'success', title: 'Eliminada', text: json.message, timer: 1800, showConfirmButton: false });
+                if (json.success ?? json.Success) {
+                    Swal.fire({ icon: 'success', title: 'Eliminada', text: json.message ?? json.Message, timer: 1800, showConfirmButton: false });
                     cargarBonificaciones(planillaActual);
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: json.message });
+                    Swal.fire({ icon: 'error', title: 'Error', text: json.message ?? json.Message });
                 }
             } catch (err) {
                 Swal.fire({ icon: 'error', title: 'Error de red', text: err.message });
