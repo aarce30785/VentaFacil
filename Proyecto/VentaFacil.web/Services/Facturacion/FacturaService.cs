@@ -229,7 +229,7 @@ namespace VentaFacil.web.Services.Facturacion
                 await _context.SaveChangesAsync();
 
                 var numeroFactura = $"F-{factura.Id_Factura:0000}";
-                await _pedidoService.ActualizarPedidoConFactura(ventaId, factura.Id_Factura, numeroFactura);
+                await _pedidoService.ActualizarPedidoConFactura(pedidoId, factura.Id_Factura, numeroFactura);
                 var warnings = await ProcesarDeduccionInventarioAsync(pedido, factura.Id_Factura);
 
                
@@ -829,7 +829,7 @@ namespace VentaFacil.web.Services.Facturacion
             await _context.SaveChangesAsync();
 
             var numeroFactura = $"F-{factura.Id_Factura:0000}";
-            await _pedidoService.ActualizarPedidoConFactura(ventaId, factura.Id_Factura, numeroFactura);
+            await _pedidoService.ActualizarPedidoConFactura(pedido.Id_Venta, factura.Id_Factura, numeroFactura);
 
             _logger.LogInformation("✅ Factura {FacturaId} creada para venta {VentaId}", factura.Id_Factura, ventaId);
             return factura;
