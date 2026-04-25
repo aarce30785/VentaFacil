@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
@@ -193,7 +193,7 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GuardarProducto(
             [FromForm] ProductoDto productoDto,
-            IFormFile ImagenFile, 
+            IFormFile? ImagenFile, 
             [FromForm] string busqueda = null,
             [FromForm] int? categoriaFiltro = null,
             [FromForm] int pagina = 1)

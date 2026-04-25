@@ -624,7 +624,7 @@ namespace VentaFacil.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GuardarProducto(
             [FromForm] ProductoDto productoDto,
-            IFormFile ImagenFile, 
+            IFormFile? ImagenFile, 
             [FromForm] string busqueda = null,
             [FromForm] int? categoriaFiltro = null,
             [FromForm] int pagina = 1)
