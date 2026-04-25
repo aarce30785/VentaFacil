@@ -386,30 +386,30 @@
 
 @section Scripts {
     <script>
-        var modalAnular = new bootstrap.Modal(document.getElementById('modalAnular'));
-        var modalDevolucion = new bootstrap.Modal(document.getElementById('modalDevolucion'));
-        var modalAbono = new bootstrap.Modal(document.getElementById('modalAbono'));
-
         function abrirModalAnular(id, numero) {
-            $('#anularFacturaId').val(id);
-            $('#anularNumeroFactura').text(numero);
-            modalAnular.show();
+            document.getElementById('anularFacturaId').value = id;
+            document.getElementById('anularNumeroFactura').textContent = '#' + numero;
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAnular'));
+            modal.show();
         }
 
         function abrirModalDevolucion(id, numero) {
-            $('#devolucionNumeroFactura').text(numero);
+            document.getElementById('devolucionNumeroFactura').textContent = '#' + numero;
             var url = '@Url.Action("DetalleFactura", "Facturacion")' + '?facturaId=' + id;
-            $('#btnIrADevolucion').attr('href', url);
-            modalDevolucion.show();
+            document.getElementById('btnIrADevolucion').setAttribute('href', url);
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDevolucion'));
+            modal.show();
         }
 
         function abrirModalAbono(id, numero, saldo) {
-            $('#abonoFacturaId').val(id);
-            $('#abonoNumeroFactura').text(numero);
-            $('#abonoSaldoPendiente').text(parseFloat(saldo).toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-            $('#montoAbono').val(parseFloat(saldo).toFixed(2));
-            $('#montoAbono').attr('max', parseFloat(saldo).toFixed(2));
-            modalAbono.show();
+            document.getElementById('abonoFacturaId').value = id;
+            document.getElementById('abonoNumeroFactura').textContent = '#' + numero;
+            var saldoNum = parseFloat(saldo);
+            document.getElementById('abonoSaldoPendiente').textContent = saldoNum.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('montoAbono').value = saldoNum.toFixed(2);
+            document.getElementById('montoAbono').setAttribute('max', saldoNum.toFixed(2));
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAbono'));
+            modal.show();
         }
     </script>
 }
