@@ -103,6 +103,105 @@
             });
         });
     </script>
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <!-- ======== Cierre automático por inactividad (30 min) ======== -->
+        <script>
+            (function () {
+                var INACTIVITY_MINUTES   = 30;   // minutos de inactividad antes de cerrar sesión
+                var WARNING_BEFORE_SECS  = 120;  // segundos antes de cerrar en que aparece la advertencia
+                var LOGOUT_URL           = '/Login/CerrarSesion';
+
+                var totalMs     = INACTIVITY_MINUTES * 60 * 1000;
+                var warningMs   = totalMs - (WARNING_BEFORE_SECS * 1000);
+
+                var inactivityTimer = null;
+                var warningTimer    = null;
+                var countdownInterval = null;
+                var warningVisible   = false;
+
+                function resetTimers() {
+                    if (warningVisible) return; // No resetear si la advertencia ya está visible
+                    clearTimeout(inactivityTimer);
+                    clearTimeout(warningTimer);
+
+                    warningTimer = setTimeout(showWarning, warningMs);
+                    inactivityTimer = setTimeout(doLogout, totalMs);
+                }
+
+                function showWarning() {
+                    warningVisible = true;
+                    clearInterval(countdownInterval);
+
+                    var remaining = WARNING_BEFORE_SECS;
+
+                    Swal.fire({
+                        title: '⏰ Sesión a punto de expirar',
+                        html:
+                            '<p class="mb-2 text-muted">Por inactividad, su sesión se cerrará en:</p>' +
+                            '<h2 id="swal-countdown" class="fw-bold text-danger mb-0">' + formatTime(remaining) + '</h2>',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fa fa-check me-1"></i> Seguir conectado',
+                        cancelButtonText: '<i class="fa fa-sign-out-alt me-1"></i> Cerrar sesión',
+                        confirmButtonColor: '#6366f1',
+                        cancelButtonColor: '#ef4444',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: function () {
+                            countdownInterval = setInterval(function () {
+                                remaining--;
+                                var el = document.getElementById('swal-countdown');
+                                if (el) el.textContent = formatTime(remaining);
+                                if (remaining <= 0) {
+                                    clearInterval(countdownInterval);
+                                    Swal.close();
+                                    doLogout();
+                                }
+                            }, 1000);
+                        },
+                        willClose: function () {
+                            clearInterval(countdownInterval);
+                        }
+                    }).then(function (result) {
+                        if (result.isConfirmed) {
+                            warningVisible = false;
+                            // Ping al servidor para renovar la cookie de sesión
+                            fetch('/Home/KeepAlive', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                                .catch(function() {});
+                            resetTimers();
+                        } else {
+                            doLogout();
+                        }
+                    });
+                }
+
+                function formatTime(secs) {
+                    var m = Math.floor(secs / 60);
+                    var s = secs % 60;
+                    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+                }
+
+                function doLogout() {
+                    clearTimeout(inactivityTimer);
+                    clearTimeout(warningTimer);
+                    clearInterval(countdownInterval);
+                    // Redirigir al logout para limpiar la cookie del servidor
+                    window.location.href = LOGOUT_URL;
+                }
+
+                // Eventos que resetean el contador de inactividad
+                var activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+                activityEvents.forEach(function (event) {
+                    document.addEventListener(event, resetTimers, { passive: true });
+                });
+
+                // Iniciar
+                resetTimers();
+            })();
+        </script>
+    }
 </body>
 </html>
 

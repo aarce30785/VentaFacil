@@ -68,6 +68,16 @@ namespace VentaFacil.web.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Endpoint llamado por el JS de inactividad para renovar la sesión cuando el usuario elige "Seguir conectado".
+        /// Con SlidingExpiration=true, cualquier request autenticado renueva la cookie automáticamente.
+        /// </summary>
+        [HttpPost]
+        public IActionResult KeepAlive()
+        {
+            return Ok(new { renewed = true });
+        }
+
         [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
