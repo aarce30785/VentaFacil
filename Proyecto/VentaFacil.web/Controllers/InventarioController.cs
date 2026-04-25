@@ -587,6 +587,19 @@ namespace VentaFacil.web.Controllers
             return Json(notificaciones);
         }
 
+        // GET: Inventario/ObtenerInsumosActivos - Para cargar dropdowns dinámicamente
+        [HttpGet]
+        public async Task<IActionResult> ObtenerInsumosActivos()
+        {
+            var inventarios = await _inventarioService.ListarTodosAsync(false);
+            var resultado = inventarios
+                .Where(i => i.Estado)
+                .OrderBy(i => i.Nombre)
+                .Select(i => new { value = i.Id_Inventario, text = i.Nombre })
+                .ToList();
+            return Json(resultado);
+        }
+
         [HttpGet]
         public async Task<IActionResult> ObtenerModalInventario(string accion, int? inventarioId = null)
         {

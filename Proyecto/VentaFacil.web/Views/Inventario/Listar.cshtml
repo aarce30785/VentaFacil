@@ -378,11 +378,9 @@
                     
                     <div class="form-group mb-3">
                         <label for="Entrada_IdInventario" class="form-label fw-bold text-sm text-muted">Insumo</label>
-                        <select id="Entrada_IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))" disabled>
+                        <select id="Entrada_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required>
                             <option value="">Seleccione Insumo</option>
                         </select>
-                        <input type="hidden" id="Entrada_IdInventario_Hidden" name="IdInventario" />
-                         <small class="text-muted">Nota: Solo se muestran los insumos de la página actual en este select.</small>
                     </div>
 
                     <div class="form-group mb-3">
@@ -419,11 +417,9 @@
                     
                     <div class="form-group mb-3">
                         <label for="Salida_IdInventario" class="form-label fw-bold text-sm text-muted">Insumo</label>
-                        <select id="Salida_IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required asp-items="@(new SelectList(Model.Inventarios, "Id_Inventario", "Nombre"))" disabled>
+                        <select id="Salida_IdInventario" name="IdInventario" class="form-select rounded-pill bg-light border-0 px-3" required>
                             <option value="">Seleccione Insumo</option>
                         </select>
-                        <input type="hidden" id="Salida_IdInventario_Hidden" name="IdInventario" />
-                         <small class="text-muted">Nota: Solo se muestran los insumos de la página actual en este select.</small>
                     </div>
 
                     <div class="form-group mb-3">
@@ -742,16 +738,37 @@
             });
         }
         
+        // Cargar todos los insumos activos para los selects de Entrada y Salida
+        function cargarInsumosEnSelect(selectEl, idSeleccionado = null) {
+            if (selectEl.options.length > 1) {
+                // Ya cargados; si hay id a preseleccionar, hacerlo
+                if (idSeleccionado) selectEl.value = idSeleccionado;
+                return;
+            }
+            fetch('@Url.Action("ObtenerInsumosActivos", "Inventario")')
+                .then(r => r.json())
+                .then(insumos => {
+                    insumos.forEach(i => {
+                        const opt = document.createElement('option');
+                        opt.value = i.value;
+                        opt.text  = i.text;
+                        selectEl.appendChild(opt);
+                    });
+                    if (idSeleccionado) selectEl.value = idSeleccionado;
+                })
+                .catch(() => {
+                    Toastify({ text: 'Error al cargar insumos', duration: 3000, style: { background: '#ff5f6d' } }).showToast();
+                });
+        }
+
         // Configuración de modal de Entrada
         var entradaModal = document.getElementById('entradaModal');
         entradaModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget;
-            var id = button.getAttribute('data-id');
-            if (id) {
-                var select = this.querySelector('#Entrada_IdInventario');
-                var hiddenInput = this.querySelector('#Entrada_IdInventario_Hidden');
-                if (select) select.value = id;
-                if (hiddenInput) hiddenInput.value = id;
+            var id = button ? button.getAttribute('data-id') : null;
+            var select = this.querySelector('#Entrada_IdInventario');
+            if (select) {
+                cargarInsumosEnSelect(select, id);
             }
         });
 
@@ -759,12 +776,10 @@
         var salidaModal = document.getElementById('salidaModal');
         salidaModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget;
-            var id = button.getAttribute('data-id');
-            if (id) {
-                var select = this.querySelector('#Salida_IdInventario');
-                var hiddenInput = this.querySelector('#Salida_IdInventario_Hidden');
-                if (select) select.value = id;
-                if (hiddenInput) hiddenInput.value = id;
+            var id = button ? button.getAttribute('data-id') : null;
+            var select = this.querySelector('#Salida_IdInventario');
+            if (select) {
+                cargarInsumosEnSelect(select, id);
             }
         });
 
