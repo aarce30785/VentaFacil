@@ -259,18 +259,37 @@
 
     // ─── State ─────────────────────────────────────────────────────────────────
     let planillaActual = null;
+    let esPlanillaPagada = false;
 
     // ─── Selector de planilla ──────────────────────────────────────────────────
     document.getElementById('selectorPlanilla').addEventListener('change', function () {
         const val = this.value;
+        const text = this.options[this.selectedIndex]?.text || '';
+        const isPagada = text.includes('(PAGADA)');
         const hasPlanilla = !!val;
+        
+        esPlanillaPagada = isPagada;
+        
         document.getElementById('btnCargarBonificaciones').disabled = !hasPlanilla;
-        document.getElementById('btnGuardarExtras').disabled = !hasPlanilla;
-        document.getElementById('btnNuevaBonificacion').disabled = !hasPlanilla;
+        
+        // Bloquear edición si no hay planilla o si ya está pagada
+        const disableEdit = !hasPlanilla || isPagada;
+        document.getElementById('btnGuardarExtras').disabled = disableEdit;
+        document.getElementById('btnNuevaBonificacion').disabled = disableEdit;
+        document.getElementById('campoHorasExtras').disabled = disableEdit;
+        document.getElementById('campoObservacionesExtras').disabled = disableEdit;
+
         if (!hasPlanilla) {
             planillaActual = null;
             document.getElementById('tablaBonificacionesContainer').style.display = 'none';
             document.getElementById('msgSinPlanilla').style.display = '';
+        } else if (isPagada) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Jornada Procesada',
+                text: 'Esta jornada ya fue procesada y pagada en una nómina. No puedes modificar ni registrar horas extras/bonos adicionales.',
+                timer: 4500
+            });
         }
     });
 
@@ -318,12 +337,13 @@
                 <td><span class="text-muted small">${b.FechaRegistro}</span></td>
                 <td class="text-center pe-4">
                     <div class="d-flex justify-content-center gap-2">
+                        ${!esPlanillaPagada ? `
                         <button class="btn btn-sm btn-white text-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="abrirEditar(${b.Id}, '${escapeHtml(b.Motivo)}', ${b.Monto}, '${b.Fecha}')" title="Editar">
                             <i class="lni lni-pencil"></i>
                         </button>
                         <button class="btn btn-sm btn-white text-danger rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="confirmarEliminar(${b.Id})" title="Eliminar">
                             <i class="lni lni-trash-can"></i>
-                        </button>
+                        </button>` : ''}
                         <button class="btn btn-sm btn-white text-secondary rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: white;" onclick="verHistorial(${b.Id})" title="Auditoría">
                             <i class="lni lni-history"></i>
                         </button>

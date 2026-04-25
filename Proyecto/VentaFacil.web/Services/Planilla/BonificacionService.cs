@@ -32,6 +32,17 @@ namespace VentaFacil.web.Services.Planilla
                     return response;
                 }
 
+                if (planilla.Id_Nomina.HasValue)
+                {
+                    var nomina = await _context.Nomina.FindAsync(planilla.Id_Nomina.Value);
+                    if (nomina != null && nomina.Estado != "Anulada")
+                    {
+                        response.Success = false;
+                        response.Message = "Operación bloqueada: La jornada ya ha sido procesada o pagada en una nómina.";
+                        return response;
+                    }
+                }
+
                 var bonificacion = new Bonificacion
                 {
                     Id_Planilla = dto.Id_Planilla,
@@ -81,6 +92,17 @@ namespace VentaFacil.web.Services.Planilla
                     response.Success = false;
                     response.Message = "Planilla asociada no encontrada.";
                     return response;
+                }
+
+                if (planilla.Id_Nomina.HasValue)
+                {
+                    var nomina = await _context.Nomina.FindAsync(planilla.Id_Nomina.Value);
+                    if (nomina != null && nomina.Estado != "Anulada")
+                    {
+                        response.Success = false;
+                        response.Message = "Operación bloqueada: La jornada ya ha sido procesada o pagada en una nómina.";
+                        return response;
+                    }
                 }
 
                 // Guardar historial
@@ -137,6 +159,17 @@ namespace VentaFacil.web.Services.Planilla
                 var planilla = await _context.Planilla.FindAsync(bonificacion.Id_Planilla);
                 if (planilla != null)
                 {
+                    if (planilla.Id_Nomina.HasValue)
+                    {
+                        var nomina = await _context.Nomina.FindAsync(planilla.Id_Nomina.Value);
+                        if (nomina != null && nomina.Estado != "Anulada")
+                        {
+                            response.Success = false;
+                            response.Message = "Operación bloqueada: La jornada ya ha sido procesada o pagada en una nómina.";
+                            return response;
+                        }
+                    }
+
                     // Revertir montos
                     planilla.Bonificaciones -= bonificacion.Monto;
                     planilla.SalarioBruto -= bonificacion.Monto;

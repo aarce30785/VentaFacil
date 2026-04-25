@@ -1,4 +1,4 @@
-﻿namespace VentaFacil.web.Models.Dto
+namespace VentaFacil.web.Models.Dto
 {
     /// <summary>
     /// DTO sencillo para mostrar planillas en un dropdown
@@ -19,6 +19,6 @@
         public string Periodo =>
             $"{FechaInicio:dd/MM/yyyy} - {(FechaFinal.HasValue ? FechaFinal.Value.ToString("dd/MM/yyyy") : "Pendiente")}";
 
-        public string InfoCompleta => $"{NombreUsuario} | {Periodo}";
+        public string InfoCompleta => $"{NombreUsuario} | {Periodo}" + (EstadoRegistro == "Procesado" ? " (PAGADA)" : "");
     }
 }
